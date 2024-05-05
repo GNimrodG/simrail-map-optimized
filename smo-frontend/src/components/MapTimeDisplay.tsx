@@ -17,7 +17,7 @@ const MapTimeDisplay: FunctionComponent<TimeDisplayProps> = ({ time }) => {
   }, [currentTime]);
 
   useEffect(() => {
-    const diff = time - currentTime;
+    const diff = Math.abs(time - currentTime);
 
     if (diff < 1000) return;
 
