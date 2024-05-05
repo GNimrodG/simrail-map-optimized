@@ -31,7 +31,7 @@ function getColor(velocity: number): DefaultColorPalette {
   return "success";
 }
 
-const BLOCK_SIGNAL_REGEX = /^\w\d+_\d+@/;
+const BLOCK_SIGNAL_REGEX = /^\w\d+_\d+\w?@/;
 
 const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal }) => {
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(new DivIcon(DEFAULT_ICON_OPTIONS));
@@ -54,7 +54,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal }) => {
           setIcon(
             new DivIcon({
               ...DEFAULT_ICON_OPTIONS,
-              iconUrl: SignalBlockRedIcon,
+              html: SignalBlockRedIcon,
               iconSize: [16, 38],
             })
           );
@@ -85,7 +85,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal }) => {
       key={signal.name}
       position={[signal.lat, signal.lon]}
       icon={icon}>
-      <Popup>
+      <Popup autoPan={false}>
         <Stack
           alignItems="center"
           spacing={1}>

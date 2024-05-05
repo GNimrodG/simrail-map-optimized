@@ -11,7 +11,9 @@ import SelectedTrainContext from "./utils/selected-train-context";
 
 function App() {
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
-  const [selectedTrain, setSelectedTrain] = useState<string | null>(null);
+  const [selectedTrain, setSelectedTrain] = useState<{ trainNo: string; follow: boolean } | null>(
+    null
+  );
 
   const selectedRouteContextValue = useMemo(
     () => ({ selectedRoute, setSelectedRoute }),
@@ -24,7 +26,9 @@ function App() {
   );
 
   return (
-    <CssVarsProvider defaultColorScheme="dark">
+    <CssVarsProvider
+      colorSchemeStorageKey="color-scheme"
+      defaultMode="system">
       <CssBaseline />
       <SelectedRouteContext.Provider value={selectedRouteContextValue}>
         <SelectedTrainContext.Provider value={selectedTrainContextValue}>

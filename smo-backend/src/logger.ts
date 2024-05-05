@@ -51,7 +51,7 @@ const consoleLogFormat = format.combine(
     if (module) line += `[${module}]`;
     line += `[${levelColors[level?.toLowerCase() || "warn"](level.toUpperCase())}]`;
     if (client) line += `[${client}]`;
-    line += ` ${message}`;
+    line += ` ${message.replace(/\d+ms/g, chalk.bold.yellow("$&"))}`;
     if (Object.keys(rest).length) line += ` ${JSON.stringify(rest)}`;
 
     return line;

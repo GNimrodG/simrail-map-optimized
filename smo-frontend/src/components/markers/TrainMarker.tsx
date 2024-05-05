@@ -1,9 +1,11 @@
+import Typography from "@mui/joy/Typography";
 import { DivIcon, DivIconOptions, Icon, IconOptions } from "leaflet";
-import { type FunctionComponent, useEffect, useState } from "react";
+import { type FunctionComponent, useContext, useEffect, useState } from "react";
 import { Popup, Tooltip } from "react-leaflet";
 import ReactLeafletDriftMarker from "react-leaflet-drift-marker";
 
 import { Train } from "../../utils/data-manager";
+import SelectedTrainContext from "../../utils/selected-train-context";
 import { getSteamProfileInfo, ProfileResponse } from "../../utils/steam";
 import { getColorTrainMarker } from "../../utils/ui";
 import BotIcon from "./icons/bot.svg?raw";
@@ -22,6 +24,7 @@ const BOT_ICON_OPTIONS: DivIconOptions = {
 const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
   const [userData, setUserData] = useState<ProfileResponse | null>(null);
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(new DivIcon(BOT_ICON_OPTIONS));
+  const { selectedTrain } = useContext(SelectedTrainContext);
 
   useEffect(() => {
     if (!train.TrainData.ControlledBySteamID) {
@@ -63,17 +66,23 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
       duration={1000}
       position={[train.TrainData.Latititute, train.TrainData.Longitute]}
       icon={icon}>
-      <Popup>
+      <Popup autoPan={false}>
         <TrainMarkerPopup
           train={train}
           userData={userData}
+          showTrainRouteButton
         />
       </Popup>
       <Tooltip
         offset={[0, 20]}
         direction="bottom"
-        permanent>
-        {train.TrainNoLocal}
+        permanent
+        className={selectedTrain?.trainNo === train.TrainNoLocal ? "pinned" : ""}>
+        <Typography
+          level="body-sm"
+          sx={{ color: "text.primary" }}>
+          {train.TrainNoLocal}
+        </Typography>
       </Tooltip>
     </ReactLeafletDriftMarker>
   );

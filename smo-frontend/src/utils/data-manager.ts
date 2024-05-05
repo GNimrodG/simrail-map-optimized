@@ -67,7 +67,7 @@ export interface TrainRoute {
   points: [number, number][];
 }
 
-const SERVER_URL = "ws://localhost:3000";
+const SERVER_URL = import.meta.env.PROD ? "wss://api.smo.data-unknown.com" : "ws://localhost:3000";
 
 let serverData: ServerStatus[] = [];
 
@@ -114,21 +114,65 @@ export function getServerStatus() {
 export type DataCallback = (data: {
   trains: Train[];
   stations: Station[];
-  trainRoutes: TrainRoute[];
   signals: SignalWithTrain[];
+  timezone: number;
+  time: number;
 }) => void;
 
 export function onData(callback: DataCallback) {
   socket.on("data", callback);
 }
 
-export function offData(
-  callback: (data: {
-    trains: Train[];
-    stations: Station[];
-    trainRoutes: TrainRoute[];
-    signals: SignalWithTrain[];
-  }) => void
-) {
+export function offData(callback: DataCallback) {
   socket.off("data", callback);
+}
+
+export async function fetchTimetable(train: string) {
+  return new Promise<Timetable | null>((resolve) => {
+    socket.emit("get-train-timetable", train, (timetable: Timetable) => {
+      resolve(timetable);
+    });
+  });
+}
+
+export async function fetchRoutePoints(trainRoute: string) {
+  return new Promise<[number, number][] | null>((resolve) => {
+    socket.emit("get-train-route-points", trainRoute, (route: [number, number][]) => {
+      resolve(route);
+    });
+  });
+}
+
+export interface Timetable {
+  trainNoLocal: string;
+  trainNoInternational: string;
+  trainName: string;
+  startStation: string;
+  startsAt: `${number}:${number}:${number}`;
+  endStation: string;
+  endsAt: `${number}:${number}:${number}`;
+  locoType: string;
+  trainLength: number;
+  trainWeight: number;
+  continuesAs: string;
+  timetable: TimetableEntry[];
+}
+
+export interface TimetableEntry {
+  nameOfPoint: string;
+  nameForPerson: string;
+  pointId: string;
+  supervisedBy: string;
+  radioChannels: string;
+  displayedTrainNumber: string;
+  arrivalTime: `${number}-${number}-${number} ${number}:${number}:${number}` | null;
+  departureTime: `${number}-${number}-${number} ${number}:${number}:${number}` | null;
+  stopType: "NoStopOver" | "CommercialStop" | "NoncommercialStop";
+  line: number;
+  platform: string | null;
+  track: number | null;
+  trainType: string;
+  mileage: number;
+  maxSpeed: number;
+  stationCategory: "A" | "B" | "C" | "D" | null;
 }

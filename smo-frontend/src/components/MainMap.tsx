@@ -1,12 +1,21 @@
 import "leaflet/dist/leaflet.css";
 
 import { useHotkeys, useLocalStorage } from "@mantine/hooks";
+import Autocomplete from "@mui/joy/Autocomplete";
 import Option from "@mui/joy/Option";
 import Select from "@mui/joy/Select";
 import Sheet from "@mui/joy/Sheet";
-import { DivIcon, LeafletEventHandlerFn, Map as LeafletMap } from "leaflet";
-import { type FunctionComponent, useCallback, useContext, useEffect, useState } from "react";
-import { LayerGroup, LayersControl, MapContainer, Marker, TileLayer } from "react-leaflet";
+import Stack from "@mui/joy/Stack";
+import { LeafletEventHandlerFn, Map as LeafletMap } from "leaflet";
+import {
+  type FunctionComponent,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { LayerGroup, LayersControl, MapContainer, TileLayer } from "react-leaflet";
 import Control from "react-leaflet-custom-control";
 
 import UnplayableStations from "../assets/unplayable-stations.json";
@@ -22,33 +31,25 @@ import {
 import { debounce } from "../utils/debounce";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
-import DotIcon from "./dot.svg?raw";
+import { getSteamProfileInfo, ProfileResponse } from "../utils/steam";
+import SelectedTrainRouteLayer from "./layers/SelectedTrainRouteLayer";
+import MapTimeDisplay from "./MapTimeDisplay";
 import SignalMarker from "./markers/SignalMarker";
 import StationMarker from "./markers/StationMarker";
 import TrainMarker from "./markers/TrainMarker";
 import TrainMarkerPopup from "./markers/TrainMarkerPopup";
 import UnplayableStation from "./markers/UnplayableStation";
+import ThemeToggle from "./ThemeToggle";
 
 export interface MapProps {
   serverId: string;
 }
-
-const SELECTED_ROUTE_ICON = new DivIcon({
-  html: DotIcon,
-  iconSize: [10, 10],
-  className: "icon selected-route",
-});
 
 function getVisibleTrains(trains: Train[], map: LeafletMap | null) {
   const bounds = map?.getBounds();
   return trains.filter((train) =>
     bounds?.contains([train.TrainData.Latititute, train.TrainData.Longitute])
   );
-}
-
-function getVisibleTrainRoutePoints(route: [number, number][], map: LeafletMap | null) {
-  const bounds = map?.getBounds();
-  return route.filter((point) => bounds?.contains(point));
 }
 
 function getVisibleSignals(signals: SignalWithTrain[], map: LeafletMap | null) {
@@ -64,17 +65,16 @@ const MainMap: FunctionComponent<MapProps> = () => {
     defaultValue: "en1",
   });
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
+  const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
+
   const [servers, setServers] = useState<ServerStatus[]>(getServerStatus());
+  const [time, setTime] = useState(0);
   const [trains, setTrains] = useState<Train[]>([]);
-  const [visibleTrains, setVisibleTrains] = useState<Train[]>([]);
-  const [trainRoutes, setTrainRoutes] = useState<Record<string, [number, number][]>>({});
   const [stations, setStations] = useState<Station[]>([]);
   const [signals, setSignals] = useState<SignalWithTrain[]>([]);
+
+  const [visibleTrains, setVisibleTrains] = useState<Train[]>([]);
   const [visibleSignals, setVisibleSignals] = useState<SignalWithTrain[]>([]);
-  const [visibleSelectedTrainRoutePoints, setVisibleSelectedTrainRoutePoints] = useState<
-    [number, number][] | null
-  >(null);
-  const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
 
   useHotkeys([
     [
@@ -90,21 +90,15 @@ const MainMap: FunctionComponent<MapProps> = () => {
     onData((data) => {
       setTrains(data.trains);
       setStations(data.stations);
-      setTrainRoutes(
-        (trainRoutes) =>
-          data.trainRoutes?.reduce<Record<string, [number, number][]>>((acc, route) => {
-            acc[route.route] = route.points;
-            return acc;
-          }, {}) || trainRoutes
-      );
       setServers(getServerStatus());
       setSignals(data.signals);
+      setTime(data.time);
     });
   }, []);
 
   useEffect(() => {
-    if (selectedTrain) {
-      const train = trains.find((train) => train.TrainNoLocal === selectedTrain);
+    if (selectedTrain?.follow) {
+      const train = trains.find((train) => train.TrainNoLocal === selectedTrain.trainNo);
       if (train) {
         map?.panTo([train.TrainData.Latititute, train.TrainData.Longitute], {
           animate: true,
@@ -128,11 +122,6 @@ const MainMap: FunctionComponent<MapProps> = () => {
     const handler: LeafletEventHandlerFn = (e) => {
       setVisibleTrains(getVisibleTrains(trains || [], e.target));
       setVisibleSignals(getVisibleSignals(signals || [], e.target));
-      if (selectedRoute) {
-        setVisibleSelectedTrainRoutePoints(
-          getVisibleTrainRoutePoints(trainRoutes[selectedRoute] || [], e.target)
-        );
-      }
     };
 
     const debounceHandler = debounce(handler, 200);
@@ -150,7 +139,7 @@ const MainMap: FunctionComponent<MapProps> = () => {
       _map.off("zoom", debounceHandler);
       _map.off("resize", debounceHandler);
     };
-  }, [map, selectedRoute, signals, trainRoutes, trains]);
+  }, [map, selectedRoute, signals, trains]);
 
   useEffect(() => {
     setVisibleSignals(getVisibleSignals(signals || [], map));
@@ -160,17 +149,25 @@ const MainMap: FunctionComponent<MapProps> = () => {
     setVisibleTrains(getVisibleTrains(trains || [], map));
   }, [map, trains]);
 
-  useEffect(() => {
-    if (selectedRoute) {
-      setVisibleSelectedTrainRoutePoints(
-        getVisibleTrainRoutePoints(trainRoutes[selectedRoute] || [], map)
-      );
-    } else {
-      setVisibleSelectedTrainRoutePoints(null);
-    }
-  }, [map, selectedRoute, trainRoutes]);
+  const [selectedTrainUserData, setSelectedTrainUserData] = useState<ProfileResponse | null>(null);
 
-  const selectedTrainData = trains.find((train) => train.TrainNoLocal === selectedTrain);
+  const selectedTrainData = useMemo(() => {
+    if (!selectedTrain) return null;
+
+    const train = trains.find((train) => train.TrainNoLocal === selectedTrain.trainNo);
+    if (!train) return null;
+
+    if (!train.TrainData.ControlledBySteamID) {
+      setSelectedTrainUserData(null);
+      return train;
+    }
+
+    getSteamProfileInfo(train.TrainData.ControlledBySteamID).then((profile) => {
+      setSelectedTrainUserData(profile);
+    });
+
+    return train;
+  }, [selectedTrain, trains]);
 
   return (
     <MapContainer
@@ -187,29 +184,48 @@ const MainMap: FunctionComponent<MapProps> = () => {
       <Control
         prepend
         position="topleft">
-        <Select
-          value={selectedServer}
-          onChange={(_e, v) => handleServerChange(v!)}>
-          {servers.map((server) => (
-            <Option
-              key={server.id}
-              value={server.ServerCode}>
-              {server.ServerName}
-            </Option>
-          ))}
-        </Select>
+        <Stack
+          direction="row"
+          spacing={1}>
+          <Select
+            value={selectedServer}
+            onChange={(_e, v) => handleServerChange(v!)}>
+            {servers.map((server) => (
+              <Option
+                key={server.id}
+                value={server.ServerCode}>
+                {server.ServerName}
+              </Option>
+            ))}
+          </Select>
+          <Autocomplete
+            placeholder="Search"
+            options={trains}
+            getOptionLabel={(option) => `${option.TrainNoLocal} (${option.TrainName})`}
+            value={selectedTrainData}
+            onChange={(_e, v) =>
+              setSelectedTrain(v?.TrainNoLocal ? { trainNo: v.TrainNoLocal, follow: true } : null)
+            }
+          />
+          {!!time && <MapTimeDisplay time={time} />}
+        </Stack>
+      </Control>
+
+      <Control position="topleft">
+        <ThemeToggle />
       </Control>
 
       <Control position="bottomleft">
         {selectedTrain && selectedTrainData && (
           <Sheet
             sx={{
-              p: 1,
+              p: 2,
               borderRadius: 10,
             }}
             variant="outlined">
             <TrainMarkerPopup
               train={selectedTrainData}
+              userData={selectedTrainUserData}
               showTrainRouteButton
             />
           </Sheet>
@@ -256,22 +272,7 @@ const MainMap: FunctionComponent<MapProps> = () => {
         <LayersControl.Overlay
           name="Selected Route"
           checked>
-          <LayerGroup>
-            {/* {visibleSelectedTrainRoutePoints && (
-              <Polyline
-                positions={visibleSelectedTrainRoutePoints}
-                color="red"
-                weight={2}
-              />
-            )} */}
-            {visibleSelectedTrainRoutePoints?.map((point) => (
-              <Marker
-                key={point[0] + "-" + point[1]}
-                position={point}
-                icon={SELECTED_ROUTE_ICON}
-              />
-            ))}
-          </LayerGroup>
+          <SelectedTrainRouteLayer />
         </LayersControl.Overlay>
         <LayersControl.Overlay
           name="Unplayable Stations"

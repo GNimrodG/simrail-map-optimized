@@ -49,7 +49,7 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
       key={station.id}
       position={[station.Latititude, station.Longitude]}
       icon={icon}>
-      <Popup>
+      <Popup autoPan={false}>
         <Stack
           alignItems="center"
           spacing={1}>

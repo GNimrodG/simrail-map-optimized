@@ -66,8 +66,13 @@ function analyzeTrains(trains: Train[]) {
     }
   }
 
-  saveSignals();
+  if (++saveCounter > 10) {
+    saveCounter = 0;
+    saveSignals();
+  }
 }
+
+let saveCounter = 0;
 
 function saveSignals() {
   logger.info("Saving signals...", { module: "SIGNALS" });

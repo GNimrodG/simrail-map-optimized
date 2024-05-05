@@ -34,7 +34,7 @@ try {
 
 parentPort?.postMessage(RoutePoints);
 
-const MIN_DISTANCE = 0.00001;
+const MIN_DISTANCE = 0.0001;
 
 function analyzeTrainsForRoutes(trains: Train[]) {
   for (const train of trains) {
@@ -63,35 +63,13 @@ function analyzeTrainsForRoutes(trains: Train[]) {
     }
   }
 
-  for (const [route, points] of RoutePoints.entries()) {
-    let newPoints: [number, number][] = points.toSorted((a, b) => distance(a, b));
-
-    for (let i = 0; i < newPoints.length - 1; i++) {
-      for (let j = i + 1; j < newPoints.length; j++) {
-        if (distance(newPoints[i], newPoints[j]) < MIN_DISTANCE) {
-          newPoints.splice(j, 1);
-          j--;
-        }
-      }
-    }
-
-    if (newPoints.length !== points.length) {
-      logger.info(
-        `Removed ${points.length - newPoints.length} duplicate points from route ${route}`,
-        {
-          module: "ROUTE",
-        }
-      );
-      RoutePoints.set(route, newPoints);
-    }
-
-    if (newPoints.length === 0) {
-      RoutePoints.delete(route);
-    }
+  if (++saveCounter > 10) {
+    saveCounter = 0;
+    saveRoutes();
   }
-
-  saveRoutes();
 }
+
+let saveCounter = 0;
 
 function distance(point1: [number, number], point2: [number, number]) {
   return Math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2);

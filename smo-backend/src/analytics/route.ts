@@ -33,10 +33,6 @@ worker.on("exit", (code) => {
   }
 });
 
-export function getRoutePoints(train: Train) {
-  return RoutePoints.get(train.StartStation + "-" + train.EndStation) || [];
-}
-
-export function getRoutes() {
-  return Array.from(RoutePoints.entries(), ([route, points]) => ({ route, points }));
+export function getRoutePoints(trainRoute: string) {
+  return RoutePoints.get(trainRoute) || [];
 }

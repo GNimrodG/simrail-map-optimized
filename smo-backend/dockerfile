@@ -22,6 +22,8 @@ RUN yarn install --frozen-lockfile --production
 
 FROM node:slim AS release
 
+WORKDIR /app
+
 ENV NODE_ENV=production
 
 COPY --from=build /app/dist ./dist
