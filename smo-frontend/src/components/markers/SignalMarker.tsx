@@ -44,7 +44,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal }) => {
             new DivIcon({
               ...DEFAULT_ICON_OPTIONS,
               html: SignalBlockGreenIcon,
-              iconSize: [20, 44],
+              iconSize: [16, 38],
             })
           );
           return;
@@ -55,7 +55,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal }) => {
             new DivIcon({
               ...DEFAULT_ICON_OPTIONS,
               iconUrl: SignalBlockRedIcon,
-              iconSize: [20, 44],
+              iconSize: [16, 38],
             })
           );
           return;

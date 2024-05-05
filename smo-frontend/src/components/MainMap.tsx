@@ -39,6 +39,13 @@ const SELECTED_ROUTE_ICON = new DivIcon({
   className: "icon selected-route",
 });
 
+function getVisibleTrains(trains: Train[], map: LeafletMap | null) {
+  const bounds = map?.getBounds();
+  return trains.filter((train) =>
+    bounds?.contains([train.TrainData.Latititute, train.TrainData.Longitute])
+  );
+}
+
 function getVisibleTrainRoutePoints(route: [number, number][], map: LeafletMap | null) {
   const bounds = map?.getBounds();
   return route.filter((point) => bounds?.contains(point));
@@ -59,6 +66,7 @@ const MainMap: FunctionComponent<MapProps> = () => {
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
   const [servers, setServers] = useState<ServerStatus[]>(getServerStatus());
   const [trains, setTrains] = useState<Train[]>([]);
+  const [visibleTrains, setVisibleTrains] = useState<Train[]>([]);
   const [trainRoutes, setTrainRoutes] = useState<Record<string, [number, number][]>>({});
   const [stations, setStations] = useState<Station[]>([]);
   const [signals, setSignals] = useState<SignalWithTrain[]>([]);
@@ -118,6 +126,7 @@ const MainMap: FunctionComponent<MapProps> = () => {
 
   useEffect(() => {
     const handler: LeafletEventHandlerFn = (e) => {
+      setVisibleTrains(getVisibleTrains(trains || [], e.target));
       setVisibleSignals(getVisibleSignals(signals || [], e.target));
       if (selectedRoute) {
         setVisibleSelectedTrainRoutePoints(
@@ -141,11 +150,15 @@ const MainMap: FunctionComponent<MapProps> = () => {
       _map.off("zoom", debounceHandler);
       _map.off("resize", debounceHandler);
     };
-  }, [map, selectedRoute, signals, trainRoutes]);
+  }, [map, selectedRoute, signals, trainRoutes, trains]);
 
   useEffect(() => {
     setVisibleSignals(getVisibleSignals(signals || [], map));
   }, [map, signals]);
+
+  useEffect(() => {
+    setVisibleTrains(getVisibleTrains(trains || [], map));
+  }, [map, trains]);
 
   useEffect(() => {
     if (selectedRoute) {
@@ -220,7 +233,7 @@ const MainMap: FunctionComponent<MapProps> = () => {
           name="Trains"
           checked>
           <LayerGroup>
-            {trains?.map((train) => (
+            {visibleTrains.map((train) => (
               <TrainMarker
                 key={train.id}
                 train={train}
