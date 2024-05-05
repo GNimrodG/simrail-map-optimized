@@ -31,6 +31,7 @@ try {
 parentPort?.postMessage(SignalLocations);
 
 function analyzeTrains(trains: Train[]) {
+  let shouldSave = false;
   for (const train of trains) {
     if (
       train.TrainData.Latititute &&
@@ -63,16 +64,15 @@ function analyzeTrains(trains: Train[]) {
         extra,
         accuracy: train.TrainData.DistanceToSignalInFront,
       });
+
+      shouldSave = true;
     }
   }
 
-  if (++saveCounter > 10) {
-    saveCounter = 0;
+  if (shouldSave) {
     saveSignals();
   }
 }
-
-let saveCounter = 0;
 
 function saveSignals() {
   logger.info("Saving signals...", { module: "SIGNALS" });

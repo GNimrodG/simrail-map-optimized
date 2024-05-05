@@ -12,6 +12,7 @@ import {
 } from "./api-helper";
 import logger from "./logger";
 import { Server as SocketIOServer } from "socket.io";
+import { writeFile } from "fs/promises";
 
 const REFRESH_INTERVAL = parseInt(process.env.REFRESH_INTERVAL || "") || 1000;
 let serverData: ServerStatus[] = [];
@@ -38,6 +39,7 @@ let onAllData: AllDataCallback | null = null;
 logger.info(`Refresh interval: ${REFRESH_INTERVAL}`);
 
 let avgRefreshTime = 0;
+let refreshTime = 0;
 
 let _io: SocketIOServer;
 
@@ -70,7 +72,11 @@ export async function refreshData(io: SocketIOServer = _io) {
       avgRefreshTime = (avgRefreshTime + time) / 2;
     }
 
+    refreshTime++;
+
     logger.info(`Data refreshed in ${time}ms (avg: ${avgRefreshTime}ms)`, { level: "success" });
+
+    writeFile("stats.csv", `${Date.now()},${time},${refreshTime}\n`, { flag: "a" });
 
     onAllData?.(localData);
 

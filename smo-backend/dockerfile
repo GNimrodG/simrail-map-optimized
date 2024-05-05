@@ -8,7 +8,7 @@ RUN yarn install --frozen-lockfile
 
 COPY ./src ./src
 
-RUN yarn build
+RUN yarn build:no-sentry
 
 FROM node:slim AS dependencies
 
