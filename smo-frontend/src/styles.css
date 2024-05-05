@@ -1,0 +1,108 @@
+@media (prefers-color-scheme: dark) {
+  .leaflet-tile {
+    filter: invert(100%) hue-rotate(180deg) brightness(80%) contrast(90%) grayscale(0.25) !important;
+  }
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-tooltip,
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+  border: var(--variant-borderWidth) solid var(--joy-palette-neutral-outlinedBorder) !important;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-tooltip,
+.leaflet-bar a,
+.leaflet-container .leaflet-control-attribution,
+.leaflet-popup-tip,
+.leaflet-control-layers {
+  background-color: var(--joy-palette-background-surface) !important;
+  color: var(--joy-palette-text-primary) !important;
+}
+
+.leaflet-control-layers-separator {
+  border-top: var(--variant-borderWidth) solid var(--joy-palette-neutral-outlinedBorder) !important;
+}
+
+.leaflet-bar a {
+  border-bottom: var(--variant-borderWidth) solid var(--joy-palette-neutral-outlinedBorder) !important;
+}
+
+.leaflet-tooltip::before {
+  border-bottom-color: var(--joy-palette-background-surface) !important;
+}
+
+.leaflet-container {
+  background-color: var(--joy-palette-background-surface) !important;
+}
+
+.icon.station,
+.icon.train {
+  border: 3px solid black;
+}
+
+.icon.danger {
+  border-color: var(--joy-palette-danger-500);
+}
+
+.icon.warning {
+  border-color: var(--joy-palette-warning-500);
+}
+
+.icon.success {
+  border-color: var(--joy-palette-success-500);
+}
+
+.icon.primary {
+  border-color: var(--joy-palette-primary-500);
+}
+
+.icon.bot {
+  background-color: var(--joy-palette-background-surface);
+  padding: 0.3rem;
+}
+
+.icon.bot svg {
+  fill: var(--joy-palette-text-primary);
+}
+
+.icon.bot.non-playable svg {
+  fill: var(--joy-palette-warning-400);
+}
+
+.icon.train {
+  border-radius: 50%;
+}
+
+.icon.station.player {
+  border-color: var(--joy-palette-primary-outlinedActiveBg);
+}
+
+.icon.station {
+  border-color: var(--joy-palette-warning-outlinedActiveBg);
+}
+
+.icon.signal.danger svg {
+  fill: var(--joy-palette-danger-500);
+}
+
+.icon.signal.warning svg {
+  fill: var(--joy-palette-warning-500);
+}
+
+.icon.signal.success svg {
+  fill: var(--joy-palette-success-500);
+}
+
+.icon.signal.primary svg {
+  fill: var(--joy-palette-primary-500);
+}
+
+.icon.signal.secondary svg {
+  fill: var(--joy-palette-neutral-500);
+}
+
+.icon.selected-route svg {
+  fill: var(--joy-palette-primary-500);
+}

@@ -5,8 +5,16 @@ if (process.env.NODE_ENV !== "production") {
 import express from "express";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
-import { getServerCodes, getServerData, onDataRefreshed, refreshData } from "./data-fetcher";
+import {
+  getServerCodes,
+  getServerData,
+  getServerStatus,
+  onDataRefreshed,
+  refreshData,
+} from "./data-fetcher";
 import logger from "./logger";
+import { analyzeTrains, getSignals, getSignalsForTrains } from "./analytics/signal";
+import { analyzeTrainsForRoutes, getRoutes } from "./analytics/route";
 
 const app = express();
 const httpServer = createServer(app);
@@ -25,7 +33,7 @@ io.on("connection", (socket) => {
     client: socket.id,
   });
 
-  socket.emit("servers", getServerCodes());
+  socket.emit("servers", getServerStatus());
 
   socket.on("switch-server", (room, cb) => {
     logger.info(`Switching to server ${room}.`, { client: socket.id });
@@ -37,7 +45,7 @@ io.on("connection", (socket) => {
     socket.join(room);
     socket.data.serverCode = room;
 
-    cb(true);
+    cb?.(true);
 
     const data = getServerData(room);
 
@@ -48,16 +56,40 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("join-signals", () => {
+    logger.info("Joining signals room.", { client: socket.id });
+    socket.join("signals");
+  });
+
+  socket.on("leave-signals", () => {
+    logger.info("Leaving signals room.", { client: socket.id });
+    socket.leave("signals");
+  });
+
   socket.on("disconnect", () => {
     logger.info(`Client disconnected, total: ${--connectedClients}`, { client: socket.id });
   });
 });
 
-onDataRefreshed((data) => {
-  io.emit("servers", Array.from(data.keys()));
+onDataRefreshed((servers, data) => {
+  io.emit("servers", servers);
   for (const [serverCode, { trains, stations, lastUpdated }] of data.entries()) {
-    io.to(serverCode).emit("data", { trains, stations, lastUpdated });
+    io.to(serverCode).emit("data", {
+      trains,
+      stations,
+      lastUpdated,
+      trainRoutes: getRoutes(),
+      signals: getSignalsForTrains(trains),
+    });
   }
+
+  const trains = Array.from(data.values()).flatMap(({ trains }) => trains);
+  logger.debug(`There are ${trains.length} trains in total.`);
+  analyzeTrains(trains);
+
+  io.to("signals").emit("signals", getSignals());
+
+  analyzeTrainsForRoutes(trains);
 });
 
 app.get("/status", (_req, res) => {

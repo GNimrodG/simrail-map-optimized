@@ -1,11 +1,20 @@
-import { Station, Train, fetchServersOpen, fetchStations, fetchTrains } from "./api-helper";
+import {
+  ServerStatus,
+  Station,
+  Train,
+  fetchServersOpen,
+  fetchStations,
+  fetchTrains,
+} from "./api-helper";
 import logger from "./logger";
 
 const REFRESH_INTERVAL = parseInt(process.env.REFRESH_INTERVAL || "") || 1000;
+let serverData: ServerStatus[] = [];
 const localData = new Map<string, { trains: Train[]; stations: Station[]; lastUpdated: number }>();
 
 let timeoutHandle: NodeJS.Timeout | null = null;
-let onRefreshData: ((data: typeof localData) => void) | null = null;
+type RefreshDataCallback = (servers: ServerStatus[], data: typeof localData) => void;
+let onRefreshData: RefreshDataCallback | null = null;
 
 logger.info(`Refresh interval: ${REFRESH_INTERVAL}`);
 
@@ -19,9 +28,9 @@ export async function refreshData() {
   try {
     const start = Date.now();
     logger.info("Refreshing data...");
-    const servers = await fetchServersOpen();
-    logger.info(`Fetching data for ${servers.length} servers...`);
-    for (const server of servers) {
+    serverData = await fetchServersOpen();
+    logger.info(`Fetching data for ${serverData.length} servers...`);
+    for (const server of serverData) {
       const trains = await fetchTrains(server.ServerCode);
       const stations = await fetchStations(server.ServerCode);
       localData.set(server.ServerCode, { trains, stations, lastUpdated: Date.now() });
@@ -31,7 +40,7 @@ export async function refreshData() {
 
     logger.info(`Data refreshed in ${end - start}ms`, { level: "success" });
 
-    onRefreshData?.(localData);
+    onRefreshData?.(serverData, localData);
 
     if (!timeoutHandle) {
       timeoutHandle = setTimeout(refreshData, REFRESH_INTERVAL);
@@ -45,7 +54,7 @@ export async function refreshData() {
   }
 }
 
-export function onDataRefreshed(callback: (data: typeof localData) => void) {
+export function onDataRefreshed(callback: RefreshDataCallback) {
   onRefreshData = callback;
 }
 
@@ -55,4 +64,8 @@ export function getServerData(serverCode: string) {
 
 export function getServerCodes() {
   return Array.from(localData.keys());
+}
+
+export function getServerStatus() {
+  return serverData;
 }
