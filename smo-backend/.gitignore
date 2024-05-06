@@ -3,6 +3,7 @@ node_modules
 logs
 data
 .env
+stats.csv
 
 # Sentry Config File
 .sentryclirc

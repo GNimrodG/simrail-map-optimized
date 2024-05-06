@@ -21,6 +21,23 @@ const DEFAULT_ICON_OPTIONS: DivIconOptions = {
   className: "icon signal",
 };
 
+const SECONDARY_ICON = new DivIcon({
+  ...DEFAULT_ICON_OPTIONS,
+  className: `${DEFAULT_ICON_OPTIONS.className} secondary`,
+});
+
+const BLOCK_SIGNAL_RED_ICON = new DivIcon({
+  ...DEFAULT_ICON_OPTIONS,
+  html: SignalBlockRedIcon,
+  iconSize: [16, 38],
+});
+
+const BLOCK_SIGNAL_GREEN_ICON = new DivIcon({
+  ...DEFAULT_ICON_OPTIONS,
+  html: SignalBlockGreenIcon,
+  iconSize: [16, 38],
+});
+
 function getColor(velocity: number): DefaultColorPalette {
   if (velocity < 10) {
     return "danger";
@@ -40,24 +57,12 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal }) => {
     if (signal.train) {
       if (BLOCK_SIGNAL_REGEX.test(signal.train.TrainData.SignalInFront)) {
         if (signal.train.TrainData.SignalInFrontSpeed > 200) {
-          setIcon(
-            new DivIcon({
-              ...DEFAULT_ICON_OPTIONS,
-              html: SignalBlockGreenIcon,
-              iconSize: [16, 38],
-            })
-          );
+          setIcon(BLOCK_SIGNAL_GREEN_ICON);
           return;
         }
 
         if (signal.train.TrainData.SignalInFrontSpeed === 0) {
-          setIcon(
-            new DivIcon({
-              ...DEFAULT_ICON_OPTIONS,
-              html: SignalBlockRedIcon,
-              iconSize: [16, 38],
-            })
-          );
+          setIcon(BLOCK_SIGNAL_RED_ICON);
           return;
         }
       }
@@ -71,12 +76,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal }) => {
         })
       );
     } else {
-      setIcon(
-        new DivIcon({
-          ...DEFAULT_ICON_OPTIONS,
-          className: `${DEFAULT_ICON_OPTIONS.className} secondary`,
-        })
-      );
+      setIcon(SECONDARY_ICON);
     }
   }, [signal.extra, signal.name, signal.train]);
 

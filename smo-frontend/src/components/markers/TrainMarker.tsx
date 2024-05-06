@@ -1,11 +1,9 @@
-import Typography from "@mui/joy/Typography";
-import { DivIcon, DivIconOptions, Icon, IconOptions } from "leaflet";
-import { type FunctionComponent, useContext, useEffect, useState } from "react";
-import { Popup, Tooltip } from "react-leaflet";
+import { DivIcon, Icon, IconOptions } from "leaflet";
+import { type FunctionComponent, memo, useEffect, useMemo, useState } from "react";
+import { Popup } from "react-leaflet";
 import ReactLeafletDriftMarker from "react-leaflet-drift-marker";
 
 import { Train } from "../../utils/data-manager";
-import SelectedTrainContext from "../../utils/selected-train-context";
 import { getSteamProfileInfo, ProfileResponse } from "../../utils/steam";
 import { getColorTrainMarker } from "../../utils/ui";
 import BotIcon from "./icons/bot.svg?raw";
@@ -15,16 +13,38 @@ export interface TrainMarkerProps {
   train: Train;
 }
 
-const BOT_ICON_OPTIONS: DivIconOptions = {
+const DEFAULT_ICON = new DivIcon({
   iconSize: [40, 40],
   html: BotIcon,
   className: "icon train bot",
-};
+});
 
-const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
+function getIcon(
+  trainNo: string,
+  colorClass: string,
+  inBorderStationArea: boolean,
+  avatar?: string
+) {
+  if (avatar) {
+    return new DivIcon({
+      html: `<img src="${avatar}" /><span class="tooltip">${trainNo}</span>`,
+      iconSize: [40, 40],
+      popupAnchor: [0, -20],
+      className: `icon train player ${colorClass}`,
+    });
+  }
+
+  return new DivIcon({
+    html: `${BotIcon}<span class="tooltip">${trainNo}</span>`,
+    iconSize: [40, 40],
+    popupAnchor: [0, -20],
+    className: `icon train bot ${colorClass} ${inBorderStationArea ? "non-playable" : ""}`,
+  });
+}
+
+const TrainMarker: FunctionComponent<TrainMarkerProps> = memo(({ train }) => {
   const [userData, setUserData] = useState<ProfileResponse | null>(null);
-  const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(new DivIcon(BOT_ICON_OPTIONS));
-  const { selectedTrain } = useContext(SelectedTrainContext);
+  const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(DEFAULT_ICON);
 
   useEffect(() => {
     if (!train.TrainData.ControlledBySteamID) {
@@ -37,28 +57,21 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
     });
   }, [train.TrainData.ControlledBySteamID]);
 
-  useEffect(() => {
-    if (!userData) {
-      setIcon(
-        new DivIcon({
-          ...BOT_ICON_OPTIONS,
-          className: `${BOT_ICON_OPTIONS.className} ${getColorTrainMarker(
-            train.TrainData.Velocity
-          )} ${train.TrainData.InBorderStationArea ? "non-playable" : ""}`,
-        })
-      );
-      return;
-    }
+  const trainMarkerColor = useMemo(
+    () => getColorTrainMarker(train.TrainData.Velocity),
+    [train.TrainData.Velocity]
+  );
 
+  useEffect(() => {
     setIcon(
-      new Icon({
-        iconUrl: userData.avatar,
-        iconSize: [40, 40],
-        popupAnchor: [0, -20],
-        className: "icon train player " + getColorTrainMarker(train.TrainData.Velocity),
-      })
+      getIcon(
+        train.TrainNoLocal,
+        trainMarkerColor,
+        train.TrainData.InBorderStationArea,
+        userData?.avatar
+      )
     );
-  }, [train.TrainData.InBorderStationArea, train.TrainData.Velocity, userData]);
+  }, [train.TrainData.InBorderStationArea, train.TrainNoLocal, trainMarkerColor, userData?.avatar]);
 
   return (
     <ReactLeafletDriftMarker
@@ -73,19 +86,8 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
           showTrainRouteButton
         />
       </Popup>
-      <Tooltip
-        offset={[0, 20]}
-        direction="bottom"
-        permanent
-        className={selectedTrain?.trainNo === train.TrainNoLocal ? "pinned" : ""}>
-        <Typography
-          level="body-sm"
-          sx={{ color: "text.primary" }}>
-          {train.TrainNoLocal}
-        </Typography>
-      </Tooltip>
     </ReactLeafletDriftMarker>
   );
-};
+});
 
 export default TrainMarker;

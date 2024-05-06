@@ -1,8 +1,8 @@
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent } from "react";
 
-import { TimetableEntry } from "../utils/data-manager";
-import TimeDisplay from "./TimeDisplay";
+import { TimetableEntry } from "../../utils/data-manager";
+import TimeDisplay from "../utils/TimeDisplay";
 
 export interface StationDisplayProps {
   station: TimetableEntry;
@@ -27,6 +27,7 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({ station, mainS
           <>
             {station.arrivalTime && " - "}
             <TimeDisplay time={station.departureTime} />
+            ()
           </>
         )}
       </Typography>

@@ -5,7 +5,7 @@ import { LayerGroup, Marker, useMap } from "react-leaflet";
 import { fetchRoutePoints } from "../../utils/data-manager";
 import { debounce } from "../../utils/debounce";
 import SelectedRouteContext from "../../utils/selected-route-context";
-import DotIcon from "./dot.svg?raw";
+import DotIcon from "../icons/dot.svg?raw";
 
 const SELECTED_ROUTE_ICON = new DivIcon({
   html: DotIcon,

@@ -13,13 +13,13 @@ import SelectedRouteContext from "../../utils/selected-route-context";
 import SelectedTrainContext from "../../utils/selected-train-context";
 import { ProfileResponse } from "../../utils/steam";
 import { getColorTrainMarker, getDistanceColorForSignal } from "../../utils/ui";
-import StationDisplay from "../StationDisplay";
 import SteamProfileDisplay from "../SteamProfileDisplay";
 import CollapseIcon from "./icons/CollapseIcon";
 import ExpandIcon from "./icons/ExpandIcon";
 import LengthIcon from "./icons/LengthIcon";
 import SpeedIcon from "./icons/SpeedIcon";
 import WeightIcon from "./icons/WeightIcon";
+import StationDisplay from "./StationDisplay";
 
 export interface TrainMarkerPopupProps {
   train: Train;

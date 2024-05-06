@@ -1,3 +1,4 @@
+import { readLocalStorageValue } from "@mantine/hooks";
 import { io } from "socket.io-client";
 
 export interface ServerStatus {
@@ -75,26 +76,20 @@ const socket = io(SERVER_URL);
 
 socket.on("connect", () => {
   console.log("Connected to server");
-  socket.emit(
-    "switch-server",
-    localStorage.getItem("selectedServer")?.replace(/(^")|("$)/g, "") || "en1",
-    (success: boolean) => {
-      if (success) {
-        console.log(
-          "Switched to server",
-          localStorage.getItem("selectedServer")?.replace(/(^")|("$)/g, "") || "en1"
-        );
-      }
+  const selectedServer = readLocalStorageValue({ key: "selectedServer" }) || "en1";
+  socket.emit("switch-server", selectedServer, (success: boolean) => {
+    if (success) {
+      console.log("Switched to server", selectedServer);
     }
-  );
+  });
 });
 
 export function selectServer(serverCode: string) {
   socket.emit("switch-server", serverCode, (success: boolean) => {
     if (success) {
-      console.log(`Switched to server ${serverCode}`);
+      console.log(`User switched to server ${serverCode}`);
     } else {
-      console.error(`Failed to switch to server ${serverCode}`);
+      console.error(`User failed to switch to server ${serverCode}`);
     }
   });
 }
@@ -109,6 +104,19 @@ socket.on("disconnect", () => {
 
 export function getServerStatus() {
   return serverData;
+}
+
+export type ServerListCallback = (servers: ServerStatus[]) => void;
+
+export function onServerList(callback: ServerListCallback) {
+  socket.on("servers", callback);
+  if (serverData.length) {
+    callback(serverData);
+  }
+}
+
+export function offServerList(callback: ServerListCallback) {
+  socket.off("servers", callback);
 }
 
 export type DataCallback = (data: {
