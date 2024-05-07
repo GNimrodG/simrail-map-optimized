@@ -1,6 +1,6 @@
 import Typography from "@mui/joy/Typography";
 import moment from "moment";
-import { type FunctionComponent, useState } from "react";
+import { type FunctionComponent, useMemo, useState } from "react";
 
 import { TimetableEntry } from "../../utils/data-manager";
 import { timeSubj$ } from "../../utils/time";
@@ -25,24 +25,27 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
   mainStation,
   pastStation: isPastStation,
 }) => {
-  const [isLate, setIsLate] = useState<number | null>(null);
+  const [timeUntil, setTimeUntil] = useState<number | null>(null);
+
+  const stationName = useMemo(
+    () => `${station.nameOfPoint} (${STOP_TYPE_MAP[station.stopType] ?? station.stopType})`,
+    [station.nameOfPoint, station.stopType]
+  );
 
   useObservable(timeSubj$, (time) => {
-    if (!isPastStation && station.arrivalTime && new Date(station.arrivalTime).getTime() < time) {
-      setIsLate(moment(time).diff(moment(station.arrivalTime), "m"));
+    if (!isPastStation) {
+      setTimeUntil(moment(time).diff(moment(station.arrivalTime), "m"));
     } else {
-      setIsLate(null);
+      setTimeUntil(null);
     }
   });
 
   return (
     <>
-      <Typography level={mainStation ? "body-md" : "body-sm"}>
-        {station.nameOfPoint} ({STOP_TYPE_MAP[station.stopType] ?? station.stopType})
-      </Typography>
+      <Typography level={mainStation ? "body-md" : "body-sm"}>{stationName}</Typography>
       <Typography
         level={mainStation ? "body-sm" : "body-xs"}
-        color={isLate ? "warning" : "neutral"}>
+        color={timeUntil ? "warning" : "neutral"}>
         {station.arrivalTime && <TimeDisplay time={station.arrivalTime} />}
         {station.departureTime && station.departureTime !== station.arrivalTime && (
           <>
@@ -61,14 +64,14 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
             )}
           </>
         )}
-        {isLate && (
+        {timeUntil !== null && (
           <>
             {" "}
             <Typography
               variant="outlined"
               level="body-xs"
-              color="warning">
-              min. {isLate}' late
+              color={timeUntil < 0 ? "success" : "warning"}>
+              {timeUntil}'
             </Typography>
           </>
         )}

@@ -118,8 +118,9 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         orientation="vertical">
         <Step
           sx={{
-            "&::after": { bgcolor: "primary.solidBg" },
-          }}>
+            "--Step-indicatorDotSize": "0.5rem",
+          }}
+          completed>
           {firstStation ? (
             <StationDisplay
               station={firstStation}
@@ -133,10 +134,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         {currentStation && (
           <>
             {isTimeTableExpanded && prevStation && (
-              <Step
-                sx={{
-                  "&::after": { bgcolor: "primary.solidBg" },
-                }}>
+              <Step completed>
                 <StationDisplay
                   station={prevStation}
                   pastStation
@@ -144,6 +142,10 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
               </Step>
             )}
             <Step
+              sx={{
+                color: "primary.solid",
+              }}
+              active
               indicator={
                 <StepIndicator
                   sx={{
@@ -157,7 +159,10 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                   {isTimeTableExpanded ? <CollapseIcon /> : <ExpandIcon />}
                 </StepIndicator>
               }>
-              <StationDisplay station={currentStation} />
+              <StationDisplay
+                station={currentStation}
+                mainStation={isTimeTableExpanded}
+              />
             </Step>
             {isTimeTableExpanded && nextStation && (
               <Step>
@@ -166,7 +171,10 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
             )}
           </>
         )}
-        <Step>
+        <Step
+          sx={{
+            "--Step-indicatorDotSize": "0.5rem",
+          }}>
           {lastStation ? (
             <StationDisplay
               station={lastStation}

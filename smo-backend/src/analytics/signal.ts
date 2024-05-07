@@ -18,33 +18,49 @@ worker.on("exit", (code) => {
   }
 });
 
-let SignalLocations = new Map<
-  string,
-  { lat: number; lon: number; extra: string; accuracy: number }
->();
+let SignalLocations = new Map<string, Signal>();
+let TrainPreviousSignals = new Map<string, string>();
 
 worker.on("message", (msg) => {
-  SignalLocations = msg;
+  SignalLocations = msg.SignalLocations || SignalLocations;
+  TrainPreviousSignals = msg.TrainPreviousSignals || TrainPreviousSignals;
 });
 
 export function analyzeTrains(trains: Train[]) {
-  worker.postMessage(trains);
+  worker.postMessage({ type: "analyze", data: trains });
+}
+
+export function setSignalType(id: string, type: string) {
+  worker.postMessage({ type: "set-type", data: { id, type } });
 }
 
 export function getSignals() {
-  return Array.from(SignalLocations.entries(), ([name, { lat, lon, extra, accuracy }]) => ({
-    name,
-    lat,
-    lon,
-    extra,
-    accuracy,
-  }));
+  return Array.from(SignalLocations.entries(), ([name, props]) => ({ name, ...props }));
 }
 
 export function getSignalsForTrains(trains: Train[]) {
-  return getSignals().map((signal) => {
-    const signalFullName = signal.name + "@" + signal.extra;
+  return Array.from(SignalLocations.entries(), ([name, props]) => {
+    const signalFullName = name + "@" + props.extra;
     const train = trains.find((train) => train.TrainData.SignalInFront === signalFullName);
-    return { ...signal, train };
+    return {
+      ...props,
+      name,
+      train,
+      trainAhead: trains.find((train) =>
+        props.nextSignals.has(train.TrainData?.SignalInFront?.split("@")[0])
+      ),
+      prevSignals: Array.from(props.prevSignals),
+      nextSignals: Array.from(props.nextSignals),
+    };
   });
+}
+
+export interface Signal {
+  lat: number;
+  lon: number;
+  extra: string;
+  accuracy: number;
+  type: string | null;
+  prevSignals: Set<string>;
+  nextSignals: Set<string>;
 }

@@ -58,10 +58,14 @@ export interface Signal {
   lon: number;
   extra: string;
   accuracy: number;
+  type?: string | null;
+  prevSignals: string[];
+  nextSignals: string[];
 }
 
 export interface SignalWithTrain extends Signal {
   train: Train;
+  trainAhead: Train;
 }
 
 export interface TrainRoute {

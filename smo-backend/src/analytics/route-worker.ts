@@ -13,7 +13,6 @@ const DATA_DIR = "data/routes-by-no";
 try {
   logger.info("Loading routes...", { module: "ROUTE-WORKER" });
   readdirSync(DATA_DIR).forEach((file) => {
-    logger.debug(`Loading ${file}...`, { module: "ROUTE-WORKER" });
     readFileSync(join(DATA_DIR, file), "utf-8")
       .split("\n")
       .filter((line) => line.trim().length > 0)

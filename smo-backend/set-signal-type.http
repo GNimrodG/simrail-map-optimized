@@ -1,0 +1,8 @@
+POST http://localhost:3000/set-signal-type
+Content-Type: application/json
+
+{
+  "password": "1234",
+  "id": "KZ_D1",
+  "type": "main"
+}

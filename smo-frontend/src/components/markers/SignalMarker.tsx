@@ -1,3 +1,4 @@
+import Chip from "@mui/joy/Chip";
 import Stack from "@mui/joy/Stack";
 import { DefaultColorPalette } from "@mui/joy/styles/types";
 import Typography from "@mui/joy/Typography";
@@ -10,9 +11,17 @@ import { getDistanceColorForSignal } from "../../utils/ui";
 import SignalIcon from "./icons/signal.svg?raw";
 import SignalBlockGreenIcon from "./icons/signal-block-green.svg?raw";
 import SignalBlockRedIcon from "./icons/signal-block-red.svg?raw";
+import SignalMain40Icon from "./icons/signal-main-40.svg?raw";
+import SignalMain60Icon from "./icons/signal-main-60.svg?raw";
+import SignalMain100Icon from "./icons/signal-main-100.svg?raw";
+import SignalMainGreenIcon from "./icons/signal-main-green.svg?raw";
+import SignalMainRedIcon from "./icons/signal-main-red.svg?raw";
+import SignalSmallRedIcon from "./icons/signal-small-red.svg?raw";
+import SignalSmallWhiteIcon from "./icons/signal-small-white.svg?raw";
 
 export interface SignalMarkerProps {
   signal: SignalWithTrain;
+  onSignalSelect?: (signalId: string) => void;
 }
 
 const DEFAULT_ICON_OPTIONS: DivIconOptions = {
@@ -29,13 +38,55 @@ const SECONDARY_ICON = new DivIcon({
 const BLOCK_SIGNAL_RED_ICON = new DivIcon({
   ...DEFAULT_ICON_OPTIONS,
   html: SignalBlockRedIcon,
-  iconSize: [16, 38],
+  iconSize: [16, 38], // base site 5.3x11.1125 ~x3
 });
 
 const BLOCK_SIGNAL_GREEN_ICON = new DivIcon({
   ...DEFAULT_ICON_OPTIONS,
   html: SignalBlockGreenIcon,
-  iconSize: [16, 38],
+  iconSize: [16, 38], // base site 5.3x11.1125 ~x3
+});
+
+const MAIN_SIGNAL_RED_ICON = new DivIcon({
+  ...DEFAULT_ICON_OPTIONS,
+  html: SignalMainRedIcon,
+  iconSize: [10, 34], // base size 5x17 x2
+});
+
+const MAIN_SIGNAL_40_ICON = new DivIcon({
+  ...DEFAULT_ICON_OPTIONS,
+  html: SignalMain40Icon,
+  iconSize: [10, 34], // base size 5x17 x2
+});
+
+const MAIN_SIGNAL_60_ICON = new DivIcon({
+  ...DEFAULT_ICON_OPTIONS,
+  html: SignalMain60Icon,
+  iconSize: [10, 40.4], // base size 5x20.2 x2
+});
+
+const MAIN_SIGNAL_100_ICON = new DivIcon({
+  ...DEFAULT_ICON_OPTIONS,
+  html: SignalMain100Icon,
+  iconSize: [10, 45], // base size 5x22.5 x2
+});
+
+const MAIN_SIGNAL_GREEN_ICON = new DivIcon({
+  ...DEFAULT_ICON_OPTIONS,
+  html: SignalMainGreenIcon,
+  iconSize: [10, 34], // base size 5x17 x2
+});
+
+const SMALL_SIGNAL_RED_ICON = new DivIcon({
+  ...DEFAULT_ICON_OPTIONS,
+  html: SignalSmallRedIcon,
+  iconSize: [15, 21.99], // base size 5x7.33 x3
+});
+
+const SMALL_SIGNAL_WHITE_ICON = new DivIcon({
+  ...DEFAULT_ICON_OPTIONS,
+  html: SignalSmallWhiteIcon,
+  iconSize: [15, 21.99], // base size 5x7.33 x3
 });
 
 function getColor(velocity: number): DefaultColorPalette {
@@ -50,12 +101,15 @@ function getColor(velocity: number): DefaultColorPalette {
 
 const BLOCK_SIGNAL_REGEX = /^\w\d+_\d+\w?@/;
 
-const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal }) => {
+const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSelect }) => {
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(new DivIcon(DEFAULT_ICON_OPTIONS));
 
   useEffect(() => {
     if (signal.train) {
-      if (BLOCK_SIGNAL_REGEX.test(signal.train.TrainData.SignalInFront)) {
+      if (
+        signal.type === "block" ||
+        BLOCK_SIGNAL_REGEX.test(signal.train.TrainData.SignalInFront)
+      ) {
         if (signal.train.TrainData.SignalInFrontSpeed > 200) {
           setIcon(BLOCK_SIGNAL_GREEN_ICON);
           return;
@@ -67,6 +121,43 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal }) => {
         }
       }
 
+      if (signal.type === "main") {
+        if (signal.train.TrainData.SignalInFrontSpeed > 200) {
+          setIcon(MAIN_SIGNAL_GREEN_ICON);
+          return;
+        }
+
+        if (signal.train.TrainData.SignalInFrontSpeed === 0) {
+          setIcon(MAIN_SIGNAL_RED_ICON);
+          return;
+        }
+
+        if (signal.train.TrainData.SignalInFrontSpeed === 40) {
+          setIcon(MAIN_SIGNAL_40_ICON);
+          return;
+        }
+
+        if (signal.train.TrainData.SignalInFrontSpeed === 60) {
+          setIcon(MAIN_SIGNAL_60_ICON);
+          return;
+        }
+
+        if (signal.train.TrainData.SignalInFrontSpeed === 100) {
+          setIcon(MAIN_SIGNAL_100_ICON);
+          return;
+        }
+      }
+
+      if (signal.type === "small") {
+        if (signal.train.TrainData.SignalInFrontSpeed === 0) {
+          setIcon(SMALL_SIGNAL_RED_ICON);
+          return;
+        }
+
+        setIcon(SMALL_SIGNAL_WHITE_ICON);
+        return;
+      }
+
       setIcon(
         new DivIcon({
           ...DEFAULT_ICON_OPTIONS,
@@ -75,10 +166,34 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal }) => {
           )}`,
         })
       );
-    } else {
-      setIcon(SECONDARY_ICON);
+
+      return;
     }
-  }, [signal.extra, signal.name, signal.train]);
+
+    if (signal.trainAhead) {
+      switch (signal.type) {
+        case "block":
+          setIcon(BLOCK_SIGNAL_RED_ICON);
+          return;
+        case "main":
+          setIcon(MAIN_SIGNAL_RED_ICON);
+          return;
+        case "small":
+          setIcon(SMALL_SIGNAL_RED_ICON);
+          return;
+        default:
+          setIcon(
+            new DivIcon({
+              ...DEFAULT_ICON_OPTIONS,
+              className: `${DEFAULT_ICON_OPTIONS.className} danger`,
+            })
+          );
+          return;
+      }
+    }
+
+    setIcon(SECONDARY_ICON);
+  }, [signal.extra, signal.trainAhead, signal.name, signal.train, signal.type]);
 
   return (
     <Marker
@@ -90,7 +205,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal }) => {
           alignItems="center"
           spacing={1}>
           <Typography level="h3">{signal.name}</Typography>
-          {signal.train ? (
+          {signal.train && (
             <>
               <Typography level="body-lg">
                 Signal speed:{" "}
@@ -121,7 +236,37 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal }) => {
                 away.
               </Typography>
             </>
-          ) : (
+          )}{" "}
+          {signal.trainAhead && (
+            <Typography level="body-lg">
+              Train{" "}
+              <Typography
+                variant="outlined"
+                color="warning">
+                {signal.trainAhead.TrainNoLocal} ({signal.trainAhead.TrainName})
+              </Typography>{" "}
+              is in the <Typography color="warning">block ahead</Typography> going{" "}
+              <Typography color={getColor(signal.trainAhead.TrainData.Velocity)}>
+                {Math.round(signal.trainAhead.TrainData.Velocity)} km/h
+              </Typography>{" "}
+              and is{" "}
+              <Typography
+                color={getDistanceColorForSignal(
+                  signal.trainAhead.TrainData.DistanceToSignalInFront
+                )}>
+                {Math.round(signal.trainAhead.TrainData.DistanceToSignalInFront)}m
+              </Typography>{" "}
+              away from signal{" "}
+              <Chip
+                onClick={() =>
+                  onSignalSelect?.(signal.trainAhead.TrainData.SignalInFront.split("@")[0])
+                }>
+                {signal.trainAhead.TrainData.SignalInFront.split("@")[0]}
+              </Chip>
+              .
+            </Typography>
+          )}
+          {!signal.train && !signal.trainAhead && (
             <>
               <Typography level="body-lg">No train approaching</Typography>
               <Typography
@@ -135,7 +280,29 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal }) => {
             spacing={0.1}
             alignItems="center">
             <Typography level="body-xs">Extra: {signal.extra}</Typography>
+            <Typography level="body-xs">Type: {signal.type || "unknown"}</Typography>
             <Typography level="body-xs">Accuracy: {signal.accuracy}m</Typography>
+            <Typography level="body-xs">
+              Previous signals:{" "}
+              {signal.prevSignals.map((s) => (
+                <Chip
+                  key={s}
+                  onClick={() => onSignalSelect?.(s)}>
+                  {s}
+                </Chip>
+              ))}
+            </Typography>
+            <Typography level="body-xs">
+              Next signals:{" "}
+              {signal.nextSignals.map((s) => (
+                <Chip
+                  key={s}
+                  onClick={() => onSignalSelect?.(s)}>
+                  {s}
+                </Chip>
+              ))}
+            </Typography>
+            <Typography level="body-xs">(Alpha feature, may not be accurate)</Typography>
           </Stack>
         </Stack>
       </Popup>

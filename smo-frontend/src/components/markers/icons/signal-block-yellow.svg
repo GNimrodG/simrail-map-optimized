@@ -7,9 +7,9 @@
   <g id="layer1">
     <path id="path3" style="stroke-width:0.0989387"
       d="M 2.6479591,0 C 1.1855278,0 0,1.0752444 0,2.4015823 V 9.3860612 C -2.3283321e-7,10.093258 0.41952641,10.719033 1.064799,11.1125 H 4.2311192 C 4.8763918,10.719033 5.2959186,10.093258 5.2959182,9.3860612 V 2.4015823 C 5.2959182,1.0752444 4.1103904,0 2.6479591,0 Z" />
-    <ellipse style="fill:#ff0000;fill-opacity:1;stroke-width:0.0561425" id="path4" cx="2.6479688" cy="5.7717595"
+    <ellipse style="fill:#333333;fill-opacity:1;stroke-width:0.0561425" id="path4" cx="2.6479688" cy="5.7717595"
       rx="1.0196847" ry="0.9813441" />
-    <ellipse style="fill:#333333;fill-opacity:1;stroke-width:0.0561425" id="path4-2-7" cx="2.6479688" cy="9.1668005"
+    <ellipse style="fill:#ffd715;fill-opacity:1;stroke-width:0.0561425" id="path4-2-7" cx="2.6479688" cy="9.1668005"
       rx="1.0196847" ry="0.9813441" />
     <ellipse style="fill:#333333;fill-opacity:1;stroke-width:0.0561425" id="path4-3" cx="2.6479688" cy="2.376719"
       rx="1.0196847" ry="0.9813441" />

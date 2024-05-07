@@ -17,7 +17,7 @@ import {
   refreshData,
 } from "./data-fetcher";
 import logger from "./logger";
-import { analyzeTrains, getSignals, getSignalsForTrains } from "./analytics/signal";
+import { analyzeTrains, getSignals, getSignalsForTrains, setSignalType } from "./analytics/signal";
 import { analyzeTrainsForRoutes, getRoutePoints } from "./analytics/route";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
 
@@ -77,7 +77,11 @@ io.on("connection", (socket) => {
     const data = getServerData(room);
 
     if (data) {
-      socket.emit("data", { ...data, timeTables: undefined });
+      socket.emit("data", {
+        ...data,
+        timeTables: undefined,
+        signals: getSignalsForTrains(data.trains),
+      });
     } else {
       logger.warn(`No data found for server ${room}!`, { client: socket.id });
     }
@@ -148,6 +152,23 @@ app.get("/status", (_req, res) => {
       connectedClients: io.sockets.adapter.rooms.get(serverCode)?.size || 0,
     })),
   });
+});
+
+app.post("/set-signal-type", express.json(), (req, res) => {
+  if (req.body?.password !== process.env.ADMIN_PASSWORD) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  if (!req.body?.id || !req.body?.type) {
+    res.status(400).json({ error: "Invalid request" });
+    return;
+  }
+
+  const { id, type } = req.body;
+
+  setSignalType(id, type);
+  res.json({ success: true });
 });
 
 // The error handler must be registered before any other error middleware and after all controllers

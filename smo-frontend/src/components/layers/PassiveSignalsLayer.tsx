@@ -47,12 +47,22 @@ const PassiveSignalsLayer: FunctionComponent<ActiveSignalsLayerProps> = ({ signa
     }
   }, [map, passiveSignals]);
 
+  const handleSignalSelect = (signalId: string) => {
+    const signal = signals.find((s) => s.name === signalId);
+    if (signal) {
+      map?.panTo([signal.lat, signal.lon], { animate: true, duration: 1 });
+    } else {
+      console.error(`Signal ${signalId} not found`);
+    }
+  };
+
   return (
     <LayerGroup>
       {visibleSignals.map((signal) => (
         <SignalMarker
           key={signal.name}
           signal={signal}
+          onSignalSelect={handleSignalSelect}
         />
       ))}
     </LayerGroup>

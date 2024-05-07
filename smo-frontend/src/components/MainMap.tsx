@@ -1,6 +1,7 @@
 import "leaflet/dist/leaflet.css";
 
 import { useHotkeys, useLocalStorage } from "@mantine/hooks";
+import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Checkbox from "@mui/joy/Checkbox";
 import Sheet from "@mui/joy/Sheet";
@@ -54,7 +55,6 @@ const MainMap: FunctionComponent<MapProps> = () => {
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
 
-  const [time, setTime] = useState(0);
   const [trains, setTrains] = useState<Train[]>([]);
   const [stations, setStations] = useState<Station[]>([]);
   const [signals, setSignals] = useState<SignalWithTrain[]>([]);
@@ -79,7 +79,6 @@ const MainMap: FunctionComponent<MapProps> = () => {
       setTrains(data.trains || []);
       setStations(data.stations || []);
       setSignals(data.signals || []);
-      setTime(data.time);
     };
 
     onData(handler);
@@ -134,18 +133,29 @@ const MainMap: FunctionComponent<MapProps> = () => {
           attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {/* Server Select | Search | Time */}
+
+        {/* placeholder control */}
         <Control
           prepend
           position="topleft">
-          <Stack
-            direction="row"
-            spacing={1}>
-            <ServerSelector />
-            <SearchBar />
-            {!!time && <MapTimeDisplay time={time} />}
-          </Stack>
+          <Box sx={{ p: 2, visible: "none" }} />
         </Control>
+
+        {/* Server Select | Search | Time */}
+        <Stack
+          sx={{
+            position: "absolute",
+            top: 10,
+            left: 10,
+            zIndex: 1000,
+          }}
+          direction="row"
+          spacing={1}>
+          <ServerSelector />
+          <SearchBar />
+          <MapTimeDisplay />
+        </Stack>
+
         {/* Theme Toggle */}
         <Control position="topleft">
           <ThemeToggle />
@@ -229,11 +239,12 @@ const MainMap: FunctionComponent<MapProps> = () => {
             </Sheet>
           )}
         </Control>
+
         {/* Layers */}
         {visibleLayers.includes("stations") && <StationsLayer stations={stations} />}
         {visibleLayers.includes("trains") && <TrainsLayer trains={trains} />}
-        {visibleLayers.includes("active-signals") && <ActiveSignalsLayer signals={signals} />}
         {visibleLayers.includes("passive-signals") && <PassiveSignalsLayer signals={signals} />}
+        {visibleLayers.includes("active-signals") && <ActiveSignalsLayer signals={signals} />}
         {visibleLayers.includes("selected-route") && <SelectedTrainRouteLayer />}
         {visibleLayers.includes("unplayable-stations") && <UnplayableStationsLayer />}
       </MapContainer>

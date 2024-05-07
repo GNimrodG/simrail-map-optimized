@@ -1,19 +1,15 @@
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent, useEffect, useState } from "react";
 
-import { timezoneSubj$ } from "../utils/data-manager";
+import { DataCallback, offData, onData, timezoneSubj$ } from "../utils/data-manager";
 import { timeSubj$ } from "../utils/time";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
-
-export interface TimeDisplayProps {
-  time: number;
-}
 
 // I have no idea why...
 const CORRECTION = 2 * 60 * 60 * 1000;
 
-const MapTimeDisplay: FunctionComponent<TimeDisplayProps> = ({ time }) => {
-  const [currentTime, setCurrentTime] = useState<number>(time);
+const MapTimeDisplay: FunctionComponent = () => {
+  const [currentTime, setCurrentTime] = useState<number>(0);
   const timezone = useBehaviorSubj(timezoneSubj$);
 
   useEffect(() => {
@@ -24,18 +20,18 @@ const MapTimeDisplay: FunctionComponent<TimeDisplayProps> = ({ time }) => {
       });
     }, 1000);
 
-    return () => clearInterval(interval);
+    const handler: DataCallback = (data) => {
+      timeSubj$.next(data.time - CORRECTION);
+      setCurrentTime(data.time - CORRECTION);
+    };
+
+    onData(handler);
+
+    return () => {
+      clearInterval(interval);
+      offData(handler);
+    };
   }, []);
-
-  useEffect(() => {
-    const diff = Math.abs(time - currentTime);
-
-    if (diff < 1000) return;
-
-    timeSubj$.next(time - CORRECTION);
-    setCurrentTime(time - CORRECTION);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [time]);
 
   return (
     <Typography
