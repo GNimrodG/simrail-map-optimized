@@ -9,7 +9,7 @@ import DotIcon from "../icons/dot.svg?raw";
 
 const SELECTED_ROUTE_ICON = new DivIcon({
   html: DotIcon,
-  iconSize: [10, 10],
+  iconSize: [8, 8],
   className: "icon selected-route",
 });
 
@@ -64,6 +64,7 @@ const SelectedTrainRouteLayer: FunctionComponent = () => {
         <Marker
           key={point[0] + "-" + point[1]}
           position={point}
+          interactive={false}
           icon={SELECTED_ROUTE_ICON}
         />
       ))}
