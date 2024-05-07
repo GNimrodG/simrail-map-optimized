@@ -1,10 +1,11 @@
 import "leaflet/dist/leaflet.css";
 
 import { useHotkeys, useLocalStorage } from "@mantine/hooks";
-import Autocomplete from "@mui/joy/Autocomplete";
+import Button from "@mui/joy/Button";
 import Checkbox from "@mui/joy/Checkbox";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
+import Typography from "@mui/joy/Typography";
 import { Map as LeafletMap } from "leaflet";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
@@ -27,8 +28,10 @@ import SelectedTrainRouteLayer from "./layers/SelectedTrainRouteLayer";
 import StationsLayer from "./layers/StationsLayer";
 import TrainsLayer from "./layers/TrainsLayer";
 import UnplayableStationsLayer from "./layers/UnplayableStationsLayer";
+import Loading from "./Loading";
 import MapTimeDisplay from "./MapTimeDisplay";
 import TrainMarkerPopup from "./markers/TrainMarkerPopup";
+import SearchBar from "./SearchBar";
 import ServerSelector from "./ServerSelector";
 import ThemeToggle from "./utils/ThemeToggle";
 
@@ -49,7 +52,7 @@ const MainMap: FunctionComponent<MapProps> = () => {
   const [map, setMap] = useState<LeafletMap | null>(null);
 
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
-  const { setSelectedRoute } = useContext(SelectedRouteContext);
+  const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
 
   const [time, setTime] = useState(0);
   const [trains, setTrains] = useState<Train[]>([]);
@@ -119,101 +122,122 @@ const MainMap: FunctionComponent<MapProps> = () => {
   }, [selectedTrain, trains]);
 
   return (
-    <MapContainer
-      ref={setMap}
-      center={[51.015482, 19.572143]}
-      zoom={8}
-      scrollWheelZoom={true}
-      style={{ height: "100vh", width: "100vw" }}>
-      <TileLayer
-        attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-
-      {/* Server Select | Search | Time */}
-      <Control
-        prepend
-        position="topleft">
-        <Stack
-          direction="row"
-          spacing={1}>
-          <ServerSelector />
-          <Autocomplete
-            placeholder="Search"
-            options={trains}
-            getOptionLabel={(option) => `${option.TrainNoLocal} (${option.TrainName})`}
-            value={selectedTrainData}
-            onChange={(_e, v) =>
-              setSelectedTrain(v?.TrainNoLocal ? { trainNo: v.TrainNoLocal, follow: true } : null)
-            }
-          />
-          {!!time && <MapTimeDisplay time={time} />}
-        </Stack>
-      </Control>
-
-      {/* Theme Toggle */}
-      <Control position="topleft">
-        <ThemeToggle />
-      </Control>
-
-      {/* Selected Train Popup */}
-      <Control position="bottomleft">
-        {selectedTrain && selectedTrainData && (
+    <>
+      {!trains.length && !stations.length && <Loading />}
+      <MapContainer
+        ref={setMap}
+        center={[51.015482, 19.572143]}
+        zoom={8}
+        scrollWheelZoom={true}
+        style={{ height: "100vh", width: "100vw" }}>
+        <TileLayer
+          attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        {/* Server Select | Search | Time */}
+        <Control
+          prepend
+          position="topleft">
+          <Stack
+            direction="row"
+            spacing={1}>
+            <ServerSelector />
+            <SearchBar />
+            {!!time && <MapTimeDisplay time={time} />}
+          </Stack>
+        </Control>
+        {/* Theme Toggle */}
+        <Control position="topleft">
+          <ThemeToggle />
+        </Control>
+        {/* Selected Train Popup */}
+        <Control position="bottomleft">
+          {selectedTrain && selectedTrainData && (
+            <Sheet
+              variant="outlined"
+              sx={{
+                p: 2,
+                borderRadius: "var(--joy-radius-sm)",
+              }}>
+              <TrainMarkerPopup
+                train={selectedTrainData}
+                userData={selectedTrainUserData}
+                showTrainRouteButton
+              />
+            </Sheet>
+          )}
+        </Control>
+        {/* Layers */}
+        <Control position="topright">
           <Sheet
             variant="outlined"
             sx={{
-              p: 2,
+              p: 1,
               borderRadius: "var(--joy-radius-sm)",
             }}>
-            <TrainMarkerPopup
-              train={selectedTrainData}
-              userData={selectedTrainUserData}
-              showTrainRouteButton
-            />
+            <Stack spacing={1}>
+              {LAYERS.map((layer) => (
+                <Checkbox
+                  key={layer.key}
+                  checked={visibleLayers.includes(layer.key)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setVisibleLayers([...visibleLayers, layer.key]);
+                    } else {
+                      setVisibleLayers(visibleLayers.filter((l) => l !== layer.key));
+                    }
+                  }}
+                  label={layer.name}
+                  size="sm"
+                />
+              ))}
+            </Stack>
           </Sheet>
-        )}
-      </Control>
-
-      {/* Layers */}
-      <Control position="topright">
-        <Sheet
-          variant="outlined"
-          sx={{
-            p: 1,
-            borderRadius: "var(--joy-radius-sm)",
-          }}>
-          <Stack spacing={1}>
-            {LAYERS.map((layer) => (
-              <Checkbox
-                key={layer.key}
-                checked={visibleLayers.includes(layer.key)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setVisibleLayers([...visibleLayers, layer.key]);
-                  } else {
-                    setVisibleLayers(visibleLayers.filter((l) => l !== layer.key));
-                  }
-                }}
-                label={layer.name}
-                size="sm"
-              />
-            ))}
-          </Stack>
-        </Sheet>
-      </Control>
-
-      {visibleLayers.includes("stations") && <StationsLayer stations={stations} />}
-
-      {visibleLayers.includes("trains") && <TrainsLayer trains={trains} />}
-
-      {visibleLayers.includes("active-signals") && <ActiveSignalsLayer signals={signals} />}
-
-      {visibleLayers.includes("passive-signals") && <PassiveSignalsLayer signals={signals} />}
-
-      {visibleLayers.includes("selected-route") && <SelectedTrainRouteLayer />}
-
-      {visibleLayers.includes("unplayable-stations") && <UnplayableStationsLayer />}
-    </MapContainer>
+        </Control>
+        {/* Selected Route */}
+        <Control
+          prepend
+          position="bottomright">
+          {selectedRoute && (
+            <Sheet
+              variant="outlined"
+              sx={{
+                p: 1,
+                borderRadius: "var(--joy-radius-sm)",
+              }}>
+              <Stack>
+                <Typography level="body-md">Selected Route</Typography>
+                <Stack
+                  spacing={1}
+                  direction="row"
+                  alignItems="center">
+                  <Typography
+                    level="body-lg"
+                    variant="outlined"
+                    color="primary">
+                    {selectedRoute}
+                  </Typography>
+                  <Button
+                    size="sm"
+                    variant="outlined"
+                    color="danger"
+                    onClick={() => setSelectedRoute(null)}>
+                    Clear
+                  </Button>
+                </Stack>
+              </Stack>
+            </Sheet>
+          )}
+        </Control>
+        {/* Layers */}
+        {visibleLayers.includes("stations") && <StationsLayer stations={stations} />}
+        {visibleLayers.includes("trains") && <TrainsLayer trains={trains} />}
+        {visibleLayers.includes("active-signals") && <ActiveSignalsLayer signals={signals} />}
+        {visibleLayers.includes("passive-signals") && <PassiveSignalsLayer signals={signals} />}
+        {visibleLayers.includes("selected-route") && <SelectedTrainRouteLayer />}
+        {visibleLayers.includes("unplayable-stations") && <UnplayableStationsLayer />}
+      </MapContainer>
+    </>
   );
 };
 

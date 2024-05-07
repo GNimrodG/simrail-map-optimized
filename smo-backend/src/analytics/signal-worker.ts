@@ -9,7 +9,7 @@ const SignalLocations = new Map<
 >();
 
 try {
-  logger.info("Loading signals...", { module: "SIGNALS" });
+  logger.info("Loading signals...", { module: "SIGNALS-WORKER" });
   readFileSync("data/signals.csv", "utf-8")
     .split("\n")
     .filter((line) => line.trim().length > 0)
@@ -49,12 +49,12 @@ function analyzeTrains(trains: Train[]) {
           `Signal ${signalId} accuracy updated from ${signal.accuracy}m to ${
             train.TrainData.DistanceToSignalInFront
           }m (${signal.accuracy - train.TrainData.DistanceToSignalInFront}m)`,
-          { module: "SIGNALS", level: "success" }
+          { module: "SIGNALS-WORKER", level: "success" }
         );
       } else {
         logger.info(
           `New signal detected: ${signalId} at ${train.TrainData.Latititute}, ${train.TrainData.Longitute} (${extra}) with accuracy ${train.TrainData.DistanceToSignalInFront}m`,
-          { module: "SIGNALS", level: "success" }
+          { module: "SIGNALS-WORKER", level: "success" }
         );
       }
 
@@ -75,8 +75,12 @@ function analyzeTrains(trains: Train[]) {
 }
 
 function saveSignals() {
-  logger.info("Saving signals...", { module: "SIGNALS" });
+  logger.info("Saving signals...", { module: "SIGNALS-WORKER" });
+
   const start = Date.now();
+
+  parentPort?.postMessage(SignalLocations);
+
   const data = Array.from(SignalLocations.entries()).map(
     ([name, { lat, lon, extra, accuracy }]) => `${name};${lat};${lon};${extra};${accuracy}`
   );
@@ -89,17 +93,17 @@ function saveSignals() {
 
   if (ioEnd - ioStart > 1000) {
     logger.warn(`Saving signals file took longer than 1s (${ioEnd - ioStart}ms)`, {
-      module: "SIGNALS",
+      module: "SIGNALS-WORKER",
     });
   }
 
   logger.info(`${data.length} signals saved in ${Date.now() - start}ms`, {
-    module: "SIGNALS",
+    module: "SIGNALS-WORKER",
     level: "success",
   });
 
   if (Date.now() - start > 1000) {
-    logger.warn("Saving signals took longer than 1s", { module: "SIGNALS" });
+    logger.warn("Saving signals took longer than 1s", { module: "SIGNALS-WORKER" });
   }
 }
 

@@ -23,6 +23,7 @@ const ServerSelector: FunctionComponent = memo(() => {
 
   const handleServerChange = useCallback(
     (serverCode: string) => {
+      if (!serverCode) return;
       setSelectedTrain(null);
       setSelectedRoute(null);
       setSelectedServer(serverCode);
@@ -47,15 +48,25 @@ const ServerSelector: FunctionComponent = memo(() => {
 
   return (
     <Select
+      sx={{ width: "12rem" }}
       value={selectedServer}
+      placeholder={servers.length === 0 ? "Loading..." : selectedServer || "Select Server"}
       onChange={(_e, v) => handleServerChange(v!)}>
       {servers.map((server) => (
         <Option
           key={server.id}
-          value={server.ServerCode}>
+          value={server.ServerCode}
+          disabled={!server.IsActive}>
           {server.ServerName}
         </Option>
       ))}
+      {servers.length === 0 && (
+        <Option
+          value="loading"
+          disabled>
+          Loading...
+        </Option>
+      )}
     </Select>
   );
 });

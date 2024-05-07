@@ -4,10 +4,11 @@
   "author": "GNimrodG <g.nimrod.g@data-unknown.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "ts-node-dev --watch 'src' --cls --cache-directory tmp --respawn --transpile-only src/index.ts",
     "build:no-sentry": "tsc",
     "build": "tsc && yarn sentry:sourcemaps",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org data-unknown --project smo-backend ./dist && sentry-cli sourcemaps upload --org data-unknown --project smo-backend ./dist"
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org data-unknown --project smo-backend ./dist && sentry-cli sourcemaps upload --org data-unknown --project smo-backend ./dist",
+    "prod": "node dist/index.js"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

@@ -77,9 +77,17 @@
   border-bottom-color: var(--joy-palette-background-surface);
 }
 
+.icon.station .tooltip {
+  white-space: nowrap;
+  font-size: var(--joy-fontSize-sm);
+}
+
 .icon img {
   width: 100%;
   height: 100%;
+}
+
+.icon.train img {
   border-radius: 50%;
 }
 

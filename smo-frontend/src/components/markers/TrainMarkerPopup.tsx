@@ -41,11 +41,6 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
   const [timetable, setTimetable] = useState<Timetable | null>(null);
   const [isTimeTableExpanded, setIsTimeTableExpanded] = useState(false);
 
-  const trainRouteName = useMemo(
-    () => train.StartStation + "-" + train.EndStation,
-    [train.StartStation, train.EndStation]
-  );
-
   const thumbnailUrl = useMemo(() => getThumbnailUrl(train.Vehicles[0]), [train.Vehicles]);
 
   useEffect(() => {
@@ -128,6 +123,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           {firstStation ? (
             <StationDisplay
               station={firstStation}
+              pastStation
               mainStation
             />
           ) : (
@@ -141,7 +137,10 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                 sx={{
                   "&::after": { bgcolor: "primary.solidBg" },
                 }}>
-                <StationDisplay station={prevStation} />
+                <StationDisplay
+                  station={prevStation}
+                  pastStation
+                />
               </Step>
             )}
             <Step
@@ -271,7 +270,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           </ButtonGroup>
         )}
         {showTrainRouteButton &&
-          (selectedRoute !== trainRouteName ? (
+          (selectedRoute !== train.TrainNoLocal ? (
             <Button
               endDecorator={
                 <Chip
@@ -280,7 +279,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                   BETA
                 </Chip>
               }
-              onClick={() => setSelectedRoute(trainRouteName)}>
+              onClick={() => setSelectedRoute(train.TrainNoLocal)}>
               Show route
             </Button>
           ) : (

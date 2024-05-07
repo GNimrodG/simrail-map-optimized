@@ -7,7 +7,7 @@ export interface TimeDisplayProps {
 const TimeDisplay: FunctionComponent<TimeDisplayProps> = ({ time }) => {
   const timeString = useMemo(() => new Date(time).toLocaleTimeString(), [time]);
 
-  return <>{timeString}</>;
+  return timeString;
 };
 
 export default TimeDisplay;

@@ -76,7 +76,9 @@ export async function refreshData(io: SocketIOServer = _io) {
 
     logger.info(`Data refreshed in ${time}ms (avg: ${avgRefreshTime}ms)`, { level: "success" });
 
-    writeFile("stats.csv", `${Date.now()},${time},${refreshTime}\n`, { flag: "a" });
+    writeFile("stats.csv", `${Date.now()},${time},${refreshTime};${serverData.length}\n`, {
+      flag: "a",
+    });
 
     onAllData?.(localData);
 
