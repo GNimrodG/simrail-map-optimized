@@ -2,12 +2,9 @@ import { Map as LeafletMap } from "leaflet";
 import { type FunctionComponent, useEffect, useState } from "react";
 import { LayerGroup, useMap } from "react-leaflet";
 
-import { Train } from "../../utils/data-manager";
+import { Train, trainsData$ } from "../../utils/data-manager";
+import useBehaviorSubj from "../../utils/useBehaviorSubj";
 import TrainMarker from "../markers/TrainMarker";
-
-export interface TrainsLayerProps {
-  trains: Train[];
-}
 
 function getVisibleTrains(trains: Train[], map: LeafletMap | null) {
   const bounds = map?.getBounds();
@@ -19,8 +16,10 @@ function getVisibleTrains(trains: Train[], map: LeafletMap | null) {
   );
 }
 
-const TrainsLayer: FunctionComponent<TrainsLayerProps> = ({ trains }) => {
+const TrainsLayer: FunctionComponent = () => {
   const map = useMap();
+
+  const trains = useBehaviorSubj(trainsData$);
 
   const [visibleTrains, setVisibleTrains] = useState<Train[]>(getVisibleTrains(trains, map));
 
@@ -41,6 +40,10 @@ const TrainsLayer: FunctionComponent<TrainsLayerProps> = ({ trains }) => {
       };
     }
   }, [map, trains]);
+
+  useEffect(() => {
+    setVisibleTrains(getVisibleTrains(trains, map));
+  }, [trains, map]);
 
   return (
     <LayerGroup>

@@ -88,17 +88,7 @@ export async function fetchStations(serverCode: string) {
     );
 }
 
-const timeZoneCache = new Map<string, { timezone: number; fetchedAt: number }>();
-const TIMEZONE_CACHE_EXPIRY = 24 * 60 * 60 * 1000;
-
 export async function fetchTimezone(serverCode: string): Promise<number> {
-  if (
-    timeZoneCache.has(serverCode) &&
-    Date.now() - timeZoneCache.get(serverCode)!.fetchedAt < TIMEZONE_CACHE_EXPIRY
-  ) {
-    return timeZoneCache.get(serverCode)!.timezone;
-  }
-
   const start = Date.now();
   return fetch(TIMEZONE_URL_PREFIX + serverCode)
     .then((res) => {
@@ -111,10 +101,10 @@ export async function fetchTimezone(serverCode: string): Promise<number> {
     .then((data) => parseInt(data))
     .then((data) => {
       if (isNaN(data)) {
-        throw new Error("Invalid timezone");
+        logger.error("Invalid timezone", { module: "FETCH-TIMEZONE", serverCode });
+        return 0;
       }
 
-      timeZoneCache.set(serverCode, { timezone: data, fetchedAt: Date.now() });
       return data;
     })
     .catch((e) => {
@@ -123,14 +113,7 @@ export async function fetchTimezone(serverCode: string): Promise<number> {
     });
 }
 
-const timeCache = new Map<string, { time: number; at: number }>();
-const TIME_CACHE_EXPIRY = 5 * 60 * 1000;
-
 export async function fetchTime(serverCode: string): Promise<number> {
-  if (timeCache.has(serverCode) && Date.now() - timeCache.get(serverCode)!.at < TIME_CACHE_EXPIRY) {
-    return timeCache.get(serverCode)!.time + Date.now() - timeCache.get(serverCode)!.at;
-  }
-
   const start = Date.now();
   return fetch(TIME_URL_PREFIX + serverCode)
     .then((res) => {
@@ -143,10 +126,10 @@ export async function fetchTime(serverCode: string): Promise<number> {
     .then((data) => parseInt(data))
     .then((data) => {
       if (isNaN(data)) {
-        throw new Error("Invalid time");
+        logger.error("Invalid time", { module: "FETCH-TIME", serverCode });
+        return 0;
       }
 
-      timeCache.set(serverCode, { time: data, at: Date.now() });
       return data;
     })
     .catch((e) => {
@@ -189,18 +172,7 @@ export interface TimetableEntry {
   stationCategory: "A" | "B" | "C" | "D" | null;
 }
 
-// only fetches the timetable if it's not in the cache or if it's older than 5 minutes
-const timetableCache = new Map<string, { data: Record<string, Timetable>; fetchedAt: number }>();
-const TIMETABLE_CACHE_EXPIRY = 30 * 60 * 1000;
-
 export async function fetchTimetable(serverCode: string): Promise<Record<string, Timetable>> {
-  if (
-    timetableCache.has(serverCode) &&
-    Date.now() - timetableCache.get(serverCode)!.fetchedAt < TIMETABLE_CACHE_EXPIRY
-  ) {
-    return timetableCache.get(serverCode)!.data;
-  }
-
   const start = Date.now();
   return fetch(TIMETABLE_URL_PREFIX + serverCode)
     .then((res) => {
@@ -216,11 +188,6 @@ export async function fetchTimetable(serverCode: string): Promise<Record<string,
         (prev, curr) => ({ ...prev, [curr.trainNoLocal]: curr }),
         {}
       );
-
-      timetableCache.set(serverCode, {
-        data: parsedData,
-        fetchedAt: Date.now(),
-      });
 
       return parsedData;
     });

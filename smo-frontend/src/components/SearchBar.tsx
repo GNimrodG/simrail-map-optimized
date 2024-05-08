@@ -2,7 +2,14 @@ import Autocomplete from "@mui/joy/Autocomplete";
 import { type FunctionComponent, memo, useContext, useMemo } from "react";
 import { useMap } from "react-leaflet";
 
-import { dataSubj$, SignalWithTrain, Station, Train } from "../utils/data-manager";
+import {
+  signalsData$,
+  SignalWithTrain,
+  Station,
+  stationsData$,
+  Train,
+  trainsData$,
+} from "../utils/data-manager";
 import SelectedTrainContext from "../utils/selected-train-context";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
 import ListboxComponent from "./utils/ListBoxComponent";
@@ -10,33 +17,35 @@ import ListboxComponent from "./utils/ListBoxComponent";
 const SearchBar: FunctionComponent = memo(() => {
   const map = useMap();
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
-  const data = useBehaviorSubj(dataSubj$);
+  const trains = useBehaviorSubj(trainsData$);
+  const stations = useBehaviorSubj(stationsData$);
+  const signals = useBehaviorSubj(signalsData$);
 
   const selectedTrainData = useMemo(() => {
     if (selectedTrain) {
-      const train = data.trains.find((t) => t.TrainNoLocal === selectedTrain.trainNo) || null;
+      const train = trains.find((t) => t.TrainNoLocal === selectedTrain.trainNo) || null;
       if (train) {
         return { type: "Trains" as const, data: train };
       }
     }
     return null;
-  }, [selectedTrain, data.trains]);
+  }, [selectedTrain, trains]);
 
   const options = [
-    ...data.trains
+    ...trains
       .map((train) => ({ type: "Trains", data: train }))
       .toSorted((a, b) => +a.data.TrainNoLocal - +b.data.TrainNoLocal),
-    ...data.stations
+    ...stations
       .map((station) => ({ type: "Stations", data: station }))
       .toSorted((a, b) => a.data.Name.localeCompare(b.data.Name)),
-    ...data.signals
+    ...signals
       .map((signal) => ({ type: "Signals", data: signal }))
       .toSorted((a, b) => a.data.name.localeCompare(b.data.name)),
   ] as ListItem[];
 
   return (
     <Autocomplete
-      loading={data.trains.length === 0}
+      loading={options.length === 0}
       sx={{ width: "14rem" }}
       inputMode="search"
       placeholder="Search"
@@ -45,6 +54,9 @@ const SearchBar: FunctionComponent = memo(() => {
       slots={{
         listbox: ListboxComponent,
       }}
+      isOptionEqualToValue={(option, value) =>
+        option.type === value?.type && option.data === value?.data
+      }
       renderOption={(props, option) => [props, getLabel(option)] as React.ReactNode}
       renderGroup={(params) => params as unknown as React.ReactNode}
       groupBy={(option) => option.type}

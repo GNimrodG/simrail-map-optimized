@@ -53,6 +53,10 @@ const PassiveSignalsLayer: FunctionComponent<ActiveSignalsLayerProps> = ({ signa
     }
   }, [map, passiveSignals]);
 
+  useEffect(() => {
+    setVisibleSignals(getVisibleSignals(passiveSignals, map));
+  }, [passiveSignals, map]);
+
   const handleSignalSelect = (signalId: string) => {
     const signal = signals.find((s) => s.name === signalId);
     if (signal) {

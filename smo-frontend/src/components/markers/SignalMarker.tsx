@@ -63,19 +63,19 @@ const MAIN_SIGNAL_RED_ICON = new DivIcon({
 const MAIN_SIGNAL_40_ICON = new DivIcon({
   ...DEFAULT_ICON_OPTIONS,
   html: SignalMain40Icon,
-  iconSize: [10, 34], // base size 5x17 x2
+  iconSize: [15, 29.7], // base size 5x9.9 x3
 });
 
 const MAIN_SIGNAL_60_ICON = new DivIcon({
   ...DEFAULT_ICON_OPTIONS,
   html: SignalMain60Icon,
-  iconSize: [10, 40.4], // base size 5x20.2 x2
+  iconSize: [15, 39.3], // base size 5x13.1 x3
 });
 
 const MAIN_SIGNAL_100_ICON = new DivIcon({
   ...DEFAULT_ICON_OPTIONS,
   html: SignalMain100Icon,
-  iconSize: [10, 45], // base size 5x22.5 x2
+  iconSize: [15, 39.3], // base size 5x13.1 x3
 });
 
 const MAIN_SIGNAL_GREEN_ICON = new DivIcon({
@@ -117,6 +117,11 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
         signal.type === "block" ||
         BLOCK_SIGNAL_REGEX.test(signal.train.TrainData.SignalInFront)
       ) {
+        if (signal.nextSignalWithTrainAhead) {
+          setIcon(BLOCK_SIGNAL_YELLOW_ICON);
+          return;
+        }
+
         if (signal.train.TrainData.SignalInFrontSpeed > 200) {
           setIcon(BLOCK_SIGNAL_GREEN_ICON);
           return;
@@ -198,8 +203,6 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
     signal.nextSignalWithTrainAhead,
   ]);
 
-  if (signal.trainAhead) console.log(signal);
-
   return (
     <Marker
       key={signal.name}
@@ -272,7 +275,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
             </Typography>
           )}
           {signal.nextSignalWithTrainAhead && (
-            <Typography level="body-lg">
+            <Typography>
               The next signal{" "}
               <Chip onClick={() => onSignalSelect?.(signal.nextSignalWithTrainAhead!)}>
                 {signal.nextSignalWithTrainAhead}

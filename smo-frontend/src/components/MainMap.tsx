@@ -12,17 +12,11 @@ import { type FunctionComponent, useContext, useEffect, useMemo, useState } from
 import { MapContainer, TileLayer } from "react-leaflet";
 import Control from "react-leaflet-custom-control";
 
-import {
-  DataCallback,
-  offData,
-  onData,
-  SignalWithTrain,
-  Station,
-  Train,
-} from "../utils/data-manager";
+import { isConnected$, signalsData$, trainsData$ } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { getSteamProfileInfo, ProfileResponse } from "../utils/steam";
+import useBehaviorSubj from "../utils/useBehaviorSubj";
 import ActiveSignalsLayer from "./layers/ActiveSignalsLayer";
 import PassiveSignalsLayer from "./layers/PassiveSignalsLayer";
 import SelectedTrainRouteLayer from "./layers/SelectedTrainRouteLayer";
@@ -40,6 +34,13 @@ export interface MapProps {
   serverId: string;
 }
 
+const BACKGROUND_LAYERS = [
+  { name: "OpenRailwayMap - Infrastructure", key: "orm-infra" },
+  { name: "OpenRailwayMap - Maxspeed", key: "orm-maxspeed" },
+  { name: "OpenRailwayMap - Signals", key: "orm-signals" },
+  { name: "OpenRailwayMap - Electrification", key: "orm-electrification" },
+];
+
 const LAYERS = [
   { name: "Stations", key: "stations" },
   { name: "Trains", key: "trains" },
@@ -55,9 +56,9 @@ const MainMap: FunctionComponent<MapProps> = () => {
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
 
-  const [trains, setTrains] = useState<Train[]>([]);
-  const [stations, setStations] = useState<Station[]>([]);
-  const [signals, setSignals] = useState<SignalWithTrain[]>([]);
+  const isConnected = useBehaviorSubj(isConnected$);
+  const trains = useBehaviorSubj(trainsData$);
+  const signals = useBehaviorSubj(signalsData$);
 
   const [visibleLayers, setVisibleLayers] = useLocalStorage<string[]>({
     key: "visibleLayers",
@@ -73,20 +74,6 @@ const MainMap: FunctionComponent<MapProps> = () => {
       },
     ],
   ]);
-
-  useEffect(() => {
-    const handler: DataCallback = (data) => {
-      setTrains(data.trains || []);
-      setStations(data.stations || []);
-      setSignals(data.signals || []);
-    };
-
-    onData(handler);
-
-    return () => {
-      offData(handler);
-    };
-  }, []);
 
   useEffect(() => {
     if (selectedTrain?.follow) {
@@ -122,7 +109,7 @@ const MainMap: FunctionComponent<MapProps> = () => {
 
   return (
     <>
-      {!trains.length && !stations.length && <Loading />}
+      {!isConnected && <Loading />}
       <MapContainer
         ref={setMap}
         center={[51.015482, 19.572143]}
@@ -186,6 +173,25 @@ const MainMap: FunctionComponent<MapProps> = () => {
               borderRadius: "var(--joy-radius-sm)",
             }}>
             <Stack spacing={1}>
+              {BACKGROUND_LAYERS.map((layer) => (
+                <Checkbox
+                  slotProps={{
+                    checkbox: { sx: { borderRadius: "50%" } },
+                  }}
+                  key={layer.key}
+                  value={layer.key}
+                  label={layer.name}
+                  size="sm"
+                  name="background-layers"
+                  checked={visibleLayers.includes(layer.key)}
+                  onChange={(e) => {
+                    setVisibleLayers((visibleLayers) => [
+                      ...visibleLayers.filter((l) => !BACKGROUND_LAYERS.find((bl) => bl.key === l)),
+                      ...(!visibleLayers.includes(e.target.value) ? [layer.key] : []),
+                    ]);
+                  }}
+                />
+              ))}
               {LAYERS.map((layer) => (
                 <Checkbox
                   key={layer.key}
@@ -241,8 +247,39 @@ const MainMap: FunctionComponent<MapProps> = () => {
         </Control>
 
         {/* Layers */}
-        {visibleLayers.includes("stations") && <StationsLayer stations={stations} />}
-        {visibleLayers.includes("trains") && <TrainsLayer trains={trains} />}
+        {/* orm-infra */}
+        {visibleLayers.includes("orm-infra") && (
+          <TileLayer
+            attribution='Data <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>, Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
+            url="https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png"
+          />
+        )}
+        {/* orm-maxspeed */}
+        {visibleLayers.includes("orm-maxspeed") && (
+          <TileLayer
+            attribution='Data <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>, Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
+            url="https://{s}.tiles.openrailwaymap.org/maxspeed/{z}/{x}/{y}.png"
+          />
+        )}
+        {/* orm-signals */}
+        {visibleLayers.includes("orm-signals") && (
+          <TileLayer
+            attribution='Data <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>, Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
+            url="https://{s}.tiles.openrailwaymap.org/signals/{z}/{x}/{y}.png"
+          />
+        )}
+        {/* orm-electrification */}
+        {visibleLayers.includes("orm-electrification") && (
+          <TileLayer
+            attribution='Data <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>, Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
+            url="https://{s}.tiles.openrailwaymap.org/electrification/{z}/{x}/{y}.png"
+          />
+        )}
+        {/* orm-overlays */}
+
+        {/* Stations, Trains, Signals, Active route, Unplayable stations*/}
+        {visibleLayers.includes("stations") && <StationsLayer />}
+        {visibleLayers.includes("trains") && <TrainsLayer />}
         {visibleLayers.includes("passive-signals") && <PassiveSignalsLayer signals={signals} />}
         {visibleLayers.includes("active-signals") && <ActiveSignalsLayer signals={signals} />}
         {visibleLayers.includes("selected-route") && <SelectedTrainRouteLayer />}

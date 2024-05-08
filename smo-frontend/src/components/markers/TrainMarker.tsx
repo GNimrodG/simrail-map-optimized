@@ -1,5 +1,5 @@
 import { DivIcon, Icon, IconOptions } from "leaflet";
-import { type FunctionComponent, memo, useEffect, useMemo, useState } from "react";
+import { type FunctionComponent, useEffect, useMemo, useState } from "react";
 import { Popup } from "react-leaflet";
 import ReactLeafletDriftMarker from "react-leaflet-drift-marker";
 
@@ -42,7 +42,7 @@ function getIcon(
   });
 }
 
-const TrainMarker: FunctionComponent<TrainMarkerProps> = memo(({ train }) => {
+const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
   const [userData, setUserData] = useState<ProfileResponse | null>(null);
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(DEFAULT_ICON);
 
@@ -88,6 +88,6 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = memo(({ train }) => {
       </Popup>
     </ReactLeafletDriftMarker>
   );
-});
+};
 
 export default TrainMarker;

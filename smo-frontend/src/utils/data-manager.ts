@@ -74,12 +74,21 @@ export interface TrainRoute {
   points: [number, number][];
 }
 
+export interface TimeData {
+  time: number;
+  timezone: number;
+  lastUpdated: number;
+}
+
 const SERVER_URL = import.meta.env.PROD ? "wss://api.smo.data-unknown.com" : "ws://localhost:3000";
+
+export const isConnected$ = new BehaviorSubject(false);
 
 const socket = io(SERVER_URL);
 
 socket.on("connect", () => {
-  console.log("Connected to server");
+  isConnected$.next(true);
+  console.log("Connected to server as", socket.id);
   const selectedServer = readLocalStorageValue({ key: "selectedServer" }) || "en1";
   socket.emit("switch-server", selectedServer, (success: boolean) => {
     if (success) {
@@ -89,6 +98,10 @@ socket.on("connect", () => {
 });
 
 export function selectServer(serverCode: string) {
+  stationsData$.next([]);
+  trainsData$.next([]);
+  signalsData$.next([]);
+  timeData$.next(null);
   socket.emit("switch-server", serverCode, (success: boolean) => {
     if (success) {
       console.log(`User switched to server ${serverCode}`);
@@ -98,42 +111,40 @@ export function selectServer(serverCode: string) {
   });
 }
 
-let serverData: ServerStatus[] = [];
+export const serverData$ = new BehaviorSubject<ServerStatus[]>([]);
 
 socket.on("servers", (servers: ServerStatus[]) => {
-  serverData = servers;
+  serverData$.next(servers);
 });
 
-export function getServerStatus() {
-  return serverData;
-}
+export const stationsData$ = new BehaviorSubject<Station[]>([]);
 
-export const timezoneSubj$ = new BehaviorSubject(0);
-
-export function getTimezone() {
-  return timezoneSubj$.value;
-}
-
-socket.on("data", (data) => {
-  timezoneSubj$.next(data.timezone);
+socket.on("stations", (stations: Station[]) => {
+  stationsData$.next(stations);
 });
 
-socket.on("disconnect", () => {
-  console.warn("Disconnected from server");
+export const trainsData$ = new BehaviorSubject<Train[]>([]);
+
+socket.on("trains", (trains: Train[]) => {
+  trainsData$.next(trains);
 });
 
-export type ServerListCallback = (servers: ServerStatus[]) => void;
+export const signalsData$ = new BehaviorSubject<SignalWithTrain[]>([]);
 
-export function onServerList(callback: ServerListCallback) {
-  socket.on("servers", callback);
-  if (serverData.length) {
-    callback(serverData);
-  }
-}
+socket.on("signals", (signals: SignalWithTrain[]) => {
+  signalsData$.next(signals);
+});
 
-export function offServerList(callback: ServerListCallback) {
-  socket.off("servers", callback);
-}
+export const timeData$ = new BehaviorSubject<TimeData | null>(null);
+
+socket.on("time", (time: TimeData) => {
+  timeData$.next(time);
+});
+
+socket.on("disconnect", (e, d) => {
+  isConnected$.next(false);
+  console.warn("Disconnected from server", e, d);
+});
 
 export interface Data {
   trains: Train[];
@@ -143,37 +154,10 @@ export interface Data {
   time: number;
 }
 
-export type DataCallback = (data: {
-  trains: Train[];
-  stations: Station[];
-  signals: SignalWithTrain[];
-  timezone: number;
-  time: number;
-}) => void;
-
-export const dataSubj$ = new BehaviorSubject<Data>({
-  trains: [],
-  stations: [],
-  signals: [],
-  timezone: 0,
-  time: 0,
-});
-
-socket.on("data", (data) => {
-  dataSubj$.next(data);
-});
-
-export function onData(callback: DataCallback) {
-  socket.on("data", callback);
-}
-
-export function offData(callback: DataCallback) {
-  socket.off("data", callback);
-}
-
 export async function fetchTimetable(train: string) {
   return new Promise<Timetable | null>((resolve) => {
     socket.emit("get-train-timetable", train, (timetable: Timetable) => {
+      console.log("Got timetable", train, timetable);
       resolve(timetable);
     });
   });

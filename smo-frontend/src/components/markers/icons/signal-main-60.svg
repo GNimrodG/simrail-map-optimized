@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
-<svg viewBox="0 0 5 20.2" version="1.1" id="svg1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"
+<svg viewBox="0 0 5 13.1" version="1.1" id="svg1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"
   xmlns:svg="http://www.w3.org/2000/svg">
   <defs id="defs1" />
-  <g id="layer1" transform="scale(0.9439528,0.94959635)">
+  <g id="layer1" transform="matrix(0.9439528,0,0,0.94903835,0,-7.0881302)">
     <g id="light5" transform="translate(0,6.7890624)">
       <path id="path3" style="stroke-width:0.0989387"
         d="M 5.296875,7.46875 H 0 V 9.3867188 C -2.3283298e-7,10.093915 0.41918118,10.719815 1.0644531,11.113281 H 4.2304688 C 4.8757407,10.719815 5.2968754,10.093915 5.296875,9.3867188 Z" />
@@ -21,38 +21,24 @@
       <ellipse style="fill:#333333;fill-opacity:1;stroke-width:0.0561425" id="path4-36" cx="2.6479688" cy="5.7717595"
         rx="1.0196847" ry="0.9813441" />
     </g>
-    <g id="light2">
-      <path id="path5" style="stroke-width:0.0989387" d="M 5.296875,4.0742188 H 0 V 7.46875 h 5.296875 z" />
-      <ellipse style="fill:#333333;fill-opacity:1;stroke-width:0.0561425" id="path4" cx="2.6479688" cy="5.7717595"
-        rx="1.0196847" ry="0.9813441" />
-    </g>
-
-
-    <g id="light1">
-      <path id="path2" style="stroke-width:0.0989387"
-        d="M 2.6484375,0 C 1.1860077,0 0,1.0760072 0,2.4023438 v 1.671875 H 5.296875 V 2.4023438 C 5.296875,1.0760072 4.1108673,0 2.6484375,0 Z" />
-      <ellipse style="fill:#00FF00;fill-opacity:1;stroke-width:0.0561425" id="path4-3" cx="2.6479688" cy="2.376719"
-        rx="1.0196847" ry="0.9813441" />
-    </g>
   </g>
-  <g id="g12">
-    <path id="rect7" style="fill:#000000;fill-opacity:1;stroke-width:0.986954"
+  <g id="extra" transform="matrix(1,0,0,0.99941239,0,-7.0881302)">
+    <path id="extra-bg" style="fill:#000000;fill-opacity:1;stroke-width:0.986954"
       d="m 0,17 v 2.338169 L 1.3007812,20.2 H 3.6992188 L 5,19.338169 V 17 Z" />
-    <g id="g10" style="fill:#ffd715;fill-opacity:1">
-      <rect style="fill:#ffd715;fill-opacity:1;stroke-width:1.03417" id="rect9-4-4" width="1.5064099"
-        height="0.39758429" x="1.7467949" y="17.607885" />
-      <rect style="fill:#ffd715;fill-opacity:1;stroke-width:1.03417" id="rect9-4-9-1" width="1.5064099"
-        height="0.39758429" x="3.39359" y="17.607885" />
-      <rect style="fill:#ffd715;fill-opacity:1;stroke-width:1.03417" id="rect9-5" width="1.5064099" height="0.39758429"
-        x="0.10000009" y="17.607885" />
+    <g id="lower-row" style="fill:#ffd715;fill-opacity:1">
+      <rect style="stroke-width:1.03417" id="rect9-4-4" width="1.5064099" height="0.39758429" x="1.7467949"
+        y="17.607885" />
+      <rect style="stroke-width:1.03417" id="rect9-4-9-1" width="1.5064099" height="0.39758429" x="3.39359"
+        y="17.607885" />
+      <rect style="stroke-width:1.03417" id="rect9-5" width="1.5064099" height="0.39758429" x="0.10000009"
+        y="17.607885" />
     </g>
-    <g id="g11" style="fill:#333333;fill-opacity:1">
-      <rect style="fill:#333333;fill-opacity:1;stroke-width:1.03417" id="rect9" width="1.5064099" height="0.39758429"
-        x="0.1" y="17.105469" />
-      <rect style="fill:#333333;fill-opacity:1;stroke-width:1.03417" id="rect9-4" width="1.5064099" height="0.39758429"
-        x="1.7467949" y="17.105469" />
-      <rect style="fill:#333333;fill-opacity:1;stroke-width:1.03417" id="rect9-4-9" width="1.5064099"
-        height="0.39758429" x="3.39359" y="17.105469" />
+    <g id="upper-row" style="fill:#333333;fill-opacity:1">
+      <rect style="stroke-width:1.03417" id="rect9" width="1.5064099" height="0.39758429" x="0.1" y="17.105469" />
+      <rect style="stroke-width:1.03417" id="rect9-4" width="1.5064099" height="0.39758429" x="1.7467949"
+        y="17.105469" />
+      <rect style="stroke-width:1.03417" id="rect9-4-9" width="1.5064099" height="0.39758429" x="3.39359"
+        y="17.105469" />
     </g>
   </g>
 </svg>

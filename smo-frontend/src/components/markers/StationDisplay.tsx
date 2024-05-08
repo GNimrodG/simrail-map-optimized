@@ -43,9 +43,7 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
   return (
     <>
       <Typography level={mainStation ? "body-md" : "body-sm"}>{stationName}</Typography>
-      <Typography
-        level={mainStation ? "body-sm" : "body-xs"}
-        color={timeUntil ? "warning" : "neutral"}>
+      <Typography level={mainStation ? "body-sm" : "body-xs"}>
         {station.arrivalTime && <TimeDisplay time={station.arrivalTime} />}
         {station.departureTime && station.departureTime !== station.arrivalTime && (
           <>
@@ -70,7 +68,7 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
             <Typography
               variant="outlined"
               level="body-xs"
-              color={timeUntil < 0 ? "success" : "warning"}>
+              color={!timeUntil ? "neutral" : timeUntil < 0 ? "success" : "warning"}>
               {timeUntil}'
             </Typography>
           </>

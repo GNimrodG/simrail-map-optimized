@@ -2,20 +2,20 @@ import { Map as LeafletMap } from "leaflet";
 import { type FunctionComponent, useEffect, useState } from "react";
 import { LayerGroup, useMap } from "react-leaflet";
 
-import { Station } from "../../utils/data-manager";
+import { Station, stationsData$ } from "../../utils/data-manager";
+import useBehaviorSubj from "../../utils/useBehaviorSubj";
 import StationMarker from "../markers/StationMarker";
-
-export interface StationsLayerProps {
-  stations: Station[];
-}
 
 function getVisibleStations(stations: Station[], map: LeafletMap | null) {
   const bounds = map?.getBounds();
   return stations.filter((station) => bounds?.contains([station.Latititude, station.Longitude]));
 }
 
-const StationsLayer: FunctionComponent<StationsLayerProps> = ({ stations }) => {
+const StationsLayer: FunctionComponent = () => {
   const map = useMap();
+
+  const stations = useBehaviorSubj(stationsData$);
+
   const [visibleStations, setVisibleStations] = useState<Station[]>(
     getVisibleStations(stations, map)
   );
@@ -37,6 +37,10 @@ const StationsLayer: FunctionComponent<StationsLayerProps> = ({ stations }) => {
       };
     }
   }, [map, stations]);
+
+  useEffect(() => {
+    setVisibleStations(getVisibleStations(stations, map));
+  }, [stations, map]);
 
   return (
     <LayerGroup>

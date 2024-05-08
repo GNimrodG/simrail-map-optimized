@@ -6,16 +6,6 @@ import * as Sentry from "@sentry/node";
 import express from "express";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
-import {
-  getServerCodes,
-  getServerData,
-  getServerStatus,
-  getTimetableForTrain,
-  onAllDataRefreshed,
-  onDataRefreshed,
-  onServerDataRefreshed,
-  refreshData,
-} from "./data-fetcher";
 import logger from "./logger";
 import {
   analyzeTrains,
@@ -26,6 +16,12 @@ import {
 } from "./analytics/signal";
 import { analyzeTrainsForRoutes, getRoutePoints } from "./analytics/route";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
+import { serverFetcher } from "./fetchers/sever-fetcher";
+import { stationFetcher } from "./fetchers/station-fetcher";
+import { trainFetcher } from "./fetchers/train-fetcher";
+import { timeFetcher } from "./fetchers/time-fetcher";
+import { timetableFetcher } from "./fetchers/timetable-fetcher";
+import { filter, take } from "rxjs";
 
 const app = express();
 
@@ -57,16 +53,36 @@ const io = new SocketIOServer(httpServer, {
   },
 });
 
-refreshData(io);
+serverFetcher.start();
+serverFetcher.data$
+  .pipe(
+    filter((x) => !!x),
+    take(1)
+  )
+  .subscribe((data) => {
+    logger.info(
+      "Initial server data fetched, starting other fetchers. Server count: " + data!.length
+    );
+    trainFetcher.start();
+    stationFetcher.start();
+    timeFetcher.start();
+    timetableFetcher.start();
+  });
 
 let connectedClients = 0;
 
 io.on("connection", (socket) => {
-  logger.info(`Client connected, total: ${++connectedClients}`, {
-    client: socket.id,
-  });
+  logger.info(
+    `Client connected from ${
+      socket.handshake.headers["x-forwarded-for"]?.toString().split(",")?.[0] ||
+      socket.handshake.address
+    }, total clients: ${++connectedClients}`,
+    {
+      client: socket.id,
+    }
+  );
 
-  socket.emit("servers", getServerStatus());
+  socket.emit("servers", serverFetcher.currentData);
 
   socket.on("switch-server", (room, cb) => {
     logger.info(`Switching to server ${room}.`, { client: socket.id });
@@ -80,16 +96,28 @@ io.on("connection", (socket) => {
 
     cb?.(true);
 
-    const data = getServerData(room);
+    const stations = stationFetcher.getDataForServer(room);
 
-    if (data) {
-      socket.emit("data", {
-        ...data,
-        timeTables: undefined,
-        signals: getSignalsForTrains(data.trains),
-      });
-    } else {
-      logger.warn(`No data found for server ${room}!`, { client: socket.id });
+    if (stations) {
+      socket.emit("stations", stations);
+    }
+
+    const trains = trainFetcher.getDataForServer(room);
+
+    if (trains) {
+      socket.emit("trains", trains);
+
+      const signals = getSignalsForTrains(trains);
+
+      if (signals) {
+        socket.emit("signals", signals);
+      }
+    }
+
+    const time = timeFetcher.getDataForServer(room);
+
+    if (time) {
+      socket.emit("time", time);
     }
   });
 
@@ -105,7 +133,7 @@ io.on("connection", (socket) => {
 
   socket.on("get-train-timetable", (train: string | null, cb) => {
     if (train) {
-      const timetable = getTimetableForTrain(socket.data.serverCode, train);
+      const timetable = timetableFetcher.getTimeTableForTrain(socket.data.serverCode, train);
       cb?.(timetable);
     } else {
       cb?.(null);
@@ -126,20 +154,28 @@ io.on("connection", (socket) => {
   });
 });
 
-onServerDataRefreshed((servers) => {
-  io.emit("servers", servers);
+serverFetcher.data$.subscribe((data) => {
+  io.emit("servers", data);
 });
 
-onDataRefreshed((server, data) => {
-  io.to(server).emit("data", {
-    ...data,
-    timeTables: undefined,
-    signals: getSignalsForTrains(data.trains),
-  });
+stationFetcher.perServerData$.subscribe((data) => {
+  io.to(data.server).emit("stations", data.data);
 });
 
-onAllDataRefreshed((data) => {
-  const trains = Array.from(data.values()).flatMap(({ trains }) => trains);
+trainFetcher.perServerData$.subscribe((data) => {
+  io.to(data.server).emit("trains", data.data);
+
+  io.to(data.server).emit("signals", getSignalsForTrains(data.data));
+});
+
+timeFetcher.perServerData$.subscribe((data) => {
+  io.to(data.server).emit("time", data.data);
+});
+
+trainFetcher.data$.subscribe((data) => {
+  if (!data) return;
+
+  const trains = Array.from(data.values()).flatMap((trains) => trains);
   logger.debug(`There are ${trains.length} trains in total.`);
   analyzeTrains(trains);
 
@@ -153,10 +189,10 @@ onAllDataRefreshed((data) => {
 app.get("/status", (_req, res) => {
   res.json({
     connectedClients,
-    servers: getServerCodes().map((serverCode) => ({
-      serverCode,
-      connectedClients: io.sockets.adapter.rooms.get(serverCode)?.size || 0,
-    })),
+    servers: serverFetcher.currentData?.reduce<Record<string, number>>((prev, curr) => {
+      prev[curr.ServerCode] = io.sockets.adapter.rooms.get(curr.ServerCode)?.size || 0;
+      return prev;
+    }, {}),
   });
 });
 
