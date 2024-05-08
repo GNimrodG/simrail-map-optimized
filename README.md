@@ -12,6 +12,7 @@
 - [Contributing](#contributing)
 - [License](#license)
 - [Authors](#authors)
+- [Acknowledgments](#acknowledgments)
 
 ## Description
 
@@ -57,3 +58,9 @@ This project is licensed under the AGPL-3.0 license - see the [LICENSE](LICENSE)
 ## Authors
 
 - Nimród Glöckl - [gnimrodg](https://github.com/GNimrodG/)
+
+## Acknowledgments
+
+SMO is inspired by the SimRail railway simulator and aims to enhance the experience of players. Thanks to the SimRail community for their support and feedback.
+
+Please note that this project is not officially affiliated with or endorsed by SimRail or its developers.

@@ -50,6 +50,12 @@ const LAYERS = [
   { name: "Unplayable Stations", key: "unplayable-stations" },
 ];
 
+const MAIN_ATTRIBUTIONS = [
+  '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+  '<a href="https://github.com/GNimrodG/simrail-map-optimized" target="_blank">GitHub</a>',
+  'This website is not affiliated with the <a href="https://simrail.eu" target="_blank">SimRail</a> team.',
+].join(" | ");
+
 const MainMap: FunctionComponent<MapProps> = () => {
   const [map, setMap] = useState<LeafletMap | null>(null);
 
@@ -117,7 +123,7 @@ const MainMap: FunctionComponent<MapProps> = () => {
         scrollWheelZoom={true}
         style={{ height: "100vh", width: "100vw" }}>
         <TileLayer
-          attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          attribution={MAIN_ATTRIBUTIONS}
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
@@ -250,28 +256,28 @@ const MainMap: FunctionComponent<MapProps> = () => {
         {/* orm-infra */}
         {visibleLayers.includes("orm-infra") && (
           <TileLayer
-            attribution='Data <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>, Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
+            attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png"
           />
         )}
         {/* orm-maxspeed */}
         {visibleLayers.includes("orm-maxspeed") && (
           <TileLayer
-            attribution='Data <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>, Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
+            attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/maxspeed/{z}/{x}/{y}.png"
           />
         )}
         {/* orm-signals */}
         {visibleLayers.includes("orm-signals") && (
           <TileLayer
-            attribution='Data <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>, Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
+            attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/signals/{z}/{x}/{y}.png"
           />
         )}
         {/* orm-electrification */}
         {visibleLayers.includes("orm-electrification") && (
           <TileLayer
-            attribution='Data <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>, Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
+            attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/electrification/{z}/{x}/{y}.png"
           />
         )}
