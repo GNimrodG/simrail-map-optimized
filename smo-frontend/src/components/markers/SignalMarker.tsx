@@ -39,31 +39,31 @@ const SECONDARY_ICON = new DivIcon({
 const BLOCK_SIGNAL_RED_ICON = new DivIcon({
   ...DEFAULT_ICON_OPTIONS,
   html: SignalBlockRedIcon,
-  iconSize: [16, 38], // base site 5.3x11.1125 ~x3
+  iconSize: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
 });
 
 const BLOCK_SIGNAL_YELLOW_ICON = new DivIcon({
   ...DEFAULT_ICON_OPTIONS,
   html: SignalBlockYellowIcon,
-  iconSize: [16, 38], // base site 5.3x11.1125 ~x3
+  iconSize: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
 });
 
 const BLOCK_SIGNAL_GREEN_ICON = new DivIcon({
   ...DEFAULT_ICON_OPTIONS,
   html: SignalBlockGreenIcon,
-  iconSize: [16, 38], // base site 5.3x11.1125 ~x3
+  iconSize: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
 });
 
 const MAIN_SIGNAL_RED_ICON = new DivIcon({
   ...DEFAULT_ICON_OPTIONS,
   html: SignalMainRedIcon,
-  iconSize: [10, 34], // base size 5x17 x2
+  iconSize: [15, 51], // base size 5x17 x3
 });
 
 const MAIN_SIGNAL_40_ICON = new DivIcon({
   ...DEFAULT_ICON_OPTIONS,
   html: SignalMain40Icon,
-  iconSize: [15, 29.7], // base size 5x9.9 x3
+  iconSize: [15, 39.3], // base size 5x13.1 x3
 });
 
 const MAIN_SIGNAL_60_ICON = new DivIcon({
@@ -81,7 +81,7 @@ const MAIN_SIGNAL_100_ICON = new DivIcon({
 const MAIN_SIGNAL_GREEN_ICON = new DivIcon({
   ...DEFAULT_ICON_OPTIONS,
   html: SignalMainGreenIcon,
-  iconSize: [10, 34], // base size 5x17 x2
+  iconSize: [15, 51], // base size 5x17 x2
 });
 
 const SMALL_SIGNAL_RED_ICON = new DivIcon({
