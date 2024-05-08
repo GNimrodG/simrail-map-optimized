@@ -1,17 +1,18 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "fs";
-import logger from "../logger";
 import { Train } from "../api-helper";
 import { parentPort } from "worker_threads";
 import { join } from "path";
+import { ModuleLogger } from "../logger";
 
-logger.debug("Loading route worker...", { module: "ROUTE-WORKER" });
+const logger = new ModuleLogger("ROUTE-WORKER");
+logger.debug("Loading route worker...");
 
 const RoutePoints = new Map<string, [number, number][]>();
 
 const DATA_DIR = "data/routes-by-no";
 
 try {
-  logger.info("Loading routes...", { module: "ROUTE-WORKER" });
+  logger.info("Loading routes...");
   readdirSync(DATA_DIR).forEach((file) => {
     readFileSync(join(DATA_DIR, file), "utf-8")
       .split("\n")
@@ -30,11 +31,10 @@ try {
     `${RoutePoints.size} routes loaded with ${Array.from(RoutePoints.values()).reduce(
       (prev, curr) => prev + curr.length,
       0
-    )} points`,
-    { module: "ROUTE-WORKER" }
+    )} points`
   );
 } catch (e) {
-  logger.warn(`No route file found (${e})`, { module: "ROUTE-WORKER" });
+  logger.warn(`No route file found (${e})`);
 }
 
 parentPort?.postMessage(RoutePoints);
@@ -48,10 +48,7 @@ function analyzeTrainsForRoutes(trains: Train[]) {
   for (const train of trains) {
     if (!train.TrainData.Latititute || !train.TrainData.Longitute) {
       logger.warn(
-        `Train ${train.TrainNoLocal} (${train.TrainName}) on server ${train.ServerCode} has no location data!`,
-        {
-          module: "ROUTE-WORKER",
-        }
+        `Train ${train.TrainNoLocal} (${train.TrainName}) on server ${train.ServerCode} has no location data!`
       );
       continue;
     }
@@ -76,8 +73,7 @@ function analyzeTrainsForRoutes(trains: Train[]) {
   }
 
   logger.info(
-    `Analyzed ${trains.length} trains, added ${addedPoints} points, discarded ${discardedPoints} points`,
-    { module: "ROUTE-WORKER" }
+    `Analyzed ${trains.length} trains, added ${addedPoints} points, discarded ${discardedPoints} points`
   );
 
   if (++saveCounter > 10) {
@@ -110,7 +106,7 @@ function findDistanceToClosestPoint(route: string, lat: number, lon: number): nu
 }
 
 function saveRoutes() {
-  logger.info("Saving routes...", { module: "ROUTE-WORKER" });
+  logger.info("Saving routes...");
   const start = Date.now();
 
   parentPort?.postMessage(RoutePoints);
@@ -126,16 +122,13 @@ function saveRoutes() {
     writeFileSync(join(DATA_DIR, `${route}.csv`), points.join("\n"))
   );
 
-  logger.info(`${data.length} routes saved in ${Date.now() - start}ms`, {
-    module: "ROUTE-WORKER",
-    level: "success",
-  });
+  logger.success(`${data.length} routes saved in ${Date.now() - start}ms`);
 
   if (Date.now() - start > 1000) {
-    logger.warn("Saving routes took longer than 1s", { module: "ROUTE-WORKER" });
+    logger.warn("Saving routes took longer than 1s");
   }
 }
 
 parentPort?.on("message", analyzeTrainsForRoutes);
 
-logger.info("Route worker started", { module: "ROUTE-WORKER" });
+logger.info("Route worker started");

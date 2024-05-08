@@ -1,15 +1,16 @@
 import { readFileSync, renameSync, statSync, writeFileSync } from "fs";
 import type { Train } from "../api-helper";
 import { parentPort } from "worker_threads";
-import logger from "../logger";
 import { Signal } from "./signal";
+import { ModuleLogger } from "../logger";
 
+const logger = new ModuleLogger("SIGNALS-WORKER");
 const SignalLocations = new Map<string, Signal>();
 
 const TrainPreviousSignals = new Map<string, string>();
 
 try {
-  logger.info("Loading signals...", { module: "SIGNALS-WORKER" });
+  logger.info("Loading signals...");
   readFileSync("data/signals.csv", "utf-8")
     .split("\n")
     .filter((line) => line.trim().length > 0)
@@ -27,10 +28,10 @@ try {
       });
     });
 
-  logger.info(`${SignalLocations.size} signals loaded`, { module: "SIGNALS-WORKER" });
+  logger.info(`${SignalLocations.size} signals loaded`);
 
   if (statSync("data/signals-old.csv")?.isFile()) {
-    logger.info("Merging old signal data...", { module: "SIGNALS-WORKER" });
+    logger.info("Merging old signal data...");
     let newCounter = 0;
     let accuracyCounter = 0;
     let typeCounter = 0;
@@ -83,20 +84,14 @@ try {
 
     renameSync("data/signals-old.csv", `data/signals-old-merged-${Date.now()}.csv`);
 
-    logger.info(`[MERGE] ${newCounter} new signals added`, { module: "SIGNALS-WORKER" });
-    logger.info(`[MERGE] ${accuracyCounter} signals' accuracy improved`, {
-      module: "SIGNALS-WORKER",
-    });
-    logger.info(`[MERGE] ${typeCounter} signals' type set`, { module: "SIGNALS-WORKER" });
-    logger.info(`[MERGE] ${prevSignalsCounter} signals had previous signals added`, {
-      module: "SIGNALS-WORKER",
-    });
-    logger.info(`[MERGE] ${nextSignalsCounter} signals had next signals added`, {
-      module: "SIGNALS-WORKER",
-    });
+    logger.info(`[MERGE] ${newCounter} new signals added`);
+    logger.info(`[MERGE] ${accuracyCounter} signals' accuracy improved`);
+    logger.info(`[MERGE] ${typeCounter} signals' type set`);
+    logger.info(`[MERGE] ${prevSignalsCounter} signals had previous signals added`);
+    logger.info(`[MERGE] ${nextSignalsCounter} signals had next signals added`);
   }
 } catch (e) {
-  logger.warn(`No signals file found (${e})`, { module: "SIGNALS-WORKER" });
+  logger.warn(`No signals file found (${e})`);
 }
 
 parentPort?.postMessage({ SignalLocations, TrainPreviousSignals });
@@ -108,9 +103,7 @@ function analyzeTrains(trains: Train[]) {
   let shouldSave = false;
   for (const train of trains) {
     if (!train.TrainData.Latititute || !train.TrainData.Longitute) {
-      logger.warn(`Train ${train.TrainNoLocal} (${train.Type}) has no location data`, {
-        module: "SIGNALS-WORKER",
-      });
+      logger.warn(`Train ${train.TrainNoLocal} (${train.Type}) has no location data`);
       continue;
     }
 
@@ -155,8 +148,7 @@ function analyzeTrains(trains: Train[]) {
             logger.warn(
               `Block Signal ${prevSignalId} has more than 1 next signal: ${Array.from(
                 prevSignal.nextSignals
-              ).join(", ")}; keeping the closest one (${distances[0].nextSignalId})`,
-              { module: "SIGNALS-WORKER" }
+              ).join(", ")}; keeping the closest one (${distances[0].nextSignalId})`
             );
             prevSignal.nextSignals = new Set([distances[0].nextSignalId]);
           }
@@ -192,8 +184,7 @@ function analyzeTrains(trains: Train[]) {
             logger.warn(
               `Block Signal ${signalId} has more than 1 prev signal: ${Array.from(
                 signal.prevSignals
-              ).join(", ")}; keeping the closest one (${distances[0].prevSignalId})`,
-              { module: "SIGNALS-WORKER" }
+              ).join(", ")}; keeping the closest one (${distances[0].prevSignalId})`
             );
             signal.prevSignals = new Set([distances[0].prevSignalId]);
           }
@@ -221,31 +212,25 @@ function analyzeTrains(trains: Train[]) {
         }
 
         if (canImprove) {
-          logger.info(
+          logger.success(
             `Signal ${signalId} accuracy updated from ${signal.accuracy}m to ${
               train.TrainData.DistanceToSignalInFront
-            }m (${signal.accuracy - train.TrainData.DistanceToSignalInFront}m)`,
-            { module: "SIGNALS-WORKER", level: "success" }
+            }m (${signal.accuracy - train.TrainData.DistanceToSignalInFront}m)`
           );
         }
 
         if (canSetType) {
           if (BLOCK_SIGNAL_REGEX.test(signalId)) {
-            logger.info(`Signal ${signalId} type set to block`, {
-              module: "SIGNALS-WORKER",
-              level: "success",
-            });
+            logger.success(`Signal ${signalId} type set to block`);
           } else {
-            logger.info(
-              `Signal ${signalId} type set to main because of speed ${train.TrainData.SignalInFrontSpeed}km/h`,
-              { module: "SIGNALS-WORKER", level: "success" }
+            logger.success(
+              `Signal ${signalId} type set to main because of speed ${train.TrainData.SignalInFrontSpeed}km/h`
             );
           }
         }
       } else {
-        logger.info(
-          `New signal detected: ${signalId} at ${train.TrainData.Latititute}, ${train.TrainData.Longitute} (${extra}) with accuracy ${train.TrainData.DistanceToSignalInFront}m`,
-          { module: "SIGNALS-WORKER", level: "success" }
+        logger.success(
+          `New signal detected: ${signalId} at ${train.TrainData.Latititute}, ${train.TrainData.Longitute} (${extra}) with accuracy ${train.TrainData.DistanceToSignalInFront}m`
         );
       }
 
@@ -263,9 +248,7 @@ function analyzeTrains(trains: Train[]) {
     }
   }
 
-  logger.info(`${trains.length} trains analyzed in ${Date.now() - start}ms`, {
-    module: "SIGNALS-WORKER",
-  });
+  logger.info(`${trains.length} trains analyzed in ${Date.now() - start}ms`);
 
   if (shouldSave) {
     saveSignals();
@@ -287,7 +270,7 @@ function getSignalType(train: Train) {
 }
 
 function saveSignals() {
-  logger.info("Saving signals...", { module: "SIGNALS-WORKER" });
+  logger.info("Saving signals...");
 
   const start = Date.now();
 
@@ -307,18 +290,13 @@ function saveSignals() {
   const ioEnd = Date.now();
 
   if (ioEnd - ioStart > 1000) {
-    logger.warn(`Saving signals file took longer than 1s (${ioEnd - ioStart}ms)`, {
-      module: "SIGNALS-WORKER",
-    });
+    logger.warn(`Saving signals file took longer than 1s (${ioEnd - ioStart}ms)`);
   }
 
-  logger.info(`${data.length} signals saved in ${Date.now() - start}ms`, {
-    module: "SIGNALS-WORKER",
-    level: "success",
-  });
+  logger.success(`${data.length} signals saved in ${Date.now() - start}ms`);
 
   if (Date.now() - start > 1000) {
-    logger.warn("Saving signals took longer than 1s", { module: "SIGNALS-WORKER" });
+    logger.warn("Saving signals took longer than 1s");
   }
 }
 
@@ -335,10 +313,7 @@ parentPort?.on("message", (msg) => {
       const signal = SignalLocations.get(msg.data.id);
       if (signal) {
         signal.type = msg.data.type;
-        logger.info(`Signal ${msg.data.id} type set to ${msg.data.type}`, {
-          module: "SIGNALS-WORKER",
-          level: "success",
-        });
+        logger.success(`Signal ${msg.data.id} type set to ${msg.data.type}`);
         saveSignals();
       }
       break;
@@ -347,10 +322,7 @@ parentPort?.on("message", (msg) => {
       const signal = SignalLocations.get(msg.data.signal);
       if (signal) {
         signal.prevSignals.delete(msg.data.prevSignal);
-        logger.info(`Signal ${msg.data.signal} prev signal ${msg.data.prevSignal} removed`, {
-          module: "SIGNALS-WORKER",
-          level: "success",
-        });
+        logger.success(`Signal ${msg.data.signal} prev signal ${msg.data.prevSignal} removed`);
         saveSignals();
       }
       break;
@@ -359,10 +331,7 @@ parentPort?.on("message", (msg) => {
       const signal = SignalLocations.get(msg.data.signal);
       if (signal) {
         signal.nextSignals.delete(msg.data.nextSignal);
-        logger.info(`Signal ${msg.data.signal} next signal ${msg.data.nextSignal} removed`, {
-          module: "SIGNALS-WORKER",
-          level: "success",
-        });
+        logger.success(`Signal ${msg.data.signal} next signal ${msg.data.nextSignal} removed`);
         saveSignals();
       }
       break;
@@ -371,10 +340,7 @@ parentPort?.on("message", (msg) => {
       const signal = SignalLocations.get(msg.data.signal);
       if (signal) {
         signal.prevSignals.add(msg.data.prevSignal);
-        logger.info(`Signal ${msg.data.signal} prev signal ${msg.data.prevSignal} added`, {
-          module: "SIGNALS-WORKER",
-          level: "success",
-        });
+        logger.success(`Signal ${msg.data.signal} prev signal ${msg.data.prevSignal} added`);
         saveSignals();
       }
       break;
@@ -383,10 +349,7 @@ parentPort?.on("message", (msg) => {
       const signal = SignalLocations.get(msg.data.signal);
       if (signal) {
         signal.nextSignals.add(msg.data.nextSignal);
-        logger.info(`Signal ${msg.data.signal} next signal ${msg.data.nextSignal} added`, {
-          module: "SIGNALS-WORKER",
-          level: "success",
-        });
+        logger.success(`Signal ${msg.data.signal} next signal ${msg.data.nextSignal} added`);
         saveSignals();
       }
       break;

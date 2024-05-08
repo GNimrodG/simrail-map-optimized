@@ -91,3 +91,31 @@ const logger = createLogger({
 });
 
 export default logger;
+
+export class ModuleLogger {
+  constructor(private module: string) {}
+
+  error(message: string, meta?: Record<string, any>) {
+    logger.error(message, { module: this.module, ...meta });
+  }
+
+  warn(message: string, meta?: Record<string, any>) {
+    logger.warn(message, { module: this.module, ...meta });
+  }
+
+  info(message: string, meta?: Record<string, any>) {
+    logger.info(message, { module: this.module, ...meta });
+  }
+
+  success(message: string, meta?: Record<string, any>) {
+    logger.log("success", message, { module: this.module, ...meta });
+  }
+
+  verbose(message: string, meta?: Record<string, any>) {
+    logger.verbose(message, { module: this.module, ...meta });
+  }
+
+  debug(message: string, meta?: Record<string, any>) {
+    logger.debug(message, { module: this.module, ...meta });
+  }
+}
