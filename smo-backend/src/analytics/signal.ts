@@ -34,21 +34,66 @@ export function setSignalType(id: string, type: string) {
   worker.postMessage({ type: "set-type", data: { id, type } });
 }
 
+export function removeSignalPrevSignal(signal: string, prevSignal: string) {
+  worker.postMessage({ type: "remove-prev-signal", data: { signal, prevSignal } });
+}
+
+export function removeSignalNextSignal(signal: string, nextSignal: string) {
+  worker.postMessage({ type: "remove-next-signal", data: { signal, nextSignal } });
+}
+
+export function addSignalPrevSignal(signal: string, prevSignal: string) {
+  worker.postMessage({ type: "add-prev-signal", data: { signal, prevSignal } });
+}
+
+export function addSignalNextSignal(signal: string, nextSignal: string) {
+  worker.postMessage({ type: "add-next-signal", data: { signal, nextSignal } });
+}
+
 export function getSignals() {
   return Array.from(SignalLocations.entries(), ([name, props]) => ({ name, ...props }));
 }
 
 export function getSignalsForTrains(trains: Train[]) {
+  const signalsIndex = new Map<string, Train>();
+
+  trains.forEach((train) => {
+    const signalInFront = train.TrainData.SignalInFront;
+    if (train.TrainData.SignalInFront) {
+      signalsIndex.set(signalInFront.split("@")[0], train);
+    }
+  });
+
   return Array.from(SignalLocations.entries(), ([name, props]) => {
-    const signalFullName = name + "@" + props.extra;
-    const train = trains.find((train) => train.TrainData.SignalInFront === signalFullName);
+    const train = signalsIndex.get(name);
+
+    const trainAhead =
+      props.type === "block"
+        ? signalsIndex.get(
+            Array.from(props.nextSignals).find((nextSignal) => signalsIndex.has(nextSignal)) || ""
+          )
+        : null;
+
+    const nextSignalWithTrainAhead =
+      (props.type === "block" &&
+        Array.from(props.nextSignals).find((nextSignal) => {
+          const nextSignalData = SignalLocations.get(nextSignal);
+          if (!nextSignalData) {
+            return false;
+          }
+
+          return Array.from(nextSignalData.nextSignals).some((nextNextSignal) =>
+            signalsIndex.get(nextNextSignal)
+          );
+        })) ||
+      null;
+
     return {
       ...props,
       name,
       train,
-      trainAhead: trains.find((train) =>
-        props.nextSignals.has(train.TrainData?.SignalInFront?.split("@")[0])
-      ),
+      trainAhead,
+      nextSignalWithTrainAhead,
       prevSignals: Array.from(props.prevSignals),
       nextSignals: Array.from(props.nextSignals),
     };

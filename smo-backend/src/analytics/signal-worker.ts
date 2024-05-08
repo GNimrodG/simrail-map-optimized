@@ -343,5 +343,53 @@ parentPort?.on("message", (msg) => {
       }
       break;
     }
+    case "remove-prev-signal": {
+      const signal = SignalLocations.get(msg.data.signal);
+      if (signal) {
+        signal.prevSignals.delete(msg.data.prevSignal);
+        logger.info(`Signal ${msg.data.signal} prev signal ${msg.data.prevSignal} removed`, {
+          module: "SIGNALS-WORKER",
+          level: "success",
+        });
+        saveSignals();
+      }
+      break;
+    }
+    case "remove-next-signal": {
+      const signal = SignalLocations.get(msg.data.signal);
+      if (signal) {
+        signal.nextSignals.delete(msg.data.nextSignal);
+        logger.info(`Signal ${msg.data.signal} next signal ${msg.data.nextSignal} removed`, {
+          module: "SIGNALS-WORKER",
+          level: "success",
+        });
+        saveSignals();
+      }
+      break;
+    }
+    case "add-prev-signal": {
+      const signal = SignalLocations.get(msg.data.signal);
+      if (signal) {
+        signal.prevSignals.add(msg.data.prevSignal);
+        logger.info(`Signal ${msg.data.signal} prev signal ${msg.data.prevSignal} added`, {
+          module: "SIGNALS-WORKER",
+          level: "success",
+        });
+        saveSignals();
+      }
+      break;
+    }
+    case "add-next-signal": {
+      const signal = SignalLocations.get(msg.data.signal);
+      if (signal) {
+        signal.nextSignals.add(msg.data.nextSignal);
+        logger.info(`Signal ${msg.data.signal} next signal ${msg.data.nextSignal} added`, {
+          module: "SIGNALS-WORKER",
+          level: "success",
+        });
+        saveSignals();
+      }
+      break;
+    }
   }
 });

@@ -11,6 +11,7 @@ import { getDistanceColorForSignal } from "../../utils/ui";
 import SignalIcon from "./icons/signal.svg?raw";
 import SignalBlockGreenIcon from "./icons/signal-block-green.svg?raw";
 import SignalBlockRedIcon from "./icons/signal-block-red.svg?raw";
+import SignalBlockYellowIcon from "./icons/signal-block-yellow.svg?raw";
 import SignalMain40Icon from "./icons/signal-main-40.svg?raw";
 import SignalMain60Icon from "./icons/signal-main-60.svg?raw";
 import SignalMain100Icon from "./icons/signal-main-100.svg?raw";
@@ -38,6 +39,12 @@ const SECONDARY_ICON = new DivIcon({
 const BLOCK_SIGNAL_RED_ICON = new DivIcon({
   ...DEFAULT_ICON_OPTIONS,
   html: SignalBlockRedIcon,
+  iconSize: [16, 38], // base site 5.3x11.1125 ~x3
+});
+
+const BLOCK_SIGNAL_YELLOW_ICON = new DivIcon({
+  ...DEFAULT_ICON_OPTIONS,
+  html: SignalBlockYellowIcon,
   iconSize: [16, 38], // base site 5.3x11.1125 ~x3
 });
 
@@ -170,30 +177,28 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
       return;
     }
 
-    if (signal.trainAhead) {
-      switch (signal.type) {
-        case "block":
-          setIcon(BLOCK_SIGNAL_RED_ICON);
-          return;
-        case "main":
-          setIcon(MAIN_SIGNAL_RED_ICON);
-          return;
-        case "small":
-          setIcon(SMALL_SIGNAL_RED_ICON);
-          return;
-        default:
-          setIcon(
-            new DivIcon({
-              ...DEFAULT_ICON_OPTIONS,
-              className: `${DEFAULT_ICON_OPTIONS.className} danger`,
-            })
-          );
-          return;
-      }
+    // it's only guaranteed to be red if it's a block signal
+    if (signal.trainAhead && signal.type === "block") {
+      setIcon(BLOCK_SIGNAL_RED_ICON);
+      return;
+    }
+
+    if (signal.nextSignalWithTrainAhead) {
+      setIcon(BLOCK_SIGNAL_YELLOW_ICON);
+      return;
     }
 
     setIcon(SECONDARY_ICON);
-  }, [signal.extra, signal.trainAhead, signal.name, signal.train, signal.type]);
+  }, [
+    signal.extra,
+    signal.trainAhead,
+    signal.name,
+    signal.train,
+    signal.type,
+    signal.nextSignalWithTrainAhead,
+  ]);
+
+  if (signal.trainAhead) console.log(signal);
 
   return (
     <Marker
@@ -266,7 +271,16 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
               .
             </Typography>
           )}
-          {!signal.train && !signal.trainAhead && (
+          {signal.nextSignalWithTrainAhead && (
+            <Typography level="body-lg">
+              The next signal{" "}
+              <Chip onClick={() => onSignalSelect?.(signal.nextSignalWithTrainAhead!)}>
+                {signal.nextSignalWithTrainAhead}
+              </Chip>{" "}
+              has a train in the <Typography color="warning">block ahead</Typography>.
+            </Typography>
+          )}
+          {!signal.train && !signal.trainAhead && !signal.nextSignalWithTrainAhead && (
             <>
               <Typography level="body-lg">No train approaching</Typography>
               <Typography

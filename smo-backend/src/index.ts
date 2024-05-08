@@ -17,7 +17,13 @@ import {
   refreshData,
 } from "./data-fetcher";
 import logger from "./logger";
-import { analyzeTrains, getSignals, getSignalsForTrains, setSignalType } from "./analytics/signal";
+import {
+  analyzeTrains,
+  getSignals,
+  getSignalsForTrains,
+  removeSignalPrevSignal,
+  setSignalType,
+} from "./analytics/signal";
 import { analyzeTrainsForRoutes, getRoutePoints } from "./analytics/route";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
 
@@ -154,6 +160,7 @@ app.get("/status", (_req, res) => {
   });
 });
 
+// TODO: Make these more like REST
 app.post("/set-signal-type", express.json(), (req, res) => {
   if (req.body?.password !== process.env.ADMIN_PASSWORD) {
     res.status(401).json({ error: "Unauthorized" });
@@ -168,6 +175,122 @@ app.post("/set-signal-type", express.json(), (req, res) => {
   const { id, type } = req.body;
 
   setSignalType(id, type);
+  res.json({ success: true });
+});
+
+app.post("/remove-prev-signal", express.json(), (req, res) => {
+  if (req.body?.password !== process.env.ADMIN_PASSWORD) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  if (!req.body?.signal || !req.body?.prevSignal) {
+    res.status(400).json({ error: "Invalid request" });
+    return;
+  }
+
+  const { signal, prevSignal } = req.body;
+
+  const signalData = getSignals().find((s) => s.name === signal);
+
+  if (!signalData) {
+    res.status(404).json({ error: "Signal not found" });
+    return;
+  }
+
+  removeSignalPrevSignal(signal, prevSignal);
+
+  res.json({ success: true });
+});
+
+app.post("/remove-next-signal", express.json(), (req, res) => {
+  if (req.body?.password !== process.env.ADMIN_PASSWORD) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  if (!req.body?.signal || !req.body?.nextSignal) {
+    res.status(400).json({ error: "Invalid request" });
+    return;
+  }
+
+  const { signal, nextSignal } = req.body;
+
+  const signalData = getSignals().find((s) => s.name === signal);
+
+  if (!signalData) {
+    res.status(404).json({ error: "Signal not found" });
+    return;
+  }
+
+  removeSignalPrevSignal(signal, nextSignal);
+
+  res.json({ success: true });
+});
+
+app.post("/add-prev-signal", express.json(), (req, res) => {
+  if (req.body?.password !== process.env.ADMIN_PASSWORD) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  if (!req.body?.signal || !req.body?.prevSignal) {
+    res.status(400).json({ error: "Invalid request" });
+    return;
+  }
+
+  const { signal, prevSignal } = req.body;
+
+  const signals = getSignals();
+  const signalData = signals.find((s) => s.name === signal);
+
+  if (!signalData) {
+    res.status(404).json({ error: "Signal not found" });
+    return;
+  }
+
+  const prevSignalData = signals.find((s) => s.name === prevSignal);
+
+  if (!prevSignalData) {
+    res.status(404).json({ error: "Previous signal not found" });
+    return;
+  }
+
+  removeSignalPrevSignal(signal, prevSignal);
+
+  res.json({ success: true });
+});
+
+app.post("/add-next-signal", express.json(), (req, res) => {
+  if (req.body?.password !== process.env.ADMIN_PASSWORD) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  if (!req.body?.signal || !req.body?.nextSignal) {
+    res.status(400).json({ error: "Invalid request" });
+    return;
+  }
+
+  const { signal, nextSignal } = req.body;
+
+  const signals = getSignals();
+  const signalData = signals.find((s) => s.name === signal);
+
+  if (!signalData) {
+    res.status(404).json({ error: "Signal not found" });
+    return;
+  }
+
+  const nextSignalData = signals.find((s) => s.name === nextSignal);
+
+  if (!nextSignalData) {
+    res.status(404).json({ error: "Next signal not found" });
+    return;
+  }
+
+  removeSignalPrevSignal(signal, nextSignal);
+
   res.json({ success: true });
 });
 

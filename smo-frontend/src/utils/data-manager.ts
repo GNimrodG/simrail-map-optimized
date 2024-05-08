@@ -66,6 +66,7 @@ export interface Signal {
 export interface SignalWithTrain extends Signal {
   train: Train;
   trainAhead: Train;
+  nextSignalWithTrainAhead: string | null;
 }
 
 export interface TrainRoute {
