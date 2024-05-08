@@ -24,7 +24,13 @@ function getVisibleSignals(signals: SignalWithTrain[], map: LeafletMap | null) {
 const PassiveSignalsLayer: FunctionComponent<ActiveSignalsLayerProps> = ({ signals }) => {
   const map = useMap();
 
-  const passiveSignals = useMemo(() => signals.filter((signal) => !signal.train), [signals]);
+  const passiveSignals = useMemo(
+    () =>
+      signals.filter(
+        (signal) => !signal.train && !signal.trainAhead && !signal.nextSignalWithTrainAhead
+      ),
+    [signals]
+  );
   const [visibleSignals, setVisibleSignals] = useState<SignalWithTrain[]>(
     getVisibleSignals(passiveSignals, map)
   );
