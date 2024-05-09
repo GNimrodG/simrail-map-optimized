@@ -195,31 +195,35 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           Outside of playeable area
         </Typography>
       )}
+
       <Stack
         spacing={0.5}
         sx={{ width: "100%" }}>
-        <Typography level="body-sm">Next signal:</Typography>
         {train.TrainData.SignalInFront && (
-          <Typography level="body-lg">
-            {train.TrainData.SignalInFront?.split("@")[0]}{" "}
-            {train.TrainData.SignalInFrontSpeed !== null &&
-              (train.TrainData.SignalInFrontSpeed > 200 ? (
-                <Typography
-                  color="success"
-                  variant="outlined">
-                  VMAX
-                </Typography>
-              ) : (
-                <Typography
-                  color={getColorTrainMarker(train.TrainData.SignalInFrontSpeed)}
-                  variant="outlined">
-                  {Math.round(train.TrainData.SignalInFrontSpeed)} km/h
-                </Typography>
-              ))}{" "}
-            <Typography color={getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront)}>
-              {Math.round(train.TrainData.DistanceToSignalInFront)}m
+          <>
+            <Typography level="body-sm">Next signal:</Typography>
+            <Typography level="body-lg">
+              {train.TrainData.SignalInFront?.split("@")[0]}{" "}
+              {train.TrainData.SignalInFrontSpeed !== null &&
+                (train.TrainData.SignalInFrontSpeed > 200 ? (
+                  <Typography
+                    color="success"
+                    variant="outlined">
+                    VMAX
+                  </Typography>
+                ) : (
+                  <Typography
+                    color={getColorTrainMarker(train.TrainData.SignalInFrontSpeed)}
+                    variant="outlined">
+                    {Math.round(train.TrainData.SignalInFrontSpeed)} km/h
+                  </Typography>
+                ))}{" "}
+              <Typography
+                color={getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront)}>
+                {Math.round(train.TrainData.DistanceToSignalInFront)}m
+              </Typography>
             </Typography>
-          </Typography>
+          </>
         )}
       </Stack>
 
@@ -253,7 +257,6 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
               </Button>
             )}
             <Button
-              fullWidth
               variant="solid"
               color="warning"
               onClick={() => setSelectedTrain(null)}>
@@ -280,6 +283,8 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         {showTrainRouteButton &&
           (selectedRoute !== train.TrainNoLocal ? (
             <Button
+              color="neutral"
+              size="sm"
               endDecorator={
                 <Chip
                   color="danger"
@@ -292,6 +297,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
             </Button>
           ) : (
             <Button
+              size="sm"
               endDecorator={
                 <Chip
                   color="danger"

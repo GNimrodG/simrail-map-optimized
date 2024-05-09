@@ -1,5 +1,5 @@
 import Autocomplete from "@mui/joy/Autocomplete";
-import { type FunctionComponent, memo, useContext, useMemo } from "react";
+import { type FunctionComponent, useContext, useMemo } from "react";
 import { useMap } from "react-leaflet";
 
 import {
@@ -14,7 +14,7 @@ import SelectedTrainContext from "../utils/selected-train-context";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
 import ListboxComponent from "./utils/ListBoxComponent";
 
-const SearchBar: FunctionComponent = memo(() => {
+const SearchBar: FunctionComponent = () => {
   const map = useMap();
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
   const trains = useBehaviorSubj(trainsData$);
@@ -81,7 +81,7 @@ const SearchBar: FunctionComponent = memo(() => {
       }}
     />
   );
-});
+};
 
 type ListItem =
   | { type: "Trains"; data: Train }

@@ -1,9 +1,10 @@
 import { DivIcon, Icon, IconOptions } from "leaflet";
-import { type FunctionComponent, useEffect, useMemo, useState } from "react";
+import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 import { Popup } from "react-leaflet";
 import ReactLeafletDriftMarker from "react-leaflet-drift-marker";
 
 import { Train } from "../../utils/data-manager";
+import SelectedTrainContext from "../../utils/selected-train-context";
 import { getSteamProfileInfo, ProfileResponse } from "../../utils/steam";
 import { getColorTrainMarker } from "../../utils/ui";
 import BotIcon from "./icons/bot.svg?raw";
@@ -23,6 +24,7 @@ function getIcon(
   trainNo: string,
   colorClass: string,
   inBorderStationArea: boolean,
+  isSelected: boolean,
   avatar?: string
 ) {
   if (avatar) {
@@ -30,7 +32,7 @@ function getIcon(
       html: `<img src="${avatar}" /><span class="tooltip">${trainNo}</span>`,
       iconSize: [40, 40],
       popupAnchor: [0, -20],
-      className: `icon train player ${colorClass}`,
+      className: `icon train player ${colorClass} ${isSelected ? "selected" : ""}`,
     });
   }
 
@@ -38,11 +40,14 @@ function getIcon(
     html: `${BotIcon}<span class="tooltip">${trainNo}</span>`,
     iconSize: [40, 40],
     popupAnchor: [0, -20],
-    className: `icon train bot ${colorClass} ${inBorderStationArea ? "non-playable" : ""}`,
+    className: `icon train bot ${colorClass} ${inBorderStationArea ? "non-playable" : ""} ${
+      isSelected ? "selected" : ""
+    }`,
   });
 }
 
 const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
+  const { selectedTrain } = useContext(SelectedTrainContext);
   const [userData, setUserData] = useState<ProfileResponse | null>(null);
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(DEFAULT_ICON);
 
@@ -62,16 +67,28 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
     [train.TrainData.Velocity]
   );
 
+  const isSelected = useMemo(
+    () => selectedTrain?.trainNo === train.TrainNoLocal,
+    [selectedTrain?.trainNo, train.TrainNoLocal]
+  );
+
   useEffect(() => {
     setIcon(
       getIcon(
         train.TrainNoLocal,
         trainMarkerColor,
         train.TrainData.InBorderStationArea,
+        isSelected,
         userData?.avatar
       )
     );
-  }, [train.TrainData.InBorderStationArea, train.TrainNoLocal, trainMarkerColor, userData?.avatar]);
+  }, [
+    isSelected,
+    train.TrainData.InBorderStationArea,
+    train.TrainNoLocal,
+    trainMarkerColor,
+    userData?.avatar,
+  ]);
 
   return (
     <ReactLeafletDriftMarker
@@ -79,13 +96,15 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
       duration={1000}
       position={[train.TrainData.Latititute, train.TrainData.Longitute]}
       icon={icon}>
-      <Popup autoPan={false}>
-        <TrainMarkerPopup
-          train={train}
-          userData={userData}
-          showTrainRouteButton
-        />
-      </Popup>
+      {!isSelected && (
+        <Popup autoPan={false}>
+          <TrainMarkerPopup
+            train={train}
+            userData={userData}
+            showTrainRouteButton
+          />
+        </Popup>
+      )}
     </ReactLeafletDriftMarker>
   );
 };

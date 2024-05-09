@@ -2,13 +2,10 @@ import { LeafletEventHandlerFn, Map as LeafletMap } from "leaflet";
 import { type FunctionComponent, useEffect, useMemo, useState } from "react";
 import { LayerGroup, useMap } from "react-leaflet";
 
-import { SignalWithTrain } from "../../utils/data-manager";
+import { signalsData$, SignalWithTrain } from "../../utils/data-manager";
 import { debounce } from "../../utils/debounce";
+import useBehaviorSubj from "../../utils/useBehaviorSubj";
 import SignalMarker from "../markers/SignalMarker";
-
-export interface ActiveSignalsLayerProps {
-  signals: SignalWithTrain[];
-}
 
 const MIN_ZOOM = 11;
 
@@ -21,8 +18,10 @@ function getVisibleSignals(signals: SignalWithTrain[], map: LeafletMap | null) {
   return signals.filter((signal) => mapBounds?.contains([signal.lat, signal.lon]));
 }
 
-const PassiveSignalsLayer: FunctionComponent<ActiveSignalsLayerProps> = ({ signals }) => {
+const PassiveSignalsLayer: FunctionComponent = () => {
   const map = useMap();
+
+  const signals = useBehaviorSubj(signalsData$);
 
   const passiveSignals = useMemo(
     () =>

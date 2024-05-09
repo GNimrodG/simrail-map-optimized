@@ -7,15 +7,13 @@ import Checkbox from "@mui/joy/Checkbox";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
-import { Map as LeafletMap } from "leaflet";
-import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
+import { type FunctionComponent, useContext } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 import Control from "react-leaflet-custom-control";
 
-import { isConnected$, signalsData$, trainsData$ } from "../utils/data-manager";
+import { isConnected$ } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
-import { getSteamProfileInfo, ProfileResponse } from "../utils/steam";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
 import ActiveSignalsLayer from "./layers/ActiveSignalsLayer";
 import PassiveSignalsLayer from "./layers/PassiveSignalsLayer";
@@ -25,8 +23,8 @@ import TrainsLayer from "./layers/TrainsLayer";
 import UnplayableStationsLayer from "./layers/UnplayableStationsLayer";
 import Loading from "./Loading";
 import MapTimeDisplay from "./MapTimeDisplay";
-import TrainMarkerPopup from "./markers/TrainMarkerPopup";
 import SearchBar from "./SearchBar";
+import SelectedTrainInfo from "./SelectedTrainInfo";
 import ServerSelector from "./ServerSelector";
 import ThemeToggle from "./utils/ThemeToggle";
 
@@ -57,14 +55,10 @@ const MAIN_ATTRIBUTIONS = [
 ].join(" | ");
 
 const MainMap: FunctionComponent<MapProps> = () => {
-  const [map, setMap] = useState<LeafletMap | null>(null);
-
-  const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
+  const { setSelectedTrain } = useContext(SelectedTrainContext);
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
 
   const isConnected = useBehaviorSubj(isConnected$);
-  const trains = useBehaviorSubj(trainsData$);
-  const signals = useBehaviorSubj(signalsData$);
 
   const [visibleLayers, setVisibleLayers] = useLocalStorage<string[]>({
     key: "visibleLayers",
@@ -81,43 +75,10 @@ const MainMap: FunctionComponent<MapProps> = () => {
     ],
   ]);
 
-  useEffect(() => {
-    if (selectedTrain?.follow) {
-      const train = trains.find((train) => train.TrainNoLocal === selectedTrain.trainNo);
-      if (train) {
-        map?.panTo([train.TrainData.Latititute, train.TrainData.Longitute], {
-          animate: true,
-          duration: 1,
-        });
-      }
-    }
-  }, [map, selectedTrain, trains]);
-
-  const [selectedTrainUserData, setSelectedTrainUserData] = useState<ProfileResponse | null>(null);
-
-  const selectedTrainData = useMemo(() => {
-    if (!selectedTrain) return null;
-
-    const train = trains.find((train) => train.TrainNoLocal === selectedTrain.trainNo);
-    if (!train) return null;
-
-    if (!train.TrainData.ControlledBySteamID) {
-      setSelectedTrainUserData(null);
-      return train;
-    }
-
-    getSteamProfileInfo(train.TrainData.ControlledBySteamID).then((profile) => {
-      setSelectedTrainUserData(profile);
-    });
-
-    return train;
-  }, [selectedTrain, trains]);
-
   return (
     <>
       {!isConnected && <Loading />}
       <MapContainer
-        ref={setMap}
         center={[51.015482, 19.572143]}
         zoom={8}
         scrollWheelZoom={true}
@@ -155,20 +116,7 @@ const MainMap: FunctionComponent<MapProps> = () => {
         </Control>
         {/* Selected Train Popup */}
         <Control position="bottomleft">
-          {selectedTrain && selectedTrainData && (
-            <Sheet
-              variant="outlined"
-              sx={{
-                p: 2,
-                borderRadius: "var(--joy-radius-sm)",
-              }}>
-              <TrainMarkerPopup
-                train={selectedTrainData}
-                userData={selectedTrainUserData}
-                showTrainRouteButton
-              />
-            </Sheet>
-          )}
+          <SelectedTrainInfo />
         </Control>
         {/* Layers */}
         <Control position="topright">
@@ -286,8 +234,8 @@ const MainMap: FunctionComponent<MapProps> = () => {
         {/* Stations, Trains, Signals, Active route, Unplayable stations*/}
         {visibleLayers.includes("stations") && <StationsLayer />}
         {visibleLayers.includes("trains") && <TrainsLayer />}
-        {visibleLayers.includes("passive-signals") && <PassiveSignalsLayer signals={signals} />}
-        {visibleLayers.includes("active-signals") && <ActiveSignalsLayer signals={signals} />}
+        {visibleLayers.includes("passive-signals") && <PassiveSignalsLayer />}
+        {visibleLayers.includes("active-signals") && <ActiveSignalsLayer />}
         {visibleLayers.includes("selected-route") && <SelectedTrainRouteLayer />}
         {visibleLayers.includes("unplayable-stations") && <UnplayableStationsLayer />}
       </MapContainer>

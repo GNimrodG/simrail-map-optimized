@@ -1,11 +1,11 @@
-import { type FunctionComponent, memo } from "react";
+import { type FunctionComponent } from "react";
 import { LayerGroup } from "react-leaflet";
 
 import UnplayableStations from "../../assets/unplayable-stations.json";
 import { Station } from "../../utils/data-manager";
 import UnplayableStation from "../markers/UnplayableStation";
 
-const UnplayableStationsLayer: FunctionComponent = memo(() => {
+const UnplayableStationsLayer: FunctionComponent = () => {
   return (
     <LayerGroup>
       {UnplayableStations.map((station) => (
@@ -16,6 +16,6 @@ const UnplayableStationsLayer: FunctionComponent = memo(() => {
       ))}
     </LayerGroup>
   );
-});
+};
 
 export default UnplayableStationsLayer;

@@ -117,6 +117,11 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
         signal.type === "block" ||
         BLOCK_SIGNAL_REGEX.test(signal.train.TrainData.SignalInFront)
       ) {
+        if (signal.train.TrainData.SignalInFrontSpeed === 0) {
+          setIcon(BLOCK_SIGNAL_RED_ICON);
+          return;
+        }
+
         if (signal.nextSignalWithTrainAhead) {
           setIcon(BLOCK_SIGNAL_YELLOW_ICON);
           return;
@@ -124,11 +129,6 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
 
         if (signal.train.TrainData.SignalInFrontSpeed > 200) {
           setIcon(BLOCK_SIGNAL_GREEN_ICON);
-          return;
-        }
-
-        if (signal.train.TrainData.SignalInFrontSpeed === 0) {
-          setIcon(BLOCK_SIGNAL_RED_ICON);
           return;
         }
       }

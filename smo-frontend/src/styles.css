@@ -77,6 +77,15 @@
   border-bottom-color: var(--joy-palette-background-surface);
 }
 
+.icon.selected .tooltip {
+  background-color: var(--joy-palette-primary-500);
+  color: var(--joy-palette-text-primary);
+}
+
+.icon.selected .tooltip::before {
+  border-bottom-color: var(--joy-palette-primary-500);
+}
+
 .icon.station .tooltip {
   white-space: nowrap;
   font-size: var(--joy-fontSize-sm);
@@ -150,9 +159,10 @@
 
 .icon.signal.secondary svg {
   fill: var(--joy-palette-neutral-500);
+  .selected;
 }
 
-.icon.selected-route svg {
+.icon-route svg {
   fill: var(--joy-palette-primary-500);
 }
 

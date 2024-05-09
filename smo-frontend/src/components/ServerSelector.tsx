@@ -1,14 +1,14 @@
 import { useLocalStorage } from "@mantine/hooks";
 import Option from "@mui/joy/Option";
 import Select from "@mui/joy/Select";
-import { type FunctionComponent, memo, useCallback, useContext } from "react";
+import { type FunctionComponent, useCallback, useContext } from "react";
 
 import { selectServer, serverData$ } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
 
-const ServerSelector: FunctionComponent = memo(() => {
+const ServerSelector: FunctionComponent = () => {
   const { setSelectedTrain } = useContext(SelectedTrainContext);
   const { setSelectedRoute } = useContext(SelectedRouteContext);
   const [selectedServer, setSelectedServer] = useLocalStorage({
@@ -52,6 +52,6 @@ const ServerSelector: FunctionComponent = memo(() => {
       )}
     </Select>
   );
-});
+};
 
 export default ServerSelector;
