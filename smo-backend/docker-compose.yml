@@ -4,4 +4,22 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - REFRESH_INTERVAL=1000
+      - DATABASE_URL=postgres://smo:smo@db:5432/smo?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: smo
+      POSTGRES_PASSWORD: smo
+      POSTGRES_DB: smo
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: "PGPASSWORD=smo pg_isready -h 127.0.0.1 -U smo -d smo"
+      interval: 5s

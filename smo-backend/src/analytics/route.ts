@@ -19,16 +19,34 @@ worker.on("exit", (code) => {
   }
 });
 
-let RoutePoints = new Map<string, [number, number][]>();
+const getRoutePointsPromises = new Map<string, (data: [number, number][]) => void>();
 
 worker.on("message", (msg) => {
-  RoutePoints = msg;
+  switch (msg.type) {
+    case "get-route-points": {
+      logger.debug(`Got ${msg.data.points?.length} route points for ${msg.data.route}`, {
+        module: "ROUTE",
+      });
+      const resolve = getRoutePointsPromises.get(msg.data.route);
+      if (resolve) {
+        resolve(msg.data.points);
+        getRoutePointsPromises.delete(msg.data.route);
+      }
+      break;
+    }
+    default:
+      logger.warn(`Unknown message type: ${msg.type}`, { module: "ROUTE" });
+      break;
+  }
 });
 
 export function analyzeTrainsForRoutes(trains: Train[]) {
-  worker.postMessage(trains);
+  worker.postMessage({ type: "analyze-trains", data: trains });
 }
 
 export function getRoutePoints(trainRoute: string) {
-  return RoutePoints.get(trainRoute) || [];
+  return new Promise<[number, number][]>((resolve) => {
+    getRoutePointsPromises.set(trainRoute, resolve);
+    worker.postMessage({ type: "get-route-points", data: trainRoute });
+  });
 }

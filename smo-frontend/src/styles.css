@@ -159,10 +159,9 @@
 
 .icon.signal.secondary svg {
   fill: var(--joy-palette-neutral-500);
-  .selected;
 }
 
-.icon-route svg {
+.icon.selected-route svg {
   fill: var(--joy-palette-primary-500);
 }
 

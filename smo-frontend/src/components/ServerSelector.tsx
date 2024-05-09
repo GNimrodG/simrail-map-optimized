@@ -33,9 +33,9 @@ const ServerSelector: FunctionComponent = () => {
     <Select
       sx={{ width: "12rem" }}
       value={selectedServer}
-      placeholder={servers.length === 0 ? "Loading..." : selectedServer || "Select Server"}
+      placeholder={!servers?.length ? "Loading..." : selectedServer || "Select Server"}
       onChange={(_e, v) => handleServerChange(v!)}>
-      {servers.map((server) => (
+      {servers?.map((server) => (
         <Option
           key={server.id}
           value={server.ServerCode}
@@ -43,7 +43,7 @@ const ServerSelector: FunctionComponent = () => {
           {server.ServerName}
         </Option>
       ))}
-      {servers.length === 0 && (
+      {!servers?.length && (
         <Option
           value="loading"
           disabled>

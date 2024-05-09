@@ -140,9 +140,9 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("get-train-route-points", (trainRoute: string | null, cb) => {
+  socket.on("get-train-route-points", async (trainRoute: string | null, cb) => {
     if (trainRoute) {
-      const route = getRoutePoints(trainRoute);
+      const route = await getRoutePoints(trainRoute);
       cb?.(route);
     } else {
       cb?.(null);

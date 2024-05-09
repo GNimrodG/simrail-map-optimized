@@ -97,6 +97,7 @@ try {
 parentPort?.postMessage({ SignalLocations, TrainPreviousSignals });
 
 const BLOCK_SIGNAL_REGEX = /^\w\d+_\d+\w?$/;
+const BLOCK_SIGNAL_REVERSE_REGEX = /^\w\d+_\d+[A-Z]$/;
 
 function analyzeTrains(trains: Train[]) {
   const start = Date.now();
@@ -129,6 +130,11 @@ function analyzeTrains(trains: Train[]) {
             BLOCK_SIGNAL_REGEX.test(signalId)
           ) {
             const distances = Array.from(prevSignal.nextSignals)
+              .filter((nextSignalId) =>
+                BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId)
+                  ? BLOCK_SIGNAL_REVERSE_REGEX.test(nextSignalId)
+                  : !BLOCK_SIGNAL_REVERSE_REGEX.test(nextSignalId)
+              )
               .map((nextSignalId) => {
                 const nextSignal = SignalLocations.get(nextSignalId);
                 if (!nextSignal) {
@@ -165,6 +171,11 @@ function analyzeTrains(trains: Train[]) {
             BLOCK_SIGNAL_REGEX.test(signalId)
           ) {
             const distances = Array.from(signal.prevSignals)
+              .filter((prevSignalId) =>
+                BLOCK_SIGNAL_REVERSE_REGEX.test(signalId)
+                  ? BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId)
+                  : !BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId)
+              )
               .map((prevSignalId) => {
                 const prevSignal = SignalLocations.get(prevSignalId);
                 if (!prevSignal) {
