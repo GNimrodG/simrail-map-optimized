@@ -77,7 +77,7 @@ export class Fetcher<T> {
       .then(() => {
         this.logger.debug("Stats written");
       })
-      .catch((e) => {
+      .catch((e: unknown) => {
         this.logger.error("Error writing stats: " + e);
       });
   }
@@ -116,7 +116,7 @@ export class PerServerFetcher<T> extends Fetcher<Map<string, T>> {
       .then(() => {
         this.logger.debug("Stats written");
       })
-      .catch((e) => {
+      .catch((e: unknown) => {
         this.logger.error("Error writing stats: " + e);
       });
   }
