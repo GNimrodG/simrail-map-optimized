@@ -8,17 +8,17 @@ import { Marker, Popup } from "react-leaflet";
 
 import { SignalWithTrain } from "../../utils/data-manager";
 import { getDistanceColorForSignal } from "../../utils/ui";
-import SignalIcon from "./icons/signal.svg?raw";
-import SignalBlockGreenIcon from "./icons/signal-block-green.svg?raw";
-import SignalBlockRedIcon from "./icons/signal-block-red.svg?raw";
-import SignalBlockYellowIcon from "./icons/signal-block-yellow.svg?raw";
-import SignalMain40Icon from "./icons/signal-main-40.svg?raw";
-import SignalMain60Icon from "./icons/signal-main-60.svg?raw";
-import SignalMain100Icon from "./icons/signal-main-100.svg?raw";
-import SignalMainGreenIcon from "./icons/signal-main-green.svg?raw";
-import SignalMainRedIcon from "./icons/signal-main-red.svg?raw";
-import SignalSmallRedIcon from "./icons/signal-small-red.svg?raw";
-import SignalSmallWhiteIcon from "./icons/signal-small-white.svg?raw";
+import SignalIcon from "./icons/signals/signal.svg?raw";
+import SignalBlockGreenIcon from "./icons/signals/signal-block-green.svg?raw";
+import SignalBlockRedIcon from "./icons/signals/signal-block-red.svg?raw";
+import SignalBlockYellowIcon from "./icons/signals/signal-block-yellow.svg?raw";
+import SignalMain40Icon from "./icons/signals/signal-main-40.svg?raw";
+import SignalMain60Icon from "./icons/signals/signal-main-60.svg?raw";
+import SignalMain100Icon from "./icons/signals/signal-main-100.svg?raw";
+import SignalMainGreenIcon from "./icons/signals/signal-main-green.svg?raw";
+import SignalMainRedIcon from "./icons/signals/signal-main-red.svg?raw";
+import SignalSmallRedIcon from "./icons/signals/signal-small-red.svg?raw";
+import SignalSmallWhiteIcon from "./icons/signals/signal-small-white.svg?raw";
 
 export interface SignalMarkerProps {
   signal: SignalWithTrain;

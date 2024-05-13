@@ -177,13 +177,18 @@ trainFetcher.data$.subscribe((data) => {
 
   const trains = Array.from(data.values()).flatMap((trains) => trains);
   logger.debug(`There are ${trains.length} trains in total.`);
-  analyzeTrains(trains);
+
+  if (!process.env.DISABLE_SIGNAL_ANALYSIS) {
+    analyzeTrains(trains);
+  }
 
   if ((io.sockets.adapter.rooms.get("signals")?.size || 0) > 0) {
     io.to("signals").emit("signals", getSignals());
   }
 
-  analyzeTrainsForRoutes(trains);
+  if (!process.env.DISABLE_ROUTE_ANALYSIS) {
+    analyzeTrainsForRoutes(trains);
+  }
 });
 
 app.get("/status", (_req, res) => {

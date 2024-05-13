@@ -1,19 +1,10 @@
 import { serverFetcher } from "./sever-fetcher";
 import { BehaviorSubject, Subject } from "rxjs";
-import logger, { ModuleLogger } from "../logger";
+import { ModuleLogger } from "../logger";
 import { ServerStatus } from "../api-helper";
-import { writeFile } from "fs/promises";
-import { join } from "path";
-import { mkdirSync } from "fs";
+import { PrismaClient } from "@prisma/client";
 
-const STATS_DIR = "data/stats";
-
-try {
-  mkdirSync(STATS_DIR, { recursive: true });
-} catch (e) {
-  logger.error("Error creating stats directory: " + e);
-}
-
+const prisma = new PrismaClient();
 export class Fetcher<T> {
   protected logger: ModuleLogger;
   protected data: BehaviorSubject<T | null> = new BehaviorSubject<T | null>(null);
@@ -23,16 +14,14 @@ export class Fetcher<T> {
 
   protected avgRefreshTime = 0;
   protected refreshCount = 0;
-  protected statFile: string;
 
-  constructor(module: string, defaultRefreshInterval: number) {
+  constructor(protected module: string, defaultRefreshInterval: number) {
     this.logger = new ModuleLogger(module);
     this.refreshInterval =
       (process.env[`${module}_REFRESH_INTERVAL`] &&
         parseInt(process.env[`${module}_REFRESH_INTERVAL`]!) * 1000) ||
       defaultRefreshInterval;
     this.logger.info(`Refresh interval: ${this.refreshInterval}`);
-    this.statFile = join("data", "stats", `${module.toLocaleLowerCase()}.csv`);
   }
 
   public start() {
@@ -77,9 +66,20 @@ export class Fetcher<T> {
   }
 
   protected writeStats(time: number) {
-    writeFile(this.statFile, `${new Date().toISOString()},${time},${this.refreshCount}\n`, {
-      flag: "a",
-    });
+    prisma.stats
+      .create({
+        data: {
+          service_id: this.module,
+          duration: time,
+          count: this.refreshCount,
+        },
+      })
+      .then(() => {
+        this.logger.debug("Stats written");
+      })
+      .catch((e) => {
+        this.logger.error("Error writing stats: " + e);
+      });
   }
 
   public get currentData(): T | null {
@@ -104,15 +104,21 @@ export class PerServerFetcher<T> extends Fetcher<Map<string, T>> {
   }
 
   protected writeStats(time: number) {
-    writeFile(
-      this.statFile,
-      `${new Date().toISOString()};${time};${this.refreshCount};${
-        this.serverFetcher.currentData?.length ?? 0
-      }\n`,
-      {
-        flag: "a",
-      }
-    );
+    prisma.stats
+      .create({
+        data: {
+          service_id: this.module,
+          duration: time,
+          count: this.refreshCount,
+          server_count: this.currentData?.size,
+        },
+      })
+      .then(() => {
+        this.logger.debug("Stats written");
+      })
+      .catch((e) => {
+        this.logger.error("Error writing stats: " + e);
+      });
   }
 
   protected async fetchData() {
