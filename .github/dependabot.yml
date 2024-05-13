@@ -1,0 +1,34 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/smo-backend"
+    schedule:
+      interval: "monthly"
+    assignees:
+      - "GNimrodG"
+    commit-message:
+      prefix: "[backend]"
+  - package-ecosystem: "docker"
+    directory: "/smo-backend"
+    schedule:
+      interval: "monthly"
+    assignees:
+      - "GNimrodG"
+    commit-message:
+      prefix: "[backend]"
+  - package-ecosystem: "docker"
+    directory: "/smo-frontend"
+    schedule:
+      interval: "monthly"
+    assignees:
+      - "GNimrodG"
+    commit-message:
+      prefix: "[frontend]"
+  - package-ecosystem: "npm"
+    directory: "/smo-frontend"
+    schedule:
+      interval: "monthly"
+    assignees:
+      - "GNimrodG"
+    commit-message:
+      prefix: "[frontend]"
