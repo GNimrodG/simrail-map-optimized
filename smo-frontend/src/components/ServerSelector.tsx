@@ -31,7 +31,7 @@ const ServerSelector: FunctionComponent = () => {
 
   return (
     <Select
-      sx={{ width: "12rem" }}
+      sx={{ width: "14rem" }}
       value={selectedServer}
       placeholder={!servers?.length ? "Loading..." : selectedServer || "Select Server"}
       onChange={(_e, v) => handleServerChange(v!)}>

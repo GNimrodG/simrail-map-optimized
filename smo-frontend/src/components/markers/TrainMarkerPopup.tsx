@@ -1,10 +1,14 @@
+import { useMediaQuery } from "@mantine/hooks";
+import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import ButtonGroup from "@mui/joy/ButtonGroup";
 import Chip from "@mui/joy/Chip";
+import IconButton from "@mui/joy/IconButton";
 import Stack from "@mui/joy/Stack";
 import Step from "@mui/joy/Step";
 import StepIndicator from "@mui/joy/StepIndicator";
 import Stepper from "@mui/joy/Stepper";
+import { styled, useTheme } from "@mui/joy/styles";
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 
@@ -13,9 +17,9 @@ import SelectedRouteContext from "../../utils/selected-route-context";
 import SelectedTrainContext from "../../utils/selected-train-context";
 import { ProfileResponse } from "../../utils/steam";
 import { getColorTrainMarker, getDistanceColorForSignal } from "../../utils/ui";
+import CollapseIcon from "../icons/CollapseIcon";
+import ExpandIcon from "../icons/ExpandIcon";
 import SteamProfileDisplay from "../SteamProfileDisplay";
-import CollapseIcon from "./icons/CollapseIcon";
-import ExpandIcon from "./icons/ExpandIcon";
 import LengthIcon from "./icons/LengthIcon";
 import SpeedIcon from "./icons/SpeedIcon";
 import WeightIcon from "./icons/WeightIcon";
@@ -25,17 +29,32 @@ export interface TrainMarkerPopupProps {
   train: Train;
   userData?: ProfileResponse | null;
   showTrainRouteButton?: boolean;
+  onToggleCollapse?: () => void;
+  isCollapsed?: boolean;
 }
 
 function getThumbnailUrl(vehicle: string): string {
   return `/thumbnails/vehicles/${vehicle.replace(/.+\/(.+)$/, "$1").replace(" Variant", "")}.png`;
 }
 
+const Image = styled("img")(({ theme }) => ({
+  width: 300,
+  display: "none",
+  [`@media (min-height: ${theme.breakpoints.values.md}px) and (min-width: ${theme.breakpoints.values.md}px)`]:
+    {
+      display: "block",
+    },
+}));
+
 const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
   train,
   userData,
   showTrainRouteButton,
+  onToggleCollapse,
+  isCollapsed,
 }) => {
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(`(max-height: ${theme.breakpoints.values.md}px)`);
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
   const [timetable, setTimetable] = useState<Timetable | null>(null);
@@ -67,31 +86,142 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
     [timetable]
   );
 
+  const trainSpeed = (
+    <Typography
+      level="body-lg"
+      startDecorator={<SpeedIcon />}>
+      <Typography color={getColorTrainMarker(train.TrainData.Velocity)}>
+        {Math.round(train.TrainData.Velocity)} km/h
+      </Typography>
+    </Typography>
+  );
+
+  const signalInfo = (
+    <Stack
+      spacing={0.5}
+      sx={{ width: "100%" }}>
+      {train.TrainData.SignalInFront && (
+        <>
+          {!isCollapsed && <Typography level="body-sm">Next signal:</Typography>}
+          <Typography level="body-lg">
+            {train.TrainData.SignalInFront?.split("@")[0]}{" "}
+            {train.TrainData.SignalInFrontSpeed !== null &&
+              (train.TrainData.SignalInFrontSpeed > 200 ? (
+                <Typography
+                  color="success"
+                  variant="outlined">
+                  VMAX
+                </Typography>
+              ) : (
+                <Typography
+                  color={getColorTrainMarker(train.TrainData.SignalInFrontSpeed)}
+                  variant="outlined">
+                  {Math.round(train.TrainData.SignalInFrontSpeed)} km/h
+                </Typography>
+              ))}{" "}
+            <Typography color={getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront)}>
+              {Math.round(train.TrainData.DistanceToSignalInFront)}m
+            </Typography>
+          </Typography>
+        </>
+      )}
+    </Stack>
+  );
+
+  if (isCollapsed) {
+    return (
+      <Stack
+        spacing={0.5}
+        alignItems="center"
+        useFlexGap
+        sx={{
+          width: "14rem",
+        }}>
+        <Stack
+          spacing={0.5}
+          direction="row"
+          alignItems="center">
+          <Typography level="body-lg">
+            {train.TrainNoLocal} ({train.TrainName})
+          </Typography>
+          {onToggleCollapse && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gridArea: "1 / 3 / 2 / 4",
+              }}>
+              <IconButton
+                size="sm"
+                onClick={onToggleCollapse}>
+                <ExpandIcon />
+              </IconButton>
+            </Box>
+          )}
+        </Stack>
+
+        {trainSpeed}
+
+        {signalInfo}
+      </Stack>
+    );
+  }
+
   return (
     <Stack
       spacing={1}
-      alignItems="center">
-      <img
-        style={{ width: 300 }}
+      alignItems="center"
+      useFlexGap
+      sx={{
+        maxHeight: "calc(100vh - 6rem)",
+        minWidth: "16rem",
+        overflowY: "auto",
+      }}>
+      <Image
         src={thumbnailUrl}
         alt={train.Vehicles[0]}
+        title={train.Vehicles[0]}
       />
-      <Typography level="h3">
-        {train.TrainNoLocal} ({train.TrainName})
-      </Typography>
+
+      <Box
+        sx={{
+          display: "grid",
+          alignItems: "center",
+          gridTemplateColumns: "1fr auto 1fr",
+          width: "100%",
+        }}>
+        <Typography
+          level="h3"
+          sx={{
+            gridArea: "1 / 2 / 2 / 3",
+          }}>
+          {train.TrainNoLocal} ({train.TrainName})
+        </Typography>
+
+        {onToggleCollapse && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gridArea: "1 / 3 / 2 / 4",
+            }}>
+            <IconButton
+              size="sm"
+              onClick={onToggleCollapse}>
+              <CollapseIcon />
+            </IconButton>
+          </Box>
+        )}
+      </Box>
+
+      <Typography level="body-sm">{train.Vehicles[0]}</Typography>
 
       <Stack
         sx={{ width: "100%" }}
         direction="row"
         justifyContent="space-around"
         alignItems="center">
-        <Typography
-          level="body-lg"
-          startDecorator={<SpeedIcon />}>
-          <Typography color={getColorTrainMarker(train.TrainData.Velocity)}>
-            {Math.round(train.TrainData.Velocity)} km/h
-          </Typography>
-        </Typography>
+        {trainSpeed}
         {timetable && (
           <Stack
             sx={{ width: "50%" }}
@@ -196,36 +326,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         </Typography>
       )}
 
-      <Stack
-        spacing={0.5}
-        sx={{ width: "100%" }}>
-        {train.TrainData.SignalInFront && (
-          <>
-            <Typography level="body-sm">Next signal:</Typography>
-            <Typography level="body-lg">
-              {train.TrainData.SignalInFront?.split("@")[0]}{" "}
-              {train.TrainData.SignalInFrontSpeed !== null &&
-                (train.TrainData.SignalInFrontSpeed > 200 ? (
-                  <Typography
-                    color="success"
-                    variant="outlined">
-                    VMAX
-                  </Typography>
-                ) : (
-                  <Typography
-                    color={getColorTrainMarker(train.TrainData.SignalInFrontSpeed)}
-                    variant="outlined">
-                    {Math.round(train.TrainData.SignalInFrontSpeed)} km/h
-                  </Typography>
-                ))}{" "}
-              <Typography
-                color={getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront)}>
-                {Math.round(train.TrainData.DistanceToSignalInFront)}m
-              </Typography>
-            </Typography>
-          </>
-        )}
-      </Stack>
+      {signalInfo}
 
       {userData && train.TrainData.ControlledBySteamID && (
         <SteamProfileDisplay
@@ -238,7 +339,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         spacing={1}
         sx={{ width: "100%" }}>
         {selectedTrain?.trainNo === train.TrainNoLocal ? (
-          <ButtonGroup>
+          <ButtonGroup size={isSmallScreen ? "sm" : "md"}>
             {selectedTrain.follow ? (
               <Button
                 fullWidth
@@ -264,7 +365,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
             </Button>
           </ButtonGroup>
         ) : (
-          <ButtonGroup>
+          <ButtonGroup size={isSmallScreen ? "sm" : "md"}>
             <Button
               fullWidth
               variant="solid"

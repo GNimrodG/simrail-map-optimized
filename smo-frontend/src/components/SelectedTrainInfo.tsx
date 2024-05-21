@@ -11,6 +11,7 @@ import TrainMarkerPopup from "./markers/TrainMarkerPopup";
 const SelectedTrainInfo: FunctionComponent = () => {
   const map = useMap();
   const { selectedTrain } = useContext(SelectedTrainContext);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
   const trains = useBehaviorSubj(trainsData$);
 
@@ -52,13 +53,15 @@ const SelectedTrainInfo: FunctionComponent = () => {
       <Sheet
         variant="outlined"
         sx={{
-          p: 2,
+          p: isCollapsed ? 1 : 2,
           borderRadius: "var(--joy-radius-sm)",
         }}>
         <TrainMarkerPopup
           train={selectedTrainData}
           userData={selectedTrainUserData}
           showTrainRouteButton
+          isCollapsed={isCollapsed}
+          onToggleCollapse={() => setIsCollapsed((isCollapsed) => !isCollapsed)}
         />
       </Sheet>
     )

@@ -42,6 +42,7 @@ const MapTimeDisplay: FunctionComponent = () => {
         verticalAlign: "middle",
         borderRadius: "var(--joy-radius-sm)",
         backgroundColor: "var(--joy-palette-background-surface)",
+        marginInline: 0,
         boxShadow:
           "var(--joy-shadowRing, 0 0 #000),0px 1px 2px 0px rgba(var(--joy-shadowChannel, 21 21 21) / var(--joy-shadowOpacity, 0.08))",
       }}>
@@ -49,7 +50,7 @@ const MapTimeDisplay: FunctionComponent = () => {
       {timeData && (
         <Typography level="body-md">
           (UTC{timeData.timezone >= 0 ? "+" : ""}
-          {timeData.timezone})
+          {timeData.timezone.toString().padStart(2, "0")})
         </Typography>
       )}
     </Typography>

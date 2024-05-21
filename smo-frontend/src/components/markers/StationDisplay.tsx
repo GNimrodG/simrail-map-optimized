@@ -1,6 +1,8 @@
+import { useMediaQuery } from "@mantine/hooks";
+import { useTheme } from "@mui/joy/styles";
 import Typography from "@mui/joy/Typography";
 import moment from "moment";
-import { type FunctionComponent, useMemo, useState } from "react";
+import { type FunctionComponent, useState } from "react";
 
 import { TimetableEntry } from "../../utils/data-manager";
 import { timeSubj$ } from "../../utils/time";
@@ -14,10 +16,14 @@ export interface StationDisplayProps {
   pastStation?: boolean;
 }
 
-const STOP_TYPE_MAP: Record<TimetableEntry["stopType"], string> = {
-  CommercialStop: "Commercial Stop",
-  NoStopOver: "Non-Stop",
-  NoncommercialStop: "Non-Commercial Stop",
+const STOP_TYPE_FRIENDLY: Partial<Record<TimetableEntry["stopType"], string>> = {
+  CommercialStop: "Commercial Stop", // PH
+  NoncommercialStop: "Non-Commercial Stop", // PT
+};
+
+const STOP_TYPE_TECHNICAL: Partial<Record<TimetableEntry["stopType"], string>> = {
+  CommercialStop: "PH",
+  NoncommercialStop: "PT",
 };
 
 const StationDisplay: FunctionComponent<StationDisplayProps> = ({
@@ -25,12 +31,9 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
   mainStation,
   pastStation: isPastStation,
 }) => {
+  const theme = useTheme();
+  const isSmallHeight = useMediaQuery(`(max-height: ${theme.breakpoints.values.md}px)`);
   const [timeUntil, setTimeUntil] = useState<number | null>(null);
-
-  const stationName = useMemo(
-    () => `${station.nameOfPoint} (${STOP_TYPE_MAP[station.stopType] ?? station.stopType})`,
-    [station.nameOfPoint, station.stopType]
-  );
 
   useObservable(timeSubj$, (time) => {
     if (!isPastStation) {
@@ -40,29 +43,80 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
     }
   });
 
+  const shouldCollapse =
+    (isSmallHeight &&
+      !!station.arrivalTime &&
+      (!station.departureTime || station.departureTime === station.arrivalTime)) ||
+    (!!station.departureTime &&
+      (!station.arrivalTime || station.departureTime === station.arrivalTime));
+
   return (
     <>
-      <Typography level={mainStation ? "body-md" : "body-sm"}>{stationName}</Typography>
-      <Typography level={mainStation ? "body-sm" : "body-xs"}>
-        {station.arrivalTime && <TimeDisplay time={station.arrivalTime} />}
-        {station.departureTime && station.departureTime !== station.arrivalTime && (
+      <Typography level={mainStation ? "body-md" : "body-sm"}>
+        {station.nameOfPoint}
+        {STOP_TYPE_TECHNICAL[station.stopType] && (
           <>
-            {station.arrivalTime && " - "}
-            <TimeDisplay time={station.departureTime} />
-            {station.arrivalTime && (
+            {" "}
+            <Typography
+              variant="outlined"
+              level="body-sm">
+              {STOP_TYPE_TECHNICAL[station.stopType]}
+            </Typography>
+          </>
+        )}
+        {shouldCollapse && (
+          <>
+            {" "}
+            <Typography level="body-sm">
+              <TimeDisplay
+                time={station.arrivalTime!}
+                noSeconds
+              />
+            </Typography>
+            {timeUntil !== null && (
               <>
                 {" "}
-                (
-                <TimeDiffDisplay
-                  start={station.arrivalTime}
-                  end={station.departureTime}
-                />
-                )
+                <Typography
+                  variant="outlined"
+                  level="body-xs"
+                  color={!timeUntil ? "neutral" : timeUntil < 0 ? "success" : "warning"}>
+                  {timeUntil}'
+                </Typography>
               </>
             )}
           </>
         )}
-        {timeUntil !== null && (
+      </Typography>
+      <Typography level={mainStation ? "body-sm" : "body-xs"}>
+        {!shouldCollapse && station.arrivalTime && (
+          <TimeDisplay
+            time={station.arrivalTime}
+            noSeconds={isSmallHeight}
+          />
+        )}
+        {!shouldCollapse &&
+          station.departureTime &&
+          station.departureTime !== station.arrivalTime && (
+            <>
+              {station.arrivalTime && " - "}
+              <TimeDisplay
+                time={station.departureTime}
+                noSeconds={isSmallHeight}
+              />
+              {station.arrivalTime && (
+                <>
+                  {" "}
+                  (
+                  <TimeDiffDisplay
+                    start={station.arrivalTime}
+                    end={station.departureTime}
+                  />
+                  )
+                </>
+              )}
+            </>
+          )}
+        {!shouldCollapse && timeUntil !== null && (
           <>
             {" "}
             <Typography
@@ -70,6 +124,16 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
               level="body-xs"
               color={!timeUntil ? "neutral" : timeUntil < 0 ? "success" : "warning"}>
               {timeUntil}'
+            </Typography>
+          </>
+        )}
+        {!shouldCollapse && (
+          <>
+            {" "}
+            <Typography
+              level="body-xs"
+              textOverflow="clip">
+              {STOP_TYPE_FRIENDLY[station.stopType]}
             </Typography>
           </>
         )}

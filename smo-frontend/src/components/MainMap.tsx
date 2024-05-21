@@ -3,7 +3,6 @@ import "leaflet/dist/leaflet.css";
 import { useHotkeys, useLocalStorage } from "@mantine/hooks";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
-import Checkbox from "@mui/joy/Checkbox";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
@@ -15,6 +14,7 @@ import { isConnected$ } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
+import LayerMenu from "./LayerMenu";
 import ActiveSignalsLayer from "./layers/ActiveSignalsLayer";
 import PassiveSignalsLayer from "./layers/PassiveSignalsLayer";
 import SelectedTrainRouteLayer from "./layers/SelectedTrainRouteLayer";
@@ -26,27 +26,12 @@ import MapTimeDisplay from "./MapTimeDisplay";
 import SearchBar from "./SearchBar";
 import SelectedTrainInfo from "./SelectedTrainInfo";
 import ServerSelector from "./ServerSelector";
+import StatsDisplay from "./StatsDisplay";
 import ThemeToggle from "./utils/ThemeToggle";
 
 export interface MapProps {
   serverId: string;
 }
-
-const BACKGROUND_LAYERS = [
-  { name: "OpenRailwayMap - Infrastructure", key: "orm-infra" },
-  { name: "OpenRailwayMap - Maxspeed", key: "orm-maxspeed" },
-  { name: "OpenRailwayMap - Signals", key: "orm-signals" },
-  { name: "OpenRailwayMap - Electrification", key: "orm-electrification" },
-];
-
-const LAYERS = [
-  { name: "Stations", key: "stations" },
-  { name: "Trains", key: "trains" },
-  { name: "Active Signals", key: "active-signals" },
-  { name: "Passive Signals", key: "passive-signals" },
-  { name: "Selected Route", key: "selected-route" },
-  { name: "Unplayable Stations", key: "unplayable-stations" },
-];
 
 const MAIN_ATTRIBUTIONS = [
   '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
@@ -81,7 +66,8 @@ const MainMap: FunctionComponent<MapProps> = () => {
       <MapContainer
         center={[51.015482, 19.572143]}
         zoom={8}
-        scrollWheelZoom={true}
+        scrollWheelZoom
+        zoomControl={false}
         style={{ height: "100vh", width: "100vw" }}>
         <TileLayer
           attribution={MAIN_ATTRIBUTIONS}
@@ -102,68 +88,38 @@ const MainMap: FunctionComponent<MapProps> = () => {
             top: 10,
             left: 10,
             zIndex: 1000,
+            maxWidth: "calc(100vw - 4rem)",
+            flexWrap: "wrap",
           }}
+          useFlexGap
           direction="row"
           spacing={1}>
           <ServerSelector />
           <SearchBar />
           <MapTimeDisplay />
+          {visibleLayers.includes("stats") && <StatsDisplay />}
         </Stack>
 
-        {/* Theme Toggle */}
-        <Control position="topleft">
-          <ThemeToggle />
-        </Control>
         {/* Selected Train Popup */}
         <Control position="bottomleft">
           <SelectedTrainInfo />
         </Control>
+
         {/* Layers */}
         <Control position="topright">
-          <Sheet
-            variant="outlined"
-            sx={{
-              p: 1,
-              borderRadius: "var(--joy-radius-sm)",
-            }}>
-            <Stack spacing={1}>
-              {BACKGROUND_LAYERS.map((layer) => (
-                <Checkbox
-                  slotProps={{
-                    checkbox: { sx: { borderRadius: "50%" } },
-                  }}
-                  key={layer.key}
-                  value={layer.key}
-                  label={layer.name}
-                  size="sm"
-                  name="background-layers"
-                  checked={visibleLayers.includes(layer.key)}
-                  onChange={(e) => {
-                    setVisibleLayers((visibleLayers) => [
-                      ...visibleLayers.filter((l) => !BACKGROUND_LAYERS.find((bl) => bl.key === l)),
-                      ...(!visibleLayers.includes(e.target.value) ? [layer.key] : []),
-                    ]);
-                  }}
-                />
-              ))}
-              {LAYERS.map((layer) => (
-                <Checkbox
-                  key={layer.key}
-                  checked={visibleLayers.includes(layer.key)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setVisibleLayers([...visibleLayers, layer.key]);
-                    } else {
-                      setVisibleLayers(visibleLayers.filter((l) => l !== layer.key));
-                    }
-                  }}
-                  label={layer.name}
-                  size="sm"
-                />
-              ))}
-            </Stack>
-          </Sheet>
+          {/* Placeholder */}
+          <Box sx={{ p: 2, visible: "none" }} />
         </Control>
+        <LayerMenu
+          visibleLayers={visibleLayers}
+          setVisibleLayers={setVisibleLayers}
+        />
+
+        {/* Theme Toggle */}
+        <Control position="topright">
+          <ThemeToggle />
+        </Control>
+
         {/* Selected Route */}
         <Control
           prepend
