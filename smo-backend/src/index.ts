@@ -273,29 +273,14 @@ ${Array.from(timeFetcher.currentData?.entries() || [])
   ?.map(([server, time]) => `smo_server_timezone{server="${server}"} ${time.timezone}`)
   .join("\n")}
   
-# HELP smo_server_name Server name
-# TYPE smo_server_name gauge
-${Array.from(serverFetcher.currentData?.values() || [])
-  ?.map((status) => `smo_server_name{server="${status.ServerCode}"} ${status.ServerName}`)
-  .join("\n")}
-  
-# HELP smo_server_region Server region
-# TYPE smo_server_region gauge
-${Array.from(serverFetcher.currentData?.values() || [])
-  ?.map((status) => `smo_server_region{server="${status.ServerCode}"} ${status.ServerRegion}`)
-  .join("\n")}
-
-# HELP smo_server_name Server name
-# TYPE smo_server_name gauge
-${Array.from(serverFetcher.currentData?.values() || [])
-  ?.map((status) => `smo_server_name{server="${status.ServerCode}"} ${status.ServerName}`)
-  .join("\n")}
-
-# HELP smo_server_is_active Server is active
-# TYPE smo_server_is_active gauge
+# HELP smo_server_status Server status (active/inactive)
+# TYPE smo_server_status gauge
 ${Array.from(serverFetcher.currentData?.values() || [])
   ?.map(
-    (status) => `smo_server_is_active{server="${status.ServerCode}"} ${status.IsActive ? 1 : 0}`
+    (status) =>
+      `smo_server_status{server="${status.ServerCode}",region="${status.ServerRegion}",name="${
+        status.ServerName
+      }"} ${status.IsActive ? 1 : 0}`
   )
   .join("\n")}
   `.trim()
