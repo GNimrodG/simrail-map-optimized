@@ -221,6 +221,83 @@ ${serverFetcher.currentData
       }`
   )
   .join("\n")}
+
+# HELP smo_train_count Number of trains per server
+# TYPE smo_train_count gauge
+${Array.from(trainFetcher.currentData?.entries() || [])
+  ?.map(([server, trains]) => `smo_train_count{server="${server}"} ${trains.length}`)
+  .join("\n")}
+  
+# HELP smo_player_train_count Number of trains controlled by a player per server
+# TYPE smo_player_train_count gauge
+${Array.from(trainFetcher.currentData?.entries() || [])
+  ?.map(
+    ([server, trains]) =>
+      `smo_player_train_count{server="${server}"} ${
+        trains.filter((train) => train.TrainData.ControlledBySteamID).length
+      }`
+  )
+  .join("\n")}
+  
+# HELP smo_train_avg_speed Average speed of trains per server
+# TYPE smo_train_avg_speed gauge
+${Array.from(trainFetcher.currentData?.entries() || [])
+  ?.map(
+    ([server, trains]) =>
+      `smo_train_avg_speed{server="${server}"} ${
+        trains.reduce((prev, curr) => prev + curr.TrainData.Velocity, 0) / trains.length
+      }`
+  )
+  .join("\n")}
+
+# HELP smo_station_count Number of stations per server
+# TYPE smo_station_count gauge
+${Array.from(stationFetcher.currentData?.entries() || [])
+  ?.map(([server, stations]) => `smo_station_count{server="${server}"} ${stations.length}`)
+  .join("\n")}
+  
+# HELP smo_player_station_count Number of stations controlled by a player per server
+# TYPE smo_player_station_count gauge
+${Array.from(stationFetcher.currentData?.entries() || [])
+  ?.map(
+    ([server, stations]) =>
+      `smo_player_station_count{server="${server}"} ${
+        stations.filter((station) => station.DispatchedBy?.[0]?.SteamId).length
+      }`
+  )
+  .join("\n")}
+
+# HELP smo_server_timezone Timezone on each server
+# TYPE smo_server_timezone gauge
+${Array.from(timeFetcher.currentData?.entries() || [])
+  ?.map(([server, time]) => `smo_server_timezone{server="${server}"} ${time.timezone}`)
+  .join("\n")}
+  
+# HELP smo_server_name Server name
+# TYPE smo_server_name gauge
+${Array.from(serverFetcher.currentData?.values() || [])
+  ?.map((status) => `smo_server_name{server="${status.ServerCode}"} ${status.ServerName}`)
+  .join("\n")}
+  
+# HELP smo_server_region Server region
+# TYPE smo_server_region gauge
+${Array.from(serverFetcher.currentData?.values() || [])
+  ?.map((status) => `smo_server_region{server="${status.ServerCode}"} ${status.ServerRegion}`)
+  .join("\n")}
+
+# HELP smo_server_name Server name
+# TYPE smo_server_name gauge
+${Array.from(serverFetcher.currentData?.values() || [])
+  ?.map((status) => `smo_server_name{server="${status.ServerCode}"} ${status.ServerName}`)
+  .join("\n")}
+
+# HELP smo_server_is_active Server is active
+# TYPE smo_server_is_active gauge
+${Array.from(serverFetcher.currentData?.values() || [])
+  ?.map(
+    (status) => `smo_server_is_active{server="${status.ServerCode}"} ${status.IsActive ? 1 : 0}`
+  )
+  .join("\n")}
   `.trim()
   );
 });
