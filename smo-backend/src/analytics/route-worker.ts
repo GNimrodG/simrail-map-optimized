@@ -1,12 +1,10 @@
 import { Train } from "../api-helper";
 import { parentPort } from "worker_threads";
 import { ModuleLogger } from "../logger";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../db";
 
 const logger = new ModuleLogger("ROUTE-WORKER");
 logger.debug("Loading route worker...");
-
-const prisma = new PrismaClient();
 
 async function getRoutePoints(routeId: string): Promise<[number, number][]> {
   const data =

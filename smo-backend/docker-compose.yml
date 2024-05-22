@@ -1,15 +1,15 @@
 services:
-  web:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - DATABASE_URL=postgres://smo:smo@db:5432/smo?schema=public
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - ./data:/app/data
+  # web:
+  #   build: .
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - DATABASE_URL=postgres://smo:smo@db:5432/smo?schema=public
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./data:/app/data
   db:
     image: postgis/postgis:16-3.4
     environment:

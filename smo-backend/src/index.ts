@@ -9,6 +9,7 @@ import { Server as SocketIOServer } from "socket.io";
 import logger from "./logger";
 import {
   analyzeTrains,
+  getSignal,
   getSignals,
   getSignalsForTrains,
   removeSignalPrevSignal,
@@ -84,7 +85,7 @@ io.on("connection", (socket) => {
 
   socket.emit("servers", serverFetcher.currentData);
 
-  socket.on("switch-server", (room, cb) => {
+  socket.on("switch-server", async (room, cb) => {
     logger.info(`Switching to server ${room}.`, { client: socket.id });
 
     if (socket.data.serverCode) {
@@ -107,7 +108,7 @@ io.on("connection", (socket) => {
     if (trains) {
       socket.emit("trains", trains);
 
-      const signals = getSignalsForTrains(trains);
+      const signals = await getSignalsForTrains(trains);
 
       if (signals) {
         socket.emit("signals", signals);
@@ -162,17 +163,17 @@ stationFetcher.perServerData$.subscribe((data) => {
   io.to(data.server).emit("stations", data.data);
 });
 
-trainFetcher.perServerData$.subscribe((data) => {
+trainFetcher.perServerData$.subscribe(async (data) => {
   io.to(data.server).emit("trains", data.data);
 
-  io.to(data.server).emit("signals", getSignalsForTrains(data.data));
+  io.to(data.server).emit("signals", await getSignalsForTrains(data.data));
 });
 
 timeFetcher.perServerData$.subscribe((data) => {
   io.to(data.server).emit("time", data.data);
 });
 
-trainFetcher.data$.subscribe((data) => {
+trainFetcher.data$.subscribe(async (data) => {
   if (!data) return;
 
   const trains = Array.from(data.values()).flatMap((trains) => trains);
@@ -182,12 +183,12 @@ trainFetcher.data$.subscribe((data) => {
     analyzeTrains(trains);
   }
 
-  if ((io.sockets.adapter.rooms.get("signals")?.size || 0) > 0) {
-    io.to("signals").emit("signals", getSignals());
-  }
-
   if (!process.env.DISABLE_ROUTE_ANALYSIS) {
     analyzeTrainsForRoutes(trains);
+  }
+
+  if ((io.sockets.adapter.rooms.get("signals")?.size || 0) > 0) {
+    io.to("signals").emit("signals", await getSignals());
   }
 });
 
@@ -199,6 +200,29 @@ app.get("/status", (_req, res) => {
       return prev;
     }, {}),
   });
+});
+
+// Prometheus metrics
+app.get("/metrics", (_req, res) => {
+  res.set("Content-Type", "text/plain; version=0.0.4; charset=utf-8; escaping=values");
+  res.send(
+    `
+# HELP smo_connected_clients Number of connected clients
+# TYPE smo_connected_clients gauge
+smo_connected_clients ${connectedClients}
+
+# HELP smo_server_clients Number of clients connected to each server
+# TYPE smo_server_clients gauge
+${serverFetcher.currentData
+  ?.map(
+    (server) =>
+      `smo_server_clients{server="${server.ServerCode}"} ${
+        io.sockets.adapter.rooms.get(server.ServerCode)?.size || 0
+      }`
+  )
+  .join("\n")}
+  `.trim()
+  );
 });
 
 if (process.env.ADMIN_PASSWORD) {
@@ -220,7 +244,7 @@ if (process.env.ADMIN_PASSWORD) {
     res.json({ success: true });
   });
 
-  app.delete("/signal/:signal/prev", express.json(), (req, res) => {
+  app.delete("/signal/:signal/prev", express.json(), async (req, res) => {
     if (req.body?.password !== process.env.ADMIN_PASSWORD) {
       res.status(401).json({ error: "Unauthorized" });
       return;
@@ -234,7 +258,7 @@ if (process.env.ADMIN_PASSWORD) {
     const { signal } = req.params;
     const { prevSignal } = req.body;
 
-    const signalData = getSignals().find((s) => s.name === signal);
+    const signalData = await getSignal(signal);
 
     if (!signalData) {
       res.status(404).json({ error: "Signal not found" });
@@ -246,7 +270,7 @@ if (process.env.ADMIN_PASSWORD) {
     res.json({ success: true });
   });
 
-  app.delete("/signals/:signal/next", express.json(), (req, res) => {
+  app.delete("/signals/:signal/next", express.json(), async (req, res) => {
     if (req.body?.password !== process.env.ADMIN_PASSWORD) {
       res.status(401).json({ error: "Unauthorized" });
       return;
@@ -260,14 +284,14 @@ if (process.env.ADMIN_PASSWORD) {
     const { signal } = req.params;
     const { nextSignal } = req.body;
 
-    const signalData = getSignals().find((s) => s.name === signal);
+    const signalData = await getSignal(signal);
 
     if (!signalData) {
       res.status(404).json({ error: "Signal not found" });
       return;
     }
 
-    if (!signalData.nextSignals.has(nextSignal)) {
+    if (!signalData.nextSignals.includes(nextSignal)) {
       res.status(404).json({ error: "Next signal not found" });
       return;
     }
@@ -277,7 +301,7 @@ if (process.env.ADMIN_PASSWORD) {
     res.json({ success: true });
   });
 
-  app.post("/signal/:signal/prev", express.json(), (req, res) => {
+  app.post("/signal/:signal/prev", express.json(), async (req, res) => {
     if (req.body?.password !== process.env.ADMIN_PASSWORD) {
       res.status(401).json({ error: "Unauthorized" });
       return;
@@ -291,15 +315,14 @@ if (process.env.ADMIN_PASSWORD) {
     const { signal } = req.params;
     const { prevSignal } = req.body;
 
-    const signals = getSignals();
-    const signalData = signals.find((s) => s.name === signal);
+    const signalData = await getSignal(signal);
 
     if (!signalData) {
       res.status(404).json({ error: "Signal not found" });
       return;
     }
 
-    const prevSignalData = signals.find((s) => s.name === prevSignal);
+    const prevSignalData = await getSignal(prevSignal);
 
     if (!prevSignalData) {
       res.status(404).json({ error: "Previous signal not found" });
@@ -311,7 +334,7 @@ if (process.env.ADMIN_PASSWORD) {
     res.json({ success: true });
   });
 
-  app.post("/signals/:signal/next", express.json(), (req, res) => {
+  app.post("/signals/:signal/next", express.json(), async (req, res) => {
     if (req.body?.password !== process.env.ADMIN_PASSWORD) {
       res.status(401).json({ error: "Unauthorized" });
       return;
@@ -325,15 +348,14 @@ if (process.env.ADMIN_PASSWORD) {
     const { signal } = req.params;
     const { nextSignal } = req.body;
 
-    const signals = getSignals();
-    const signalData = signals.find((s) => s.name === signal);
+    const signalData = await getSignal(signal);
 
     if (!signalData) {
       res.status(404).json({ error: "Signal not found" });
       return;
     }
 
-    const nextSignalData = signals.find((s) => s.name === nextSignal);
+    const nextSignalData = await getSignal(nextSignal);
 
     if (!nextSignalData) {
       res.status(404).json({ error: "Next signal not found" });

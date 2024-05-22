@@ -8,9 +8,11 @@ RUN yarn install --frozen-lockfile
 
 COPY ./src ./src
 
-RUN yarn build:no-sentry
+COPY ./prisma ./prisma
 
 RUN yarn prisma generate
+
+RUN yarn build:no-sentry
 
 FROM node:slim AS dependencies
 
@@ -24,7 +26,7 @@ RUN yarn install --frozen-lockfile --production
 
 RUN yarn prisma generate
 
-FROM node:slim  AS base
+FROM node:slim AS base
 
 RUN apt update && apt install -y curl && rm -rf /var/lib/apt/lists/*
 

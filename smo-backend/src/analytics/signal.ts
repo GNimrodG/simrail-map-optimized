@@ -2,6 +2,7 @@ import logger from "../logger";
 import { Train } from "../api-helper";
 import { extname } from "path";
 import { Worker } from "worker_threads";
+import { prisma } from "../db";
 
 const workerPath = __dirname + "/signal-worker" + extname(__filename); // Use the same extension as this file, in dev it's .ts, in prod it's .js
 
@@ -18,11 +19,9 @@ worker.on("exit", (code) => {
   }
 });
 
-let SignalLocations = new Map<string, Signal>();
 let TrainPreviousSignals = new Map<string, string>();
 
 worker.on("message", (msg) => {
-  SignalLocations = msg.SignalLocations || SignalLocations;
   TrainPreviousSignals = msg.TrainPreviousSignals || TrainPreviousSignals;
 });
 
@@ -50,62 +49,123 @@ export function addSignalNextSignal(signal: string, nextSignal: string) {
   worker.postMessage({ type: "add-next-signal", data: { signal, nextSignal } });
 }
 
-export function getSignals() {
-  return Array.from(SignalLocations.entries(), ([name, props]) => ({ name, ...props }));
-}
+export async function getSignals() {
+  const rawSignals = await prisma.$queryRaw<RawSignal[]>`
+  SELECT signals.name,
+    ST_X(signals.point) as lat,
+    ST_Y(signals.point) as lon,
+    extra,
+    accuracy,
+    type,
+    ARRAY_TO_STRING(ARRAY_AGG(prev_signals.prev_signal), ',') as prevsignals,
+    ARRAY_TO_STRING(ARRAY_AGG(next_signals.next_signal), ',') as nextsignals
+  FROM signals
+    LEFT JOIN prev_signals ON signals.name = prev_signals.signal
+    LEFT JOIN next_signals ON signals.name = next_signals.signal
+  GROUP BY signals.name
+    `;
 
-export function getSignalsForTrains(trains: Train[]) {
-  const signalsIndex = new Map<string, Train>();
-
-  trains.forEach((train) => {
-    const signalInFront = train.TrainData.SignalInFront;
-    if (train.TrainData.SignalInFront) {
-      signalsIndex.set(signalInFront.split("@")[0], train);
-    }
-  });
-
-  return Array.from(SignalLocations.entries(), ([name, props]) => {
-    const train = signalsIndex.get(name);
-
-    const trainAhead =
-      props.type === "block"
-        ? signalsIndex.get(
-            Array.from(props.nextSignals).find((nextSignal) => signalsIndex.has(nextSignal)) || ""
-          )
-        : null;
-
-    const nextSignalWithTrainAhead =
-      (props.type === "block" &&
-        Array.from(props.nextSignals).find((nextSignal) => {
-          const nextSignalData = SignalLocations.get(nextSignal);
-          if (!nextSignalData) {
-            return false;
-          }
-
-          return Array.from(nextSignalData.nextSignals).some((nextNextSignal) =>
-            signalsIndex.get(nextNextSignal)
-          );
-        })) ||
-      null;
-
+  return rawSignals.map((rawSignal) => {
     return {
-      ...props,
-      name,
-      train,
-      trainAhead,
-      nextSignalWithTrainAhead,
-      prevSignals: Array.from(props.prevSignals),
-      nextSignals: Array.from(props.nextSignals),
+      ...rawSignal,
+      prevsignals: undefined,
+      nextsignals: undefined,
+      prevSignals: rawSignal.prevsignals?.trim().split(",") || [],
+      nextSignals: rawSignal.nextsignals?.trim().split(",") || [],
     };
   });
 }
 
-export interface Signal {
+export async function getSignal(id: string) {
+  const rawSignal = await prisma.$queryRaw<RawSignal>`
+  SELECT signals.name,
+    ST_X(signals.point) as lat,
+    ST_Y(signals.point) as lon,
+    extra,
+    accuracy,
+    type,
+    ARRAY_TO_STRING(ARRAY_AGG(prev_signals.prev_signal), ',') as prevsignals,
+    ARRAY_TO_STRING(ARRAY_AGG(next_signals.next_signal), ',') as nextsignals
+  FROM signals
+    LEFT JOIN prev_signals ON signals.name = prev_signals.signal
+    LEFT JOIN next_signals ON signals.name = next_signals.signal
+  WHERE signals.name = ${id}
+  GROUP BY signals.name
+    `;
+
+  return {
+    ...rawSignal,
+    prevsignals: undefined,
+    nextsignals: undefined,
+    prevSignals: rawSignal.prevsignals?.trim().split(",") || [],
+    nextSignals: rawSignal.nextsignals?.trim().split(",") || [],
+  };
+}
+
+export async function getSignalsForTrains(trains: Train[]) {
+  const signalsIndex = new Map<string, Train>();
+
+  trains.forEach((train) => {
+    if (train.TrainData?.SignalInFront) {
+      signalsIndex.set(train.TrainData.SignalInFront.split("@")[0], train);
+    }
+  });
+
+  return await getSignals().then((signals) =>
+    Promise.all(
+      signals.map(async (signal) => {
+        const train = signalsIndex.get(signal.name);
+
+        const trainAhead =
+          signal.type === "block"
+            ? signalsIndex.get(
+                signal.nextSignals.find((nextSignal) => signalsIndex.has(nextSignal)) || ""
+              )
+            : null;
+
+        const nextSignalWithTrainAhead =
+          (signal.type === "block" &&
+            signal.nextSignals.find((nextSignal) => {
+              const nextSignalData = signals.find((s) => s.name === nextSignal);
+              if (!nextSignalData) {
+                return false;
+              }
+
+              return nextSignalData.nextSignals.some((nextNextSignal) =>
+                signalsIndex.get(nextNextSignal)
+              );
+            })) ||
+          null;
+
+        return {
+          ...signal,
+          train,
+          trainAhead,
+          nextSignalWithTrainAhead,
+        };
+      })
+    )
+  );
+}
+
+interface RawSignal {
+  name: string;
   lat: number;
   lon: number;
   extra: string;
   accuracy: number;
   type: string | null;
-  prevSignals: Set<string>;
-  nextSignals: Set<string>;
+  prevsignals: string;
+  nextsignals: string;
+}
+
+export interface Signal {
+  name: string;
+  lat: number;
+  lon: number;
+  extra: string;
+  accuracy: number;
+  type: string | null;
+  prevSignals: Array<string>;
+  nextSignals: Array<string>;
 }
