@@ -1,4 +1,4 @@
-import logger from "../logger";
+import { ModuleLogger } from "../logger";
 import { Train, getBaseTrain } from "../api-helper";
 import { extname } from "path";
 import { Worker } from "worker_threads";
@@ -6,16 +6,18 @@ import { prisma } from "../db";
 
 const workerPath = __dirname + "/signal-worker" + extname(__filename); // Use the same extension as this file, in dev it's .ts, in prod it's .js
 
-logger.info(`Starting signal worker at ${workerPath}`, { module: "SIGNAL" });
+const logger = new ModuleLogger("SIGNAL-PROC");
+
+logger.info(`Starting signal worker at ${workerPath}`);
 const worker = new Worker(workerPath);
 
 worker.on("error", (err) => {
-  logger.error(`Worker error: ${err}`, { module: "SIGNAL" });
+  logger.error(`Worker error: ${err}`);
 });
 
 worker.on("exit", (code) => {
   if (code !== 0) {
-    logger.error(`Worker stopped with exit code ${code}`, { module: "SIGNAL" });
+    logger.error(`Worker stopped with exit code ${code}`);
   }
 });
 

@@ -3,7 +3,7 @@ import { parentPort } from "worker_threads";
 import { ModuleLogger } from "../logger";
 import { prisma } from "../db";
 
-const logger = new ModuleLogger("ROUTE-WORKER");
+const logger = new ModuleLogger("ROUTE-PROC-WORKER");
 logger.debug("Loading route worker...");
 
 async function getRoutePoints(routeId: string): Promise<[number, number][]> {

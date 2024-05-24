@@ -4,7 +4,7 @@ import { parentPort } from "worker_threads";
 import { ModuleLogger } from "../logger";
 import { prisma } from "../db";
 
-const logger = new ModuleLogger("SIGNALS-WORKER");
+const logger = new ModuleLogger("SIGNALS-PROC-WORKER");
 
 const TrainPreviousSignals = new Map<string, string>();
 

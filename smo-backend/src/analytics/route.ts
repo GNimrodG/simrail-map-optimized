@@ -1,21 +1,22 @@
-import logger from "../logger";
+import { ModuleLogger } from "../logger";
 import { Train } from "../api-helper";
 import { extname } from "path";
 import { Worker } from "worker_threads";
 
 const workerPath = __dirname + "/route-worker" + extname(__filename); // Use the same extension as this file, in dev it's .ts, in prod it's .js
+const logger = new ModuleLogger("ROUTE-PROC");
 
-logger.info(`Starting route worker at ${workerPath}`, { module: "ROUTE" });
+logger.info(`Starting route worker at ${workerPath}`);
 const worker = new Worker(workerPath);
-logger.info(`Route worker started`, { module: "ROUTE" });
+logger.info(`Route worker started`);
 
 worker.on("error", (err) => {
-  logger.error(`Worker error: ${err}`, { module: "ROUTE" });
+  logger.error(`Worker error: ${err}`);
 });
 
 worker.on("exit", (code) => {
   if (code !== 0) {
-    logger.error(`Worker stopped with exit code ${code}`, { module: "ROUTE" });
+    logger.error(`Worker stopped with exit code ${code}`);
   }
 });
 
@@ -35,7 +36,7 @@ worker.on("message", (msg) => {
       break;
     }
     default:
-      logger.warn(`Unknown message type: ${msg.type}`, { module: "ROUTE" });
+      logger.warn(`Unknown message type: ${msg.type}`);
       break;
   }
 });

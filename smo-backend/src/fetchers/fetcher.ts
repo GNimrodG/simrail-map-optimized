@@ -3,14 +3,19 @@ import { BehaviorSubject, Subject } from "rxjs";
 import { ModuleLogger } from "../logger";
 import { ServerStatus } from "../api-helper";
 import { PrismaClient } from "@prisma/client";
+import { Worker } from "worker_threads";
+import { extname } from "path";
+import { statSync } from "fs";
 
 const prisma = new PrismaClient();
+
 export class Fetcher<T> {
   protected logger: ModuleLogger;
   protected data: BehaviorSubject<T | null> = new BehaviorSubject<T | null>(null);
   public data$ = this.data.asObservable();
   private timeoutHandle: NodeJS.Timeout | null = null;
   private refreshInterval: number;
+  protected worker: Worker;
 
   protected avgRefreshTime = 0;
   protected refreshCount = 0;
@@ -22,6 +27,29 @@ export class Fetcher<T> {
         parseInt(process.env[`${module}_REFRESH_INTERVAL`]!) * 1000) ||
       defaultRefreshInterval;
     this.logger.info(`Refresh interval: ${this.refreshInterval}`);
+
+    // Worker setup
+    const workerPath = `${__dirname}/workers/${this.module.toLocaleLowerCase()}${extname(
+      __filename
+    )}`; // Use the same extension as this file, in dev it's .ts, in prod it's .js
+
+    if (!statSync(workerPath).isFile()) {
+      throw new Error(`Worker file not found: ${workerPath}`);
+    }
+
+    this.worker = new Worker(workerPath);
+
+    this.worker.on("error", (err) => {
+      this.logger.error(`Worker error: ${err}`);
+    });
+
+    this.worker.on("exit", (code) => {
+      if (code !== 0) {
+        this.logger.error(`Worker stopped with exit code ${code}`);
+      } else {
+        this.logger.info("Worker stopped");
+      }
+    });
   }
 
   public start() {
@@ -87,7 +115,17 @@ export class Fetcher<T> {
   }
 
   protected async fetchData(): Promise<T> {
-    throw new Error("Not implemented");
+    this.worker.postMessage({ type: "run" });
+
+    return new Promise<T>((resolve, reject) => {
+      this.worker.once("message", (msg) => {
+        if (msg.type === "done") {
+          resolve(msg.data);
+        } else {
+          reject(new Error(`Unknown message type: ${msg.type}`));
+        }
+      });
+    });
   }
 }
 
@@ -134,7 +172,17 @@ export class PerServerFetcher<T> extends Fetcher<Map<string, T>> {
   }
 
   protected async fetchDataForServer(server: string): Promise<T> {
-    throw new Error("Not implemented");
+    this.worker.postMessage({ type: "run", server });
+
+    return new Promise<T>((resolve, reject) => {
+      this.worker.once("message", (msg) => {
+        if (msg.type === "done") {
+          resolve(msg.data);
+        } else {
+          reject(new Error(`Unknown message type: ${msg.type}`));
+        }
+      });
+    });
   }
 
   public getDataForServer(server: string): T | null {

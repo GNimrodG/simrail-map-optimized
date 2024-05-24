@@ -1,4 +1,4 @@
-import { Train, fetchTrains } from "../api-helper";
+import { Train } from "../api-helper";
 import { PerServerFetcher } from "./fetcher";
 import { serverFetcher } from "./sever-fetcher";
 
@@ -10,8 +10,6 @@ class TrainFetcher extends PerServerFetcher<Train[]> {
   constructor() {
     super("TRAIN", REFRESH_INTERVAL, serverFetcher);
   }
-
-  protected fetchDataForServer = fetchTrains;
 }
 
 export const trainFetcher = new TrainFetcher();
