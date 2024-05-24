@@ -32,15 +32,15 @@ const SearchBar: FunctionComponent = () => {
   }, [selectedTrain, trains]);
 
   const options = [
-    ...trains
-      .map((train) => ({ type: "Trains", data: train }))
-      .toSorted((a, b) => +a.data.TrainNoLocal - +b.data.TrainNoLocal),
-    ...stations
-      .map((station) => ({ type: "Stations", data: station }))
-      .toSorted((a, b) => a.data.Name.localeCompare(b.data.Name)),
-    ...signals
-      .map((signal) => ({ type: "Signals", data: signal }))
-      .toSorted((a, b) => a.data.name.localeCompare(b.data.name)),
+    ...(trains
+      ?.map((train) => ({ type: "Trains", data: train }))
+      .toSorted((a, b) => +a.data.TrainNoLocal - +b.data.TrainNoLocal) || []),
+    ...(stations
+      ?.map((station) => ({ type: "Stations", data: station }))
+      .toSorted((a, b) => a.data.Name.localeCompare(b.data.Name)) || []),
+    ...(signals
+      ?.map((signal) => ({ type: "Signals", data: signal }))
+      .toSorted((a, b) => a.data.name.localeCompare(b.data.name)) || []),
   ] as ListItem[];
 
   return (

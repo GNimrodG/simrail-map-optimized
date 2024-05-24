@@ -31,17 +31,23 @@ async function addRoutePoint(route: string, point: [number, number]) {
     routePointQueue = [];
     routePointQueueTimeout = null;
 
-    await prisma.$executeRawUnsafe(
-      `INSERT INTO routepoints (route_id, point) VALUES ${points.map(
-        ({ route, point }) => `(${route}, 'SRID=4326;POINT(${point[0]} ${point[1]})'::geometry)`
-      )}`
-    );
+    try {
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO routepoints (route_id, point) VALUES ${points.map(
+          ({ route, point }) => `(${route}, 'SRID=4326;POINT(${point[0]} ${point[1]})'::geometry)`
+        )}`
+      );
+    } catch (e) {
+      logger.error(`Error adding route points: ${e}`);
+    }
   }, 500);
 }
 
 const MIN_DISTANCE = process.env.ROUTE_MIN_DISTANCE
   ? parseInt(process.env.ROUTE_MIN_DISTANCE)
   : 200;
+
+logger.info(`Minimum distance for route points: ${MIN_DISTANCE}`);
 
 let processing = false;
 

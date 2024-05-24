@@ -13,4 +13,11 @@ export const getSteamProfileInfo = (steamId: string): Promise<ProfileResponse> =
         .then((data) => {
           cache.set(steamId, data);
           return data as ProfileResponse;
+        })
+        .catch((e) => {
+          console.error("Failed to fetch steam profile info", e);
+          // retry after 5 seconds
+          return new Promise((resolve) =>
+            setTimeout(() => resolve(getSteamProfileInfo(steamId)), 5000)
+          );
         });

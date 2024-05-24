@@ -1,5 +1,5 @@
 import logger from "../logger";
-import { Train } from "../api-helper";
+import { Train, getBaseTrain } from "../api-helper";
 import { extname } from "path";
 import { Worker } from "worker_threads";
 import { prisma } from "../db";
@@ -139,8 +139,8 @@ export async function getSignalsForTrains(trains: Train[]) {
 
         return {
           ...signal,
-          train,
-          trainAhead,
+          train: getBaseTrain(train),
+          trainAhead: getBaseTrain(trainAhead),
           nextSignalWithTrainAhead,
         };
       })

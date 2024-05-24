@@ -10,7 +10,6 @@ import logger from "./logger";
 import {
   analyzeTrains,
   getSignal,
-  getSignals,
   getSignalsForTrains,
   removeSignalPrevSignal,
   setSignalType,
@@ -122,16 +121,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("join-signals", () => {
-    logger.info("Joining signals room.", { client: socket.id });
-    socket.join("signals");
-  });
-
-  socket.on("leave-signals", () => {
-    logger.info("Leaving signals room.", { client: socket.id });
-    socket.leave("signals");
-  });
-
   socket.on("get-train-timetable", (train: string | null, cb) => {
     if (train) {
       const timetable = timetableFetcher.getTimeTableForTrain(socket.data.serverCode, train);
@@ -185,10 +174,6 @@ trainFetcher.data$.subscribe(async (data) => {
 
   if (!process.env.DISABLE_ROUTE_ANALYSIS) {
     analyzeTrainsForRoutes(trains);
-  }
-
-  if ((io.sockets.adapter.rooms.get("signals")?.size || 0) > 0) {
-    io.to("signals").emit("signals", await getSignals());
   }
 });
 

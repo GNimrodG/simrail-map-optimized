@@ -106,17 +106,12 @@ function getColor(velocity: number): DefaultColorPalette {
   return "success";
 }
 
-const BLOCK_SIGNAL_REGEX = /^\w\d+_\d+\w?@/;
-
 const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSelect }) => {
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(new DivIcon(DEFAULT_ICON_OPTIONS));
 
   useEffect(() => {
     if (signal.train) {
-      if (
-        signal.type === "block" ||
-        BLOCK_SIGNAL_REGEX.test(signal.train.TrainData.SignalInFront)
-      ) {
+      if (signal.type === "block") {
         if (signal.train.TrainData.SignalInFrontSpeed === 0) {
           setIcon(BLOCK_SIGNAL_RED_ICON);
           return;

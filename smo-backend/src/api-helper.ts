@@ -16,9 +16,39 @@ export interface ServerStatus {
   id: string;
 }
 
-export interface Train {
+export function getBaseTrain(train?: Train | null): BaseTrain | null {
+  if (!train) return null;
+
+  return {
+    TrainNoLocal: train.TrainNoLocal,
+    TrainName: train.TrainName,
+    TrainData: getBaseTrainData(train),
+  };
+}
+
+export function getBaseTrainData(train: Train): BaseTrainData {
+  return {
+    Velocity: train.TrainData.Velocity,
+    SignalInFront: train.TrainData.SignalInFront,
+    DistanceToSignalInFront: train.TrainData.DistanceToSignalInFront,
+    SignalInFrontSpeed: train.TrainData.SignalInFrontSpeed,
+  };
+}
+
+export interface BaseTrain {
   TrainNoLocal: string;
   TrainName: string;
+  TrainData: BaseTrainData;
+}
+
+export interface BaseTrainData {
+  Velocity: number;
+  SignalInFront: string;
+  DistanceToSignalInFront: number;
+  SignalInFrontSpeed: number;
+}
+
+export interface Train extends BaseTrain {
   StartStation: string;
   EndStation: string;
   Vehicles: string[];
@@ -28,15 +58,11 @@ export interface Train {
   Type: "user" | "bot";
 }
 
-export interface TrainData {
+export interface TrainData extends BaseTrainData {
   ControlledBySteamID: string;
   InBorderStationArea: boolean;
   Latititute: number;
   Longitute: number;
-  Velocity: number;
-  SignalInFront: string;
-  DistanceToSignalInFront: number;
-  SignalInFrontSpeed: number;
   VDDelayedTimetableIndex: number;
 }
 
