@@ -27,13 +27,19 @@ const SelectedTrainRouteLayer: FunctionComponent = () => {
   >([]);
 
   useEffect(() => {
+    let shouldCancel = false;
     if (selectedRoute) {
       fetchRoutePoints(selectedRoute).then((points) => {
+        if (shouldCancel) return;
         setRoutePoints(points || []);
       });
     } else {
       setRoutePoints([]);
     }
+
+    return () => {
+      shouldCancel = true;
+    };
   }, [selectedRoute]);
 
   useEffect(() => {

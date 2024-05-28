@@ -74,7 +74,7 @@ async function loadFileLinesToDatabase(lines: string[]) {
           VALUES (${name}, ${prevSignal})
         `;
         } catch (e) {
-          logger.error(`Failed to add prev signal ${prevSignal} to signal ${name}: ${e}`);
+          logger.warn(`Failed to add prev signal ${prevSignal} to signal ${name}: ${e}`);
         }
       }
     }
@@ -143,217 +143,241 @@ async function analyzeTrains(trains: Train[]) {
 
   running = true;
 
-  const start = Date.now();
-  const signals = await prisma.signals.findMany({
-    where: {
-      name: {
-        in: trains.map((train) => train?.TrainData?.SignalInFront?.split("@")[0]).filter(Boolean),
+  try {
+    const start = Date.now();
+    const signals = await prisma.signals.findMany({
+      where: {
+        name: {
+          in: trains.map((train) => train?.TrainData?.SignalInFront?.split("@")[0]).filter(Boolean),
+        },
       },
-    },
-  });
+    });
 
-  for (const train of trains) {
-    if (!train.TrainData.Latititute || !train.TrainData.Longitute) {
-      logger.warn(`Train ${train.TrainNoLocal} (${train.Type}) has no location data`);
-      continue;
-    }
+    for (const train of trains) {
+      if (!train.TrainData.Latititute || !train.TrainData.Longitute) {
+        logger.warn(`Train ${train.TrainNoLocal} (${train.Type}) has no location data`);
+        continue;
+      }
 
-    if (!train.TrainData.SignalInFront) {
-      continue;
-    }
+      if (!train.TrainData.SignalInFront) {
+        continue;
+      }
 
-    const trainId = `${train.TrainNoLocal}@${train.ServerCode}`;
-    const [signalId, extra] = train.TrainData.SignalInFront.split("@");
-    const signal = signals.find((signal) => signal.name === signalId);
+      const trainId = `${train.TrainNoLocal}@${train.ServerCode}`;
+      const [signalId, extra] = train.TrainData.SignalInFront.split("@");
+      const signal = signals.find((signal) => signal.name === signalId);
 
-    const prevSignalId = TrainPreviousSignals.get(trainId);
+      const prevSignalId = TrainPreviousSignals.get(trainId);
 
-    if (prevSignalId && prevSignalId !== signalId) {
-      // train trainId was at prevSignalName and now is at signalId
-      const prevSignal =
-        signals.find((signal) => signal.name === prevSignalId) ||
-        (await prisma.signals.findUnique({ where: { name: prevSignalId } }));
+      if (prevSignalId && prevSignalId !== signalId) {
+        // train trainId was at prevSignalName and now is at signalId
+        const prevSignal =
+          signals.find((signal) => signal.name === prevSignalId) ||
+          (await prisma.signals.findUnique({ where: { name: prevSignalId } }));
 
-      if (prevSignal) {
-        if (signal) {
-          // add signalId to prevSignal's next signals
-          try {
-            await prisma.$executeRaw`
+        if (prevSignal) {
+          if (signal) {
+            // add signalId to prevSignal's next signals
+            try {
+              await prisma.$executeRaw`
             INSERT INTO next_signals (signal, next_signal)
             VALUES (${prevSignalId}, ${signalId})
             ON CONFLICT DO NOTHING
           `;
-          } catch {
-            // ignore
+            } catch {
+              // ignore
+            }
           }
-        }
 
-        const prevSignalNextSignals = await prisma.$queryRaw<string[]>`
+          const prevSignalNextSignals = await prisma.$queryRaw<{ next_signal: string }[]>`
             SELECT next_signal FROM next_signals WHERE signal = ${prevSignalId}
           `;
 
-        if (
-          prevSignalNextSignals.length > 1 &&
-          BLOCK_SIGNAL_REGEX.test(prevSignalId) &&
-          BLOCK_SIGNAL_REGEX.test(signalId)
-        ) {
-          const possibleNextSignals = prevSignalNextSignals.filter((nextSignalId) =>
-            BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId)
-              ? BLOCK_SIGNAL_REVERSE_REGEX.test(nextSignalId)
-              : !BLOCK_SIGNAL_REVERSE_REGEX.test(nextSignalId)
-          );
+          if (
+            prevSignalNextSignals.length > 1 &&
+            BLOCK_SIGNAL_REGEX.test(prevSignalId) &&
+            BLOCK_SIGNAL_REGEX.test(signalId)
+          ) {
+            const possibleNextSignals = prevSignalNextSignals.filter((nextSignalId) =>
+              BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId)
+                ? BLOCK_SIGNAL_REVERSE_REGEX.test(nextSignalId.next_signal)
+                : !BLOCK_SIGNAL_REVERSE_REGEX.test(nextSignalId.next_signal)
+            );
 
-          const nextSignals = await prisma.$queryRaw<{ name: string; lat: number; lon: number }[]>`
+            const nextSignals = possibleNextSignals.length
+              ? await prisma.$queryRawUnsafe<{ name: string; lat: number; lon: number }[]>(`
             SELECT name, ST_X(point) as lat, ST_Y(point) as lon
             FROM signals
-            WHERE name IN (${possibleNextSignals})
-          `;
+            WHERE name IN (${possibleNextSignals
+              .map((nextSignalId) => `'${nextSignalId.next_signal}'`)
+              .join(",")})
+          `)
+              : [];
 
-          const distances = possibleNextSignals
-            .map((nextSignalId) => {
-              const nextSignal = nextSignals.find((signal) => signal.name === nextSignalId);
+            const distances = possibleNextSignals
+              .map((nextSignalId) => {
+                const nextSignal = nextSignals.find(
+                  (signal) => signal.name === nextSignalId.next_signal
+                );
 
-              if (!nextSignal) {
-                return { nextSignalId, distance: Infinity };
-              }
+                if (!nextSignal) {
+                  return { nextSignalId, distance: Infinity };
+                }
 
-              return {
-                nextSignalId,
-                distance: distance(
-                  [nextSignal.lat, nextSignal.lon],
-                  [train.TrainData.Latititute, train.TrainData.Longitute]
-                ),
-              };
-            })
-            .toSorted((a, b) => a.distance - b.distance);
+                return {
+                  nextSignalId,
+                  distance: distance(
+                    [nextSignal.lat, nextSignal.lon],
+                    [train.TrainData.Latititute, train.TrainData.Longitute]
+                  ),
+                };
+              })
+              .toSorted((a, b) => a.distance - b.distance);
 
-          logger.warn(
-            `Block Signal ${prevSignalId} has more than 1 next signal: ${Array.from(
-              prevSignalNextSignals
-            ).join(", ")}; keeping the closest one (${distances[0].nextSignalId})`
-          );
+            if (distances.length) {
+              logger.warn(
+                `Block Signal ${prevSignalId} has more than 1 next signal: ${prevSignalNextSignals
+                  .map((x) => x.next_signal)
+                  .join(", ")}; keeping the closest one (${distances[0].nextSignalId.next_signal})`
+              );
 
-          await prisma.$executeRaw`
+              await prisma.$executeRaw`
               DELETE FROM next_signals
-              WHERE signal = ${prevSignalId} AND next_signal != ${distances[0].nextSignalId}
+              WHERE signal = ${prevSignalId} AND next_signal != ${distances[0].nextSignalId.next_signal}
             `;
+            }
+          }
         }
-      }
 
-      if (signal) {
-        // add prevSignalName to signal's prev signals
-        await prisma.$executeRaw`
+        if (signal) {
+          // add prevSignalName to signal's prev signals
+          try {
+            await prisma.$executeRaw`
             INSERT INTO prev_signals (signal, prev_signal)
             VALUES (${signalId}, ${prevSignalId})
             ON CONFLICT DO NOTHING
           `;
+          } catch (e) {
+            logger.warn(`Failed to add prev signal ${prevSignalId} to signal ${signalId}: ${e}`);
+          }
 
-        const signalPrevSignals = await prisma.$queryRaw<string[]>`
+          const signalPrevSignals = await prisma.$queryRaw<{ prev_signal: string }[]>`
             SELECT prev_signal FROM prev_signals WHERE signal = ${signalId}
           `;
 
-        if (
-          signalPrevSignals.length > 1 &&
-          BLOCK_SIGNAL_REGEX.test(prevSignalId) &&
-          BLOCK_SIGNAL_REGEX.test(signalId)
-        ) {
-          const possiblePrevSignals = signalPrevSignals.filter((prevSignalId) =>
-            BLOCK_SIGNAL_REVERSE_REGEX.test(signalId)
-              ? BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId)
-              : !BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId)
-          );
+          if (
+            signalPrevSignals.length > 1 &&
+            BLOCK_SIGNAL_REGEX.test(prevSignalId) &&
+            BLOCK_SIGNAL_REGEX.test(signalId)
+          ) {
+            const possiblePrevSignals = signalPrevSignals.filter((prevSignalId) =>
+              BLOCK_SIGNAL_REVERSE_REGEX.test(signalId)
+                ? BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId.prev_signal)
+                : !BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId.prev_signal)
+            );
 
-          const prevSignals = await prisma.$queryRaw<{ name: string; lat: number; lon: number }[]>`
+            const prevSignals = possiblePrevSignals.length
+              ? await prisma.$queryRawUnsafe<{ name: string; lat: number; lon: number }[]>(`
             SELECT name, ST_X(point) as lat, ST_Y(point) as lon
             FROM signals
-            WHERE name IN (${possiblePrevSignals})
-          `;
+            WHERE name IN (${possiblePrevSignals
+              .map((prevSignalId) => `'${prevSignalId.prev_signal}'`)
+              .join(",")})
+          `)
+              : [];
 
-          const distances = signalPrevSignals
-            .filter((prevSignalId) =>
-              BLOCK_SIGNAL_REVERSE_REGEX.test(signalId)
-                ? BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId)
-                : !BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId)
-            )
-            .map((prevSignalId) => {
-              const prevSignal = prevSignals.find((signal) => signal.name === prevSignalId);
+            const distances = signalPrevSignals
+              .filter((prevSignalId) =>
+                BLOCK_SIGNAL_REVERSE_REGEX.test(signalId)
+                  ? BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId.prev_signal)
+                  : !BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId.prev_signal)
+              )
+              .map((prevSignalId) => {
+                const prevSignal = prevSignals.find(
+                  (signal) => signal.name === prevSignalId.prev_signal
+                );
 
-              if (!prevSignal) {
-                return { prevSignalId, distance: Infinity };
-              }
+                if (!prevSignal) {
+                  return { prevSignalId, distance: Infinity };
+                }
 
-              return {
-                prevSignalId,
-                distance: distance(
-                  [prevSignal.lat, prevSignal.lon],
-                  [train.TrainData.Latititute, train.TrainData.Longitute]
-                ),
-              };
-            })
-            .toSorted((a, b) => a.distance - b.distance);
+                return {
+                  prevSignalId,
+                  distance: distance(
+                    [prevSignal.lat, prevSignal.lon],
+                    [train.TrainData.Latititute, train.TrainData.Longitute]
+                  ),
+                };
+              })
+              .toSorted((a, b) => a.distance - b.distance);
 
-          logger.warn(
-            `Block Signal ${signalId} has more than 1 prev signal: ${Array.from(
-              signalPrevSignals
-            ).join(", ")}; keeping the closest one (${distances[0].prevSignalId})`
-          );
+            if (distances.length) {
+              logger.warn(
+                `Block Signal ${signalId} has more than 1 prev signal: ${signalPrevSignals
+                  .map((x) => x.prev_signal)
+                  .join(", ")}; keeping the closest one (${distances[0].prevSignalId.prev_signal})`
+              );
 
-          await prisma.$executeRaw`
+              await prisma.$executeRaw`
               DELETE FROM prev_signals
-              WHERE signal = ${signalId} AND prev_signal != ${distances[0].prevSignalId}
+              WHERE signal = ${signalId} AND prev_signal != ${distances[0].prevSignalId.prev_signal}
             `;
+            }
+          }
         }
       }
-    }
 
-    TrainPreviousSignals.set(trainId, signalId);
+      TrainPreviousSignals.set(trainId, signalId);
 
-    if (train.TrainData.DistanceToSignalInFront < 5) {
-      const signal = await prisma.signals.findUnique({ where: { name: signalId } });
-      if (signal) {
-        if (signal.accuracy > train.TrainData.DistanceToSignalInFront) {
-          await prisma.$executeRaw`
+      if (train.TrainData.DistanceToSignalInFront < 5) {
+        const signal = await prisma.signals.findUnique({ where: { name: signalId } });
+        if (signal) {
+          if (signal.accuracy > train.TrainData.DistanceToSignalInFront) {
+            await prisma.$executeRaw`
             UPDATE signals
             SET accuracy = ${
               train.TrainData.DistanceToSignalInFront
             }, point = ${`SRID=4326;POINT(${train.TrainData.Latititute} ${train.TrainData.Longitute})`}
             WHERE name = ${signalId}
           `;
-          logger.success(
-            `Signal ${signalId} accuracy updated from ${signal.accuracy}m to ${
-              train.TrainData.DistanceToSignalInFront
-            }m (${signal.accuracy - train.TrainData.DistanceToSignalInFront}m)`
-          );
-        }
+            logger.success(
+              `Signal ${signalId} accuracy updated from ${signal.accuracy}m to ${
+                train.TrainData.DistanceToSignalInFront
+              }m (${signal.accuracy - train.TrainData.DistanceToSignalInFront}m)`
+            );
+          }
 
-        if (
-          !signal.type &&
-          (train.TrainData.SignalInFrontSpeed === 60 ||
-            train.TrainData.SignalInFrontSpeed === 100 ||
-            BLOCK_SIGNAL_REGEX.test(signalId))
-        ) {
-          await prisma.$executeRaw`
+          if (
+            !signal.type &&
+            (train.TrainData.SignalInFrontSpeed === 60 ||
+              train.TrainData.SignalInFrontSpeed === 100 ||
+              BLOCK_SIGNAL_REGEX.test(signalId))
+          ) {
+            await prisma.$executeRaw`
             UPDATE signals
             SET type = ${getSignalType(train)}
             WHERE name = ${signalId}
           `;
+            logger.success(
+              `Signal ${signalId} type set to ${
+                BLOCK_SIGNAL_REGEX.test(signalId) ? "block" : "main"
+              } because of speed ${train.TrainData.SignalInFrontSpeed}km/h`
+            );
+          }
+        } else {
           logger.success(
-            `Signal ${signalId} type set to ${
-              BLOCK_SIGNAL_REGEX.test(signalId) ? "block" : "main"
-            } because of speed ${train.TrainData.SignalInFrontSpeed}km/h`
+            `New signal detected: ${signalId} at ${train.TrainData.Latititute}, ${train.TrainData.Longitute} (${extra}) with accuracy ${train.TrainData.DistanceToSignalInFront}m`
           );
         }
-      } else {
-        logger.success(
-          `New signal detected: ${signalId} at ${train.TrainData.Latititute}, ${train.TrainData.Longitute} (${extra}) with accuracy ${train.TrainData.DistanceToSignalInFront}m`
-        );
       }
     }
+
+    logger.info(`${trains.length} trains analyzed in ${Date.now() - start}ms`);
+  } catch (e) {
+    logger.error(`Error analyzing trains: ${e}`);
+  } finally {
+    running = false;
   }
-
-  logger.info(`${trains.length} trains analyzed in ${Date.now() - start}ms`);
-
-  running = false;
 }
 
 function getSignalType(train: Train) {
@@ -417,12 +441,18 @@ parentPort?.on("message", async (msg) => {
     case "add-prev-signal": {
       const signal = await prisma.signals.findUnique({ where: { name: msg.data.signal } });
       if (signal) {
-        await prisma.$executeRaw`
+        try {
+          await prisma.$executeRaw`
           INSERT INTO prev_signals (signal, prev_signal)
           VALUES (${msg.data.signal}, ${msg.data.prevSignal})
         `;
 
-        logger.success(`Signal ${msg.data.signal} prev signal ${msg.data.prevSignal} added`);
+          logger.success(`Signal ${msg.data.signal} prev signal ${msg.data.prevSignal} added`);
+        } catch (e) {
+          logger.warn(
+            `Signal ${msg.data.signal} prev signal ${msg.data.prevSignal} already exists`
+          );
+        }
       }
       break;
     }

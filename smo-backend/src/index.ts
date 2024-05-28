@@ -139,8 +139,8 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("disconnect", () => {
-    logger.info(`Client disconnected, total: ${--connectedClients}`, { client: socket.id });
+  socket.on("disconnect", (r) => {
+    logger.info(`Client disconnected: ${r}, total: ${--connectedClients}`, { client: socket.id });
   });
 });
 

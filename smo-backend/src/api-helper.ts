@@ -124,10 +124,10 @@ export async function fetchTimezone(serverCode: string): Promise<number> {
       return res;
     })
     .then((res) => res.text())
-    .then((data) => parseInt(data))
-    .then((data) => {
+    .then((data) => [parseInt(data), data] as [number, string])
+    .then(([data, originalText]) => {
       if (isNaN(data)) {
-        logger.error("Invalid timezone", { module: "FETCH-TIMEZONE", serverCode });
+        logger.error("Invalid timezone: " + originalText, { module: "FETCH-TIMEZONE", serverCode });
         return 0;
       }
 
@@ -149,10 +149,10 @@ export async function fetchTime(serverCode: string): Promise<number> {
       return res;
     })
     .then((res) => res.text())
-    .then((data) => parseInt(data))
-    .then((data) => {
+    .then((data) => [parseInt(data), data] as [number, string])
+    .then(([data, originalText]) => {
       if (isNaN(data)) {
-        logger.error("Invalid time", { module: "FETCH-TIME", serverCode });
+        logger.error("Invalid time: " + originalText, { module: "FETCH-TIME", serverCode });
         return 0;
       }
 

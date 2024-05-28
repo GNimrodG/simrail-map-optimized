@@ -8,6 +8,7 @@ import { extname } from "path";
 import { statSync } from "fs";
 
 const prisma = new PrismaClient();
+const WORKER_TIMEOUT = 5 * 60 * 1000;
 
 export class Fetcher<T> {
   protected logger: ModuleLogger;
@@ -28,6 +29,12 @@ export class Fetcher<T> {
       defaultRefreshInterval;
     this.logger.info(`Refresh interval: ${this.refreshInterval}`);
 
+    this.worker = this.getWorker();
+
+    this.startWorker();
+  }
+
+  private getWorker() {
     // Worker setup
     const workerPath = `${__dirname}/workers/${this.module.toLocaleLowerCase()}${extname(
       __filename
@@ -37,7 +44,14 @@ export class Fetcher<T> {
       throw new Error(`Worker file not found: ${workerPath}`);
     }
 
-    this.worker = new Worker(workerPath);
+    return new Worker(workerPath);
+  }
+
+  protected startWorker(recreate = false) {
+    if (recreate) {
+      this.worker.terminate();
+      this.worker = this.getWorker();
+    }
 
     this.worker.on("error", (err) => {
       this.logger.error(`Worker error: ${err}`);
@@ -115,10 +129,15 @@ export class Fetcher<T> {
   }
 
   protected async fetchData(): Promise<T> {
-    this.worker.postMessage({ type: "run" });
+    const promise = new Promise<T>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        this.logger.error("Timeout, restarting worker...");
+        this.startWorker(true);
+        reject(new Error("Timeout"));
+      }, WORKER_TIMEOUT);
 
-    return new Promise<T>((resolve, reject) => {
       this.worker.once("message", (msg) => {
+        clearTimeout(timeout);
         if (msg.type === "done") {
           resolve(msg.data);
         } else {
@@ -126,6 +145,10 @@ export class Fetcher<T> {
         }
       });
     });
+
+    this.worker.postMessage({ type: "run" });
+
+    return promise;
   }
 }
 
@@ -172,10 +195,15 @@ export class PerServerFetcher<T> extends Fetcher<Map<string, T>> {
   }
 
   protected async fetchDataForServer(server: string): Promise<T> {
-    this.worker.postMessage({ type: "run", server });
+    const promise = new Promise<T>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        this.logger.error("Timeout, restarting worker...");
+        this.startWorker(true);
+        reject(new Error("Timeout"));
+      }, WORKER_TIMEOUT);
 
-    return new Promise<T>((resolve, reject) => {
       this.worker.once("message", (msg) => {
+        clearTimeout(timeout);
         if (msg.type === "done") {
           resolve(msg.data);
         } else {
@@ -183,6 +211,10 @@ export class PerServerFetcher<T> extends Fetcher<Map<string, T>> {
         }
       });
     });
+
+    this.worker.postMessage({ type: "run", server });
+
+    return promise;
   }
 
   public getDataForServer(server: string): T | null {
