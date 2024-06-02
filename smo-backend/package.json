@@ -19,7 +19,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@prisma/client": "^5.13.0",
+    "@prisma/client": "^5.14.0",
     "@sentry/cli": "^2.31.2",
     "@sentry/node": "^7.113.0",
     "@sentry/profiling-node": "^7.113.0",
