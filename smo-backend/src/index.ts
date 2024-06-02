@@ -27,24 +27,12 @@ const app = express();
 
 Sentry.init({
   dsn: "https://9a17f501f8e2c7f28b08fd08a925dd8f@o260759.ingest.us.sentry.io/4507205518295040",
-  integrations: [
-    // enable HTTP calls tracing
-    new Sentry.Integrations.Http({ tracing: true }),
-    // enable Express.js middleware tracing
-    new Sentry.Integrations.Express({ app }),
-    nodeProfilingIntegration(),
-  ],
+  integrations: [Sentry.captureConsoleIntegration(), nodeProfilingIntegration()],
   // Performance Monitoring
-  tracesSampleRate: 1.0, //  Capture 100% of the transactions
+  tracesSampleRate: 1.0, // Capture 100% of the transactions
   // Set sampling rate for profiling - this is relative to tracesSampleRate
   profilesSampleRate: 1.0,
 });
-
-// The request handler must be the first middleware on the app
-app.use(Sentry.Handlers.requestHandler());
-
-// TracingHandler creates a trace for every incoming request
-app.use(Sentry.Handlers.tracingHandler());
 
 const httpServer = createServer(app);
 const io = new SocketIOServer(httpServer, {
@@ -415,8 +403,7 @@ if (process.env.ADMIN_PASSWORD) {
   });
 }
 
-// The error handler must be registered before any other error middleware and after all controllers
-app.use(Sentry.Handlers.errorHandler());
+Sentry.setupExpressErrorHandler(app);
 
 const PORT = process.env.PORT || 3000;
 

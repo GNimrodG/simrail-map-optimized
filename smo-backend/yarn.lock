@@ -372,7 +372,7 @@
     "@sentry/types" "8.7.0"
     "@sentry/utils" "8.7.0"
 
-"@sentry/node@^8.7.0":
+"@sentry/node@8.7.0", "@sentry/node@^8.7.0":
   version "8.7.0"
   resolved "https://registry.yarnpkg.com/@sentry/node/-/node-8.7.0.tgz#dd8993c6060870ad80b8c45091d4ae91c1c7b7c2"
   integrity sha512-El1LmXGVe8Ahi5oUdlrE5s3Or23/iGnnntNvaYymXk4BmL4dJtv7ttlQ94ZrI9QWs8VnfM7eHqCd+OPjTh0XJQ==
@@ -415,11 +415,15 @@
     "@sentry/types" "8.7.0"
     "@sentry/utils" "8.7.0"
 
-"@sentry/profiling-node@^7.113.0":
-  version "7.114.0"
-  resolved "https://registry.yarnpkg.com/@sentry/profiling-node/-/profiling-node-7.114.0.tgz#260df3ea828615e85acd0d794f07a1f1b755cb14"
-  integrity sha512-JgTOythJKfhxDrO5jm3QxBHf8MQvpZpGHpoXe4mXRXwFKU3dP0GNjHKNp4VAOqWQh0+wDjkydSGffejJYsWppw==
+"@sentry/profiling-node@^8.7.0":
+  version "8.7.0"
+  resolved "https://registry.yarnpkg.com/@sentry/profiling-node/-/profiling-node-8.7.0.tgz#8322892dd978c8ad98395cd75cd966280e3d9ce6"
+  integrity sha512-JL4XZD4bchbAjxR4KIO9GQxmK79y3SBZFp8ELz6cyT3XP0dl57C/BOtaOq6pt5kcW7dlCFFWQPxXVsIZSSN5Xw==
   dependencies:
+    "@sentry/core" "8.7.0"
+    "@sentry/node" "8.7.0"
+    "@sentry/types" "8.7.0"
+    "@sentry/utils" "8.7.0"
     detect-libc "^2.0.2"
     node-abi "^3.61.0"
 
