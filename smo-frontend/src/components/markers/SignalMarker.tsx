@@ -298,7 +298,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
               Previous signals:{" "}
               {signal.prevSignals.map((s) => (
                 <Chip
-                  key={s}
+                  key={`${signal.name}-prev-${s}`}
                   onClick={() => onSignalSelect?.(s)}>
                   {s}
                 </Chip>
@@ -308,7 +308,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
               Next signals:{" "}
               {signal.nextSignals.map((s) => (
                 <Chip
-                  key={s}
+                  key={`${signal.name}-next-${s}`}
                   onClick={() => onSignalSelect?.(s)}>
                   {s}
                 </Chip>

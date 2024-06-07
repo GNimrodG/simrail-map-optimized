@@ -59,8 +59,8 @@ export async function getSignals() {
     extra,
     accuracy,
     type,
-    ARRAY_TO_STRING(ARRAY_AGG(prev_signals.prev_signal), ',') as prevsignals,
-    ARRAY_TO_STRING(ARRAY_AGG(next_signals.next_signal), ',') as nextsignals
+    ARRAY_TO_STRING(ARRAY_AGG(DISTINCT prev_signals.prev_signal), ',') as prevsignals,
+    ARRAY_TO_STRING(ARRAY_AGG(DISTINCT next_signals.next_signal), ',') as nextsignals
   FROM signals
     LEFT JOIN prev_signals ON signals.name = prev_signals.signal
     LEFT JOIN next_signals ON signals.name = next_signals.signal
@@ -86,8 +86,8 @@ export async function getSignal(id: string) {
     extra,
     accuracy,
     type,
-    ARRAY_TO_STRING(ARRAY_AGG(prev_signals.prev_signal), ',') as prevsignals,
-    ARRAY_TO_STRING(ARRAY_AGG(next_signals.next_signal), ',') as nextsignals
+    ARRAY_TO_STRING(ARRAY_AGG(DISTINCT prev_signals.prev_signal), ',') as prevsignals,
+    ARRAY_TO_STRING(ARRAY_AGG(DISTINCT next_signals.next_signal), ',') as nextsignals
   FROM signals
     LEFT JOIN prev_signals ON signals.name = prev_signals.signal
     LEFT JOIN next_signals ON signals.name = next_signals.signal
