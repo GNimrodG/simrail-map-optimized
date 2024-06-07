@@ -3,10 +3,15 @@ import type { Train } from "../api-helper";
 import { parentPort } from "worker_threads";
 import { ModuleLogger } from "../logger";
 import { prisma } from "../db";
+import { LRUCache } from "lru-cache";
 
 const logger = new ModuleLogger("SIGNALS-PROC-WORKER");
 
-const TrainPreviousSignals = new Map<string, string>();
+const TrainPreviousSignals = new LRUCache<string, string>({
+  ttl: 1000 * 60 * 60, // 1 hour
+  ttlAutopurge: true,
+  updateAgeOnGet: true,
+});
 
 async function loadFileLinesToDatabase(lines: string[]) {
   let newSignalCount = 0;
@@ -127,8 +132,6 @@ try {
 } catch (e) {
   logger.warn(`No signals file found (${e})`);
 }
-
-parentPort?.postMessage({ TrainPreviousSignals });
 
 const BLOCK_SIGNAL_REGEX = /^\w\d+_\d+\w?$/;
 const BLOCK_SIGNAL_REVERSE_REGEX = /^\w\d+_\d+[A-Z]$/;

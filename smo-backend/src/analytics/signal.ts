@@ -21,12 +21,6 @@ worker.on("exit", (code) => {
   }
 });
 
-let TrainPreviousSignals = new Map<string, string>();
-
-worker.on("message", (msg) => {
-  TrainPreviousSignals = msg.TrainPreviousSignals || TrainPreviousSignals;
-});
-
 export function analyzeTrains(trains: Train[]) {
   worker.postMessage({ type: "analyze", data: trains });
 }
