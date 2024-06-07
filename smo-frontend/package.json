@@ -27,7 +27,8 @@
     "react-leaflet-drift-marker": "^4.0.0",
     "react-window": "^1.8.10",
     "rxjs": "^7.8.1",
-    "socket.io-client": "^4.7.5"
+    "socket.io-client": "^4.7.5",
+    "socket.io-msgpack-parser": "^3.0.2"
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.12",

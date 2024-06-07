@@ -1,3 +1,4 @@
+import msgpackParser from "socket.io-msgpack-parser";
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
@@ -39,6 +40,7 @@ const io = new SocketIOServer(httpServer, {
   cors: {
     origin: "*",
   },
+  parser: msgpackParser,
 });
 
 serverFetcher.start();

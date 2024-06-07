@@ -1,6 +1,7 @@
 import { readLocalStorageValue } from "@mantine/hooks";
 import { BehaviorSubject } from "rxjs";
 import { io } from "socket.io-client";
+import msgpackParser from "socket.io-msgpack-parser";
 
 export interface ServerStatus {
   ServerCode: string;
@@ -91,7 +92,9 @@ const SERVER_URL = import.meta.env.PROD ? "wss://api.smo.data-unknown.com" : "ws
 
 export const isConnected$ = new BehaviorSubject(false);
 
-const socket = io(SERVER_URL);
+const socket = io(SERVER_URL, {
+  parser: msgpackParser,
+});
 
 socket.on("connect", () => {
   isConnected$.next(true);
