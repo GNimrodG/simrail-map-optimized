@@ -35,7 +35,7 @@ model stats {
 model signals {
   name       String   @id @db.VarChar(8)
   extra      String   @db.VarChar(255)
-  type       String   @db.VarChar(10)
+  type       String?  @db.VarChar(10)
   accuracy   Float
   created_at DateTime @default(now()) @db.Timestamp(6)
 

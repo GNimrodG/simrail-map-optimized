@@ -163,7 +163,7 @@ async function analyzeTrains(trains: Train[]) {
         continue;
       }
 
-      const trainId = `${train.TrainNoLocal}@${train.ServerCode}`;
+      const trainId = train.id;
       const [signalId, extra] = train.TrainData.SignalInFront.split("@");
       const signal = signals.find((signal) => signal.name === signalId);
 
@@ -235,7 +235,7 @@ async function analyzeTrains(trains: Train[]) {
               .toSorted((a, b) => a.distance - b.distance);
 
             if (distances.length) {
-              logger.warn(
+              logger.info(
                 `Block Signal ${prevSignalId} has more than 1 next signal: ${prevSignalNextSignals
                   .map((x) => x.next_signal)
                   .join(", ")}; keeping the closest one (${distances[0].nextSignalId.next_signal})`
@@ -312,7 +312,7 @@ async function analyzeTrains(trains: Train[]) {
               .toSorted((a, b) => a.distance - b.distance);
 
             if (distances.length) {
-              logger.warn(
+              logger.info(
                 `Block Signal ${signalId} has more than 1 prev signal: ${signalPrevSignals
                   .map((x) => x.prev_signal)
                   .join(", ")}; keeping the closest one (${distances[0].prevSignalId.prev_signal})`
