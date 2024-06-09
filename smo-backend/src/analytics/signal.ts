@@ -66,8 +66,8 @@ export async function getSignals() {
       ...rawSignal,
       prevsignals: undefined,
       nextsignals: undefined,
-      prevSignals: rawSignal.prevsignals?.trim().split(",") || [],
-      nextSignals: rawSignal.nextsignals?.trim().split(",") || [],
+      prevSignals: rawSignal.prevsignals?.trim().split(",").filter(Boolean) || [],
+      nextSignals: rawSignal.nextsignals?.trim().split(",").filter(Boolean) || [],
     };
   });
 }
@@ -93,8 +93,8 @@ export async function getSignal(id: string) {
     ...rawSignal,
     prevsignals: undefined,
     nextsignals: undefined,
-    prevSignals: rawSignal.prevsignals?.trim().split(",") || [],
-    nextSignals: rawSignal.nextsignals?.trim().split(",") || [],
+    prevSignals: rawSignal.prevsignals?.trim().split(",").filter(Boolean) || [],
+    nextSignals: rawSignal.nextsignals?.trim().split(",").filter(Boolean) || [],
   };
 }
 
