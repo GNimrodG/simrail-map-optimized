@@ -33,14 +33,17 @@ This is a project that aims to provide an optimalized and feature rich online ma
 1. Navigate to the `smo-frontend` directory
 2. Run `yarn install` to install the dependencies
 3. Run `yarn dev` to start the development server
-4. Open `http://localhost:5173/` in your browser
+4. Open `http://localhost:5173/` in your browser (by default when running in development mode the frontend will try to use the backend running on `http://localhost:3000/`)
 
 ### Backend
 
+To run the backend you need a PostGIS database running, you can use an external one or you can use the `docker-compose.yml` file to run one locally in Docker. (You need comment out the webserver part in the `docker-compose.yml` file to avoid port conflicts.)
+
 1. Navigate to the `smo-backend` directory
 2. Run `yarn install` to install the dependencies
-3. Run `yarn dev` to start the development server
-4. The backend server will be running on `http://localhost:3000/`
+3. Copy .env.sample to .env and fill in the required environment variables
+4. Run `yarn dev` to start the development server
+5. The backend server will be running on `http://localhost:3000/`
 
 ## Contributing
 
