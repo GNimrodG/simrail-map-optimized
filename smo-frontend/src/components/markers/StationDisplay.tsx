@@ -1,5 +1,6 @@
 import { useMediaQuery } from "@mantine/hooks";
 import { useTheme } from "@mui/joy/styles";
+import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import moment from "moment";
 import { type FunctionComponent, useState } from "react";
@@ -29,14 +30,14 @@ const STOP_TYPE_TECHNICAL: Partial<Record<TimetableEntry["stopType"], string>> =
 const StationDisplay: FunctionComponent<StationDisplayProps> = ({
   station,
   mainStation,
-  pastStation: isPastStation,
+  pastStation,
 }) => {
   const theme = useTheme();
   const isSmallHeight = useMediaQuery(`(max-height: ${theme.breakpoints.values.md}px)`);
   const [timeUntil, setTimeUntil] = useState<number | null>(null);
 
   useObservable(timeSubj$, (time) => {
-    if (!isPastStation) {
+    if (!pastStation) {
       setTimeUntil(moment(time).diff(moment(station.arrivalTime), "m"));
     } else {
       setTimeUntil(null);
@@ -49,6 +50,40 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
       (!station.departureTime || station.departureTime === station.arrivalTime)) ||
     (!!station.departureTime &&
       (!station.arrivalTime || station.departureTime === station.arrivalTime));
+
+  const timeColor = !timeUntil
+    ? "neutral"
+    : timeUntil < 0
+    ? "success"
+    : timeUntil > 15
+    ? "danger"
+    : "warning";
+
+  const timeUntilDisplay = (
+    <>
+      {" "}
+      <Tooltip
+        title={
+          !timeUntil
+            ? "The train should arrive at this station now."
+            : timeUntil < 0
+            ? `Train train should arrive at this station ${moment
+                .duration({ m: -timeUntil })
+                .humanize(true)}.`
+            : `Train train should have arrived at this station ${moment
+                .duration({ m: -timeUntil })
+                .humanize(true)}.`
+        }
+        color={timeColor}>
+        <Typography
+          variant="outlined"
+          level="body-xs"
+          color={timeColor}>
+          {timeUntil}'
+        </Typography>
+      </Tooltip>
+    </>
+  );
 
   return (
     <>
@@ -73,17 +108,7 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
                 noSeconds
               />
             </Typography>
-            {timeUntil !== null && (
-              <>
-                {" "}
-                <Typography
-                  variant="outlined"
-                  level="body-xs"
-                  color={!timeUntil ? "neutral" : timeUntil < 0 ? "success" : "warning"}>
-                  {timeUntil}'
-                </Typography>
-              </>
-            )}
+            {timeUntil !== null && timeUntilDisplay}
           </>
         )}
       </Typography>
@@ -116,17 +141,7 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
               )}
             </>
           )}
-        {!shouldCollapse && timeUntil !== null && (
-          <>
-            {" "}
-            <Typography
-              variant="outlined"
-              level="body-xs"
-              color={!timeUntil ? "neutral" : timeUntil < 0 ? "success" : "warning"}>
-              {timeUntil}'
-            </Typography>
-          </>
-        )}
+        {!shouldCollapse && timeUntil !== null && timeUntilDisplay}
         {!shouldCollapse && (
           <>
             {" "}

@@ -4,6 +4,7 @@ import Button from "@mui/joy/Button";
 import ButtonGroup from "@mui/joy/ButtonGroup";
 import Chip from "@mui/joy/Chip";
 import IconButton from "@mui/joy/IconButton";
+import LinearProgress from "@mui/joy/LinearProgress";
 import Stack from "@mui/joy/Stack";
 import Step from "@mui/joy/Step";
 import StepIndicator from "@mui/joy/StepIndicator";
@@ -177,6 +178,18 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         minWidth: "16rem",
         overflowY: "auto",
       }}>
+      {!timetable && (
+        <LinearProgress
+          sx={{
+            width: "100%",
+            height: "0.5rem",
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
+          }}
+        />
+      )}
+
       <Image
         src={thumbnailUrl}
         alt={train.Vehicles[0]}
