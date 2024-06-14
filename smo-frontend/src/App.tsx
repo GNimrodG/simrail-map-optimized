@@ -32,7 +32,7 @@ function App() {
       <CssBaseline />
       <SelectedRouteContext.Provider value={selectedRouteContextValue}>
         <SelectedTrainContext.Provider value={selectedTrainContextValue}>
-          <MainMap serverId="en1" />
+          <MainMap />
         </SelectedTrainContext.Provider>
       </SelectedRouteContext.Provider>
     </CssVarsProvider>

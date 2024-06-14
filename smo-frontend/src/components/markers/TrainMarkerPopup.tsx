@@ -1,4 +1,4 @@
-import { useMediaQuery } from "@mantine/hooks";
+import { readLocalStorageValue, useLocalStorage, useMediaQuery } from "@mantine/hooks";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import ButtonGroup from "@mui/joy/ButtonGroup";
@@ -10,6 +10,7 @@ import Step from "@mui/joy/Step";
 import StepIndicator from "@mui/joy/StepIndicator";
 import Stepper from "@mui/joy/Stepper";
 import { styled, useTheme } from "@mui/joy/styles";
+import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 
@@ -20,6 +21,7 @@ import { ProfileResponse } from "../../utils/steam";
 import { getColorTrainMarker, getDistanceColorForSignal } from "../../utils/ui";
 import CollapseIcon from "../icons/CollapseIcon";
 import ExpandIcon from "../icons/ExpandIcon";
+import InfoIcon from "../icons/InfoIcon";
 import SteamProfileDisplay from "../SteamProfileDisplay";
 import LengthIcon from "./icons/LengthIcon";
 import SpeedIcon from "./icons/SpeedIcon";
@@ -59,14 +61,37 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
   const [timetable, setTimetable] = useState<Timetable | null>(null);
-  const [isTimeTableExpanded, setIsTimeTableExpanded] = useState(false);
+  const [isTimeTableExpanded, setIsTimeTableExpanded] = useState(
+    readLocalStorageValue({ key: "expandScheduleDefault", defaultValue: false })
+  );
+
+  const [hideTrainPictures] = useLocalStorage({ key: "hideTrainPictures", defaultValue: false });
+  const [showSpeedInfoCollapsed] = useLocalStorage({
+    key: "showSpeedInfoCollapsed",
+    defaultValue: true,
+  });
+  const [showSignalInfoCollapsed] = useLocalStorage({
+    key: "showSignalInfoCollapsed",
+    defaultValue: true,
+  });
+  const [showNextStationInfoCollapsed] = useLocalStorage({
+    key: "showNextStationInfoCollapsed",
+    defaultValue: false,
+  });
 
   const thumbnailUrl = useMemo(() => getThumbnailUrl(train.Vehicles[0]), [train.Vehicles]);
 
   useEffect(() => {
+    let shouldCancel = false;
+
     fetchTimetable(train.TrainNoLocal).then((timetable) => {
+      if (shouldCancel) return;
       setTimetable(timetable);
     });
+
+    return () => {
+      shouldCancel = true;
+    };
   }, [train.TrainNoLocal]);
 
   const firstStation = useMemo(() => timetable?.timetable[0], [timetable]);
@@ -161,9 +186,22 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           )}
         </Stack>
 
-        {trainSpeed}
+        {showSpeedInfoCollapsed && trainSpeed}
 
-        {signalInfo}
+        {showNextStationInfoCollapsed && currentStation && (
+          <StationDisplay
+            station={currentStation}
+            mainStation
+          />
+        )}
+
+        {showSignalInfoCollapsed && (
+          <Stack
+            direction="row"
+            alignItems="center">
+            {signalInfo}
+          </Stack>
+        )}
       </Stack>
     );
   }
@@ -190,11 +228,13 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         />
       )}
 
-      <Image
-        src={thumbnailUrl}
-        alt={train.Vehicles[0]}
-        title={train.Vehicles[0]}
-      />
+      {!hideTrainPictures && (
+        <Image
+          src={thumbnailUrl}
+          alt={train.Vehicles[0]}
+          title={train.Vehicles[0]}
+        />
+      )}
 
       <Box
         sx={{
@@ -227,7 +267,41 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         )}
       </Box>
 
-      <Typography level="body-sm">{train.Vehicles[0]}</Typography>
+      <Stack
+        direction="row"
+        spacing={1}
+        alignItems="center">
+        <Typography level="body-sm">{train.Vehicles[0]}</Typography>
+        <Tooltip
+          arrow
+          variant="outlined"
+          placement="right"
+          describeChild
+          title={
+            <>
+              <Typography
+                level="body-lg"
+                textAlign="center">
+                Consist
+              </Typography>
+              <Stack sx={{ p: 1 }}>
+                {train.Vehicles.map((vehicle, index) => (
+                  <Typography
+                    key={vehicle}
+                    level="body-md">
+                    #{index + 1}: {vehicle}
+                  </Typography>
+                ))}
+              </Stack>
+            </>
+          }>
+          <Stack
+            alignItems="center"
+            justifyContent="center">
+            <InfoIcon />
+          </Stack>
+        </Tooltip>
+      </Stack>
 
       <Stack
         sx={{ width: "100%" }}

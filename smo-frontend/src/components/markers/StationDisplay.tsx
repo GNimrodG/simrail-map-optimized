@@ -1,5 +1,5 @@
 import { useMediaQuery } from "@mantine/hooks";
-import { useTheme } from "@mui/joy/styles";
+import { ColorPaletteProp, useTheme } from "@mui/joy/styles";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import moment from "moment";
@@ -25,6 +25,11 @@ const STOP_TYPE_FRIENDLY: Partial<Record<TimetableEntry["stopType"], string>> = 
 const STOP_TYPE_TECHNICAL: Partial<Record<TimetableEntry["stopType"], string>> = {
   CommercialStop: "PH",
   NoncommercialStop: "PT",
+};
+
+const STOP_TYPE_COLOR: Partial<Record<TimetableEntry["stopType"], ColorPaletteProp>> = {
+  CommercialStop: "primary",
+  NoncommercialStop: "neutral",
 };
 
 const StationDisplay: FunctionComponent<StationDisplayProps> = ({
@@ -63,6 +68,7 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
     <>
       {" "}
       <Tooltip
+        arrow
         title={
           !timeUntil
             ? "The train should arrive at this station now."
@@ -92,11 +98,16 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
         {STOP_TYPE_TECHNICAL[station.stopType] && (
           <>
             {" "}
-            <Typography
-              variant="outlined"
-              level="body-sm">
-              {STOP_TYPE_TECHNICAL[station.stopType]}
-            </Typography>
+            <Tooltip
+              arrow
+              title={STOP_TYPE_FRIENDLY[station.stopType]}>
+              <Typography
+                variant="outlined"
+                level="body-sm"
+                color={STOP_TYPE_COLOR[station.stopType]}>
+                {STOP_TYPE_TECHNICAL[station.stopType]}
+              </Typography>
+            </Tooltip>
           </>
         )}
         {shouldCollapse && (
@@ -142,16 +153,6 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
             </>
           )}
         {!shouldCollapse && timeUntil !== null && timeUntilDisplay}
-        {!shouldCollapse && (
-          <>
-            {" "}
-            <Typography
-              level="body-xs"
-              textOverflow="clip">
-              {STOP_TYPE_FRIENDLY[station.stopType]}
-            </Typography>
-          </>
-        )}
       </Typography>
     </>
   );

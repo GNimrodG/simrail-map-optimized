@@ -1,4 +1,5 @@
 import { readLocalStorageValue } from "@mantine/hooks";
+import { LRUCache } from "lru-cache";
 import { BehaviorSubject } from "rxjs";
 import { io } from "socket.io-client";
 import msgpackParser from "socket.io-msgpack-parser";
@@ -164,10 +165,21 @@ export interface Data {
   time: number;
 }
 
+const timetableCache = new LRUCache<string, Timetable>({ max: 10, ttl: 1000 * 60 * 60 }); // 1 hour
+
 export async function fetchTimetable(train: string) {
   return new Promise<Timetable | null>((resolve) => {
+    const cached = timetableCache.get(train);
+
+    if (cached) {
+      console.log("Got cached timetable for train ", train);
+      resolve(cached);
+      return;
+    }
+
     socket.emit("get-train-timetable", train, (timetable: Timetable) => {
-      console.log("Got timetable", train, timetable);
+      console.log("Got timetable for train ", train);
+      timetableCache.set(train, timetable);
       resolve(timetable);
     });
   });

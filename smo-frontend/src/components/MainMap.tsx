@@ -26,12 +26,9 @@ import MapTimeDisplay from "./MapTimeDisplay";
 import SearchBar from "./SearchBar";
 import SelectedTrainInfo from "./SelectedTrainInfo";
 import ServerSelector from "./ServerSelector";
+import Settings from "./Settings";
 import StatsDisplay from "./StatsDisplay";
 import ThemeToggle from "./utils/ThemeToggle";
-
-export interface MapProps {
-  serverId: string;
-}
 
 const MAIN_ATTRIBUTIONS = [
   '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
@@ -39,7 +36,7 @@ const MAIN_ATTRIBUTIONS = [
   'This website is not affiliated with the <a href="https://simrail.eu" target="_blank">SimRail</a> team.',
 ].join(" | ");
 
-const MainMap: FunctionComponent<MapProps> = () => {
+const MainMap: FunctionComponent = () => {
   const { setSelectedTrain } = useContext(SelectedTrainContext);
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
 
@@ -106,19 +103,27 @@ const MainMap: FunctionComponent<MapProps> = () => {
         </Control>
 
         {/* Layers */}
-        <Control position="topright">
-          {/* Placeholder */}
-          <Box sx={{ p: 2, visible: "none" }} />
-        </Control>
-        <LayerMenu
-          visibleLayers={visibleLayers}
-          setVisibleLayers={setVisibleLayers}
-        />
+        {/* ThemeToggle */}
+        {/* Settings */}
+        <Stack
+          sx={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            zIndex: 1000,
+          }}
+          useFlexGap
+          direction="column"
+          spacing={1}>
+          <LayerMenu
+            visibleLayers={visibleLayers}
+            setVisibleLayers={setVisibleLayers}
+          />
 
-        {/* Theme Toggle */}
-        <Control position="topright">
           <ThemeToggle />
-        </Control>
+
+          <Settings />
+        </Stack>
 
         {/* Selected Route */}
         <Control
