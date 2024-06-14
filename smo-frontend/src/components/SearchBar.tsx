@@ -1,5 +1,5 @@
-import Autocomplete from "@mui/joy/Autocomplete";
-import { type FunctionComponent, useContext, useMemo } from "react";
+import Autocomplete, { createFilterOptions } from "@mui/joy/Autocomplete";
+import { type FunctionComponent, useContext } from "react";
 import { useMap } from "react-leaflet";
 
 import {
@@ -14,22 +14,27 @@ import SelectedTrainContext from "../utils/selected-train-context";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
 import ListboxComponent from "./utils/ListBoxComponent";
 
+const filterOptions = createFilterOptions<ListItem>({
+  ignoreAccents: true,
+  ignoreCase: true,
+  stringify: (option) =>
+    getLabel(option)
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replaceAll("Ł", "L")
+      .replaceAll("ł", "l")
+      .replaceAll("ą", "a")
+      .replaceAll("ę", "e")
+      .replaceAll("ó", "o")
+      .replaceAll("ś", "s"),
+});
+
 const SearchBar: FunctionComponent = () => {
   const map = useMap();
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
   const trains = useBehaviorSubj(trainsData$);
   const stations = useBehaviorSubj(stationsData$);
   const signals = useBehaviorSubj(signalsData$);
-
-  const selectedTrainData = useMemo(() => {
-    if (selectedTrain) {
-      const train = trains.find((t) => t.TrainNoLocal === selectedTrain.trainNo) || null;
-      if (train) {
-        return { type: "Trains" as const, data: train };
-      }
-    }
-    return null;
-  }, [selectedTrain, trains]);
 
   const options = [
     ...(trains
@@ -51,6 +56,7 @@ const SearchBar: FunctionComponent = () => {
       placeholder="Search"
       options={options}
       disableListWrap
+      filterOptions={filterOptions}
       slots={{
         listbox: ListboxComponent,
       }}
@@ -61,7 +67,7 @@ const SearchBar: FunctionComponent = () => {
       renderGroup={(params) => params as unknown as React.ReactNode}
       groupBy={(option) => option.type}
       getOptionLabel={(option) => getLabel(option)}
-      value={selectedTrainData}
+      value={null}
       onChange={(_e, v) => {
         switch (v?.type) {
           case "Trains":
@@ -70,11 +76,11 @@ const SearchBar: FunctionComponent = () => {
             );
             break;
           case "Stations":
-            setSelectedTrain(null);
+            setSelectedTrain(selectedTrain ? { ...selectedTrain, follow: false } : null);
             map?.panTo([v.data.Latititude, v.data.Longitude], { animate: true, duration: 1 });
             break;
           case "Signals":
-            setSelectedTrain(null);
+            setSelectedTrain(selectedTrain ? { ...selectedTrain, follow: false } : null);
             map?.panTo([v.data.lat, v.data.lon], { animate: true, duration: 1 });
             break;
         }
