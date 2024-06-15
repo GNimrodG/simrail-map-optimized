@@ -91,6 +91,53 @@ export interface TimeData {
 
 const SERVER_URL = import.meta.env.PROD ? "wss://api.smo.data-unknown.com" : "ws://localhost:3000";
 
+const _SERVER_URL = new URL(SERVER_URL);
+
+const SERVER_API_URL =
+  (_SERVER_URL.protocol === "wss:" ? "https://" : "http://") + _SERVER_URL.host;
+
+export function deletePrevSignal(signal: string, prevSignal: string) {
+  fetch(`${SERVER_API_URL}/signals/${encodeURIComponent(signal)}/prev`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ password: localStorage.getItem("adminPassword"), prevSignal }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        console.log(`Deleted signal connection ${prevSignal}->[${signal}]`);
+      } else {
+        console.error(`Failed to delete signal connection ${prevSignal}->[${signal}]`, data.error);
+      }
+    })
+    .catch((e) => {
+      console.error(`Failed to delete signal connection ${prevSignal}->[${signal}]`, e);
+    });
+}
+
+export function deleteNextSignal(signal: string, nextSignal: string) {
+  fetch(`${SERVER_API_URL}/signals/${encodeURIComponent(signal)}/next`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ password: localStorage.getItem("adminPassword"), nextSignal }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        console.log(`Deleted signal connection [${signal}]->${nextSignal}`);
+      } else {
+        console.error(`Failed to delete signal connection [${signal}]->${nextSignal}`, data.error);
+      }
+    })
+    .catch((e) => {
+      console.error(`Failed to delete signal connection [${signal}]->${nextSignal}`, e);
+    });
+}
+
 export const isConnected$ = new BehaviorSubject(false);
 
 const socket = io(SERVER_URL, {

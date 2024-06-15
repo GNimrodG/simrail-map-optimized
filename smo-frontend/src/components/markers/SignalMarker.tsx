@@ -1,4 +1,5 @@
 import Chip from "@mui/joy/Chip";
+import ChipDelete from "@mui/joy/ChipDelete";
 import Stack from "@mui/joy/Stack";
 import { DefaultColorPalette } from "@mui/joy/styles/types";
 import Typography from "@mui/joy/Typography";
@@ -6,7 +7,7 @@ import { DivIcon, DivIconOptions, Icon, IconOptions } from "leaflet";
 import { type FunctionComponent, useEffect, useState } from "react";
 import { Marker, Popup } from "react-leaflet";
 
-import { SignalWithTrain } from "../../utils/data-manager";
+import { deleteNextSignal, deletePrevSignal, SignalWithTrain } from "../../utils/data-manager";
 import { getDistanceColorForSignal } from "../../utils/ui";
 import SignalIcon from "./icons/signals/signal.svg?raw";
 import SignalBlockGreenIcon from "./icons/signals/signal-block-green.svg?raw";
@@ -294,22 +295,36 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
             <Typography level="body-xs">Extra: {signal.extra}</Typography>
             <Typography level="body-xs">Type: {signal.type || "unknown"}</Typography>
             <Typography level="body-xs">Accuracy: {signal.accuracy}m</Typography>
-            <Typography level="body-xs">
+            <Typography
+              level="body-xs"
+              component="div">
               Previous signals:{" "}
               {signal.prevSignals.map((s) => (
                 <Chip
                   key={`${signal.name}-prev-${s}`}
-                  onClick={() => onSignalSelect?.(s)}>
+                  onClick={() => onSignalSelect?.(s)}
+                  endDecorator={
+                    localStorage.getItem("adminPassword") && (
+                      <ChipDelete onDelete={() => deletePrevSignal(signal.name, s)} />
+                    )
+                  }>
                   {s}
                 </Chip>
               ))}
             </Typography>
-            <Typography level="body-xs">
+            <Typography
+              level="body-xs"
+              component="div">
               Next signals:{" "}
               {signal.nextSignals.map((s) => (
                 <Chip
                   key={`${signal.name}-next-${s}`}
-                  onClick={() => onSignalSelect?.(s)}>
+                  onClick={() => onSignalSelect?.(s)}
+                  endDecorator={
+                    localStorage.getItem("adminPassword") && (
+                      <ChipDelete onDelete={() => deleteNextSignal(signal.name, s)} />
+                    )
+                  }>
                   {s}
                 </Chip>
               ))}

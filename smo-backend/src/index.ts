@@ -1,4 +1,3 @@
-import msgpackParser from "socket.io-msgpack-parser";
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
@@ -9,10 +8,13 @@ import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import logger from "./logger";
 import {
+  addSignalNextSignal,
+  addSignalPrevSignal,
   analyzeTrains,
   checkSignalExists,
   getSignal,
   getSignalsForTrains,
+  removeSignalNextSignal,
   removeSignalPrevSignal,
   setSignalType,
 } from "./analytics/signal";
@@ -24,6 +26,8 @@ import { trainFetcher } from "./fetchers/train-fetcher";
 import { timeFetcher } from "./fetchers/time-fetcher";
 import { timetableFetcher } from "./fetchers/timetable-fetcher";
 import { filter, take } from "rxjs";
+import msgpackParser from "socket.io-msgpack-parser";
+import cors from "cors";
 
 const app = express();
 
@@ -168,6 +172,8 @@ trainFetcher.data$.subscribe(async (data) => {
   }
 });
 
+app.use(cors());
+
 app.get("/status", (_req, res) => {
   res.json({
     connectedClients,
@@ -290,7 +296,7 @@ if (process.env.ADMIN_PASSWORD) {
     }
   });
 
-  app.delete("/signal/:signal/prev", express.json(), async (req, res) => {
+  app.delete("/signals/:signal/prev", express.json(), async (req, res) => {
     if (req.body?.password !== process.env.ADMIN_PASSWORD) {
       res.status(401).json({ error: "Unauthorized" });
       return;
@@ -343,16 +349,21 @@ if (process.env.ADMIN_PASSWORD) {
     }
 
     if (!signalData.nextSignals.includes(nextSignal)) {
+      logger.debug(
+        `Signal ${signal} does not have next signal ${nextSignal}: ${JSON.stringify(signalData)}`
+      );
       res.status(404).json({ error: "Next signal not found" });
       return;
     }
 
-    removeSignalPrevSignal(signal, nextSignal);
-
-    res.json({ success: true });
+    if (await removeSignalNextSignal(signal, nextSignal)) {
+      res.json({ success: true });
+    } else {
+      res.status(500).json({ error: "Failed to remove next signal" });
+    }
   });
 
-  app.post("/signal/:signal/prev", express.json(), async (req, res) => {
+  app.post("/signals/:signal/prev", express.json(), async (req, res) => {
     if (req.body?.password !== process.env.ADMIN_PASSWORD) {
       res.status(401).json({ error: "Unauthorized" });
       return;
@@ -376,9 +387,11 @@ if (process.env.ADMIN_PASSWORD) {
       return;
     }
 
-    removeSignalPrevSignal(signal, prevSignal);
-
-    res.json({ success: true });
+    if (await addSignalPrevSignal(signal, prevSignal)) {
+      res.json({ success: true });
+    } else {
+      res.status(500).json({ error: "Failed to add prev signal" });
+    }
   });
 
   app.post("/signals/:signal/next", express.json(), async (req, res) => {
@@ -405,9 +418,11 @@ if (process.env.ADMIN_PASSWORD) {
       return;
     }
 
-    removeSignalPrevSignal(signal, nextSignal);
-
-    res.json({ success: true });
+    if (await addSignalNextSignal(signal, nextSignal)) {
+      res.json({ success: true });
+    } else {
+      res.status(500).json({ error: "Failed to add next signal" });
+    }
   });
 }
 

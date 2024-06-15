@@ -24,7 +24,6 @@ class TimetableFetcher extends PerServerFetcher<TimetableData> {
         const dataPath = `${this.dataDir}/${server}-${trainNoLocal}.bin`;
         const encoded = notepack.encode(timetable);
 
-        this.logger.debug(`Writing timetable data to ${dataPath}...`);
         return writeFile(dataPath, encoded, { flag: "w", encoding: null });
       })
     );

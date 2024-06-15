@@ -137,7 +137,7 @@ export async function getSignals() {
 }
 
 export async function getSignal(id: string) {
-  const rawSignal = await prisma.$queryRaw<RawSignal>`
+  const [rawSignal] = await prisma.$queryRaw<RawSignal[]>`
   SELECT signals.name,
     ST_X(signals.point) as lat,
     ST_Y(signals.point) as lon,
