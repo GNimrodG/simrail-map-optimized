@@ -111,10 +111,10 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("get-train-timetable", (train: string | null, cb) => {
+  socket.on("get-train-timetable", async (train: string | null, cb) => {
     if (train) {
-      const timetable = timetableFetcher.getTimeTableForTrain(socket.data.serverCode, train);
-      cb?.(timetable);
+      const timetable = await timetableFetcher.getTimeTableForTrain(socket.data.serverCode, train);
+      cb?.(timetable || null);
     } else {
       cb?.(null);
     }

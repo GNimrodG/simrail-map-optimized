@@ -174,12 +174,8 @@ export class PerServerFetcher<T> extends Fetcher<Map<string, T>> {
           server_count: this.currentData?.size,
         },
       })
-      .then(() => {
-        this.logger.debug("Stats written");
-      })
-      .catch((e: unknown) => {
-        this.logger.error("Error writing stats: " + e);
-      });
+      .then(() => this.logger.debug("Stats written"))
+      .catch((e: unknown) => this.logger.error("Error writing stats: " + e));
   }
 
   protected async fetchData() {

@@ -207,8 +207,7 @@ export async function fetchTimetable(serverCode: string): Promise<Record<string,
       });
       return res;
     })
-    .then((res) => res.json())
-    .then((data) => data as Timetable[])
+    .then((res) => res.json() as Promise<Timetable[]>)
     .then((data) => {
       const parsedData = data.reduce<Record<string, Timetable>>(
         (prev, curr) => ({ ...prev, [curr.trainNoLocal]: curr }),
