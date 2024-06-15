@@ -6,16 +6,6 @@ import { prisma } from "../db";
 const logger = new ModuleLogger("ROUTE-PROC-WORKER");
 logger.debug("Loading route worker...");
 
-async function getRoutePoints(routeId: string): Promise<[number, number][]> {
-  const data =
-    await prisma.$queryRaw`SELECT ST_X(point) as lat, ST_Y(point) as lon FROM routepoints WHERE route_id = ${routeId}`;
-  if (!data || !Array.isArray(data)) {
-    return [];
-  }
-
-  return data.map((point) => [point.lat, point.lon]);
-}
-
 let routePointQueue: { route: string; point: [number, number] }[] = [];
 let routePointQueueTimeout: NodeJS.Timeout | null = null;
 
@@ -136,14 +126,6 @@ parentPort?.on("message", async (msg) => {
     case "analyze-trains":
       await analyzeTrainsForRoutes(msg.data);
       break;
-    case "get-route-points": {
-      const points = await getRoutePoints(msg.data);
-      parentPort?.postMessage({
-        type: "get-route-points",
-        data: { route: msg.data, points },
-      });
-      break;
-    }
     default:
       logger.warn(`Unknown message type: ${msg.type}`);
   }

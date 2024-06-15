@@ -25,24 +25,88 @@ export function analyzeTrains(trains: Train[]) {
   worker.postMessage({ type: "analyze", data: trains });
 }
 
-export function setSignalType(id: string, type: string) {
-  worker.postMessage({ type: "set-type", data: { id, type } });
+export async function setSignalType(id: string, type: string) {
+  const result = await prisma.$executeRaw`
+          UPDATE signals
+          SET type = ${type}
+          WHERE name = ${id}
+        `;
+
+  if (!result) {
+    logger.error(`Failed to set signal ${id} type to ${type}, the signal may not exist.`);
+    return false;
+  }
+
+  logger.success(`Signal ${id} type set to ${type}`);
+  return true;
 }
 
-export function removeSignalPrevSignal(signal: string, prevSignal: string) {
-  worker.postMessage({ type: "remove-prev-signal", data: { signal, prevSignal } });
+export async function removeSignalPrevSignal(signalId: string, prevSignal: string) {
+  const result = await prisma.$executeRaw`
+          DELETE FROM prev_signals
+          WHERE signal = ${signalId} AND prev_signal = ${prevSignal}
+        `;
+
+  if (!result) {
+    logger.error(
+      `Failed to remove signal connection ${prevSignal}->[${signalId}], the signal may not exist.`
+    );
+    return false;
+  }
+
+  logger.success(`Signal connection ${prevSignal}->[${signalId}] removed`);
+  return true;
 }
 
-export function removeSignalNextSignal(signal: string, nextSignal: string) {
-  worker.postMessage({ type: "remove-next-signal", data: { signal, nextSignal } });
+export async function removeSignalNextSignal(signal: string, nextSignal: string) {
+  const result = await prisma.$executeRaw`
+    DELETE FROM next_signals
+    WHERE signal = ${signal} AND next_signal = ${nextSignal}
+  `;
+
+  if (!result) {
+    logger.error(
+      `Failed to remove signal connection [${signal}]->${nextSignal}, the signal may not exist.`
+    );
+    return false;
+  }
+
+  logger.success(`Signal connection [${signal}]->${nextSignal} removed`);
+  return true;
 }
 
-export function addSignalPrevSignal(signal: string, prevSignal: string) {
-  worker.postMessage({ type: "add-prev-signal", data: { signal, prevSignal } });
+export async function addSignalPrevSignal(signal: string, prevSignal: string) {
+  const result = await prisma.$executeRaw`
+    INSERT INTO prev_signals (signal, prev_signal)
+    VALUES (${signal}, ${prevSignal})
+  `;
+
+  if (!result) {
+    logger.error(
+      `Failed to add signal connection ${prevSignal}->[${signal}], the signal may not exist.`
+    );
+    return false;
+  }
+
+  logger.success(`Signal connection ${prevSignal}->[${signal}] added`);
+  return true;
 }
 
-export function addSignalNextSignal(signal: string, nextSignal: string) {
-  worker.postMessage({ type: "add-next-signal", data: { signal, nextSignal } });
+export async function addSignalNextSignal(signal: string, nextSignal: string) {
+  const result = await prisma.$executeRaw`
+    INSERT INTO next_signals (signal, next_signal)
+    VALUES (${signal}, ${nextSignal})
+  `;
+
+  if (!result) {
+    logger.error(
+      `Failed to add signal connection [${signal}]->${nextSignal}, the signal may not exist.`
+    );
+    return false;
+  }
+
+  logger.success(`Signal connection [${signal}]->${nextSignal} added`);
+  return true;
 }
 
 export async function getSignals() {
@@ -96,6 +160,11 @@ export async function getSignal(id: string) {
     prevSignals: rawSignal.prevsignals?.trim().split(",").filter(Boolean) || [],
     nextSignals: rawSignal.nextsignals?.trim().split(",").filter(Boolean) || [],
   };
+}
+
+export async function checkSignalExists(id: string) {
+  const signal = await prisma.signals.findUnique({ where: { name: id }, select: { name: true } });
+  return !!signal;
 }
 
 export async function getSignalsForTrains(trains: Train[]) {

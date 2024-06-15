@@ -404,72 +404,8 @@ parentPort?.on("message", async (msg) => {
     case "analyze":
       analyzeTrains(msg.data);
       break;
-    case "set-type": {
-      const signal = await prisma.signals.findUnique({ where: { name: msg.data.id } });
-      if (signal) {
-        await prisma.$executeRaw`
-          UPDATE signals
-          SET type = ${msg.data.type}
-          WHERE name = ${msg.data.id}
-        `;
-
-        logger.success(`Signal ${msg.data.id} type set to ${msg.data.type}`);
-      }
+    default:
+      logger.warn(`Unknown message type: ${msg.type}`);
       break;
-    }
-    case "remove-prev-signal": {
-      const signal = await prisma.signals.findUnique({ where: { name: msg.data.signal } });
-      if (signal) {
-        await prisma.$executeRaw`
-          DELETE FROM prev_signals
-          WHERE signal = ${msg.data.signal} AND prev_signal = ${msg.data.prevSignal}
-        `;
-
-        logger.success(`Signal ${msg.data.signal} prev signal ${msg.data.prevSignal} removed`);
-      }
-      break;
-    }
-    case "remove-next-signal": {
-      const signal = await prisma.signals.findUnique({ where: { name: msg.data.signal } });
-      if (signal) {
-        await prisma.$executeRaw`
-          DELETE FROM next_signals
-          WHERE signal = ${msg.data.signal} AND next_signal = ${msg.data.nextSignal}
-        `;
-
-        logger.success(`Signal ${msg.data.signal} next signal ${msg.data.nextSignal} removed`);
-      }
-      break;
-    }
-    case "add-prev-signal": {
-      const signal = await prisma.signals.findUnique({ where: { name: msg.data.signal } });
-      if (signal) {
-        try {
-          await prisma.$executeRaw`
-          INSERT INTO prev_signals (signal, prev_signal)
-          VALUES (${msg.data.signal}, ${msg.data.prevSignal})
-        `;
-
-          logger.success(`Signal ${msg.data.signal} prev signal ${msg.data.prevSignal} added`);
-        } catch (e) {
-          logger.warn(
-            `Signal ${msg.data.signal} prev signal ${msg.data.prevSignal} already exists`
-          );
-        }
-      }
-      break;
-    }
-    case "add-next-signal": {
-      const signal = await prisma.signals.findUnique({ where: { name: msg.data.signal } });
-      if (signal) {
-        await prisma.$executeRaw`
-          INSERT INTO next_signals (signal, next_signal)
-          VALUES (${msg.data.signal}, ${msg.data.nextSignal})
-        `;
-
-        logger.success(`Signal ${msg.data.signal} next signal ${msg.data.nextSignal} added`);
-      }
-      break;
-    }
   }
 });

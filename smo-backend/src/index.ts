@@ -10,6 +10,7 @@ import { Server as SocketIOServer } from "socket.io";
 import logger from "./logger";
 import {
   analyzeTrains,
+  checkSignalExists,
   getSignal,
   getSignalsForTrains,
   removeSignalPrevSignal,
@@ -263,7 +264,7 @@ ${Array.from(serverFetcher.currentData?.values() || [])
 });
 
 if (process.env.ADMIN_PASSWORD) {
-  app.patch("/signals/:signal", express.json(), (req, res) => {
+  app.patch("/signals/:signal", express.json(), async (req, res) => {
     if (req.body?.password !== process.env.ADMIN_PASSWORD) {
       res.status(401).json({ error: "Unauthorized" });
       return;
@@ -277,8 +278,16 @@ if (process.env.ADMIN_PASSWORD) {
     const { signal } = req.params;
     const { type } = req.body;
 
-    setSignalType(signal, type);
-    res.json({ success: true });
+    if (!(await checkSignalExists(signal))) {
+      res.status(404).json({ error: "Signal not found" });
+      return;
+    }
+
+    if (await setSignalType(signal, type)) {
+      res.json({ success: true });
+    } else {
+      res.status(500).json({ error: "Failed to set signal type" });
+    }
   });
 
   app.delete("/signal/:signal/prev", express.json(), async (req, res) => {
@@ -295,16 +304,21 @@ if (process.env.ADMIN_PASSWORD) {
     const { signal } = req.params;
     const { prevSignal } = req.body;
 
-    const signalData = await getSignal(signal);
-
-    if (!signalData) {
+    if (!(await checkSignalExists(signal))) {
       res.status(404).json({ error: "Signal not found" });
       return;
     }
 
-    removeSignalPrevSignal(signal, prevSignal);
+    if (!(await checkSignalExists(prevSignal))) {
+      res.status(404).json({ error: "Previous signal not found" });
+      return;
+    }
 
-    res.json({ success: true });
+    if (await removeSignalPrevSignal(signal, prevSignal)) {
+      res.json({ success: true });
+    } else {
+      res.status(500).json({ error: "Failed to remove prev signal" });
+    }
   });
 
   app.delete("/signals/:signal/next", express.json(), async (req, res) => {
@@ -352,16 +366,12 @@ if (process.env.ADMIN_PASSWORD) {
     const { signal } = req.params;
     const { prevSignal } = req.body;
 
-    const signalData = await getSignal(signal);
-
-    if (!signalData) {
+    if (!(await checkSignalExists(signal))) {
       res.status(404).json({ error: "Signal not found" });
       return;
     }
 
-    const prevSignalData = await getSignal(prevSignal);
-
-    if (!prevSignalData) {
+    if (!(await checkSignalExists(prevSignal))) {
       res.status(404).json({ error: "Previous signal not found" });
       return;
     }
@@ -385,16 +395,12 @@ if (process.env.ADMIN_PASSWORD) {
     const { signal } = req.params;
     const { nextSignal } = req.body;
 
-    const signalData = await getSignal(signal);
-
-    if (!signalData) {
+    if (!(await checkSignalExists(signal))) {
       res.status(404).json({ error: "Signal not found" });
       return;
     }
 
-    const nextSignalData = await getSignal(nextSignal);
-
-    if (!nextSignalData) {
+    if (!(await checkSignalExists(nextSignal))) {
       res.status(404).json({ error: "Next signal not found" });
       return;
     }
