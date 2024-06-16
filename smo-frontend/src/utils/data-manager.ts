@@ -68,6 +68,9 @@ export interface Signal {
   extra: string;
   accuracy: number;
   type?: string | null;
+  role?: string | null;
+  prevFinalized: boolean;
+  nextFinalized: boolean;
   prevSignals: string[];
   nextSignals: string[];
 }
@@ -107,13 +110,13 @@ export function deletePrevSignal(signal: string, prevSignal: string) {
     .then((res) => res.json())
     .then((data) => {
       if (data.success) {
-        console.log(`Deleted signal connection ${prevSignal}->[${signal}]`);
+        console.log(`Deleted signal connection ${prevSignal}->${signal}`);
       } else {
-        console.error(`Failed to delete signal connection ${prevSignal}->[${signal}]`, data.error);
+        console.error(`Failed to delete signal connection ${prevSignal}->${signal}`, data.error);
       }
     })
     .catch((e) => {
-      console.error(`Failed to delete signal connection ${prevSignal}->[${signal}]`, e);
+      console.error(`Failed to delete signal connection ${prevSignal}->${signal}`, e);
     });
 }
 
@@ -128,13 +131,67 @@ export function deleteNextSignal(signal: string, nextSignal: string) {
     .then((res) => res.json())
     .then((data) => {
       if (data.success) {
-        console.log(`Deleted signal connection [${signal}]->${nextSignal}`);
+        console.log(`Deleted signal connection ${signal}->${nextSignal}`);
       } else {
-        console.error(`Failed to delete signal connection [${signal}]->${nextSignal}`, data.error);
+        console.error(`Failed to delete signal connection ${signal}->${nextSignal}`, data.error);
       }
     })
     .catch((e) => {
-      console.error(`Failed to delete signal connection [${signal}]->${nextSignal}`, e);
+      console.error(`Failed to delete signal connection ${signal}->${nextSignal}`, e);
+    });
+}
+
+export function updateSignal(
+  signal: string,
+  type: string | null,
+  role: string | null,
+  prevFinalized: boolean,
+  nextFinalized: boolean
+) {
+  fetch(`${SERVER_API_URL}/signals/${encodeURIComponent(signal)}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      password: localStorage.getItem("adminPassword"),
+      type,
+      role,
+      prevFinalized,
+      nextFinalized,
+    }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        console.log(`Updated signal ${signal} type to ${type}`);
+      } else {
+        console.error(`Failed to update signal ${signal} type to ${type}`, data.error);
+      }
+    })
+    .catch((e) => {
+      console.error(`Failed to update signal ${signal} type to ${type}`, e);
+    });
+}
+
+export function deleteSignal(signal: string) {
+  fetch(`${SERVER_API_URL}/signals/${encodeURIComponent(signal)}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ password: localStorage.getItem("adminPassword") }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        console.log(`Deleted signal ${signal}`);
+      } else {
+        console.error(`Failed to delete signal ${signal}`, data.error);
+      }
+    })
+    .catch((e) => {
+      console.error(`Failed to delete signal ${signal}`, e);
     });
 }
 

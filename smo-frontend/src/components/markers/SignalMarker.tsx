@@ -2,12 +2,21 @@ import Chip from "@mui/joy/Chip";
 import ChipDelete from "@mui/joy/ChipDelete";
 import Stack from "@mui/joy/Stack";
 import { DefaultColorPalette } from "@mui/joy/styles/types";
+import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import { DivIcon, DivIconOptions, Icon, IconOptions } from "leaflet";
-import { type FunctionComponent, useEffect, useState } from "react";
+import { type FunctionComponent, useContext, useEffect, useState } from "react";
 import { Marker, Popup } from "react-leaflet";
 
-import { deleteNextSignal, deletePrevSignal, SignalWithTrain } from "../../utils/data-manager";
+import {
+  deleteNextSignal,
+  deletePrevSignal,
+  deleteSignal,
+  signalsData$,
+  SignalWithTrain,
+  updateSignal,
+} from "../../utils/data-manager";
+import SignalLinesContext, { SignalLineData } from "../../utils/signal-lines-context";
 import { getDistanceColorForSignal } from "../../utils/ui";
 import SignalIcon from "./icons/signals/signal.svg?raw";
 import SignalBlockGreenIcon from "./icons/signals/signal-block-green.svg?raw";
@@ -109,6 +118,7 @@ function getColor(velocity: number): DefaultColorPalette {
 
 const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSelect }) => {
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(new DivIcon(DEFAULT_ICON_OPTIONS));
+  const { signalLines, setSignalLines } = useContext(SignalLinesContext);
 
   useEffect(() => {
     if (signal.train) {
@@ -198,6 +208,137 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
     signal.type,
     signal.nextSignalWithTrainAhead,
   ]);
+
+  const showSignalLines = () => {
+    const lines: SignalLineData["lines"] = [];
+    let i = 0;
+
+    for (const nextSignal of signal.nextSignals) {
+      const nextSignalData = signalsData$.value.find((s) => s.name === nextSignal);
+      if (nextSignalData) {
+        lines.push({
+          signal: nextSignal,
+          type: "next",
+          coords: [
+            [signal.lat, signal.lon],
+            [nextSignalData.lat, nextSignalData.lon],
+          ],
+          index: i++,
+        });
+      }
+    }
+
+    for (const prevSignal of signal.prevSignals) {
+      const prevSignalData = signalsData$.value.find((s) => s.name === prevSignal);
+      if (prevSignalData) {
+        lines.push({
+          signal: prevSignal,
+          type: "prev",
+          coords: [
+            [signal.lat, signal.lon],
+            [prevSignalData.lat, prevSignalData.lon],
+          ],
+          index: i++,
+        });
+      }
+    }
+
+    setSignalLines({ signal: signal.name, lines });
+  };
+
+  const showSignalLinesFurther = () => {
+    const MAX_LINES = 100;
+    const lines: SignalLineData["lines"] = [];
+    let i = 0;
+
+    for (const nextSignal of signal.nextSignals) {
+      const nextSignalData = signalsData$.value.find((s) => s.name === nextSignal);
+      if (nextSignalData) {
+        lines.push({
+          signal: nextSignal,
+          type: "next",
+          coords: [
+            [signal.lat, signal.lon],
+            [nextSignalData.lat, nextSignalData.lon],
+          ],
+          index: i++,
+        });
+
+        addNextSignalLines(nextSignal, 0);
+      }
+    }
+
+    for (const prevSignal of signal.prevSignals) {
+      const prevSignalData = signalsData$.value.find((s) => s.name === prevSignal);
+      if (prevSignalData) {
+        lines.push({
+          signal: prevSignal,
+          type: "prev",
+          coords: [
+            [signal.lat, signal.lon],
+            [prevSignalData.lat, prevSignalData.lon],
+          ],
+          index: i++,
+        });
+
+        addPrevSignalLines(prevSignalData.name, 0);
+      }
+    }
+
+    function addNextSignalLines(signalName: string, jump: number) {
+      const signalData = signalsData$.value.find((s) => s.name === signalName);
+      if (!signalData) {
+        return;
+      }
+
+      for (const nextSignal of signalData.nextSignals) {
+        const nextSignalData = signalsData$.value.find((s) => s.name === nextSignal);
+        if (nextSignalData) {
+          lines.push({
+            signal: nextSignal,
+            type: "next-further",
+            coords: [
+              [signalData.lat, signalData.lon],
+              [nextSignalData.lat, nextSignalData.lon],
+            ],
+            index: i++,
+          });
+
+          if (lines.length < MAX_LINES / 2) {
+            addNextSignalLines(nextSignal, jump + 1);
+          }
+        }
+      }
+    }
+
+    function addPrevSignalLines(signalName: string, jump: number) {
+      const signalData = signalsData$.value.find((s) => s.name === signalName);
+      if (!signalData) {
+        return;
+      }
+
+      for (const prevSignal of signalData.prevSignals) {
+        const prevSignalData = signalsData$.value.find((s) => s.name === prevSignal);
+        if (prevSignalData) {
+          lines.push({
+            signal: prevSignal,
+            type: "prev-further",
+            coords: [
+              [signalData.lat, signalData.lon],
+              [prevSignalData.lat, prevSignalData.lon],
+            ],
+            index: i++,
+          });
+
+          if (lines.length < MAX_LINES) {
+            addPrevSignalLines(prevSignal, jump + 1);
+          }
+        }
+      }
+    }
+
+    setSignalLines({ signal: signal.name, lines });
+  };
 
   return (
     <Marker
@@ -294,6 +435,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
             alignItems="center">
             <Typography level="body-xs">Extra: {signal.extra}</Typography>
             <Typography level="body-xs">Type: {signal.type || "unknown"}</Typography>
+            {signal.role && <Typography level="body-xs">Role: {signal.role}</Typography>}
             <Typography level="body-xs">Accuracy: {signal.accuracy}m</Typography>
             <Typography
               level="body-xs"
@@ -329,8 +471,115 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                 </Chip>
               ))}
             </Typography>
-            <Typography level="body-xs">(Alpha feature, may not be accurate)</Typography>
           </Stack>
+          {signalLines?.signal === signal.name ? (
+            <Chip
+              onClick={() => setSignalLines(null)}
+              color="warning">
+              Hide signal lines
+            </Chip>
+          ) : (
+            <>
+              <Tooltip
+                variant="outlined"
+                placement="top"
+                title={
+                  <>
+                    <Typography sx={{ color: "red" }}>Red: Previous</Typography>
+                    <Typography sx={{ color: "orange" }}>Orange: Previous further</Typography>
+                    <Typography sx={{ color: "blue" }}>Blue: Next</Typography>
+                    <Typography sx={{ color: "purple" }}>Purple: Next further</Typography>
+                  </>
+                }>
+                <Chip onClick={showSignalLines}>Show signal lines</Chip>
+              </Tooltip>
+              <Tooltip
+                color="danger"
+                title="Depending on the number of signals, this can be slow">
+                <Chip onClick={showSignalLinesFurther}>Show signal lines further</Chip>
+              </Tooltip>
+            </>
+          )}
+          {localStorage.getItem("adminPassword") && (
+            <>
+              <Typography level="body-xs">Admin actions:</Typography>
+              <Chip
+                color="danger"
+                variant="outlined"
+                endDecorator={<ChipDelete onDelete={() => deleteSignal(signal.name)} />}>
+                Delete this signal
+              </Chip>
+              {signal.prevFinalized && (
+                <Chip
+                  onClick={() =>
+                    updateSignal(
+                      signal.name,
+                      signal.type || null,
+                      signal.role || null,
+                      false,
+                      signal.nextFinalized ?? false
+                    )
+                  }
+                  color="warning">
+                  Un-finalize previous signals
+                </Chip>
+              )}
+              {!signal.prevFinalized && (
+                <Chip
+                  onClick={() =>
+                    updateSignal(
+                      signal.name,
+                      signal.type || null,
+                      signal.role || null,
+                      true,
+                      signal.nextFinalized ?? false
+                    )
+                  }
+                  color="success">
+                  Finalize previous signals
+                </Chip>
+              )}
+              {signal.nextFinalized && (
+                <Chip
+                  onClick={() =>
+                    updateSignal(
+                      signal.name,
+                      signal.type || null,
+                      signal.role || null,
+                      signal.prevFinalized ?? false,
+                      false
+                    )
+                  }
+                  color="warning">
+                  Un-finalize next signals
+                </Chip>
+              )}
+              {!signal.nextFinalized && (
+                <Chip
+                  onClick={() =>
+                    updateSignal(
+                      signal.name,
+                      signal.type || null,
+                      signal.role || null,
+                      signal.prevFinalized ?? false,
+                      true
+                    )
+                  }
+                  color="success">
+                  Finalize next signals
+                </Chip>
+              )}
+            </>
+          )}
+          {signal.prevFinalized && signal.nextFinalized ? (
+            <Typography
+              level="body-xs"
+              color="success">
+              (This data has been checked and is accurate)
+            </Typography>
+          ) : (
+            <Typography level="body-xs">(Alpha feature, may not be accurate)</Typography>
+          )}
         </Stack>
       </Popup>
     </Marker>

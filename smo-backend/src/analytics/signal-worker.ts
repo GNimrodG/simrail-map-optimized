@@ -4,6 +4,14 @@ import { parentPort } from "worker_threads";
 import { ModuleLogger } from "../logger";
 import { prisma } from "../db";
 import { LRUCache } from "lru-cache";
+import {
+  BLOCK_SIGNAL_REGEX,
+  BLOCK_SIGNAL_REVERSE_REGEX,
+  getSignalRole,
+  getSignalType,
+  loadFileLinesToDatabase,
+  tryLogError,
+} from "./signal-utils";
 
 const logger = new ModuleLogger("SIGNALS-PROC-WORKER");
 
@@ -13,110 +21,10 @@ const TrainPreviousSignals = new LRUCache<string, string>({
   updateAgeOnGet: true,
 });
 
-async function loadFileLinesToDatabase(lines: string[]) {
-  let newSignalCount = 0;
-  let accuracyImprovementCount = 0;
-  let typeSetCount = 0;
-
-  logger.info(`Loading ${lines.length} signals from file to the database...`);
-
-  const prevNextToBeAdded = new Map<string, { prev: string[]; next: string[] }>();
-
-  const results = await Promise.allSettled(
-    lines
-      .filter((line) => line.trim().length > 0)
-      .map(async (line) => {
-        const [name, lat, lon, extra, _accuracy, type, prevSignalsStr, nextSignalsStr] =
-          line.split(";");
-
-        const accuracy = parseFloat(_accuracy);
-
-        const signal = await prisma.signals.findUnique({ where: { name } });
-        if (!signal) {
-          newSignalCount++;
-          await prisma.$executeRaw`
-            INSERT INTO signals (name, point, extra, accuracy, type)
-            VALUES (${name}, ${`SRID=4326;POINT(${lat} ${lon})`}, ${extra}, ${accuracy}, ${type})
-            `;
-
-          prevNextToBeAdded.set(name, {
-            prev: prevSignalsStr.split(","),
-            next: nextSignalsStr.split(","),
-          });
-        } else {
-          if (signal.accuracy > accuracy) {
-            accuracyImprovementCount++;
-            await prisma.$executeRaw`
-              UPDATE signals
-              SET point = ${`SRID=4326;POINT(${lat} ${lon})`}, accuracy = ${accuracy}
-              WHERE name = ${name}
-            `;
-          }
-
-          if (!signal.type && type) {
-            typeSetCount++;
-            await prisma.$executeRaw`
-              UPDATE signals
-              SET type = ${type}
-              WHERE name = ${name}
-            `;
-          }
-
-          prevNextToBeAdded.set(name, {
-            prev: prevSignalsStr.split(","),
-            next: nextSignalsStr.split(","),
-          });
-        }
-      })
-  );
-
-  for (const [name, { prev, next }] of prevNextToBeAdded) {
-    if (prev.length > 0) {
-      for (const prevSignal of prev) {
-        try {
-          await prisma.$executeRaw`
-          INSERT INTO prev_signals (signal, prev_signal)
-          VALUES (${name}, ${prevSignal})
-        `;
-        } catch (e) {
-          logger.warn(`Failed to add prev signal ${prevSignal} to signal ${name}: ${e}`);
-        }
-      }
-    }
-
-    if (next.length > 0) {
-      for (const nextSignal of next) {
-        try {
-          await prisma.$executeRaw`
-          INSERT INTO next_signals (signal, next_signal)
-          VALUES (${name}, ${nextSignal})
-        `;
-        } catch (e) {
-          logger.error(`Failed to add next signal ${nextSignal} to signal ${name}: ${e}`);
-        }
-      }
-    }
-  }
-
-  logger.info(
-    `Loaded ${lines.length} signals from file to the database: ${newSignalCount} new signals, ${accuracyImprovementCount} accuracy improvements, ${typeSetCount} type sets`
-  );
-
-  if (results.some((result) => result.status === "rejected")) {
-    logger.error("Some signals failed to load to the database");
-
-    for (const result of results) {
-      if (result.status === "rejected") {
-        logger.debug(result.reason);
-      }
-    }
-  }
-}
-
 try {
   statSync("data/signals.csv");
   logger.info("Loading signals...");
-  loadFileLinesToDatabase(readFileSync("data/signals.csv", "utf-8").split("\n"));
+  loadFileLinesToDatabase(readFileSync("data/signals.csv", "utf-8").split("\n")).then();
 
   renameSync("data/signals.csv", `data/signals-${Date.now()}.csv`);
 
@@ -125,16 +33,13 @@ try {
   if (statSync("data/signals-old.csv")?.isFile()) {
     logger.info("Merging old signal data...");
 
-    loadFileLinesToDatabase(readFileSync("data/signals-old.csv", "utf-8").split("\n"));
+    loadFileLinesToDatabase(readFileSync("data/signals-old.csv", "utf-8").split("\n")).then();
 
     renameSync("data/signals-old.csv", `data/signals-old-merged-${Date.now()}.csv`);
   }
 } catch (e) {
   logger.warn(`No signals file found (${e})`);
 }
-
-const BLOCK_SIGNAL_REGEX = /^\w\d+_\d+\w?$/;
-const BLOCK_SIGNAL_REVERSE_REGEX = /^\w\d+_\d+[A-Z]$/;
 
 let running = false;
 
@@ -151,14 +56,29 @@ async function analyzeTrains(trains: Train[]) {
     const signals = await prisma.signals.findMany({
       where: {
         name: {
-          in: trains.map((train) => train?.TrainData?.SignalInFront?.split("@")[0]).filter(Boolean),
+          in: [
+            ...trains.map((train) => train?.TrainData?.SignalInFront?.split("@")[0]),
+            ...TrainPreviousSignals.values(),
+          ].filter((x, i, a) => !!x && a.indexOf(x) === i),
         },
+      },
+      select: {
+        name: true,
+        accuracy: true,
+        type: true,
+        role: true,
+        prev_finalized: true,
+        next_finalized: true,
+        prevSignalConnections: { select: { next: true } },
+        nextSignalConnections: { select: { prev: true } },
       },
     });
 
     for (const train of trains) {
       if (!train.TrainData.Latititute || !train.TrainData.Longitute) {
-        logger.warn(`Train ${train.TrainNoLocal} (${train.Type}) has no location data`);
+        logger.warn(
+          `Train ${train.TrainNoLocal}@${train.ServerCode} (${train.Type}) has no location data!`
+        );
         continue;
       }
 
@@ -168,235 +88,222 @@ async function analyzeTrains(trains: Train[]) {
 
       const trainId = train.id;
       const [signalId, extra] = train.TrainData.SignalInFront.split("@");
-      const signal = signals.find((signal) => signal.name === signalId);
+      let signal = signals.find((signal) => signal.name === signalId);
+      const type = getSignalType(train);
+      const role = signal ? getSignalRole(signal) : null;
+
+      // check if signal type should be updated
+      if (!!signal && !signal.type && !!type) {
+        try {
+          await prisma.signals.update({
+            where: { name: signalId },
+            data: {
+              type: type,
+            },
+          });
+          if (type === "main") {
+            logger.success(
+              `Signal ${signalId} type set to ${type} because of it's VMAX: ${train.TrainData.SignalInFrontSpeed} km/h`
+            );
+          } else {
+            logger.success(`Signal ${signalId} type set to ${type} because of it's name.`);
+          }
+        } catch (e) {
+          logger.error(`Failed to set signal ${signalId} type to ${type}: ${e}`);
+        }
+      }
+
+      // check if signal accuracy could be updated
+      if (train.TrainData.DistanceToSignalInFront < 5) {
+        if (signal) {
+          // signal already exists
+          if (signal.accuracy > train.TrainData.DistanceToSignalInFront) {
+            // accuracy improved
+            try {
+              await prisma.$executeRaw`
+                UPDATE signals
+                SET
+                  accuracy = ${train.TrainData.DistanceToSignalInFront},
+                  point = ${`SRID=4326;POINT(${train.TrainData.Latititute} ${train.TrainData.Longitute})`}
+                WHERE name = ${signalId}`;
+              logger.success(
+                `Signal ${signalId} accuracy updated from ${signal.accuracy}m to ${
+                  train.TrainData.DistanceToSignalInFront
+                }m (${signal.accuracy - train.TrainData.DistanceToSignalInFront}m)`
+              );
+            } catch (e) {
+              logger.error(
+                `Failed to update signal ${signalId} accuracy to ${train.TrainData.DistanceToSignalInFront}m: ${e}`
+              );
+            }
+          }
+        } else {
+          // new signal
+          try {
+            await prisma.$executeRaw`
+              INSERT INTO signals (name, point, extra, accuracy, type)
+              VALUES (${signalId}, ${`SRID=4326;POINT(${train.TrainData.Latititute} ${train.TrainData.Longitute})`}, ${extra}, ${
+              train.TrainData.DistanceToSignalInFront
+            }, ${type})`;
+
+            signal = {
+              name: signalId,
+              accuracy: train.TrainData.DistanceToSignalInFront,
+              type: type,
+              role: null,
+              prev_finalized: false,
+              next_finalized: false,
+              prevSignalConnections: [],
+              nextSignalConnections: [],
+            };
+            signals.push(signal);
+
+            logger.success(
+              `New signal detected: ${signalId} at ${train.TrainData.Latititute}, ${train.TrainData.Longitute} (${extra}) with accuracy ${train.TrainData.DistanceToSignalInFront}m`
+            );
+          } catch (e) {
+            logger.error(`Failed to create new signal ${signalId}: ${e}`);
+          }
+        }
+      }
+
+      // check if role could be updated
+      if (signal && !signal.role && role) {
+        try {
+          await prisma.signals.update({
+            where: { name: signalId },
+            data: {
+              role: role,
+            },
+          });
+          logger.success(`Signal ${signalId} role set to ${role}`);
+        } catch (e) {
+          logger.error(`Failed to set signal ${signalId} role to ${role}: ${e}`);
+        }
+      }
 
       const prevSignalId = TrainPreviousSignals.get(trainId);
 
-      if (prevSignalId && prevSignalId !== signalId) {
-        // train trainId was at prevSignalName and now is at signalId
+      if (prevSignalId && prevSignalId !== signalId && !signal?.prev_finalized) {
+        // train reached a new signal from a previous signal
         const prevSignal =
           signals.find((signal) => signal.name === prevSignalId) ||
-          (await prisma.signals.findUnique({ where: { name: prevSignalId } }));
+          (await prisma.signals.findUnique({
+            where: { name: prevSignalId },
+            select: {
+              name: true,
+              type: true,
+              role: true,
+              prev_finalized: true,
+              next_finalized: true,
+              prevSignalConnections: { select: { next: true } },
+              nextSignalConnections: { select: { prev: true } },
+            },
+          }));
 
-        if (prevSignal) {
-          if (signal) {
-            // add signalId to prevSignal's next signals
-            try {
-              await prisma.$executeRaw`
-            INSERT INTO next_signals (signal, next_signal)
-            VALUES (${prevSignalId}, ${signalId})
-            ON CONFLICT DO NOTHING
-          `;
-            } catch {
-              // ignore
-            }
-          }
+        if (!prevSignal) {
+          logger.warn(
+            `Train ${train.TrainNoLocal}@${train.ServerCode} reached signal ${signalId} from unknown signal ${prevSignalId}`
+          );
 
-          const prevSignalNextSignals = await prisma.$queryRaw<{ next_signal: string }[]>`
-            SELECT next_signal FROM next_signals WHERE signal = ${prevSignalId}
-          `;
-
-          if (
-            prevSignalNextSignals.length > 1 &&
-            BLOCK_SIGNAL_REGEX.test(prevSignalId) &&
-            BLOCK_SIGNAL_REGEX.test(signalId)
-          ) {
-            const possibleNextSignals = prevSignalNextSignals.filter((nextSignalId) =>
-              BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId)
-                ? BLOCK_SIGNAL_REVERSE_REGEX.test(nextSignalId.next_signal)
-                : !BLOCK_SIGNAL_REVERSE_REGEX.test(nextSignalId.next_signal)
-            );
-
-            const nextSignals = possibleNextSignals.length
-              ? await prisma.$queryRawUnsafe<{ name: string; lat: number; lon: number }[]>(`
-            SELECT name, ST_X(point) as lat, ST_Y(point) as lon
-            FROM signals
-            WHERE name IN (${possibleNextSignals
-              .map((nextSignalId) => `'${nextSignalId.next_signal}'`)
-              .join(",")})
-          `)
-              : [];
-
-            const distances = possibleNextSignals
-              .map((nextSignalId) => {
-                const nextSignal = nextSignals.find(
-                  (signal) => signal.name === nextSignalId.next_signal
-                );
-
-                if (!nextSignal) {
-                  return { nextSignalId, distance: Infinity };
-                }
-
-                return {
-                  nextSignalId,
-                  distance: distance(
-                    [nextSignal.lat, nextSignal.lon],
-                    [train.TrainData.Latititute, train.TrainData.Longitute]
-                  ),
-                };
-              })
-              .toSorted((a, b) => a.distance - b.distance);
-
-            if (distances.length) {
-              logger.info(
-                `Block Signal ${prevSignalId} has more than 1 next signal: ${prevSignalNextSignals
-                  .map((x) => x.next_signal)
-                  .join(", ")}; keeping the closest one (${distances[0].nextSignalId.next_signal})`
-              );
-
-              await prisma.$executeRaw`
-              DELETE FROM next_signals
-              WHERE signal = ${prevSignalId} AND next_signal != ${distances[0].nextSignalId.next_signal}
-            `;
-            }
-          }
+          tryLogError(prevSignalId, signalId, `Unknown signal ${prevSignalId}`);
         }
 
-        if (signal) {
-          // add prevSignalName to signal's prev signals
-          try {
-            await prisma.$executeRaw`
-            INSERT INTO prev_signals (signal, prev_signal)
-            VALUES (${signalId}, ${prevSignalId})
-            ON CONFLICT DO NOTHING
-          `;
-          } catch (e) {
-            logger.warn(`Failed to add prev signal ${prevSignalId} to signal ${signalId}: ${e}`);
-          }
+        if (prevSignal && signal && !prevSignal.next_finalized) {
+          // if signal is known and prevSignal is also known and not finalized
 
-          const signalPrevSignals = await prisma.$queryRaw<{ prev_signal: string }[]>`
-            SELECT prev_signal FROM prev_signals WHERE signal = ${signalId}
-          `;
+          let shouldIgnore = false;
 
           if (
-            signalPrevSignals.length > 1 &&
-            BLOCK_SIGNAL_REGEX.test(prevSignalId) &&
-            BLOCK_SIGNAL_REGEX.test(signalId)
+            prevSignal.prevSignalConnections.some((conn) => conn.next === signalId) ||
+            signal.nextSignalConnections.some((conn) => conn.prev === prevSignalId)
           ) {
-            const possiblePrevSignals = signalPrevSignals.filter((prevSignalId) =>
-              BLOCK_SIGNAL_REVERSE_REGEX.test(signalId)
-                ? BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId.prev_signal)
-                : !BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId.prev_signal)
-            );
+            // connection already exists
+            shouldIgnore = true;
+          }
 
-            const prevSignals = possiblePrevSignals.length
-              ? await prisma.$queryRawUnsafe<{ name: string; lat: number; lon: number }[]>(`
-            SELECT name, ST_X(point) as lat, ST_Y(point) as lon
-            FROM signals
-            WHERE name IN (${possiblePrevSignals
-              .map((prevSignalId) => `'${prevSignalId.prev_signal}'`)
-              .join(",")})
-          `)
-              : [];
+          if (
+            !shouldIgnore &&
+            (prevSignal.type === "block" || BLOCK_SIGNAL_REGEX.test(prevSignalId))
+          ) {
+            const isReverse = BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId);
 
-            const distances = signalPrevSignals
-              .filter((prevSignalId) =>
-                BLOCK_SIGNAL_REVERSE_REGEX.test(signalId)
-                  ? BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId.prev_signal)
-                  : !BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId.prev_signal)
-              )
-              .map((prevSignalId) => {
-                const prevSignal = prevSignals.find(
-                  (signal) => signal.name === prevSignalId.prev_signal
-                );
-
-                if (!prevSignal) {
-                  return { prevSignalId, distance: Infinity };
-                }
-
-                return {
-                  prevSignalId,
-                  distance: distance(
-                    [prevSignal.lat, prevSignal.lon],
-                    [train.TrainData.Latititute, train.TrainData.Longitute]
-                  ),
-                };
-              })
-              .toSorted((a, b) => a.distance - b.distance);
-
-            if (distances.length) {
-              logger.info(
-                `Block Signal ${signalId} has more than 1 prev signal: ${signalPrevSignals
-                  .map((x) => x.prev_signal)
-                  .join(", ")}; keeping the closest one (${distances[0].prevSignalId.prev_signal})`
+            // if prevSignal is reverse block signal then the next signal can't be a non-reverse block signal
+            if (
+              isReverse &&
+              !BLOCK_SIGNAL_REVERSE_REGEX.test(signalId) &&
+              BLOCK_SIGNAL_REGEX.test(signalId)
+            ) {
+              tryLogError(
+                prevSignalId,
+                signalId,
+                `Block Signal ${prevSignalId} is reverse, but next signal ${signalId} is not reverse!`
               );
+              shouldIgnore = true;
+            }
 
-              await prisma.$executeRaw`
-              DELETE FROM prev_signals
-              WHERE signal = ${signalId} AND prev_signal != ${distances[0].prevSignalId.prev_signal}
-            `;
+            // if prevSignal a non-reverse block signal then the next signal can't be a reverse block signal
+            if (!shouldIgnore && !isReverse && BLOCK_SIGNAL_REVERSE_REGEX.test(signalId)) {
+              tryLogError(
+                prevSignalId,
+                signalId,
+                `Block Signal ${prevSignalId} is not reverse, but next signal ${signalId} is reverse!`
+              );
+              shouldIgnore = true;
+            }
+
+            if (prevSignal.prevSignalConnections.length > 0) {
+              // a block signal can only have one next signal
+              tryLogError(
+                prevSignalId,
+                signalId,
+                `Block Signal ${prevSignalId} already has a next signal, can't add ${signalId}!`
+              );
+              shouldIgnore = true;
+            }
+          }
+
+          if (!shouldIgnore) {
+            // add connection: prevSignal -> signal
+            try {
+              await prisma.signalConnections.create({
+                data: {
+                  prev: prevSignalId,
+                  next: signalId,
+                },
+              });
+            } catch (e) {
+              tryLogError(
+                prevSignalId,
+                signalId,
+                `Failed to create connection between ${prevSignalId} and ${signalId}: ${e}`
+              );
             }
           }
         }
       }
 
       TrainPreviousSignals.set(trainId, signalId);
-
-      if (train.TrainData.DistanceToSignalInFront < 5) {
-        const signal = await prisma.signals.findUnique({ where: { name: signalId } });
-        if (signal) {
-          if (signal.accuracy > train.TrainData.DistanceToSignalInFront) {
-            await prisma.$executeRaw`
-            UPDATE signals
-            SET accuracy = ${
-              train.TrainData.DistanceToSignalInFront
-            }, point = ${`SRID=4326;POINT(${train.TrainData.Latititute} ${train.TrainData.Longitute})`}
-            WHERE name = ${signalId}
-          `;
-            logger.success(
-              `Signal ${signalId} accuracy updated from ${signal.accuracy}m to ${
-                train.TrainData.DistanceToSignalInFront
-              }m (${signal.accuracy - train.TrainData.DistanceToSignalInFront}m)`
-            );
-          }
-
-          if (
-            !signal.type &&
-            (train.TrainData.SignalInFrontSpeed === 60 ||
-              train.TrainData.SignalInFrontSpeed === 100 ||
-              BLOCK_SIGNAL_REGEX.test(signalId))
-          ) {
-            await prisma.$executeRaw`
-            UPDATE signals
-            SET type = ${getSignalType(train)}
-            WHERE name = ${signalId}
-          `;
-            logger.success(
-              `Signal ${signalId} type set to ${
-                BLOCK_SIGNAL_REGEX.test(signalId) ? "block" : "main"
-              } because of speed ${train.TrainData.SignalInFrontSpeed}km/h`
-            );
-          }
-        } else {
-          logger.success(
-            `New signal detected: ${signalId} at ${train.TrainData.Latititute}, ${train.TrainData.Longitute} (${extra}) with accuracy ${train.TrainData.DistanceToSignalInFront}m`
-          );
-        }
-      }
     }
 
-    logger.info(`${trains.length} trains analyzed in ${Date.now() - start}ms`);
+    const duration = Date.now() - start;
+    logger.info(`${trains.length} trains analyzed in ${duration}ms`);
+    prisma.stats
+      .create({
+        data: {
+          service_id: "SIGNALS-PROC",
+          count: trains.length,
+          duration: duration,
+        },
+      })
+      .catch((e) => {
+        logger.error(`Failed to log stats: ${e}`);
+      });
   } catch (e) {
     logger.error(`Error analyzing trains: ${e}`);
   } finally {
     running = false;
   }
-}
-
-function getSignalType(train: Train) {
-  if (train.TrainData.SignalInFrontSpeed === 60 || train.TrainData.SignalInFrontSpeed === 100) {
-    return "main";
-  }
-
-  if (BLOCK_SIGNAL_REGEX.test(train.TrainData.SignalInFront)) {
-    return "block";
-  }
-
-  return null;
-}
-
-function distance(point1: [number, number], point2: [number, number]) {
-  return Math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2);
 }
 
 parentPort?.on("message", async (msg) => {

@@ -12,11 +12,12 @@ import {
   addSignalPrevSignal,
   analyzeTrains,
   checkSignalExists,
+  deleteSignal,
   getSignal,
   getSignalsForTrains,
   removeSignalNextSignal,
   removeSignalPrevSignal,
-  setSignalType,
+  updateSignal,
 } from "./analytics/signal";
 import { analyzeTrainsForRoutes, getRoutePoints } from "./analytics/route";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
@@ -276,23 +277,52 @@ if (process.env.ADMIN_PASSWORD) {
       return;
     }
 
-    if (!req.params?.signal || !req.body?.type) {
+    const { type, role, prevFinalized, nextFinalized } = req.body || {};
+
+    if (
+      !req.params?.signal ||
+      (!type && !role && prevFinalized === undefined && nextFinalized === undefined)
+    ) {
       res.status(400).json({ error: "Invalid request" });
       return;
     }
 
     const { signal } = req.params;
-    const { type } = req.body;
 
     if (!(await checkSignalExists(signal))) {
       res.status(404).json({ error: "Signal not found" });
       return;
     }
 
-    if (await setSignalType(signal, type)) {
+    if (await updateSignal(signal, { type, role, prevFinalized, nextFinalized })) {
       res.json({ success: true });
     } else {
       res.status(500).json({ error: "Failed to set signal type" });
+    }
+  });
+
+  app.delete("/signals/:signal", express.json(), async (req, res) => {
+    if (req.body?.password !== process.env.ADMIN_PASSWORD) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    if (!req.params?.signal) {
+      res.status(400).json({ error: "Invalid request" });
+      return;
+    }
+
+    const { signal } = req.params;
+
+    if (!(await checkSignalExists(signal))) {
+      res.status(404).json({ error: "Signal not found" });
+      return;
+    }
+
+    if (await deleteSignal(signal)) {
+      res.json({ success: true });
+    } else {
+      res.status(500).json({ error: "Failed to remove signal" });
     }
   });
 

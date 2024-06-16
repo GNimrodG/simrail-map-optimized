@@ -25,53 +25,88 @@ export function analyzeTrains(trains: Train[]) {
   worker.postMessage({ type: "analyze", data: trains });
 }
 
-export async function setSignalType(id: string, type: string) {
+export async function updateSignal(
+  id: string,
+  data: {
+    type: string | null;
+    role: string | null;
+    prevFinalized?: boolean | null;
+    nextFinalized?: boolean | null;
+  }
+) {
   const result = await prisma.$executeRaw`
           UPDATE signals
-          SET type = ${type}
+          SET
+            type = COALESCE(${data.type}, type),
+            role = COALESCE(${data.role}, role),
+            prev_finalized = COALESCE(${data.prevFinalized}, prev_finalized),
+            next_finalized = COALESCE(${data.nextFinalized}, next_finalized)
           WHERE name = ${id}
         `;
 
   if (!result) {
-    logger.error(`Failed to set signal ${id} type to ${type}, the signal may not exist.`);
+    logger.error(`Failed to update signal ${id}`);
     return false;
   }
 
-  logger.success(`Signal ${id} type set to ${type}`);
+  logger.success(`Signal ${id} updated`);
   return true;
 }
 
-export async function removeSignalPrevSignal(signalId: string, prevSignal: string) {
+export async function deleteSignal(id: string) {
   const result = await prisma.$executeRaw`
-          DELETE FROM prev_signals
-          WHERE signal = ${signalId} AND prev_signal = ${prevSignal}
-        `;
+    DELETE FROM signals
+    WHERE name = ${id}
+  `;
+
+  if (!result) {
+    logger.error(`Failed to delete signal ${id}`);
+    return false;
+  }
+
+  logger.success(`Signal ${id} deleted`);
+  return true;
+}
+
+export async function removeSignalPrevSignal(signal: string, prevSignal: string) {
+  const result = await prisma.signalConnections.delete({
+    where: {
+      prev_next: {
+        prev: prevSignal,
+        next: signal,
+      },
+    },
+  });
 
   if (!result) {
     logger.error(
-      `Failed to remove signal connection ${prevSignal}->[${signalId}], the signal may not exist.`
+      `Failed to remove signal connection ${prevSignal}->${signal}, the signal may not exist.`
     );
     return false;
   }
 
-  logger.success(`Signal connection ${prevSignal}->[${signalId}] removed`);
+  logger.success(`Signal connection ${prevSignal}->${signal} removed`);
   return true;
 }
 
 export async function removeSignalNextSignal(signal: string, nextSignal: string) {
-  const result = await prisma.$executeRaw`
-    DELETE FROM next_signals
-    WHERE signal = ${signal} AND next_signal = ${nextSignal}
-  `;
+  const result = await prisma.signalConnections.delete({
+    where: {
+      prev_next: {
+        prev: signal,
+        next: nextSignal,
+      },
+    },
+  });
 
   if (!result) {
     logger.error(
-      `Failed to remove signal connection [${signal}]->${nextSignal}, the signal may not exist.`
+      `Failed to remove signal connection ${signal}->${nextSignal}, the signal may not exist.`
     );
     return false;
   }
 
-  logger.success(`Signal connection [${signal}]->${nextSignal} removed`);
+  logger.success(`Signal connection ${signal}->${nextSignal} removed`);
   return true;
 }
 
@@ -117,19 +152,28 @@ export async function getSignals() {
     extra,
     accuracy,
     type,
-    ARRAY_TO_STRING(ARRAY_AGG(DISTINCT prev_signals.prev_signal), ',') as prevsignals,
-    ARRAY_TO_STRING(ARRAY_AGG(DISTINCT next_signals.next_signal), ',') as nextsignals
+    role,
+    prev_finalized,
+    next_finalized,
+    ARRAY_TO_STRING(ARRAY_AGG(DISTINCT p.prev), ',') as prevsignals,
+    ARRAY_TO_STRING(ARRAY_AGG(DISTINCT n.next), ',') as nextsignals
   FROM signals
-    LEFT JOIN prev_signals ON signals.name = prev_signals.signal
-    LEFT JOIN next_signals ON signals.name = next_signals.signal
+    LEFT JOIN signal_connections p ON signals.name = p.next
+    LEFT JOIN signal_connections n ON signals.name = n.prev
   GROUP BY signals.name
     `;
 
   return rawSignals.map((rawSignal) => {
     return {
-      ...rawSignal,
-      prevsignals: undefined,
-      nextsignals: undefined,
+      name: rawSignal.name,
+      lat: rawSignal.lat,
+      lon: rawSignal.lon,
+      extra: rawSignal.extra,
+      accuracy: rawSignal.accuracy,
+      type: rawSignal.type,
+      role: rawSignal.role,
+      prevFinalized: rawSignal.prev_finalized,
+      nextFinalized: rawSignal.next_finalized,
       prevSignals: rawSignal.prevsignals?.trim().split(",").filter(Boolean) || [],
       nextSignals: rawSignal.nextsignals?.trim().split(",").filter(Boolean) || [],
     };
@@ -144,19 +188,28 @@ export async function getSignal(id: string) {
     extra,
     accuracy,
     type,
-    ARRAY_TO_STRING(ARRAY_AGG(DISTINCT prev_signals.prev_signal), ',') as prevsignals,
-    ARRAY_TO_STRING(ARRAY_AGG(DISTINCT next_signals.next_signal), ',') as nextsignals
+    role,
+    prev_finalized,
+    next_finalized,
+    ARRAY_TO_STRING(ARRAY_AGG(DISTINCT p.prev), ',') as prevsignals,
+    ARRAY_TO_STRING(ARRAY_AGG(DISTINCT n.next), ',') as nextsignals
   FROM signals
-    LEFT JOIN prev_signals ON signals.name = prev_signals.signal
-    LEFT JOIN next_signals ON signals.name = next_signals.signal
+    LEFT JOIN signal_connections p ON signals.name = p.next
+    LEFT JOIN signal_connections n ON signals.name = n.prev
   WHERE signals.name = ${id}
   GROUP BY signals.name
     `;
 
   return {
-    ...rawSignal,
-    prevsignals: undefined,
-    nextsignals: undefined,
+    name: rawSignal.name,
+    lat: rawSignal.lat,
+    lon: rawSignal.lon,
+    extra: rawSignal.extra,
+    accuracy: rawSignal.accuracy,
+    type: rawSignal.type,
+    role: rawSignal.role,
+    prevFinalized: rawSignal.prev_finalized,
+    nextFinalized: rawSignal.next_finalized,
     prevSignals: rawSignal.prevsignals?.trim().split(",").filter(Boolean) || [],
     nextSignals: rawSignal.nextsignals?.trim().split(",").filter(Boolean) || [],
   };
@@ -182,24 +235,19 @@ export async function getSignalsForTrains(trains: Train[]) {
         const train = signalsIndex.get(signal.name);
 
         const trainAhead =
-          signal.type === "block"
-            ? signalsIndex.get(
-                signal.nextSignals.find((nextSignal) => signalsIndex.has(nextSignal)) || ""
-              )
-            : null;
+          (signal.type === "block" &&
+            signal.nextSignals.length === 1 &&
+            signalsIndex.get(signal.nextSignals[0])) ||
+          null;
 
         const nextSignalWithTrainAhead =
           (signal.type === "block" &&
-            signal.nextSignals.find((nextSignal) => {
-              const nextSignalData = signals.find((s) => s.name === nextSignal);
-              if (!nextSignalData) {
-                return false;
-              }
-
-              return nextSignalData.nextSignals.some((nextNextSignal) =>
-                signalsIndex.get(nextNextSignal)
-              );
-            })) ||
+            signal.nextSignals.length === 1 &&
+            (signals
+              .find((s) => s.name === signal.nextSignals[0])
+              ?.nextSignals.some((nextNextSignal) => signalsIndex.get(nextNextSignal))
+              ? signal.nextSignals[0]
+              : null)) ||
           null;
 
         return {
@@ -220,6 +268,9 @@ interface RawSignal {
   extra: string;
   accuracy: number;
   type: string | null;
+  role: string | null;
+  prev_finalized: boolean;
+  next_finalized: boolean;
   prevsignals: string;
   nextsignals: string;
 }
@@ -231,6 +282,9 @@ export interface Signal {
   extra: string;
   accuracy: number;
   type: string | null;
+  role: string | null;
+  prevFinalized: boolean;
+  nextFinalized: boolean;
   prevSignals: Array<string>;
   nextSignals: Array<string>;
 }
