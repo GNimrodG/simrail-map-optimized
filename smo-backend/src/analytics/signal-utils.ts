@@ -50,11 +50,7 @@ export function getSignalType(train: Train) {
  * @param signal.nextSignalConnections - An array of objects, each containing a 'prev' property that represents the previous signal connection.
  * @param signal.prevSignalConnections - An array of objects, each containing a 'next' property that represents the next signal connection.
  *
- * @returns - Returns "block" if the signal name matches the BLOCK_SIGNAL_REGEX pattern.
- *          - Returns "entry-exit" if all previous and next connections match the BLOCK_SIGNAL_REGEX pattern.
- *          - Returns "exit" if all next connections match the BLOCK_SIGNAL_REGEX pattern.
- *          - Returns "entry" if all previous connections match the BLOCK_SIGNAL_REGEX pattern.
- *          - Returns null if none of the above conditions are met.
+ * @returns The role of the signal based on its connections and/or name.
  */
 export function getSignalRole(signal: {
   name: string;
@@ -62,7 +58,29 @@ export function getSignalRole(signal: {
   prevSignalConnections: { next: string }[];
 }) {
   if (BLOCK_SIGNAL_REGEX.test(signal.name)) {
-    return "block";
+    const isEntry =
+      signal.nextSignalConnections.length > 1 ||
+      (signal.nextSignalConnections.length === 1 &&
+        !BLOCK_SIGNAL_REGEX.test(signal.nextSignalConnections[0].prev));
+
+    const isExit =
+      signal.prevSignalConnections.length > 1 ||
+      (signal.prevSignalConnections.length === 1 &&
+        !BLOCK_SIGNAL_REGEX.test(signal.prevSignalConnections[0].next));
+
+    if (isEntry && isExit) {
+      return "entry-exit";
+    }
+
+    if (isEntry) {
+      return "entry";
+    }
+
+    if (isExit) {
+      return "exit";
+    }
+
+    return null;
   }
 
   const everyPrevIsBlock = signal.nextSignalConnections.every((conn) =>

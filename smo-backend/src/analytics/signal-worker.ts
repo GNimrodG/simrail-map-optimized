@@ -86,7 +86,7 @@ async function analyzeTrains(trains: Train[]) {
         continue;
       }
 
-      const trainId = train.id;
+      const trainId = `${train.id}@${train.ServerCode}-${train.TrainNoLocal}`;
       const [signalId, extra] = train.TrainData.SignalInFront.split("@");
       let signal = signals.find((signal) => signal.name === signalId);
       const type = getSignalType(train);
