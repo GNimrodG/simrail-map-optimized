@@ -8,11 +8,10 @@ setInterval(() => {
   timeSubj$.next(timeSubj$.getValue() + 1000);
 }, 1000);
 
-// I have no idea why this is necessary, but it is
-const CORRECTION = 2 * 60 * 60 * 1000; // 2 hours
+const CORRECTION = new Date().getTimezoneOffset() * 60 * 1000;
 
 timeData$.subscribe((timeData) => {
   if (timeData?.time) {
-    timeSubj$.next(timeData.time - CORRECTION);
+    timeSubj$.next(timeData.time + CORRECTION);
   }
 });
