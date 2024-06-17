@@ -19,6 +19,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "@opentelemetry/instrumentation-socket.io": "^0.40.0",
     "@prisma/client": "^5.14.0",
     "@sentry/cli": "^2.32.1",
     "@sentry/node": "^8.7.0",
