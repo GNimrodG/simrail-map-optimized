@@ -68,6 +68,7 @@ const MainMap: FunctionComponent = () => {
         zoomControl={false}
         style={{ height: "100vh", width: "100vw" }}>
         <TileLayer
+          className="basemap"
           attribution={MAIN_ATTRIBUTIONS}
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
@@ -166,6 +167,7 @@ const MainMap: FunctionComponent = () => {
         {/* orm-infra */}
         {visibleLayers.includes("orm-infra") && (
           <TileLayer
+            className="layers"
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png"
           />
@@ -173,6 +175,7 @@ const MainMap: FunctionComponent = () => {
         {/* orm-maxspeed */}
         {visibleLayers.includes("orm-maxspeed") && (
           <TileLayer
+            className="layers"
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/maxspeed/{z}/{x}/{y}.png"
           />
@@ -180,6 +183,7 @@ const MainMap: FunctionComponent = () => {
         {/* orm-signals */}
         {visibleLayers.includes("orm-signals") && (
           <TileLayer
+            className="layers"
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/signals/{z}/{x}/{y}.png"
           />
@@ -187,6 +191,7 @@ const MainMap: FunctionComponent = () => {
         {/* orm-electrification */}
         {visibleLayers.includes("orm-electrification") && (
           <TileLayer
+            className="layers"
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/electrification/{z}/{x}/{y}.png"
           />
