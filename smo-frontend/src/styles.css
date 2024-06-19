@@ -1,9 +1,13 @@
-[data-joy-color-scheme="dark"] .basemap {
+[data-joy-color-scheme="dark"] .alternativemap {
   filter: invert(100%) hue-rotate(180deg) brightness(80%) contrast(100%) grayscale(1) !important;
 }
 
-[data-joy-color-scheme="dark"] .layers {
+[data-joy-color-scheme="dark"] .alternativelayers {
   filter: invert(100%) hue-rotate(180deg) brightness(80%) contrast(100%) grayscale(0) !important;
+}
+
+[data-joy-color-scheme="dark"] .defaultmap {
+  filter: invert(100%) hue-rotate(180deg) brightness(80%) contrast(90%) grayscale(0.25) !important;
 }
 
 .leaflet-popup-content-wrapper,
