@@ -39,6 +39,11 @@ const Settings: FunctionComponent = () => {
     defaultValue: false,
   });
 
+  const [alternativeTheme, setAlternativeTheme] = useLocalStorage({
+    key: "alternativeTheme",
+    defaultValue: false,
+  });
+
   return (
     <>
       <Tooltip
@@ -143,6 +148,33 @@ const Settings: FunctionComponent = () => {
                   onChange={(e) => setShowNextStationInfoCollapsed(e.target.checked)}
                 />
               </Stack>
+            </Stack>
+          </Stack>
+          <Stack
+            direction="column"
+            spacing={0.5}
+          >
+            <Typography
+              sx={{ pt: 2 }}
+              level="h4">
+              Map Theme(For Dark Mode)
+            </Typography>
+            <Typography
+                sx={{ pt: 0 }}
+                level="body-lg">
+                Reload Reqiured
+              </Typography>
+            <Stack
+              direction="column"
+              spacing={1}>
+              <Checkbox
+                key="alternativeTheme"
+                value="alternativeTheme"
+                label="Monochrome map"
+                name="alternativeTheme"
+                checked={alternativeTheme}
+                onChange={(e) => setAlternativeTheme(e.target.checked)}
+              />
             </Stack>
           </Stack>
         </Sheet>
