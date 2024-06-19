@@ -1,12 +1,12 @@
 import "leaflet/dist/leaflet.css";
 
-import { useHotkeys, useLocalStorage } from "@mantine/hooks";
+import { useHotkeys, useLocalStorage, readLocalStorageValue } from "@mantine/hooks";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
-import { type FunctionComponent, useContext } from "react";
+import { type FunctionComponent, useContext, useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 import Control from "react-leaflet-custom-control";
 
@@ -37,9 +37,13 @@ const MAIN_ATTRIBUTIONS = [
   'This website is not affiliated with the <a href="https://simrail.eu" target="_blank">SimRail</a> team.',
 ].join(" | ");
 
+
 const MainMap: FunctionComponent = () => {
   const { setSelectedTrain } = useContext(SelectedTrainContext);
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
+  const [alternativeTheme] = useState(
+    readLocalStorageValue({ key: "alternativeTheme", defaultValue: false })
+  );
 
   const isConnected = useBehaviorSubj(isConnected$);
 
@@ -68,7 +72,7 @@ const MainMap: FunctionComponent = () => {
         zoomControl={false}
         style={{ height: "100vh", width: "100vw" }}>
         <TileLayer
-          className="basemap"
+          className={alternativeTheme ? "alternativemap" : "defaultmap"}
           attribution={MAIN_ATTRIBUTIONS}
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
@@ -162,12 +166,11 @@ const MainMap: FunctionComponent = () => {
             </Sheet>
           )}
         </Control>
-
         {/* Layers */}
         {/* orm-infra */}
         {visibleLayers.includes("orm-infra") && (
           <TileLayer
-            className="layers"
+            className={alternativeTheme ? "alternativelayers" : "defaultmap"}
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png"
           />
@@ -175,7 +178,7 @@ const MainMap: FunctionComponent = () => {
         {/* orm-maxspeed */}
         {visibleLayers.includes("orm-maxspeed") && (
           <TileLayer
-            className="layers"
+            className={alternativeTheme ? "alternativelayers" : "defaultmap"}
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/maxspeed/{z}/{x}/{y}.png"
           />
@@ -183,7 +186,7 @@ const MainMap: FunctionComponent = () => {
         {/* orm-signals */}
         {visibleLayers.includes("orm-signals") && (
           <TileLayer
-            className="layers"
+            className={alternativeTheme ? "alternativelayers" : "defaultmap"}
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/signals/{z}/{x}/{y}.png"
           />
@@ -191,7 +194,7 @@ const MainMap: FunctionComponent = () => {
         {/* orm-electrification */}
         {visibleLayers.includes("orm-electrification") && (
           <TileLayer
-            className="layers"
+            className={alternativeTheme ? "alternativelayers" : "defaultmap"}
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/electrification/{z}/{x}/{y}.png"
           />
