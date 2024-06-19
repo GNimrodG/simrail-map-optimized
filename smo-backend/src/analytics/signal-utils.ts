@@ -36,7 +36,7 @@ export function getSignalType(train: Train) {
     return "main";
   }
 
-  if (BLOCK_SIGNAL_REGEX.test(train.TrainData.SignalInFront)) {
+  if (BLOCK_SIGNAL_REGEX.test(train.TrainData.SignalInFront.split("@")[0])) {
     return "block";
   }
 
