@@ -15,6 +15,7 @@ import Typography from "@mui/joy/Typography";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 
 import { fetchTimetable, Timetable, Train } from "../../utils/data-manager";
+import MapLinesContext from "../../utils/map-lines-context";
 import SelectedRouteContext from "../../utils/selected-route-context";
 import SelectedTrainContext from "../../utils/selected-train-context";
 import { ProfileResponse } from "../../utils/steam";
@@ -60,6 +61,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
   const isSmallScreen = useMediaQuery(`(max-height: ${theme.breakpoints.values.md}px)`);
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
+  const { setMapLines } = useContext(MapLinesContext);
   const [timetable, setTimetable] = useState<Timetable | null>(null);
   const [isTimeTableExpanded, setIsTimeTableExpanded] = useState(
     readLocalStorageValue({ key: "expandScheduleDefault", defaultValue: false })
@@ -431,8 +433,11 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
               <Button
                 fullWidth
                 variant="solid"
-                color="danger"
-                onClick={() => setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: false })}>
+                color="warning"
+                onClick={() => {
+                  setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: false });
+                  setMapLines(null);
+                }}>
                 Unfollow
               </Button>
             ) : (
@@ -446,8 +451,11 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
             )}
             <Button
               variant="solid"
-              color="warning"
-              onClick={() => setSelectedTrain(null)}>
+              color="danger"
+              onClick={() => {
+                setSelectedTrain(null);
+                setMapLines(null);
+              }}>
               Unpin
             </Button>
           </ButtonGroup>

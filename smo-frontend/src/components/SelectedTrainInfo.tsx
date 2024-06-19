@@ -1,8 +1,10 @@
+import { useLocalStorage } from "@mantine/hooks";
 import Sheet from "@mui/joy/Sheet";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 import { useMap } from "react-leaflet";
 
-import { trainsData$ } from "../utils/data-manager";
+import { signalsData$, trainsData$ } from "../utils/data-manager";
+import MapLinesContext from "../utils/map-lines-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { getSteamProfileInfo, ProfileResponse } from "../utils/steam";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
@@ -11,9 +13,15 @@ import TrainMarkerPopup from "./markers/TrainMarkerPopup";
 const SelectedTrainInfo: FunctionComponent = () => {
   const map = useMap();
   const { selectedTrain } = useContext(SelectedTrainContext);
+  const { setMapLines } = useContext(MapLinesContext);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
   const trains = useBehaviorSubj(trainsData$);
+
+  const [showLineToNextSignal] = useLocalStorage({
+    key: "showLineToNextSignal",
+    defaultValue: false,
+  });
 
   const [selectedTrainUserData, setSelectedTrainUserData] = useState<ProfileResponse | null>(null);
 
@@ -43,9 +51,31 @@ const SelectedTrainInfo: FunctionComponent = () => {
           animate: true,
           duration: 1,
         });
+
+        if (showLineToNextSignal && train.TrainData.SignalInFront) {
+          const signalId = train.TrainData.SignalInFront.split("@")[0];
+          const signal = signalsData$.value.find((signal) => signal.name === signalId);
+
+          if (signal) {
+            setMapLines({
+              signal: train.TrainNoLocal,
+              lines: [
+                {
+                  index: 0,
+                  color: "next",
+                  label: signal.name,
+                  coords: [
+                    [train.TrainData.Latititute, train.TrainData.Longitute],
+                    [signal.lat, signal.lon],
+                  ],
+                },
+              ],
+            });
+          }
+        }
       }
     }
-  }, [map, selectedTrain, trains]);
+  }, [map, selectedTrain, setMapLines, showLineToNextSignal, trains]);
 
   return (
     selectedTrain &&

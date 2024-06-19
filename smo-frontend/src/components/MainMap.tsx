@@ -16,8 +16,8 @@ import SelectedTrainContext from "../utils/selected-train-context";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
 import LayerMenu from "./LayerMenu";
 import ActiveSignalsLayer from "./layers/ActiveSignalsLayer";
+import MapLinesLayer from "./layers/MapLinesLayer";
 import PassiveSignalsLayer from "./layers/PassiveSignalsLayer";
-import SelectedSignalLinesLayer from "./layers/SelectedSignalLinesLayer";
 import SelectedTrainRouteLayer from "./layers/SelectedTrainRouteLayer";
 import StationsLayer from "./layers/StationsLayer";
 import TrainsLayer from "./layers/TrainsLayer";
@@ -200,7 +200,7 @@ const MainMap: FunctionComponent = () => {
         {visibleLayers.includes("active-signals") && <ActiveSignalsLayer />}
         {visibleLayers.includes("selected-route") && <SelectedTrainRouteLayer />}
         {visibleLayers.includes("unplayable-stations") && <UnplayableStationsLayer />}
-        <SelectedSignalLinesLayer />
+        <MapLinesLayer />
       </MapContainer>
     </>
   );

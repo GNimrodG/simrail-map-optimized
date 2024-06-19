@@ -39,6 +39,11 @@ const Settings: FunctionComponent = () => {
     defaultValue: false,
   });
 
+  const [showLineToNextSignal, setShowLineToNextSignal] = useLocalStorage({
+    key: "showLineToNextSignal",
+    defaultValue: false,
+  });
+
   return (
     <>
       <Tooltip
@@ -108,6 +113,14 @@ const Settings: FunctionComponent = () => {
                 name="hideTrainPictures"
                 checked={hideTrainPictures}
                 onChange={(e) => setHideTrainPictures(e.target.checked)}
+              />
+              <Checkbox
+                key="showLineToNextSignal"
+                value="showLineToNextSignal"
+                label="Show line to next signal"
+                name="showLineToNextSignal"
+                checked={showLineToNextSignal}
+                onChange={(e) => setShowLineToNextSignal(e.target.checked)}
               />
 
               <Typography

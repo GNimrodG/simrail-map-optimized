@@ -16,7 +16,7 @@ import {
   SignalWithTrain,
   updateSignal,
 } from "../../utils/data-manager";
-import SignalLinesContext, { SignalLineData } from "../../utils/signal-lines-context";
+import MapLinesContext, { MapLineData } from "../../utils/map-lines-context";
 import { getDistanceColorForSignal } from "../../utils/ui";
 import SignalIcon from "./icons/signals/signal.svg?raw";
 import SignalBlockGreenIcon from "./icons/signals/signal-block-green.svg?raw";
@@ -116,9 +116,37 @@ function getColor(velocity: number): DefaultColorPalette {
   return "success";
 }
 
+/**
+ * Darken a hex color by a percentage
+ * @param color - hex color
+ * @param percent - percentage to darken in range [0, 100]
+ */
+function darkenColor(color: string, percent: number): string {
+  console.log(color, percent);
+  const num = parseInt(color.replace("#", ""), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = (num >> 16) - amt;
+  const G = ((num >> 8) & 0x00ff) - amt;
+  const B = (num & 0x0000ff) - amt;
+
+  return `#${(
+    0x1000000 +
+    (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+    (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+    (B < 255 ? (B < 1 ? 0 : B) : 255)
+  )
+    .toString(16)
+    .slice(1)}`;
+}
+
+const NEXT_COLOR = "#0000FF";
+const NEXT_FURTHER_COLOR = "#800080";
+const PREV_COLOR = "#FF0000";
+const PREV_FURTHER_COLOR = "#FFA500";
+
 const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSelect }) => {
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(new DivIcon(DEFAULT_ICON_OPTIONS));
-  const { signalLines, setSignalLines } = useContext(SignalLinesContext);
+  const { mapLines, setMapLines } = useContext(MapLinesContext);
 
   useEffect(() => {
     if (signal.train) {
@@ -210,15 +238,15 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
   ]);
 
   const showSignalLines = () => {
-    const lines: SignalLineData["lines"] = [];
+    const lines: MapLineData["lines"] = [];
     let i = 0;
 
     for (const nextSignal of signal.nextSignals) {
       const nextSignalData = signalsData$.value.find((s) => s.name === nextSignal);
       if (nextSignalData) {
         lines.push({
-          signal: nextSignal,
-          type: "next",
+          label: nextSignal,
+          color: NEXT_COLOR,
           coords: [
             [signal.lat, signal.lon],
             [nextSignalData.lat, nextSignalData.lon],
@@ -232,8 +260,8 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
       const prevSignalData = signalsData$.value.find((s) => s.name === prevSignal);
       if (prevSignalData) {
         lines.push({
-          signal: prevSignal,
-          type: "prev",
+          label: prevSignal,
+          color: PREV_COLOR,
           coords: [
             [signal.lat, signal.lon],
             [prevSignalData.lat, prevSignalData.lon],
@@ -243,101 +271,88 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
       }
     }
 
-    setSignalLines({ signal: signal.name, lines });
+    setMapLines({ signal: signal.name, lines });
   };
 
   const showSignalLinesFurther = () => {
-    const MAX_LINES = 100;
-    const lines: SignalLineData["lines"] = [];
-    let i = 0;
+    const MAX_LAYER = 20;
+    const MAX_STACK_SIZE = 10;
+    const lines: MapLineData["lines"] = [];
+    let counter = 0;
 
-    for (const nextSignal of signal.nextSignals) {
-      const nextSignalData = signalsData$.value.find((s) => s.name === nextSignal);
-      if (nextSignalData) {
-        lines.push({
-          signal: nextSignal,
-          type: "next",
-          coords: [
-            [signal.lat, signal.lon],
-            [nextSignalData.lat, nextSignalData.lon],
-          ],
-          index: i++,
-        });
+    {
+      let stack = [signal];
+      let newStack: SignalWithTrain[] = [];
+      let layer = 0;
 
-        addNextSignalLines(nextSignal, 0);
-      }
-    }
+      while (stack.length > 0 && layer < MAX_LAYER) {
+        for (const signal of stack) {
+          for (const nextSignal of signal.nextSignals) {
+            const prevSignalData = signalsData$.value.find((s) => s.name === nextSignal);
+            if (prevSignalData) {
+              lines.push({
+                label: nextSignal,
+                color: darkenColor(
+                  layer % 2 === 0 ? NEXT_COLOR : NEXT_FURTHER_COLOR,
+                  (layer / MAX_LAYER) * 100
+                ),
+                coords: [
+                  [signal.lat, signal.lon],
+                  [prevSignalData.lat, prevSignalData.lon],
+                ],
+                index: counter++,
+              });
 
-    for (const prevSignal of signal.prevSignals) {
-      const prevSignalData = signalsData$.value.find((s) => s.name === prevSignal);
-      if (prevSignalData) {
-        lines.push({
-          signal: prevSignal,
-          type: "prev",
-          coords: [
-            [signal.lat, signal.lon],
-            [prevSignalData.lat, prevSignalData.lon],
-          ],
-          index: i++,
-        });
-
-        addPrevSignalLines(prevSignalData.name, 0);
-      }
-    }
-
-    function addNextSignalLines(signalName: string, jump: number) {
-      const signalData = signalsData$.value.find((s) => s.name === signalName);
-      if (!signalData) {
-        return;
-      }
-
-      for (const nextSignal of signalData.nextSignals) {
-        const nextSignalData = signalsData$.value.find((s) => s.name === nextSignal);
-        if (nextSignalData) {
-          lines.push({
-            signal: nextSignal,
-            type: "next-further",
-            coords: [
-              [signalData.lat, signalData.lon],
-              [nextSignalData.lat, nextSignalData.lon],
-            ],
-            index: i++,
-          });
-
-          if (lines.length < MAX_LINES / 2) {
-            addNextSignalLines(nextSignal, jump + 1);
+              if (newStack.length < MAX_STACK_SIZE) {
+                newStack.push(prevSignalData);
+              }
+            }
           }
         }
+
+        stack = newStack;
+        newStack = [];
+        layer++;
       }
     }
 
-    function addPrevSignalLines(signalName: string, jump: number) {
-      const signalData = signalsData$.value.find((s) => s.name === signalName);
-      if (!signalData) {
-        return;
-      }
+    {
+      let stack = [signal];
+      let newStack: SignalWithTrain[] = [];
+      let layer = 0;
 
-      for (const prevSignal of signalData.prevSignals) {
-        const prevSignalData = signalsData$.value.find((s) => s.name === prevSignal);
-        if (prevSignalData) {
-          lines.push({
-            signal: prevSignal,
-            type: "prev-further",
-            coords: [
-              [signalData.lat, signalData.lon],
-              [prevSignalData.lat, prevSignalData.lon],
-            ],
-            index: i++,
-          });
+      while (stack.length > 0 && layer < MAX_LAYER) {
+        for (const signal of stack) {
+          for (const prevSignal of signal.prevSignals) {
+            const prevSignalData = signalsData$.value.find((s) => s.name === prevSignal);
+            if (prevSignalData) {
+              lines.push({
+                label: prevSignal,
+                color: darkenColor(
+                  layer % 2 === 0 ? PREV_COLOR : PREV_FURTHER_COLOR,
+                  (layer / MAX_LAYER) * 100
+                ),
+                coords: [
+                  [signal.lat, signal.lon],
+                  [prevSignalData.lat, prevSignalData.lon],
+                ],
+                index: counter++,
+              });
 
-          if (lines.length < MAX_LINES) {
-            addPrevSignalLines(prevSignal, jump + 1);
+              if (newStack.length < MAX_STACK_SIZE) {
+                newStack.push(prevSignalData);
+              }
+            }
           }
         }
+
+        stack = newStack;
+        newStack = [];
+        layer++;
       }
     }
 
-    setSignalLines({ signal: signal.name, lines });
+    setMapLines({ signal: signal.name, lines });
   };
 
   return (
@@ -472,9 +487,9 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
               ))}
             </Typography>
           </Stack>
-          {signalLines?.signal === signal.name ? (
+          {mapLines?.signal === signal.name ? (
             <Chip
-              onClick={() => setSignalLines(null)}
+              onClick={() => setMapLines(null)}
               color="warning">
               Hide signal lines
             </Chip>
@@ -485,10 +500,14 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                 placement="top"
                 title={
                   <>
-                    <Typography sx={{ color: "red" }}>Red: Previous</Typography>
-                    <Typography sx={{ color: "orange" }}>Orange: Previous further</Typography>
-                    <Typography sx={{ color: "blue" }}>Blue: Next</Typography>
-                    <Typography sx={{ color: "purple" }}>Purple: Next further</Typography>
+                    <Typography>
+                      <Typography sx={{ color: "red" }}>Red</Typography>/
+                      <Typography sx={{ color: "orange" }}>Orange</Typography>: Previous signals
+                    </Typography>
+                    <Typography>
+                      <Typography sx={{ color: "blue" }}>Blue</Typography>/
+                      <Typography sx={{ color: "purple" }}>Purple</Typography>: Next signals
+                    </Typography>
                   </>
                 }>
                 <Chip onClick={showSignalLines}>Show signal lines</Chip>
