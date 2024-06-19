@@ -60,6 +60,10 @@ export class Fetcher<T> {
     this.worker.on("exit", (code) => {
       if (code !== 0) {
         this.logger.error(`Worker stopped with exit code ${code}`);
+
+        this.logger.info("Starting new worker");
+        this.startWorker(true);
+        this.logger.info("New worker started");
       } else {
         this.logger.info("Worker stopped");
       }
