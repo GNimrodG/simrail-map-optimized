@@ -39,6 +39,11 @@ const Settings: FunctionComponent = () => {
     defaultValue: false,
   });
 
+  const [showLineToNextSignal, setShowLineToNextSignal] = useLocalStorage({
+    key: "showLineToNextSignal",
+    defaultValue: false,
+  });
+
   const [alternativeTheme, setAlternativeTheme] = useLocalStorage({
     key: "alternativeTheme",
     defaultValue: false,
