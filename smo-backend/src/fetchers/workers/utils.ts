@@ -15,8 +15,13 @@ export function registerWorkerFunction(
   parentPort?.on("message", async (msg) => {
     switch (msg.type) {
       case "run": {
-        const result = await fn(logger);
-        parentPort?.postMessage({ type: "done", data: result });
+        try {
+          const result = await fn(logger);
+          parentPort?.postMessage({ type: "done", data: result });
+        } catch (e) {
+          logger.error(`Error in worker: ${e}`);
+          parentPort?.postMessage({ type: "error", data: e });
+        }
         break;
       }
       default:
@@ -37,8 +42,13 @@ export function registerPerServerWorkerFunction<T>(
   parentPort?.on("message", async (msg) => {
     switch (msg.type) {
       case "run": {
-        const result = await fn(msg.server, logger);
-        parentPort?.postMessage({ type: "done", data: result });
+        try {
+          const result = await fn(msg.server, logger);
+          parentPort?.postMessage({ type: "done", data: result });
+        } catch (e) {
+          logger.error(`Error in worker: ${e}`);
+          parentPort?.postMessage({ type: "error", data: e });
+        }
         break;
       }
       default:
