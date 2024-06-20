@@ -39,11 +39,6 @@ const Settings: FunctionComponent = () => {
     defaultValue: false,
   });
 
-  const [showLineToNextSignal, setShowLineToNextSignal] = useLocalStorage({
-    key: "showLineToNextSignal",
-    defaultValue: false,
-  });
-
   const [alternativeTheme, setAlternativeTheme] = useLocalStorage({
     key: "alternativeTheme",
     defaultValue: false,
@@ -165,10 +160,10 @@ const Settings: FunctionComponent = () => {
               Map Theme(For Dark Mode)
             </Typography>
             <Typography
-                sx={{ pt: 0 }}
-                level="body-lg">
-                Reload Reqiured
-              </Typography>
+              sx={{ pt: 0 }}
+              level="body-lg">
+              Reload Reqiured
+            </Typography>
             <Stack
               direction="column"
               spacing={1}>
