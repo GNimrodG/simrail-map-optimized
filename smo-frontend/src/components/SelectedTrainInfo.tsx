@@ -62,7 +62,7 @@ const SelectedTrainInfo: FunctionComponent = () => {
               lines: [
                 {
                   index: 0,
-                  color: "next",
+                  color: "#0FF0F0",
                   label: signal.name,
                   coords: [
                     [train.TrainData.Latititute, train.TrainData.Longitute],
