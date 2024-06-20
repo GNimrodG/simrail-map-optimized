@@ -6,9 +6,10 @@ import Button from "@mui/joy/Button";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
-import { type FunctionComponent, useContext } from "react";
-import { MapContainer, TileLayer } from "react-leaflet";
+import { type FunctionComponent, useContext, useEffect, useRef } from "react";
+import { MapContainer, useMap } from "react-leaflet";
 import Control from "react-leaflet-custom-control";
+import L from 'leaflet';
 
 import { isConnected$ } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
@@ -37,9 +38,39 @@ const MAIN_ATTRIBUTIONS = [
   'This website is not affiliated with the <a href="https://simrail.eu" target="_blank">SimRail</a> team.',
 ].join(" | ");
 
+const RefreshableTileLayer: React.FC<{ className: string; url: string; attribution: string }> = ({ className, url, attribution }) => {
+  const map = useMap();
+  const layerRef = useRef<L.TileLayer | null>(null);
+
+  useEffect(() => {
+    if (layerRef.current) {
+      map.removeLayer(layerRef.current);
+    }
+
+    const layer = L.tileLayer(url, {
+      attribution,
+      className,
+    }).addTo(map);
+
+    layerRef.current = layer;
+
+    return () => {
+      if (layerRef.current) {
+        map.removeLayer(layerRef.current);
+      }
+    };
+  }, [className, url, attribution, map]);
+
+  return null;
+};
+
 const MainMap: FunctionComponent = () => {
   const { setSelectedTrain } = useContext(SelectedTrainContext);
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
+  const [alternativeTheme] = useLocalStorage({
+    key: "alternativeTheme",
+    defaultValue: false,
+  });
 
   const isConnected = useBehaviorSubj(isConnected$);
 
@@ -67,9 +98,10 @@ const MainMap: FunctionComponent = () => {
         scrollWheelZoom
         zoomControl={false}
         style={{ height: "100vh", width: "100vw" }}>
-        <TileLayer
-          attribution={MAIN_ATTRIBUTIONS}
+        <RefreshableTileLayer
+          className={alternativeTheme ? "alternativemap" : "defaultmap"}
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution={MAIN_ATTRIBUTIONS}
         />
 
         {/* placeholder control */}
@@ -161,32 +193,35 @@ const MainMap: FunctionComponent = () => {
             </Sheet>
           )}
         </Control>
-
         {/* Layers */}
         {/* orm-infra */}
         {visibleLayers.includes("orm-infra") && (
-          <TileLayer
+          <RefreshableTileLayer
+            className={alternativeTheme ? "alternativelayers" : "defaultmap"}
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png"
           />
         )}
         {/* orm-maxspeed */}
         {visibleLayers.includes("orm-maxspeed") && (
-          <TileLayer
+          <RefreshableTileLayer
+            className={alternativeTheme ? "alternativelayers" : "defaultmap"}
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/maxspeed/{z}/{x}/{y}.png"
           />
         )}
         {/* orm-signals */}
         {visibleLayers.includes("orm-signals") && (
-          <TileLayer
+          <RefreshableTileLayer
+            className={alternativeTheme ? "alternativelayers" : "defaultmap"}
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/signals/{z}/{x}/{y}.png"
           />
         )}
         {/* orm-electrification */}
         {visibleLayers.includes("orm-electrification") && (
-          <TileLayer
+          <RefreshableTileLayer
+            className={alternativeTheme ? "alternativelayers" : "defaultmap"}
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/electrification/{z}/{x}/{y}.png"
           />
