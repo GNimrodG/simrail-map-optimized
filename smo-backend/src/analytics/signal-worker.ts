@@ -69,6 +69,8 @@ async function analyzeTrains(trains: Train[]) {
         role: true,
         prev_finalized: true,
         next_finalized: true,
+        prev_regex: true,
+        next_regex: true,
         prevSignalConnections: { select: { next: true } },
         nextSignalConnections: { select: { prev: true } },
       },
@@ -157,6 +159,8 @@ async function analyzeTrains(trains: Train[]) {
               role: null,
               prev_finalized: false,
               next_finalized: false,
+              prev_regex: null,
+              next_regex: null,
               prevSignalConnections: [],
               nextSignalConnections: [],
             };
@@ -200,6 +204,8 @@ async function analyzeTrains(trains: Train[]) {
               role: true,
               prev_finalized: true,
               next_finalized: true,
+              prev_regex: true,
+              next_regex: true,
               prevSignalConnections: { select: { next: true } },
               nextSignalConnections: { select: { prev: true } },
             },
@@ -223,6 +229,32 @@ async function analyzeTrains(trains: Train[]) {
             signal.nextSignalConnections.some((conn) => conn.prev === prevSignalId)
           ) {
             // connection already exists
+            shouldIgnore = true;
+          }
+
+          if (
+            !shouldIgnore &&
+            prevSignal.next_regex &&
+            !new RegExp(prevSignal.next_regex).test(signalId)
+          ) {
+            tryLogError(
+              prevSignalId,
+              signalId,
+              `Signal ${signalId} doesn't match ${prevSignalId}'s next regex!`
+            );
+            shouldIgnore = true;
+          }
+
+          if (
+            !shouldIgnore &&
+            signal.prev_regex &&
+            !new RegExp(signal.prev_regex).test(prevSignalId)
+          ) {
+            tryLogError(
+              prevSignalId,
+              signalId,
+              `Signal ${prevSignalId} doesn't match ${signalId}'s prev regex!`
+            );
             shouldIgnore = true;
           }
 

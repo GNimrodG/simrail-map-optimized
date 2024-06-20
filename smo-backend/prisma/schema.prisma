@@ -41,6 +41,8 @@ model signals {
   role                  String?             @db.VarChar(20)
   prev_finalized        Boolean             @default(false) @db.Boolean
   next_finalized        Boolean             @default(false) @db.Boolean
+  prev_regex            String?             @db.VarChar(100)
+  next_regex            String?             @db.VarChar(100)
   prevSignalConnections signalConnections[] @relation("prevSignalConnections")
   nextSignalConnections signalConnections[] @relation("nextSignalConnections")
 
