@@ -119,6 +119,14 @@ const Settings: FunctionComponent = () => {
                 checked={hideTrainPictures}
                 onChange={(e) => setHideTrainPictures(e.target.checked)}
               />
+              <Checkbox
+                key="showLineToNextSignal"
+                value="showLineToNextSignal"
+                label="Show line to next signal"
+                name="showLineToNextSignal"
+                checked={showLineToNextSignal}
+                onChange={(e) => setShowLineToNextSignal(e.target.checked)}
+              />
 
               <Typography
                 sx={{ pt: 1 }}
@@ -163,11 +171,6 @@ const Settings: FunctionComponent = () => {
               sx={{ pt: 2 }}
               level="h4">
               Map Theme(For Dark Mode)
-            </Typography>
-            <Typography
-              sx={{ pt: 0 }}
-              level="body-lg">
-              Reload Reqiured
             </Typography>
             <Stack
               direction="column"
