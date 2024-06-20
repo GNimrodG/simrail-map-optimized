@@ -128,7 +128,7 @@ async function analyzeTrains(trains: Train[]) {
                 UPDATE signals
                 SET
                   accuracy = ${train.TrainData.DistanceToSignalInFront},
-                  point = ${`SRID=4326;POINT(${train.TrainData.Latititute} ${train.TrainData.Longitute})`}
+                  point = ${`SRID=4326;POINT(${train.TrainData.Longitute} ${train.TrainData.Latititute})`}
                 WHERE name = ${signalId}`;
               logger.success(
                 `Signal ${signalId} accuracy updated from ${signal.accuracy}m to ${
@@ -146,7 +146,7 @@ async function analyzeTrains(trains: Train[]) {
           try {
             await prisma.$executeRaw`
               INSERT INTO signals (name, point, extra, accuracy, type)
-              VALUES (${signalId}, ${`SRID=4326;POINT(${train.TrainData.Latititute} ${train.TrainData.Longitute})`}, ${extra}, ${
+              VALUES (${signalId}, ${`SRID=4326;POINT(${train.TrainData.Longitute} ${train.TrainData.Latititute})`}, ${extra}, ${
               train.TrainData.DistanceToSignalInFront
             }, ${type})`;
 
