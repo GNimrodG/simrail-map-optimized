@@ -8,7 +8,7 @@ const workerPath = __dirname + "/route-worker" + extname(__filename); // Use the
 const logger = new ModuleLogger("ROUTE-PROC");
 
 logger.info(`Starting route worker at ${workerPath}`);
-const worker = new Worker(workerPath);
+let worker = new Worker(workerPath);
 logger.info(`Route worker started`);
 
 worker.on("error", (err) => {
@@ -18,6 +18,10 @@ worker.on("error", (err) => {
 worker.on("exit", (code) => {
   if (code !== 0) {
     logger.error(`Worker stopped with exit code ${code}`);
+
+    logger.info(`Starting new worker`);
+    worker = new Worker(workerPath);
+    logger.info(`New worker started`);
   }
 });
 

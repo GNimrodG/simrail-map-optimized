@@ -60,6 +60,10 @@ export class Fetcher<T> {
     this.worker.on("exit", (code) => {
       if (code !== 0) {
         this.logger.error(`Worker stopped with exit code ${code}`);
+
+        this.logger.info("Starting new worker");
+        this.startWorker(true);
+        this.logger.info("New worker started");
       } else {
         this.logger.info("Worker stopped");
       }
@@ -140,6 +144,8 @@ export class Fetcher<T> {
         clearTimeout(timeout);
         if (msg.type === "done") {
           resolve(msg.data);
+        } else if (msg.type === "error") {
+          reject(new Error(msg.data));
         } else {
           reject(new Error(`Unknown message type: ${msg.type}`));
         }
@@ -202,6 +208,8 @@ export class PerServerFetcher<T> extends Fetcher<Map<string, T>> {
         clearTimeout(timeout);
         if (msg.type === "done") {
           resolve(msg.data);
+        } else if (msg.type === "error") {
+          reject(new Error(msg.data));
         } else {
           reject(new Error(`Unknown message type: ${msg.type}`));
         }

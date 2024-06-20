@@ -6,16 +6,16 @@ import { CssVarsProvider } from "@mui/joy/styles";
 import { useMemo, useState } from "react";
 
 import MainMap from "./components/MainMap";
+import MapLinesContext, { MapLineData } from "./utils/map-lines-context";
 import SelectedRouteContext from "./utils/selected-route-context";
 import SelectedTrainContext from "./utils/selected-train-context";
-import SignalLinesContext, { SignalLineData } from "./utils/signal-lines-context";
 
 function App() {
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
   const [selectedTrain, setSelectedTrain] = useState<{ trainNo: string; follow: boolean } | null>(
     null
   );
-  const [signalLines, setSignalLines] = useState<SignalLineData | null>(null);
+  const [mapLines, setMapLines] = useState<MapLineData | null>(null);
 
   const selectedRouteContextValue = useMemo(
     () => ({ selectedRoute, setSelectedRoute }),
@@ -27,10 +27,7 @@ function App() {
     [selectedTrain, setSelectedTrain]
   );
 
-  const signalLinesContextValue = useMemo(
-    () => ({ signalLines, setSignalLines }),
-    [signalLines, setSignalLines]
-  );
+  const mapLinesContextValue = useMemo(() => ({ mapLines, setMapLines }), [mapLines, setMapLines]);
 
   return (
     <CssVarsProvider
@@ -39,9 +36,9 @@ function App() {
       <CssBaseline />
       <SelectedRouteContext.Provider value={selectedRouteContextValue}>
         <SelectedTrainContext.Provider value={selectedTrainContextValue}>
-          <SignalLinesContext.Provider value={signalLinesContextValue}>
+          <MapLinesContext.Provider value={mapLinesContextValue}>
             <MainMap />
-          </SignalLinesContext.Provider>
+          </MapLinesContext.Provider>
         </SelectedTrainContext.Provider>
       </SelectedRouteContext.Provider>
     </CssVarsProvider>

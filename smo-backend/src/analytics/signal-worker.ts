@@ -16,7 +16,7 @@ import {
 const logger = new ModuleLogger("SIGNALS-PROC-WORKER");
 
 const TrainPreviousSignals = new LRUCache<string, string>({
-  ttl: 1000 * 60 * 60, // 1 hour
+  ttl: 1000 * 60, // 1 min
   ttlAutopurge: true,
   updateAgeOnGet: true,
 });
@@ -252,7 +252,7 @@ async function analyzeTrains(trains: Train[]) {
               shouldIgnore = true;
             }
 
-            if (prevSignal.prevSignalConnections.length > 0) {
+            if (!shouldIgnore && prevSignal.prevSignalConnections.length > 0) {
               // a block signal can only have one next signal
               tryLogError(
                 prevSignalId,
