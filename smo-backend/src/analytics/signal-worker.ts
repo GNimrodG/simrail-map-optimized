@@ -3,7 +3,7 @@ import type { Train } from "../api-helper";
 import { parentPort } from "worker_threads";
 import { ModuleLogger } from "../logger";
 import { prisma } from "../db";
-import { LRUCache } from "lru-cache";
+import TTLCache from "@isaacs/ttlcache";
 import {
   BLOCK_SIGNAL_REGEX,
   BLOCK_SIGNAL_REVERSE_REGEX,
@@ -15,9 +15,9 @@ import {
 
 const logger = new ModuleLogger("SIGNALS-PROC-WORKER");
 
-const TrainPreviousSignals = new LRUCache<string, string>({
-  ttl: 1000 * 60, // 1 min
-  ttlAutopurge: true,
+// if we don't get info about a train for 30 seconds, then we clear it from the cache so it doesn't create a wrong connection
+const TrainPreviousSignals = new TTLCache<string, string>({
+  ttl: 1000 * 30, // 30 sec
   updateAgeOnGet: true,
 });
 
@@ -75,18 +75,22 @@ async function analyzeTrains(trains: Train[]) {
     });
 
     for (const train of trains) {
+      const trainId = `${train.id}@${train.ServerCode}-${train.TrainNoLocal}`;
+
       if (!train.TrainData.Latititute || !train.TrainData.Longitute) {
         logger.warn(
           `Train ${train.TrainNoLocal}@${train.ServerCode} (${train.Type}) has no location data!`
         );
+        TrainPreviousSignals.get(trainId); // update TTL
         continue;
       }
 
       if (!train.TrainData.SignalInFront) {
+        // this happens when the train is really far away from any signal (~5km+)
+        TrainPreviousSignals.get(trainId); // update TTL
         continue;
       }
 
-      const trainId = `${train.id}@${train.ServerCode}-${train.TrainNoLocal}`;
       const [signalId, extra] = train.TrainData.SignalInFront.split("@");
       let signal = signals.find((signal) => signal.name === signalId);
       const type = getSignalType(train);
@@ -310,6 +314,12 @@ parentPort?.on("message", async (msg) => {
   switch (msg.type) {
     case "analyze":
       analyzeTrains(msg.data);
+      break;
+    case "get-train-previous-signal":
+      parentPort?.postMessage({
+        type: "train-previous-signal",
+        data: Object.fromEntries(TrainPreviousSignals.entries()),
+      });
       break;
     default:
       logger.warn(`Unknown message type: ${msg.type}`);

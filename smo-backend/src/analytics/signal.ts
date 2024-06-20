@@ -144,6 +144,20 @@ export async function addSignalNextSignal(signal: string, nextSignal: string) {
   return true;
 }
 
+export async function getTrainPreviousSignal() {
+  return new Promise<Record<string, string>>((resolve, reject) => {
+    worker.once("message", (message) => {
+      if (message.type === "train-previous-signal") {
+        resolve(message.data);
+      } else {
+        reject(new Error(`Unknown message type: ${message.type}`));
+      }
+    });
+
+    worker.postMessage({ type: "get-train-previous-signal" });
+  });
+}
+
 export async function getSignals() {
   const rawSignals = await prisma.$queryRaw<RawSignal[]>`
   SELECT signals.name,
