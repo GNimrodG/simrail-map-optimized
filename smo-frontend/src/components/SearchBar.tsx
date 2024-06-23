@@ -1,7 +1,9 @@
 import Autocomplete, { createFilterOptions } from "@mui/joy/Autocomplete";
+import L from "leaflet";
 import { type FunctionComponent, useContext } from "react";
 import { useMap } from "react-leaflet";
 
+import UnplayableStations from "../assets/unplayable-stations.json";
 import {
   signalsData$,
   SignalWithTrain,
@@ -10,23 +12,17 @@ import {
   Train,
   trainsData$,
 } from "../utils/data-manager";
+import { getStationGeometry, goToSignal } from "../utils/geom-utils";
 import SelectedTrainContext from "../utils/selected-train-context";
+import { normalizeString } from "../utils/ui";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
 import ListboxComponent from "./utils/ListBoxComponent";
 
 const filterOptions = createFilterOptions<ListItem>({
   ignoreAccents: true,
   ignoreCase: true,
-  stringify: (option) =>
-    getLabel(option)
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replaceAll("Ł", "L")
-      .replaceAll("ł", "l")
-      .replaceAll("ą", "a")
-      .replaceAll("ę", "e")
-      .replaceAll("ó", "o")
-      .replaceAll("ś", "s"),
+  // the original is included so if the user types the exact name it will be matched
+  stringify: (option) => normalizeString(getLabel(option)) + getLabel(option),
 });
 
 const SearchBar: FunctionComponent = () => {
@@ -43,10 +39,32 @@ const SearchBar: FunctionComponent = () => {
     ...(stations
       ?.map((station) => ({ type: "Stations", data: station }))
       .toSorted((a, b) => a.data.Name.localeCompare(b.data.Name)) || []),
+    ...(UnplayableStations.map((station) => ({
+      type: "Stations",
+      data: station as unknown as Station,
+    })).toSorted((a, b) => a.data.Name.localeCompare(b.data.Name)) || []),
     ...(signals
       ?.map((signal) => ({ type: "Signals", data: signal }))
       .toSorted((a, b) => a.data.name.localeCompare(b.data.name)) || []),
   ] as ListItem[];
+
+  const panToStation = (station: Station) => {
+    setSelectedTrain(selectedTrain ? { ...selectedTrain, follow: false } : null);
+    map?.panTo([station.Latititude, station.Longitude], { animate: true, duration: 1 });
+
+    // add polygon around the station using the signals
+    const polygon = L.polygon(getStationGeometry(station), {
+      color: "red",
+      fillColor: "#f03",
+      fillOpacity: 0.5,
+    }).addTo(map);
+    setTimeout(() => map?.removeLayer(polygon), 3000);
+  };
+
+  const panToSignal = (signal: SignalWithTrain) => {
+    setSelectedTrain(selectedTrain ? { ...selectedTrain, follow: false } : null);
+    goToSignal(signal, map);
+  };
 
   return (
     <Autocomplete
@@ -76,12 +94,10 @@ const SearchBar: FunctionComponent = () => {
             );
             break;
           case "Stations":
-            setSelectedTrain(selectedTrain ? { ...selectedTrain, follow: false } : null);
-            map?.panTo([v.data.Latititude, v.data.Longitude], { animate: true, duration: 1 });
+            panToStation(v.data);
             break;
           case "Signals":
-            setSelectedTrain(selectedTrain ? { ...selectedTrain, follow: false } : null);
-            map?.panTo([v.data.lat, v.data.lon], { animate: true, duration: 1 });
+            panToSignal(v.data);
             break;
         }
       }}

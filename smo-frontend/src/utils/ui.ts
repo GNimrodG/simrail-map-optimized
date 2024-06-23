@@ -23,3 +23,15 @@ export function getDistanceColorForSignal(distance: number): DefaultColorPalette
 
   return "primary";
 }
+
+export function normalizeString(str: string): string {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replaceAll("Ł", "L")
+    .replaceAll("ł", "l")
+    .replaceAll("ą", "a")
+    .replaceAll("ę", "e")
+    .replaceAll("ó", "o")
+    .replaceAll("ś", "s");
+}

@@ -1,470 +1,458 @@
 [
   {
     "Name": "Katowice Tow. KTC",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "l137_ktc",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.26528905318747,
     "Longitude": 18.98548711536283,
-    "id": ""
+    "id": "l137_ktc"
   },
   {
     "Name": "Brynów",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "l139_bry",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.248255774194334,
     "Longitude": 18.988992476762228,
-    "id": ""
+    "id": "l139_bry"
   },
   {
     "Name": "Mysłowice",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "MW",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.23790508562325,
     "Longitude": 19.141623443140155,
-    "id": ""
+    "id": "MW"
   },
   {
     "Name": "Szabelnia",
     "Prefix": "",
-    "DifficultyLevel": 0,
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.25921852453205,
     "Longitude": 19.110331512666356,
-    "id": ""
+    "id": "Szabelnia"
   },
   {
     "Name": "Staszic",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Ssc",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.218462541767884,
     "Longitude": 19.001465526694027,
-    "id": ""
+    "id": "Ssc"
   },
   {
     "Name": "Stawiska",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Sk",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.251940600103836,
     "Longitude": 19.104384301176534,
-    "id": ""
+    "id": "Sk"
   },
   {
     "Name": "Katowice Janów",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "KJw",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.23756415590628,
     "Longitude": 19.07915703523147,
-    "id": ""
-  },
-  {
-    "Name": "Dąbrowa Górnicza Ząbkowice",
-    "Prefix": "",
-    "DifficultyLevel": 0,
-    "MainImageURL": "",
-    "AdditionalImage1URL": "",
-    "AdditionalImage2URL": "",
-    "DispatchedBy": [],
-    "Latititude": 50.37572935862174,
-    "Longitude": 19.27236512303352,
-    "id": ""
+    "id": "KJw"
   },
   {
     "Name": "Starzyny",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Str",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.71272005979818,
     "Longitude": 19.8013961821638,
-    "id": ""
+    "id": "Str"
   },
   {
     "Name": "Żelisławice",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Zes",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.80337865175368,
     "Longitude": 19.858169169133415,
-    "id": ""
+    "id": "Zes"
   },
   {
     "Name": "Czarnca",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Cz",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.823959976470775,
     "Longitude": 19.94521227641923,
-    "id": ""
+    "id": "Cz"
   },
   {
     "Name": "Sosnowiec Gł. pzs R52",
     "Prefix": "",
-    "DifficultyLevel": 0,
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.272224,
     "Longitude": 19.114761,
-    "id": ""
+    "id": "Sosnowiec Gł. pzs R52"
   },
   {
     "Name": "Sosnowiec Dańdówka",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "SDn",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.26578,
     "Longitude": 19.17415,
-    "id": ""
+    "id": "SDn"
   },
   {
     "Name": "Myszków",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "My",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.57391,
     "Longitude": 19.33097,
-    "id": ""
+    "id": "My"
   },
   {
     "Name": "Przemiarki",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Pmi",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.385874,
     "Longitude": 19.340057,
-    "id": ""
+    "id": "Pmi"
   },
   {
     "Name": "Radzice",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Rd",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 51.47348405723441,
     "Longitude": 20.37363669889725,
-    "id": ""
+    "id": "Rd"
   },
   {
     "Name": "Sprowa",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Sp",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.59304492206253,
     "Longitude": 19.88301571264459,
-    "id": ""
+    "id": "Sp"
   },
   {
     "Name": "Marków",
     "Prefix": "",
-    "DifficultyLevel": 0,
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 51.96781803398308,
     "Longitude": 20.49848973897488,
-    "id": ""
+    "id": "Marków"
   },
   {
     "Name": "Żyrardów",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "5431_Zy",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 52.05283204,
     "Longitude": 20.45168499,
-    "id": ""
+    "id": "5431_Zy"
   },
   {
     "Name": "Józefinów",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Jz",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 52.18587897581022,
     "Longitude": 20.85313515843776,
-    "id": ""
+    "id": "Jz"
   },
   {
     "Name": "Warszawa Włochy",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Wl",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 52.20677,
     "Longitude": 20.91721,
-    "id": ""
+    "id": "Wl"
   },
   {
     "Name": "Warszawa Zachodnia",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "WZD",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 52.2199119,
     "Longitude": 20.9634155,
-    "id": ""
+    "id": "WZD"
   },
   {
     "Name": "Warszawa Centralna",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "WDC",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 52.22812,
     "Longitude": 21.00163,
-    "id": ""
+    "id": "WDC"
   },
   {
     "Name": "Warszawa Wschodnia",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "WSD",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 52.25305636317541,
     "Longitude": 21.058287726145462,
-    "id": ""
+    "id": "WSD"
   },
   {
     "Name": "Warszawa Grochów",
     "Prefix": "",
-    "DifficultyLevel": 0,
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 52.25382855010197,
     "Longitude": 21.09513806297933,
-    "id": ""
+    "id": "Warszawa Grochów"
   },
   {
     "Name": "Kozioł",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Kzl",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.30827041951533,
     "Longitude": 19.383104570811348,
-    "id": ""
+    "id": "Kozioł"
   },
   {
     "Name": "Dąbrowa Górnicza Towarowa",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "DTA",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.32932205558977,
     "Longitude": 19.377640767189607,
-    "id": ""
+    "id": "DTA"
   },
   {
     "Name": "Dąbrowa Górnicza Strzemieszyce",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "DS",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.31140078325932,
     "Longitude": 19.267317086518855,
-    "id": ""
+    "id": "DS"
   },
   {
     "Name": "Dąbrowa Górnicza Południowa",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "DP",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.312566909772805,
     "Longitude": 19.287130878339372,
-    "id": ""
+    "id": "DP"
   },
   {
     "Name": "Sosnowiec Maczki",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "sma",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.258592821403184,
     "Longitude": 19.272513244520184,
-    "id": ""
+    "id": "sma"
   },
   {
     "Name": "Sosnowiec Jęzor",
     "Prefix": "",
-    "DifficultyLevel": 0,
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.243520135290744,
     "Longitude": 19.203652380369107,
-    "id": ""
+    "id": "Sosnowiec Jęzor"
   },
   {
     "Name": "Olkusz",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "O",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.27514549908266,
     "Longitude": 19.566628609427177,
-    "id": ""
+    "id": "O"
   },
   {
     "Name": "Jaroszowiec Olkuski",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "JO",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.34229,
     "Longitude": 19.62181,
-    "id": ""
+    "id": "JO"
   },
   {
     "Name": "Zarzecze APO",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Za",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.35678857895427,
     "Longitude": 19.69180795502556,
-    "id": ""
+    "id": "Za"
   },
   {
     "Name": "Wolbrom",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "W",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.3759,
     "Longitude": 19.7723,
-    "id": ""
+    "id": "W"
   },
   {
     "Name": "Charsznica",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Ch",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.396613769760606,
     "Longitude": 19.934853049956352,
-    "id": ""
+    "id": "Ch"
   },
   {
     "Name": "Klimontów",
     "Prefix": "",
-    "DifficultyLevel": 0,
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.5267955564464,
     "Longitude": 20.03191066771161,
-    "id": ""
+    "id": "Klimontów"
   },
   {
     "Name": "Sędziszów",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Sd",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.56586,
     "Longitude": 20.05488,
-    "id": ""
+    "id": "Sd"
   },
   {
     "Name": "Miechów",
-    "Prefix": "",
-    "DifficultyLevel": 0,
+    "Prefix": "Mi",
+    "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
     "Latititude": 50.35469185330557,
     "Longitude": 20.01172180533395,
-    "id": ""
+    "id": "Mi"
   }
 ]

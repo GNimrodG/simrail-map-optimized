@@ -6,10 +6,10 @@ import Button from "@mui/joy/Button";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
+import L from "leaflet";
 import { type FunctionComponent, useContext, useEffect, useRef } from "react";
 import { MapContainer, useMap } from "react-leaflet";
 import Control from "react-leaflet-custom-control";
-import L from 'leaflet';
 
 import { isConnected$ } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
@@ -38,7 +38,11 @@ const MAIN_ATTRIBUTIONS = [
   'This website is not affiliated with the <a href="https://simrail.eu" target="_blank">SimRail</a> team.',
 ].join(" | ");
 
-const RefreshableTileLayer: React.FC<{ className: string; url: string; attribution: string }> = ({ className, url, attribution }) => {
+const RefreshableTileLayer: React.FC<{ className: string; url: string; attribution: string }> = ({
+  className,
+  url,
+  attribution,
+}) => {
   const map = useMap();
   const layerRef = useRef<L.TileLayer | null>(null);
 

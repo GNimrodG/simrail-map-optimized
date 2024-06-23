@@ -24,6 +24,7 @@ import CollapseIcon from "../icons/CollapseIcon";
 import ExpandIcon from "../icons/ExpandIcon";
 import InfoIcon from "../icons/InfoIcon";
 import SteamProfileDisplay from "../SteamProfileDisplay";
+import SignalSpeedDisplay from "../utils/SignalSpeedDisplay";
 import LengthIcon from "./icons/LengthIcon";
 import SpeedIcon from "./icons/SpeedIcon";
 import WeightIcon from "./icons/WeightIcon";
@@ -133,20 +134,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           {!isCollapsed && <Typography level="body-sm">Next signal:</Typography>}
           <Typography level="body-lg">
             {train.TrainData.SignalInFront?.split("@")[0]}{" "}
-            {train.TrainData.SignalInFrontSpeed !== null &&
-              (train.TrainData.SignalInFrontSpeed > 200 ? (
-                <Typography
-                  color="success"
-                  variant="outlined">
-                  VMAX
-                </Typography>
-              ) : (
-                <Typography
-                  color={getColorTrainMarker(train.TrainData.SignalInFrontSpeed)}
-                  variant="outlined">
-                  {Math.round(train.TrainData.SignalInFrontSpeed)} km/h
-                </Typography>
-              ))}{" "}
+            {train.TrainData.SignalInFrontSpeed !== null && <SignalSpeedDisplay train={train} />}{" "}
             <Typography color={getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront)}>
               {Math.round(train.TrainData.DistanceToSignalInFront)}m
             </Typography>
