@@ -5,7 +5,9 @@ if (process.env.NODE_ENV !== "production") {
 import "./instrument";
 
 import * as Sentry from "@sentry/node";
-import { createServer } from "http";
+import * as http from "http"
+import * as https from "https";
+import { readFileSync } from "fs";
 import { Server as SocketIOServer } from "socket.io";
 import logger from "./logger";
 import {
@@ -32,10 +34,17 @@ import msgpackParser from "socket.io-msgpack-parser";
 import cors from "cors";
 import express from "express";
 
+function buildHttpsServer(app: http.RequestListener<typeof http.IncomingMessage, typeof http.ServerResponse> | undefined) {
+  const cert = readFileSync(process.env.CERTFILE as string);
+  const key = readFileSync(process.env.KEYFILE as string);
+  return https.createServer({ key, cert }, app);
+}
+
 const app = express();
 
-const httpServer = createServer(app);
-const io = new SocketIOServer(httpServer, {
+const webServer = process.env.CERTFILE ? buildHttpsServer(app) : http.createServer(app);
+
+const io = new SocketIOServer(webServer, {
   cors: {
     origin: "*",
   },
@@ -454,6 +463,6 @@ Sentry.setupExpressErrorHandler(app);
 
 const PORT = process.env.PORT || 3000;
 
-httpServer.listen(PORT, () => {
+webServer.listen(PORT, () => {
   logger.info(`Server is running on port ${PORT}`);
 });
