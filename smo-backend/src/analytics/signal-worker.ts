@@ -3,7 +3,7 @@ import type { Train } from "../api-helper";
 import { parentPort } from "worker_threads";
 import { ModuleLogger } from "../logger";
 import { prisma } from "../db";
-import { LRUCache } from "lru-cache";
+import TTLCache from "@isaacs/ttlcache";
 import {
   BLOCK_SIGNAL_REGEX,
   BLOCK_SIGNAL_REVERSE_REGEX,
@@ -15,9 +15,9 @@ import {
 
 const logger = new ModuleLogger("SIGNALS-PROC-WORKER");
 
-const TrainPreviousSignals = new LRUCache<string, string>({
-  ttl: 1000 * 60, // 1 min
-  ttlAutopurge: true,
+// if we don't get info about a train for 30 seconds, then we clear it from the cache so it doesn't create a wrong connection
+const TrainPreviousSignals = new TTLCache<string, string>({
+  ttl: 1000 * 30, // 30 sec
   updateAgeOnGet: true,
 });
 
@@ -69,24 +69,30 @@ async function analyzeTrains(trains: Train[]) {
         role: true,
         prev_finalized: true,
         next_finalized: true,
+        prev_regex: true,
+        next_regex: true,
         prevSignalConnections: { select: { next: true } },
         nextSignalConnections: { select: { prev: true } },
       },
     });
 
     for (const train of trains) {
+      const trainId = `${train.id}@${train.ServerCode}-${train.TrainNoLocal}`;
+
       if (!train.TrainData.Latititute || !train.TrainData.Longitute) {
         logger.warn(
           `Train ${train.TrainNoLocal}@${train.ServerCode} (${train.Type}) has no location data!`
         );
+        TrainPreviousSignals.get(trainId); // update TTL
         continue;
       }
 
       if (!train.TrainData.SignalInFront) {
+        // this happens when the train is really far away from any signal (~5km+)
+        TrainPreviousSignals.get(trainId); // update TTL
         continue;
       }
 
-      const trainId = `${train.id}@${train.ServerCode}-${train.TrainNoLocal}`;
       const [signalId, extra] = train.TrainData.SignalInFront.split("@");
       let signal = signals.find((signal) => signal.name === signalId);
       const type = getSignalType(train);
@@ -124,7 +130,7 @@ async function analyzeTrains(trains: Train[]) {
                 UPDATE signals
                 SET
                   accuracy = ${train.TrainData.DistanceToSignalInFront},
-                  point = ${`SRID=4326;POINT(${train.TrainData.Latititute} ${train.TrainData.Longitute})`}
+                  point = ${`SRID=4326;POINT(${train.TrainData.Longitute} ${train.TrainData.Latititute})`}
                 WHERE name = ${signalId}`;
               logger.success(
                 `Signal ${signalId} accuracy updated from ${signal.accuracy}m to ${
@@ -142,7 +148,7 @@ async function analyzeTrains(trains: Train[]) {
           try {
             await prisma.$executeRaw`
               INSERT INTO signals (name, point, extra, accuracy, type)
-              VALUES (${signalId}, ${`SRID=4326;POINT(${train.TrainData.Latititute} ${train.TrainData.Longitute})`}, ${extra}, ${
+              VALUES (${signalId}, ${`SRID=4326;POINT(${train.TrainData.Longitute} ${train.TrainData.Latititute})`}, ${extra}, ${
               train.TrainData.DistanceToSignalInFront
             }, ${type})`;
 
@@ -153,6 +159,8 @@ async function analyzeTrains(trains: Train[]) {
               role: null,
               prev_finalized: false,
               next_finalized: false,
+              prev_regex: null,
+              next_regex: null,
               prevSignalConnections: [],
               nextSignalConnections: [],
             };
@@ -196,6 +204,8 @@ async function analyzeTrains(trains: Train[]) {
               role: true,
               prev_finalized: true,
               next_finalized: true,
+              prev_regex: true,
+              next_regex: true,
               prevSignalConnections: { select: { next: true } },
               nextSignalConnections: { select: { prev: true } },
             },
@@ -219,6 +229,32 @@ async function analyzeTrains(trains: Train[]) {
             signal.nextSignalConnections.some((conn) => conn.prev === prevSignalId)
           ) {
             // connection already exists
+            shouldIgnore = true;
+          }
+
+          if (
+            !shouldIgnore &&
+            prevSignal.next_regex &&
+            !new RegExp(prevSignal.next_regex).test(signalId)
+          ) {
+            tryLogError(
+              prevSignalId,
+              signalId,
+              `Signal ${signalId} doesn't match ${prevSignalId}'s next regex!`
+            );
+            shouldIgnore = true;
+          }
+
+          if (
+            !shouldIgnore &&
+            signal.prev_regex &&
+            !new RegExp(signal.prev_regex).test(prevSignalId)
+          ) {
+            tryLogError(
+              prevSignalId,
+              signalId,
+              `Signal ${prevSignalId} doesn't match ${signalId}'s prev regex!`
+            );
             shouldIgnore = true;
           }
 
@@ -310,6 +346,12 @@ parentPort?.on("message", async (msg) => {
   switch (msg.type) {
     case "analyze":
       analyzeTrains(msg.data);
+      break;
+    case "get-train-previous-signal":
+      parentPort?.postMessage({
+        type: "train-previous-signal",
+        data: Object.fromEntries(TrainPreviousSignals.entries()),
+      });
       break;
     default:
       logger.warn(`Unknown message type: ${msg.type}`);

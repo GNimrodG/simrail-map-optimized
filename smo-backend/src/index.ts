@@ -16,6 +16,7 @@ import {
   deleteSignal,
   getSignal,
   getSignalsForTrains,
+  getTrainPreviousSignal,
   removeSignalNextSignal,
   removeSignalPrevSignal,
   updateSignal,
@@ -167,13 +168,14 @@ trainFetcher.data$.subscribe(async (data) => {
 
 app.use(cors());
 
-app.get("/status", (_req, res) => {
+app.get("/status", async (_req, res) => {
   res.json({
     connectedClients,
     servers: serverFetcher.currentData?.reduce<Record<string, number>>((prev, curr) => {
       prev[curr.ServerCode] = io.sockets.adapter.rooms.get(curr.ServerCode)?.size || 0;
       return prev;
     }, {}),
+    trainPreviousSignal: await getTrainPreviousSignal(),
   });
 });
 
