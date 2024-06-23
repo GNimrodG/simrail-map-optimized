@@ -34,7 +34,7 @@ import msgpackParser from "socket.io-msgpack-parser";
 import cors from "cors";
 import express from "express";
 
-function buildHttpsServer() {
+function buildHttpsServer(app: http.RequestListener<typeof http.IncomingMessage, typeof http.ServerResponse> | undefined) {
   const cert = readFileSync(process.env.CERTFILE as string);
   const key = readFileSync(process.env.KEYFILE as string);
   return https.createServer({ key, cert }, app);
@@ -42,7 +42,7 @@ function buildHttpsServer() {
 
 const app = express();
 
-const webServer = (process.env.CERTFILE) ? buildHttpsServer() : http.createServer(app);
+const webServer = process.env.CERTFILE ? buildHttpsServer(app) : http.createServer(app);
 
 const io = new SocketIOServer(webServer, {
   cors: {
