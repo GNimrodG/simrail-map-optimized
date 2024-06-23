@@ -7,7 +7,7 @@ import "./instrument";
 import * as Sentry from "@sentry/node";
 import * as http from "http"
 import * as https from "https";
-import { readFileSync } from 'fs';
+import { readFileSync } from "fs";
 import { Server as SocketIOServer } from "socket.io";
 import logger from "./logger";
 import {
@@ -39,9 +39,9 @@ const app = express();
 let temp = undefined;
 
 if (process.env.CERTFILE) {
-  const cert = readFileSync((process.env.CERTFILE as string));
-  const key = readFileSync((process.env.KEYFILE as string));
-  temp = https.createServer({key, cert}, app);
+  const cert = readFileSync(process.env.CERTFILE as string);
+  const key = readFileSync(process.env.KEYFILE as string);
+  temp = https.createServer({ key, cert }, app);
 } else {
   temp = http.createServer(app);
 }
