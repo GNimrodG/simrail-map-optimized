@@ -7,6 +7,7 @@ import "./instrument";
 import * as Sentry from "@sentry/node";
 import * as http from "http"
 import * as https from "https";
+import { readFileSync } from 'fs';
 import { Server as SocketIOServer } from "socket.io";
 import logger from "./logger";
 import {
@@ -468,5 +469,5 @@ Sentry.setupExpressErrorHandler(app);
 const PORT = process.env.PORT || 3000;
 
 webServer.listen(PORT, () => {
-  logger.info(`HTTP Server is running on port ${PORT}`);
+  logger.info(`Server is running on port ${PORT}`);
 });
