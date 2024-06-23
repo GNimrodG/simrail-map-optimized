@@ -34,20 +34,15 @@ import msgpackParser from "socket.io-msgpack-parser";
 import cors from "cors";
 import express from "express";
 
-const app = express();
-
-let temp = undefined;
-
-if (process.env.CERTFILE) {
+function buildHttpsServer() {
   const cert = readFileSync(process.env.CERTFILE as string);
   const key = readFileSync(process.env.KEYFILE as string);
-  temp = https.createServer({ key, cert }, app);
-} else {
-  temp = http.createServer(app);
+  return https.createServer({ key, cert }, app);
 }
 
-const webServer = temp;
-temp = undefined;
+const app = express();
+
+const webServer = (process.env.CERTFILE) ? buildHttpsServer() : http.createServer(app);
 
 const io = new SocketIOServer(webServer, {
   cors: {
