@@ -30,7 +30,7 @@ export const BLOCK_SIGNAL_REVERSE_REGEX = /^L\d+_\d+[A-Z]$/;
  * "ZW_D" matches the pattern.
  * "ZW_1" matches the pattern.
  */
-export const MAIN_SIGNAL_REGEX = /[A-KM-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ]+(\d+)?_[A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ0-9]+/;
+export const MAIN_SIGNAL_REGEX = /[A-KM-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ][A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ]+(\d+)?_[A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ0-9]+/;
 
 /**
  * Function to determine the type of signal for a given train.
