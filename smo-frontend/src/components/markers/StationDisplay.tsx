@@ -71,12 +71,12 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
         arrow
         title={
           !timeUntil
-            ? "The train should arrive at this station now."
+            ? "This train should arrive at this station now."
             : timeUntil < 0
-            ? `Train train should arrive at this station ${moment
+            ? `This train should arrive at this station ${moment
                 .duration({ m: -timeUntil })
                 .humanize(true)}.`
-            : `Train train should have arrived at this station ${moment
+            : `This train should have arrived at this station ${moment
                 .duration({ m: -timeUntil })
                 .humanize(true)}.`
         }
