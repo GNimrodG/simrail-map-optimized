@@ -3538,11 +3538,6 @@ keyv@^4.5.3:
   dependencies:
     json-buffer "3.0.1"
 
-leaflet-drift-marker@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/leaflet-drift-marker/-/leaflet-drift-marker-2.0.0.tgz#7ab45dba09270b6fe59d31144c362f8f900e3243"
-  integrity sha512-dmYMW5A/rpNA2YGnakMzhhQNGJADjJG1L6THa/UKMYZ/CI3podhmsCaWCNh0/DnqcxRaSCR/8JBp+iimNx7lEQ==
-
 leaflet@^1.9.4:
   version "1.9.4"
   resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.9.4.tgz#23fae724e282fa25745aff82ca4d394748db7d8d"
@@ -3947,13 +3942,6 @@ react-leaflet-custom-control@^1.4.0:
   integrity sha512-E5sM7avHdFApzXTW7GvdPbhgBonu3j0lr1/DzZWz9OMzGbnSTkYPhE0VIYHAyOBvUoZU/TWjtkyVPS68GyeDiw==
   dependencies:
     react-leaflet "^4.2.1"
-
-react-leaflet-drift-marker@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/react-leaflet-drift-marker/-/react-leaflet-drift-marker-4.0.0.tgz#d254fef61b55701a1a91fd36968d6f5f186d75fa"
-  integrity sha512-lOGVYEXOtKqS+g+XvcH2fabntfkFw3L7CG09SOcrqAslhv9cOwSgqG8kpXXaJYDGnKhpJQtb01AGu0o9Trmesg==
-  dependencies:
-    leaflet-drift-marker "^2.0.0"
 
 react-leaflet@^4.2.1:
   version "4.2.1"

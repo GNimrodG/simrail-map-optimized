@@ -27,7 +27,6 @@
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.2.1",
     "react-leaflet-custom-control": "^1.4.0",
-    "react-leaflet-drift-marker": "^4.0.0",
     "react-window": "^1.8.10",
     "rxjs": "^7.8.1",
     "socket.io-client": "^4.7.5",

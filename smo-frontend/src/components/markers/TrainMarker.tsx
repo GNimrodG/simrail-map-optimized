@@ -1,13 +1,13 @@
 import { DivIcon, Icon, IconOptions } from "leaflet";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 import { Popup } from "react-leaflet";
-import ReactLeafletDriftMarker from "react-leaflet-drift-marker";
 
 import { Train } from "../../utils/data-manager";
 import SelectedTrainContext from "../../utils/selected-train-context";
 import { getSteamProfileInfo, ProfileResponse } from "../../utils/steam";
 import { getColorTrainMarker } from "../../utils/ui";
 import { useSetting } from "../../utils/use-setting";
+import ReactLeafletDriftMarker from "../utils/ReactLeafletDriftMarker";
 import BotIcon from "./icons/bot.svg?raw";
 import TrainMarkerPopup from "./TrainMarkerPopup";
 

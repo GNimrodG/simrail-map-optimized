@@ -71,6 +71,8 @@ const SelectedTrainInfo: FunctionComponent = () => {
                 },
               ],
             });
+          } else {
+            setMapLines(null);
           }
         }
       }
