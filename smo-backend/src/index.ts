@@ -5,7 +5,7 @@ if (process.env.NODE_ENV !== "production") {
 import "./instrument";
 
 import * as Sentry from "@sentry/node";
-import * as http from "http"
+import * as http from "http";
 import * as https from "https";
 import { readFileSync } from "fs";
 import { Server as SocketIOServer } from "socket.io";
@@ -34,7 +34,9 @@ import msgpackParser from "socket.io-msgpack-parser";
 import cors from "cors";
 import express from "express";
 
-function buildHttpsServer(app: http.RequestListener<typeof http.IncomingMessage, typeof http.ServerResponse> | undefined) {
+function buildHttpsServer(
+  app: http.RequestListener<typeof http.IncomingMessage, typeof http.ServerResponse> | undefined
+) {
   const cert = readFileSync(process.env.CERTFILE as string);
   const key = readFileSync(process.env.KEYFILE as string);
   return https.createServer({ key, cert }, app);
@@ -175,7 +177,11 @@ trainFetcher.data$.subscribe(async (data) => {
   }
 });
 
-app.use(cors());
+app.use(
+  cors({
+    maxAge: 24 * 60 * 60, // 24 hours
+  })
+);
 
 app.get("/status", async (_req, res) => {
   res.json({
@@ -210,70 +216,77 @@ ${serverFetcher.currentData
 
 # HELP smo_train_count Number of trains per server
 # TYPE smo_train_count gauge
-${Array.from(trainFetcher.currentData?.entries() || [])
-  ?.map(([server, trains]) => `smo_train_count{server="${server}"} ${trains.length}`)
-  .join("\n")}
+${Array.from(
+  trainFetcher.currentData?.entries() || [],
+  ([server, trains]) => `smo_train_count{server="${server}"} ${trains.length}`
+).join("\n")}
   
 # HELP smo_player_train_count Number of trains controlled by a player per server
 # TYPE smo_player_train_count gauge
-${Array.from(trainFetcher.currentData?.entries() || [])
-  ?.map(
-    ([server, trains]) =>
-      `smo_player_train_count{server="${server}"} ${
-        trains.filter((train) => train.TrainData.ControlledBySteamID).length
-      }`
-  )
-  .join("\n")}
+${Array.from(
+  trainFetcher.currentData?.entries() || [],
+  ([server, trains]) =>
+    `smo_player_train_count{server="${server}"} ${
+      trains.filter((train) => train.TrainData.ControlledBySteamID).length
+    }`
+).join("\n")}
   
 # HELP smo_train_avg_speed Average speed of trains per server
 # TYPE smo_train_avg_speed gauge
-${Array.from(trainFetcher.currentData?.entries() || [])
-  ?.map(
-    ([server, trains]) =>
-      `smo_train_avg_speed{server="${server}"} ${
-        trains.reduce((prev, curr) => prev + curr.TrainData.Velocity, 0) / trains.length
-      }`
-  )
-  .join("\n")}
+${Array.from(
+  trainFetcher.currentData?.entries() || [],
+  ([server, trains]) =>
+    `smo_train_avg_speed{server="${server}"} ${
+      trains.reduce((prev, curr) => prev + curr.TrainData.Velocity, 0) / trains.length
+    }`
+).join("\n")}
 
 # HELP smo_station_count Number of stations per server
 # TYPE smo_station_count gauge
-${Array.from(stationFetcher.currentData?.entries() || [])
-  ?.map(([server, stations]) => `smo_station_count{server="${server}"} ${stations.length}`)
-  .join("\n")}
+${Array.from(
+  stationFetcher.currentData?.entries() || [],
+  ([server, stations]) => `smo_station_count{server="${server}"} ${stations.length}`
+).join("\n")}
   
 # HELP smo_player_station_count Number of stations controlled by a player per server
 # TYPE smo_player_station_count gauge
-${Array.from(stationFetcher.currentData?.entries() || [])
-  ?.map(
-    ([server, stations]) =>
-      `smo_player_station_count{server="${server}"} ${
-        stations.filter((station) => station.DispatchedBy?.[0]?.SteamId).length
-      }`
-  )
-  .join("\n")}
+${Array.from(
+  stationFetcher.currentData?.entries() || [],
+  ([server, stations]) =>
+    `smo_player_station_count{server="${server}"} ${
+      stations.filter((station) => station.DispatchedBy?.[0]?.SteamId).length
+    }`
+).join("\n")}
 
 # HELP smo_server_timezone Timezone on each server
 # TYPE smo_server_timezone gauge
-${Array.from(timeFetcher.currentData?.entries() || [])
-  ?.map(([server, time]) => `smo_server_timezone{server="${server}"} ${time.timezone}`)
-  .join("\n")}
+${Array.from(
+  timeFetcher.currentData?.entries() || [],
+  ([server, time]) => `smo_server_timezone{server="${server}"} ${time.timezone}`
+).join("\n")}
   
 # HELP smo_server_status Server status (active/inactive)
 # TYPE smo_server_status gauge
-${Array.from(serverFetcher.currentData?.values() || [])
-  ?.map(
-    (status) =>
-      `smo_server_status{server="${status.ServerCode}",region="${status.ServerRegion}",name="${
-        status.ServerName
-      }"} ${status.IsActive ? 1 : 0}`
-  )
-  .join("\n")}
+${Array.from(
+  serverFetcher.currentData?.values() || [],
+  (status) =>
+    `smo_server_status{server="${status.ServerCode}",region="${status.ServerRegion}",name="${
+      status.ServerName
+    }"} ${status.IsActive ? 1 : 0}`
+).join("\n")}
   `.trim()
   );
 });
 
 if (process.env.ADMIN_PASSWORD) {
+  async function sendUpdatedSignals() {
+    for (const [server, trains] of trainFetcher.currentData || []) {
+      const signals = await getSignalsForTrains(trains);
+
+      io.to(server).emit("signals", signals);
+    }
+  }
+
   app.patch("/signals/:signal", express.json(), async (req, res) => {
     if (req.body?.password !== process.env.ADMIN_PASSWORD) {
       res.status(401).json({ error: "Unauthorized" });
@@ -299,6 +312,7 @@ if (process.env.ADMIN_PASSWORD) {
 
     if (await updateSignal(signal, { type, role, prevFinalized, nextFinalized })) {
       res.json({ success: true });
+      sendUpdatedSignals();
     } else {
       res.status(500).json({ error: "Failed to set signal type" });
     }
@@ -324,6 +338,7 @@ if (process.env.ADMIN_PASSWORD) {
 
     if (await deleteSignal(signal)) {
       res.json({ success: true });
+      sendUpdatedSignals();
     } else {
       res.status(500).json({ error: "Failed to remove signal" });
     }
@@ -355,6 +370,7 @@ if (process.env.ADMIN_PASSWORD) {
 
     if (await removeSignalPrevSignal(signal, prevSignal)) {
       res.json({ success: true });
+      sendUpdatedSignals();
     } else {
       res.status(500).json({ error: "Failed to remove prev signal" });
     }
@@ -391,6 +407,7 @@ if (process.env.ADMIN_PASSWORD) {
 
     if (await removeSignalNextSignal(signal, nextSignal)) {
       res.json({ success: true });
+      sendUpdatedSignals();
     } else {
       res.status(500).json({ error: "Failed to remove next signal" });
     }
@@ -422,6 +439,7 @@ if (process.env.ADMIN_PASSWORD) {
 
     if (await addSignalPrevSignal(signal, prevSignal)) {
       res.json({ success: true });
+      sendUpdatedSignals();
     } else {
       res.status(500).json({ error: "Failed to add prev signal" });
     }
@@ -453,6 +471,7 @@ if (process.env.ADMIN_PASSWORD) {
 
     if (await addSignalNextSignal(signal, nextSignal)) {
       res.json({ success: true });
+      sendUpdatedSignals();
     } else {
       res.status(500).json({ error: "Failed to add next signal" });
     }

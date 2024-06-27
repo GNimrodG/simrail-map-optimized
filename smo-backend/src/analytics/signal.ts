@@ -243,36 +243,42 @@ export async function getSignalsForTrains(trains: Train[]) {
     }
   });
 
-  return await getSignals().then((signals) =>
-    Promise.all(
-      signals.map(async (signal) => {
-        const train = signalsIndex.get(signal.name);
+  const signals = await getSignals();
 
-        const trainAhead =
-          (signal.type === "block" &&
-            signal.nextSignals.length === 1 &&
-            signalsIndex.get(signal.nextSignals[0])) ||
-          null;
+  const result = await Promise.all(
+    signals.map(async (signal) => {
+      const train = signalsIndex.get(signal.name);
 
-        const nextSignalWithTrainAhead =
-          (signal.type === "block" &&
-            signal.nextSignals.length === 1 &&
-            (signals
-              .find((s) => s.name === signal.nextSignals[0])
-              ?.nextSignals.some((nextNextSignal) => signalsIndex.get(nextNextSignal))
-              ? signal.nextSignals[0]
-              : null)) ||
-          null;
+      const trainAhead =
+        (signal.type === "block" &&
+          signal.nextSignals.length === 1 &&
+          signalsIndex.get(signal.nextSignals[0])) ||
+        null;
 
-        return {
-          ...signal,
-          train: getBaseTrain(train),
-          trainAhead: getBaseTrain(trainAhead),
-          nextSignalWithTrainAhead,
-        };
-      })
-    )
+      let nextSignalWithTrainAhead = null;
+
+      if (signal.type === "block" && signal.nextSignals.length === 1) {
+        const nextSignal = signals.find((s) => s.name === signal.nextSignals[0]);
+
+        if (nextSignal && nextSignal.nextSignals.length === 1) {
+          const nextNextSignal = signals.find((s) => s.name === nextSignal.nextSignals[0]);
+
+          if (nextNextSignal && signalsIndex.get(nextNextSignal.name)) {
+            nextSignalWithTrainAhead = signal.nextSignals[0];
+          }
+        }
+      }
+
+      return {
+        ...signal,
+        train: getBaseTrain(train),
+        trainAhead: getBaseTrain(trainAhead),
+        nextSignalWithTrainAhead,
+      };
+    })
   );
+
+  return result;
 }
 
 interface RawSignal {
