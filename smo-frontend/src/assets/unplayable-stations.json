@@ -454,5 +454,17 @@
     "Latititude": 50.35469185330557,
     "Longitude": 20.01172180533395,
     "id": "Mi"
+  },
+  {
+    "Name": "Katowice Muchowiec Staszic",
+    "Prefix": "StA",
+    "DifficultyLevel": -1,
+    "MainImageURL": "",
+    "AdditionalImage1URL": "",
+    "AdditionalImage2URL": "",
+    "DispatchedBy": [],
+    "Latititude": 50.223909,
+    "Longitude": 19.037408,
+    "id": "StA"
   }
 ]
