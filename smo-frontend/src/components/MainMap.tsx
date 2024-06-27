@@ -1,6 +1,6 @@
 import "leaflet/dist/leaflet.css";
 
-import { useHotkeys, useLocalStorage } from "@mantine/hooks";
+import { useHotkeys } from "@mantine/hooks";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Sheet from "@mui/joy/Sheet";
@@ -14,6 +14,7 @@ import Control from "react-leaflet-custom-control";
 import { isConnected$ } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
+import { useSetting } from "../utils/use-setting";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
 import LayerMenu from "./LayerMenu";
 import ActiveSignalsLayer from "./layers/ActiveSignalsLayer";
@@ -28,7 +29,7 @@ import MapTimeDisplay from "./MapTimeDisplay";
 import SearchBar from "./SearchBar";
 import SelectedTrainInfo from "./SelectedTrainInfo";
 import ServerSelector from "./ServerSelector";
-import Settings from "./Settings";
+import Settings from "./settings/Settings";
 import StatsDisplay from "./StatsDisplay";
 import ThemeToggle from "./utils/ThemeToggle";
 
@@ -71,17 +72,11 @@ const RefreshableTileLayer: React.FC<{ className: string; url: string; attributi
 const MainMap: FunctionComponent = () => {
   const { setSelectedTrain } = useContext(SelectedTrainContext);
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
-  const [alternativeTheme] = useLocalStorage({
-    key: "alternativeTheme",
-    defaultValue: false,
-  });
+  const [alternativeTheme] = useSetting("alternativeTheme");
 
   const isConnected = useBehaviorSubj(isConnected$);
 
-  const [visibleLayers, setVisibleLayers] = useLocalStorage<string[]>({
-    key: "visibleLayers",
-    defaultValue: ["stations", "trains", "active-signals", "selected-route", "unplayable-stations"],
-  });
+  const [visibleLayers, setVisibleLayers] = useSetting("visibleLayers");
 
   useHotkeys([
     [

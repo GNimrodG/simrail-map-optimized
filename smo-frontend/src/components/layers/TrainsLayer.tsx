@@ -3,6 +3,7 @@ import { type FunctionComponent, useEffect, useState } from "react";
 import { LayerGroup, useMap } from "react-leaflet";
 
 import { Train, trainsData$ } from "../../utils/data-manager";
+import { debounce } from "../../utils/debounce";
 import useBehaviorSubj from "../../utils/useBehaviorSubj";
 import TrainMarker from "../markers/TrainMarker";
 
@@ -10,8 +11,8 @@ function getVisibleTrains(trains: Train[], map: LeafletMap | null) {
   const bounds = map?.getBounds();
   return trains.filter(
     (train) =>
-      train.TrainData.Latititute &&
-      train.TrainData.Longitute &&
+      !!train.TrainData.Latititute &&
+      !!train.TrainData.Longitute &&
       bounds?.contains([train.TrainData.Latititute, train.TrainData.Longitute])
   );
 }
@@ -21,12 +22,12 @@ const TrainsLayer: FunctionComponent = () => {
 
   const trains = useBehaviorSubj(trainsData$);
 
-  const [visibleTrains, setVisibleTrains] = useState<Train[]>(getVisibleTrains(trains, map));
+  const [visibleTrains, setVisibleTrains] = useState<Train[]>([]);
 
   useEffect(() => {
-    const handler = () => {
+    const handler = debounce(() => {
       setVisibleTrains(getVisibleTrains(trains, map));
-    };
+    }, 1000);
 
     if (map) {
       map.on("move", handler);

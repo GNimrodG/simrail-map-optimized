@@ -1,4 +1,3 @@
-import { useLocalStorage } from "@mantine/hooks";
 import Sheet from "@mui/joy/Sheet";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 import { useMap } from "react-leaflet";
@@ -7,6 +6,7 @@ import { signalsData$, trainsData$ } from "../utils/data-manager";
 import MapLinesContext from "../utils/map-lines-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { getSteamProfileInfo, ProfileResponse } from "../utils/steam";
+import { useSetting } from "../utils/use-setting";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
 import TrainMarkerPopup from "./markers/TrainMarkerPopup";
 
@@ -15,13 +15,11 @@ const SelectedTrainInfo: FunctionComponent = () => {
   const { selectedTrain } = useContext(SelectedTrainContext);
   const { setMapLines } = useContext(MapLinesContext);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [useAltTracking] = useSetting("useAltTracking");
 
   const trains = useBehaviorSubj(trainsData$);
 
-  const [showLineToNextSignal] = useLocalStorage({
-    key: "showLineToNextSignal",
-    defaultValue: false,
-  });
+  const [showLineToNextSignal] = useSetting("showLineToNextSignal");
 
   const [selectedTrainUserData, setSelectedTrainUserData] = useState<ProfileResponse | null>(null);
 
@@ -47,10 +45,12 @@ const SelectedTrainInfo: FunctionComponent = () => {
     if (selectedTrain?.follow && map) {
       const train = trains.find((train) => train.TrainNoLocal === selectedTrain.trainNo);
       if (train) {
-        map.panTo([train.TrainData.Latititute, train.TrainData.Longitute], {
-          animate: true,
-          duration: 1,
-        });
+        if (!useAltTracking) {
+          map.panTo([train.TrainData.Latititute, train.TrainData.Longitute], {
+            animate: true,
+            duration: 1,
+          });
+        }
 
         if (showLineToNextSignal && train.TrainData.SignalInFront) {
           const signalId = train.TrainData.SignalInFront.split("@")[0];
@@ -75,7 +75,7 @@ const SelectedTrainInfo: FunctionComponent = () => {
         }
       }
     }
-  }, [map, selectedTrain, setMapLines, showLineToNextSignal, trains]);
+  }, [map, selectedTrain, setMapLines, showLineToNextSignal, trains, useAltTracking]);
 
   return (
     selectedTrain &&

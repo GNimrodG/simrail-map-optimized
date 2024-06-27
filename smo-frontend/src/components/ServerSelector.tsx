@@ -1,4 +1,3 @@
-import { useLocalStorage } from "@mantine/hooks";
 import Option from "@mui/joy/Option";
 import Select from "@mui/joy/Select";
 import { type FunctionComponent, useCallback, useContext } from "react";
@@ -6,15 +5,13 @@ import { type FunctionComponent, useCallback, useContext } from "react";
 import { selectServer, serverData$ } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
+import { useSetting } from "../utils/use-setting";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
 
 const ServerSelector: FunctionComponent = () => {
   const { setSelectedTrain } = useContext(SelectedTrainContext);
   const { setSelectedRoute } = useContext(SelectedRouteContext);
-  const [selectedServer, setSelectedServer] = useLocalStorage({
-    key: "selectedServer",
-    defaultValue: "en1",
-  });
+  const [selectedServer, setSelectedServer] = useSetting("selectedServer");
 
   const handleServerChange = useCallback(
     (serverCode: string) => {

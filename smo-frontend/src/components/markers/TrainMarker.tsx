@@ -7,6 +7,7 @@ import { Train } from "../../utils/data-manager";
 import SelectedTrainContext from "../../utils/selected-train-context";
 import { getSteamProfileInfo, ProfileResponse } from "../../utils/steam";
 import { getColorTrainMarker } from "../../utils/ui";
+import { useSetting } from "../../utils/use-setting";
 import BotIcon from "./icons/bot.svg?raw";
 import TrainMarkerPopup from "./TrainMarkerPopup";
 
@@ -50,6 +51,7 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
   const { selectedTrain } = useContext(SelectedTrainContext);
   const [userData, setUserData] = useState<ProfileResponse | null>(null);
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(DEFAULT_ICON);
+  const [useAltTracking] = useSetting("useAltTracking");
 
   useEffect(() => {
     if (!train.TrainData.ControlledBySteamID) {
@@ -70,6 +72,11 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
   const isSelected = useMemo(
     () => selectedTrain?.trainNo === train.TrainNoLocal,
     [selectedTrain?.trainNo, train.TrainNoLocal]
+  );
+
+  const shouldFollow = useMemo(
+    () => isSelected && selectedTrain?.follow && useAltTracking,
+    [selectedTrain?.follow, isSelected, useAltTracking]
   );
 
   useEffect(() => {
@@ -95,6 +102,7 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
       key={train.id}
       duration={1000}
       position={[train.TrainData.Latititute, train.TrainData.Longitute]}
+      keepAtCenter={shouldFollow}
       icon={icon}>
       {!isSelected && (
         <Popup autoPan={false}>

@@ -49,7 +49,7 @@ const SelectedTrainRouteLayer: FunctionComponent = () => {
   useEffect(() => {
     const handler: LeafletEventHandlerFn = debounce(() => {
       setVisibleSelectedTrainRoutePoints(getVisibleTrainRoutePoints(routePoints, map));
-    }, 500);
+    }, 1000);
 
     if (map) {
       map.on("move", handler);

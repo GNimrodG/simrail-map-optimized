@@ -66,6 +66,14 @@ const SearchBar: FunctionComponent = () => {
     goToSignal(signal, map);
   };
 
+  const panToTrain = (train: Train) => {
+    map?.panTo([train.TrainData.Latititute, train.TrainData.Longitute], {
+      animate: true,
+      duration: 1,
+    });
+    setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true });
+  };
+
   return (
     <Autocomplete
       loading={options.length === 0}
@@ -89,9 +97,7 @@ const SearchBar: FunctionComponent = () => {
       onChange={(_e, v) => {
         switch (v?.type) {
           case "Trains":
-            setSelectedTrain(
-              v?.data.TrainNoLocal ? { trainNo: v.data.TrainNoLocal, follow: true } : null
-            );
+            panToTrain(v.data);
             break;
           case "Stations":
             panToStation(v.data);

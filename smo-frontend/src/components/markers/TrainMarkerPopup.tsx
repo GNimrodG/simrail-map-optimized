@@ -1,4 +1,4 @@
-import { readLocalStorageValue, useLocalStorage, useMediaQuery } from "@mantine/hooks";
+import { readLocalStorageValue, useMediaQuery } from "@mantine/hooks";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import ButtonGroup from "@mui/joy/ButtonGroup";
@@ -20,6 +20,7 @@ import SelectedRouteContext from "../../utils/selected-route-context";
 import SelectedTrainContext from "../../utils/selected-train-context";
 import { ProfileResponse } from "../../utils/steam";
 import { getColorTrainMarker, getDistanceColorForSignal } from "../../utils/ui";
+import { useSetting } from "../../utils/use-setting";
 import CollapseIcon from "../icons/CollapseIcon";
 import ExpandIcon from "../icons/ExpandIcon";
 import InfoIcon from "../icons/InfoIcon";
@@ -68,19 +69,10 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
     readLocalStorageValue({ key: "expandScheduleDefault", defaultValue: false })
   );
 
-  const [hideTrainPictures] = useLocalStorage({ key: "hideTrainPictures", defaultValue: false });
-  const [showSpeedInfoCollapsed] = useLocalStorage({
-    key: "showSpeedInfoCollapsed",
-    defaultValue: true,
-  });
-  const [showSignalInfoCollapsed] = useLocalStorage({
-    key: "showSignalInfoCollapsed",
-    defaultValue: true,
-  });
-  const [showNextStationInfoCollapsed] = useLocalStorage({
-    key: "showNextStationInfoCollapsed",
-    defaultValue: false,
-  });
+  const [hideTrainPictures] = useSetting("hideTrainPictures");
+  const [showSpeedInfoCollapsed] = useSetting("showSpeedInfoCollapsed");
+  const [showSignalInfoCollapsed] = useSetting("showSignalInfoCollapsed");
+  const [showNextStationInfoCollapsed] = useSetting("showNextStationInfoCollapsed");
 
   const thumbnailUrl = useMemo(() => getThumbnailUrl(train.Vehicles[0]), [train.Vehicles]);
 

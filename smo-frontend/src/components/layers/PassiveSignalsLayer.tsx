@@ -4,6 +4,7 @@ import { LayerGroup, useMap } from "react-leaflet";
 
 import { signalsData$, SignalWithTrain } from "../../utils/data-manager";
 import { debounce } from "../../utils/debounce";
+import { goToSignal } from "../../utils/geom-utils";
 import useBehaviorSubj from "../../utils/useBehaviorSubj";
 import SignalMarker from "../markers/SignalMarker";
 
@@ -30,14 +31,13 @@ const PassiveSignalsLayer: FunctionComponent = () => {
       ),
     [signals]
   );
-  const [visibleSignals, setVisibleSignals] = useState<SignalWithTrain[]>(
-    getVisibleSignals(passiveSignals, map)
-  );
+
+  const [visibleSignals, setVisibleSignals] = useState<SignalWithTrain[]>([]);
 
   useEffect(() => {
     const handler: LeafletEventHandlerFn = debounce(() => {
       setVisibleSignals(getVisibleSignals(passiveSignals, map));
-    }, 300);
+    }, 1000);
 
     if (map) {
       map.on("move", handler);
@@ -59,7 +59,7 @@ const PassiveSignalsLayer: FunctionComponent = () => {
   const handleSignalSelect = (signalId: string) => {
     const signal = signals.find((s) => s.name === signalId);
     if (signal) {
-      map?.panTo([signal.lat, signal.lon], { animate: true, duration: 1 });
+      goToSignal(signal, map);
     } else {
       console.error(`Signal ${signalId} not found`);
     }

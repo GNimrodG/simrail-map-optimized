@@ -3,6 +3,7 @@ import { type FunctionComponent, useEffect, useState } from "react";
 import { LayerGroup, useMap } from "react-leaflet";
 
 import { Station, stationsData$ } from "../../utils/data-manager";
+import { debounce } from "../../utils/debounce";
 import useBehaviorSubj from "../../utils/useBehaviorSubj";
 import StationMarker from "../markers/StationMarker";
 
@@ -16,14 +17,12 @@ const StationsLayer: FunctionComponent = () => {
 
   const stations = useBehaviorSubj(stationsData$);
 
-  const [visibleStations, setVisibleStations] = useState<Station[]>(
-    getVisibleStations(stations, map)
-  );
+  const [visibleStations, setVisibleStations] = useState<Station[]>([]);
 
   useEffect(() => {
-    const handler = () => {
+    const handler = debounce(() => {
       setVisibleStations(getVisibleStations(stations, map));
-    };
+    }, 1000);
 
     if (map) {
       map.on("move", handler);
