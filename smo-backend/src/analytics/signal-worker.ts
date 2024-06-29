@@ -41,6 +41,74 @@ try {
   logger.warn(`No signals file found (${e})`);
 }
 
+type SignalData = {
+  prevSignalConnections: {
+    next: string;
+  }[];
+  nextSignalConnections: {
+    prev: string;
+  }[];
+  name: string;
+  type: string | null;
+  role: string | null;
+  prev_finalized: boolean;
+  next_finalized: boolean;
+  prev_regex: string | null;
+  next_regex: string | null;
+};
+
+type ConnectionValidator = (prev: SignalData, curr: SignalData) => true | string | null;
+
+// Return true if connection is valid, otherwise return error message or null if connection should be ignored
+const CONNECTION_VALIDATORS: ConnectionValidator[] = [
+  (prev, curr) =>
+    // check if connection already exists
+    (!prev.prevSignalConnections.some((conn) => conn.next === curr.name) &&
+      !curr.nextSignalConnections.some((conn) => conn.prev === prev.name)) ||
+    null,
+  (prev, curr) =>
+    // check if connection already exists in the other direction
+    (prev.nextSignalConnections.every((conn) => conn.prev !== curr.name) &&
+      curr.prevSignalConnections.every((conn) => conn.next !== prev.name)) ||
+    `Connection between ${prev.name} and ${curr.name} already exists in the other direction!`,
+  (prev, curr) =>
+    // check if prevSignal's next regex is valid for the current signal
+    !prev.next_regex ||
+    new RegExp(prev.next_regex).test(curr.name) ||
+    `Signal ${curr.name} doesn't match ${prev.name}'s next regex!`,
+  (prev, curr) => {
+    // check for block signal limitations
+    if (prev.type === "block") {
+      const isReverse = BLOCK_SIGNAL_REVERSE_REGEX.test(prev.name);
+
+      // if prevSignal is reverse block signal then the next signal can't be a non-reverse block signal
+      if (
+        isReverse &&
+        !BLOCK_SIGNAL_REVERSE_REGEX.test(curr.name) &&
+        BLOCK_SIGNAL_REGEX.test(curr.name)
+      ) {
+        return `Block Signal ${prev.name} is reverse, but next signal ${curr.name} is not reverse!`;
+      }
+
+      // if prevSignal a non-reverse block signal then the next signal can't be a reverse block signal
+      if (!isReverse && BLOCK_SIGNAL_REVERSE_REGEX.test(curr.name)) {
+        return `Block Signal ${prev.name} is not reverse, but next signal ${curr.name} is reverse!`;
+      }
+
+      if (prev.prevSignalConnections.length > 0) {
+        // a block signal can only have one next signal
+        return `Block Signal ${prev.name} already has a next signal, can't add ${curr.name}!`;
+      }
+    }
+
+    return true;
+  },
+  (prev, curr) =>
+    // check if signals are parallel
+    curr.name.replace(/[A-Z]\d+$/, "") !== prev.name.replace(/[A-Z]\d+$/, "") ||
+    `Signals ${prev.name} and ${curr.name} are probably parallel and can't be connected!`,
+];
+
 let running = false;
 
 async function analyzeTrains(trains: Train[]) {
@@ -107,13 +175,8 @@ async function analyzeTrains(trains: Train[]) {
               type: type,
             },
           });
-          if (type === "main") {
-            logger.success(
-              `Signal ${signalId} type set to ${type} because of it's VMAX: ${train.TrainData.SignalInFrontSpeed} km/h`
-            );
-          } else {
-            logger.success(`Signal ${signalId} type set to ${type} because of it's name.`);
-          }
+
+          logger.success(`Signal ${signalId} type set to ${type}! (train: ${trainId})`);
         } catch (e) {
           logger.error(`Failed to set signal ${signalId} type to ${type}: ${e}`);
         }
@@ -224,78 +287,30 @@ async function analyzeTrains(trains: Train[]) {
 
           let shouldIgnore = false;
 
-          if (
-            prevSignal.prevSignalConnections.some((conn) => conn.next === signalId) ||
-            signal.nextSignalConnections.some((conn) => conn.prev === prevSignalId)
-          ) {
-            // connection already exists
-            shouldIgnore = true;
-          }
+          for (const validator of CONNECTION_VALIDATORS) {
+            try {
+              const result = validator(prevSignal, signal);
 
-          if (
-            !shouldIgnore &&
-            prevSignal.next_regex &&
-            !new RegExp(prevSignal.next_regex).test(signalId)
-          ) {
-            tryLogError(
-              prevSignalId,
-              signalId,
-              `Signal ${signalId} doesn't match ${prevSignalId}'s next regex!`
-            );
-            shouldIgnore = true;
-          }
+              if (result === true) {
+                continue;
+              }
 
-          if (
-            !shouldIgnore &&
-            signal.prev_regex &&
-            !new RegExp(signal.prev_regex).test(prevSignalId)
-          ) {
-            tryLogError(
-              prevSignalId,
-              signalId,
-              `Signal ${prevSignalId} doesn't match ${signalId}'s prev regex!`
-            );
-            shouldIgnore = true;
-          }
+              if (result === null) {
+                shouldIgnore = true;
+                break;
+              }
 
-          if (
-            !shouldIgnore &&
-            (prevSignal.type === "block" || BLOCK_SIGNAL_REGEX.test(prevSignalId))
-          ) {
-            const isReverse = BLOCK_SIGNAL_REVERSE_REGEX.test(prevSignalId);
-
-            // if prevSignal is reverse block signal then the next signal can't be a non-reverse block signal
-            if (
-              isReverse &&
-              !BLOCK_SIGNAL_REVERSE_REGEX.test(signalId) &&
-              BLOCK_SIGNAL_REGEX.test(signalId)
-            ) {
-              tryLogError(
-                prevSignalId,
-                signalId,
-                `Block Signal ${prevSignalId} is reverse, but next signal ${signalId} is not reverse!`
+              tryLogError(prevSignalId, signalId, result);
+              shouldIgnore = true;
+              break;
+            } catch (e) {
+              logger.error(
+                `Error while validating connection ${prevSignalId}->${signalId} using validator #${CONNECTION_VALIDATORS.indexOf(
+                  validator
+                )}: ${e}`
               );
               shouldIgnore = true;
-            }
-
-            // if prevSignal a non-reverse block signal then the next signal can't be a reverse block signal
-            if (!shouldIgnore && !isReverse && BLOCK_SIGNAL_REVERSE_REGEX.test(signalId)) {
-              tryLogError(
-                prevSignalId,
-                signalId,
-                `Block Signal ${prevSignalId} is not reverse, but next signal ${signalId} is reverse!`
-              );
-              shouldIgnore = true;
-            }
-
-            if (!shouldIgnore && prevSignal.prevSignalConnections.length > 0) {
-              // a block signal can only have one next signal
-              tryLogError(
-                prevSignalId,
-                signalId,
-                `Block Signal ${prevSignalId} already has a next signal, can't add ${signalId}!`
-              );
-              shouldIgnore = true;
+              break;
             }
           }
 
