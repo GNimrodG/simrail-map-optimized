@@ -45,6 +45,7 @@ model signals {
   next_regex            String?             @db.VarChar(100)
   prevSignalConnections signalConnections[] @relation("prevSignalConnections")
   nextSignalConnections signalConnections[] @relation("nextSignalConnections")
+  creator               String?             @db.VarChar(40)
 
   point Unsupported("geometry(Point, 4326)")
 
@@ -59,6 +60,8 @@ model signalConnections {
   // distance is calculated at insert, so it's not a required field but it always has a value
   distance   Float    @default(0) @db.DoublePrecision
   created_at DateTime @default(now()) @db.Timestamp
+  creator    String?  @db.VarChar(40)
+  vmax       Int?     @db.Integer
 
   @@id([prev, next], map: "signal_connections_pk")
   @@map("signal_connections")
@@ -71,6 +74,7 @@ model signalConnectionErrors {
   error      String   @db.VarChar(255)
   checked    Boolean  @default(false) @db.Boolean
   created_at DateTime @default(now()) @db.Timestamp
+  creator    String?  @db.VarChar(40)
 
   @@id([prev, next, error], map: "signal_connection_errors_pk")
   @@map("signal_connection_errors")

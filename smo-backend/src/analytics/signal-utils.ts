@@ -30,7 +30,8 @@ export const BLOCK_SIGNAL_REVERSE_REGEX = /^L\d+_\d+[A-Z]$/;
  * "ZW_D" matches the pattern.
  * "ZW_1" matches the pattern.
  */
-export const MAIN_SIGNAL_REGEX = /[A-KM-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ][A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ]+(\d+)?_[A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ0-9]+/;
+export const MAIN_SIGNAL_REGEX =
+  /[A-KM-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ][A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ]+\d*_[A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ0-9]+/;
 
 /**
  * Function to determine the type of signal for a given train.
@@ -131,7 +132,7 @@ export function getSignalRole(signal: {
  * If the length of the error message exceeds 500 characters, it is truncated to the first 500 characters.
  * If an error occurs during this process, it logs an error message.
  */
-export function tryLogError(prev: string, next: string, error: string) {
+export function tryLogError(prev: string, next: string, error: string, trainId: string) {
   prisma.signalConnectionErrors
     .findUnique({
       where: { prev_next_error: { prev, next, error } },
@@ -144,6 +145,7 @@ export function tryLogError(prev: string, next: string, error: string) {
             prev,
             next,
             error: error.length > 500 ? error.substring(0, 500) : error,
+            creator: trainId,
           },
         });
       }

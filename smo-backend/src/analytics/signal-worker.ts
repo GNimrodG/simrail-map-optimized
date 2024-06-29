@@ -16,7 +16,7 @@ import {
 const logger = new ModuleLogger("SIGNALS-PROC-WORKER");
 
 // if we don't get info about a train for 30 seconds, then we clear it from the cache so it doesn't create a wrong connection
-const TrainPreviousSignals = new TTLCache<string, string>({
+const TrainPreviousSignals = new TTLCache<string, [name: string, speed: number]>({
   ttl: 1000 * 30, // 30 sec
   updateAgeOnGet: true,
 });
@@ -126,7 +126,7 @@ async function analyzeTrains(trains: Train[]) {
         name: {
           in: [
             ...trains.map((train) => train?.TrainData?.SignalInFront?.split("@")[0]),
-            ...TrainPreviousSignals.values(),
+            ...Array.from(TrainPreviousSignals.values(), (x) => x?.[0]).filter(Boolean),
           ].filter((x, i, a) => !!x && a.indexOf(x) === i),
         },
       },
@@ -145,7 +145,7 @@ async function analyzeTrains(trains: Train[]) {
     });
 
     for (const train of trains) {
-      const trainId = `${train.id}@${train.ServerCode}-${train.TrainNoLocal}`;
+      const trainId = `${train.TrainNoLocal}@${train.ServerCode}-${train.id}`;
 
       if (!train.TrainData.Latititute || !train.TrainData.Longitute) {
         logger.warn(
@@ -210,10 +210,10 @@ async function analyzeTrains(trains: Train[]) {
           // new signal
           try {
             await prisma.$executeRaw`
-              INSERT INTO signals (name, point, extra, accuracy, type)
+              INSERT INTO signals (name, point, extra, accuracy, type, creator)
               VALUES (${signalId}, ${`SRID=4326;POINT(${train.TrainData.Longitute} ${train.TrainData.Latititute})`}, ${extra}, ${
               train.TrainData.DistanceToSignalInFront
-            }, ${type})`;
+            }, ${type}, ${trainId})`;
 
             signal = {
               name: signalId,
@@ -253,10 +253,12 @@ async function analyzeTrains(trains: Train[]) {
         }
       }
 
-      const prevSignalId = TrainPreviousSignals.get(trainId);
+      const prevSignalData = TrainPreviousSignals.get(trainId);
 
-      if (prevSignalId && prevSignalId !== signalId && !signal?.prev_finalized) {
+      if (prevSignalData && prevSignalData[0] !== signalId && !signal?.prev_finalized) {
         // train reached a new signal from a previous signal
+        const [prevSignalId, prevSignalSpeed] = prevSignalData;
+
         const prevSignal =
           signals.find((signal) => signal.name === prevSignalId) ||
           (await prisma.signals.findUnique({
@@ -276,13 +278,13 @@ async function analyzeTrains(trains: Train[]) {
 
         if (!prevSignal) {
           logger.warn(
-            `Train ${train.TrainNoLocal}@${train.ServerCode} reached signal ${signalId} from unknown signal ${prevSignalId}`
+            `Train ${trainId} reached ${
+              signal ? "" : "unknown "
+            }signal ${signalId} from unknown signal ${prevSignalId}`
           );
 
-          tryLogError(prevSignalId, signalId, `Unknown signal ${prevSignalId}`);
-        }
-
-        if (prevSignal && signal && !prevSignal.next_finalized) {
+          tryLogError(prevSignalId, signalId, `Unknown signal ${prevSignalId}`, trainId);
+        } else if (signal && !prevSignal.next_finalized) {
           // if signal is known and prevSignal is also known and not finalized
 
           let shouldIgnore = false;
@@ -300,14 +302,14 @@ async function analyzeTrains(trains: Train[]) {
                 break;
               }
 
-              tryLogError(prevSignalId, signalId, result);
+              tryLogError(prevSignalId, signalId, result, trainId);
               shouldIgnore = true;
               break;
             } catch (e) {
               logger.error(
                 `Error while validating connection ${prevSignalId}->${signalId} using validator #${CONNECTION_VALIDATORS.indexOf(
                   validator
-                )}: ${e}`
+                )} for train ${trainId}: ${e}`
               );
               shouldIgnore = true;
               break;
@@ -321,20 +323,23 @@ async function analyzeTrains(trains: Train[]) {
                 data: {
                   prev: prevSignalId,
                   next: signalId,
+                  creator: trainId,
+                  vmax: prevSignalSpeed || null,
                 },
               });
             } catch (e) {
               tryLogError(
                 prevSignalId,
                 signalId,
-                `Failed to create connection between ${prevSignalId} and ${signalId}: ${e}`
+                `Failed to create connection between ${prevSignalId} and ${signalId}: ${e}`,
+                trainId
               );
             }
           }
         }
       }
 
-      TrainPreviousSignals.set(trainId, signalId);
+      TrainPreviousSignals.set(trainId, [signalId, train.TrainData.SignalInFrontSpeed]);
     }
 
     const duration = Date.now() - start;
