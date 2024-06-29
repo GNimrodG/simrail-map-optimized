@@ -2,7 +2,22 @@ import * as Sentry from "@sentry/react";
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-import App from "./App.tsx";
+export const feedbackIntegration = Sentry.feedbackSyncIntegration(
+  {
+    colorScheme: "system",
+    autoInject: false,
+  },
+  {
+    includeReplay: true,
+  }
+);
+
+feedbackIntegration.createForm().then((form) => {
+  form.appendToDom();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).feedback = form.open;
+});
 
 Sentry.init({
   dsn: "https://8c28aa804663f38f3314af8312673ed5@o260759.ingest.us.sentry.io/4507205489262592",
@@ -13,9 +28,7 @@ Sentry.init({
       maskAllText: false,
       blockAllMedia: false,
     }),
-    Sentry.feedbackIntegration({
-      colorScheme: "system",
-    }),
+    feedbackIntegration,
   ],
   // Performance Monitoring
   tracesSampleRate: 1.0, //  Capture 100% of the transactions
@@ -25,6 +38,8 @@ Sentry.init({
   replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
   replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
 });
+
+import App from "./App.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

@@ -36,6 +36,7 @@ import ThemeToggle from "./utils/ThemeToggle";
 const MAIN_ATTRIBUTIONS = [
   '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
   '<a href="https://github.com/GNimrodG/simrail-map-optimized" target="_blank">GitHub</a>',
+  '<a onclick="window.feedback()" href="#">Report a bug!</a>',
   'This website is not affiliated with the <a href="https://simrail.eu" target="_blank">SimRail</a> team.',
 ].join(" | ");
 
