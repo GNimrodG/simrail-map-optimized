@@ -9,6 +9,7 @@ const STATION_PREFIX_OVERRIDES = new Map<string, string[]>([
   ["Spł1", ["Spł1", "SPł1"]], // Sosnowiec Południowy
   ["Pi", ["Pl"]], // Pilichowice
   ["Op", ["OP"]], // Opoczno Południe
+  ["Ga", ["GA", "Ga"]], // Gajówka APO
 ]);
 
 export function getSignalsForStation(station: Station): SignalWithTrain[] {
