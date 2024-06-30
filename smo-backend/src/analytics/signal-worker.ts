@@ -14,6 +14,8 @@ import {
 } from "./signal-utils";
 
 const logger = new ModuleLogger("SIGNALS-PROC-WORKER");
+const MIN_DISTANCE_TO_SIGNAL =
+  (process.env.MIN_DISTANCE_TO_SIGNAL && parseInt(process.env.MIN_DISTANCE_TO_SIGNAL)) || 10;
 
 // if we don't get info about a train for 30 seconds, then we clear it from the cache so it doesn't create a wrong connection
 const TrainPreviousSignals = new TTLCache<string, [name: string, speed: number]>({
@@ -105,7 +107,7 @@ const CONNECTION_VALIDATORS: ConnectionValidator[] = [
   },
   (prev, curr) =>
     // check if signals are parallel
-    curr.name.replace(/[A-Z]\d+$/, "") !== prev.name.replace(/[A-Z]\d+$/, "") ||
+    curr.name.replace(/(_[A-Z])\d+$/, "$1") !== prev.name.replace(/(_[A-Z])\d+$/, "$1") ||
     `Signals ${prev.name} and ${curr.name} are probably parallel and can't be connected!`,
 ];
 
@@ -183,7 +185,7 @@ async function analyzeTrains(trains: Train[]) {
       }
 
       // check if signal accuracy could be updated
-      if (train.TrainData.DistanceToSignalInFront < 5) {
+      if (train.TrainData.DistanceToSignalInFront < MIN_DISTANCE_TO_SIGNAL) {
         if (signal) {
           // signal already exists
           if (signal.accuracy > train.TrainData.DistanceToSignalInFront) {
