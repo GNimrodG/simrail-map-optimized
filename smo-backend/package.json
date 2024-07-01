@@ -23,7 +23,7 @@
     "@opentelemetry/instrumentation-socket.io": "^0.40.0",
     "@prisma/client": "^5.15.1",
     "@sentry/cli": "^2.32.1",
-    "@sentry/node": "^8.7.0",
+    "@sentry/node": "^8.13.0",
     "@sentry/profiling-node": "^8.7.0",
     "chalk": "^4.1.2",
     "cors": "^2.8.5",
