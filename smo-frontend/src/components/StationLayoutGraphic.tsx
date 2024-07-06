@@ -62,6 +62,10 @@ const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ ce
       const [shape, ...rest] = cellPart.split(":");
       let color = rest?.[0] || theme.palette.neutral[600];
       if (color === "g") color = theme.palette.success.solidHoverBg;
+      if (color === "o") color = theme.palette.warning.solidHoverBg;
+      if (color === "r") color = theme.palette.danger.solidHoverBg;
+      if (color === "b") color = theme.palette.primary.solidHoverBg;
+      if (color === "y") color = "#ff0"; // yellow
       const align = getTextAlign(rest?.[0] || "center");
       const key = `slc_${cell}_${shape}`;
       switch (shape) {
@@ -411,7 +415,14 @@ const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ ce
     }
 
     return [shapes, texts];
-  }, [cell, theme.palette.neutral, theme.palette.success.solidHoverBg]);
+  }, [
+    cell,
+    theme.palette.danger.solidHoverBg,
+    theme.palette.neutral,
+    theme.palette.primary.solidHoverBg,
+    theme.palette.success.solidHoverBg,
+    theme.palette.warning.solidHoverBg,
+  ]);
 
   return (
     <Box

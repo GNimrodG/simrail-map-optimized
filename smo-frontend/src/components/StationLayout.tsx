@@ -63,7 +63,18 @@ const StationLayout: FunctionComponent<StationLayoutProps> = ({
     [layout, trains, defs]
   );
 
-  const columns = useMemo(() => Math.max(...layout.map((x) => x.length)), [layout]);
+  const columns = useMemo(
+    () =>
+      Math.max(
+        ...layout.map((x) =>
+          x.reduce((acc, curr) => {
+            if (Array.isArray(curr)) return acc + (+curr[1] || 1);
+            return acc + 1;
+          }, 0)
+        )
+      ),
+    [layout]
+  );
 
   return (
     <StationGrid>

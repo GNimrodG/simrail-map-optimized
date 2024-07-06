@@ -22,7 +22,7 @@ const StationsLayer: FunctionComponent = () => {
   useEffect(() => {
     const handler = debounce(() => {
       setVisibleStations(getVisibleStations(stations, map));
-    }, 1000);
+    }, 500);
 
     if (map) {
       map.on("move", handler);
