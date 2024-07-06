@@ -86,10 +86,18 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
     }
   }, [map, station.id, stationArea]);
 
-  const layoutDefs = useMemo(
-    () => (station.Prefix && StationLayouts[station.Prefix]?._defs) || null,
-    [station.Prefix]
-  );
+  const layoutDefs = useMemo(() => {
+    const defs = (station.Prefix && StationLayouts[station.Prefix]?._defs) || null;
+    if (!defs) return null;
+
+    if (stationLayoutVariant?.endsWith("-inverted")) {
+      return Object.fromEntries(
+        Object.entries(defs).map(([key, [s1, s2, t, s1l, s2l]]) => [key, [s2, s1, t, s2l, s1l]])
+      );
+    }
+
+    return defs;
+  }, [station.Prefix, stationLayoutVariant]);
 
   const layoutOptions = useMemo(
     () =>
@@ -288,7 +296,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
                     key={variant}
                     disabled={isPending}
                     value={variant}>
-                    {variant}
+                    {variant.endsWith("-inverted") ? variant.slice(0, -9) : variant}
                   </Tab>
                 ))}
               </TabList>
