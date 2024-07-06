@@ -87,14 +87,16 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
   }, [map, station.id, stationArea]);
 
   const layoutDefs = useMemo(
-    () => (station.Prefix && StationLayouts[station.Prefix]._defs) || null,
+    () => (station.Prefix && StationLayouts[station.Prefix]?._defs) || null,
     [station.Prefix]
   );
 
   const layoutOptions = useMemo(
     () =>
       (station.Prefix &&
-        Object.keys(StationLayouts[station.Prefix]).filter((x) => !!x && !x.startsWith("_"))) ||
+        Object.keys(StationLayouts[station.Prefix] || {}).filter(
+          (x) => !!x && !x.startsWith("_")
+        )) ||
       [],
     [station.Prefix]
   );
