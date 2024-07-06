@@ -109,19 +109,19 @@
 }
 
 .icon.danger {
-  border-color: var(--joy-palette-danger-500);
+  border-color: var(--joy-palette-danger-600);
 }
 
 .icon.warning {
-  border-color: var(--joy-palette-warning-500);
+  border-color: var(--joy-palette-warning-600);
 }
 
 .icon.success {
-  border-color: var(--joy-palette-success-500);
+  border-color: var(--joy-palette-success-600);
 }
 
 .icon.primary {
-  border-color: var(--joy-palette-primary-500);
+  border-color: var(--joy-palette-primary-600);
 }
 
 .icon.bot {
@@ -142,41 +142,41 @@
 }
 
 .icon.station.player {
-  border-color: var(--joy-palette-primary-outlinedActiveBg);
+  border-color: var(--joy-palette-primary-600);
 }
 
 .icon.station {
-  border-color: var(--joy-palette-warning-outlinedActiveBg);
+  border-color: var(--joy-palette-warning-600);
 }
 
 .icon.signal.danger svg {
-  fill: var(--joy-palette-danger-500);
+  fill: var(--joy-palette-danger-600);
 }
 
 .icon.signal.warning svg {
-  fill: var(--joy-palette-warning-500);
+  fill: var(--joy-palette-warning-600);
 }
 
 .icon.signal.success svg {
-  fill: var(--joy-palette-success-500);
+  fill: var(--joy-palette-success-600);
 }
 
 .icon.signal.primary svg {
-  fill: var(--joy-palette-primary-500);
+  fill: var(--joy-palette-primary-600);
 }
 
 .icon.signal.secondary svg {
-  fill: var(--joy-palette-neutral-500);
+  fill: var(--joy-palette-neutral-600);
 }
 
 .icon.selected-route svg {
-  fill: var(--joy-palette-primary-500);
+  fill: var(--joy-palette-primary-600);
 }
 
 .leaflet-tooltip.pinned {
-  border: 2px solid var(--joy-palette-primary-500) !important;
+  border: 2px solid var(--joy-palette-primary-600) !important;
 }
 
 .leaflet-tooltip.pinned::before {
-  border-bottom-color: var(--joy-palette-primary-500) !important;
+  border-bottom-color: var(--joy-palette-primary-600) !important;
 }

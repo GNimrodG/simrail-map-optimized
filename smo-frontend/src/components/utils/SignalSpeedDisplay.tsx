@@ -13,14 +13,16 @@ const SignalSpeedDisplay: FunctionComponent<SignalSpeedDisplayProps> = ({ train 
     <Typography
       component="span"
       color="success"
-      variant="outlined">
+      variant="outlined"
+      textAlign="center">
       VMAX
     </Typography>
   ) : (
     <Typography
       component="span"
       color={getColorTrainMarker(train.TrainData.SignalInFrontSpeed)}
-      variant="outlined">
+      variant="outlined"
+      textAlign="center">
       {Math.round(train.TrainData.SignalInFrontSpeed)} km/h
     </Typography>
   );

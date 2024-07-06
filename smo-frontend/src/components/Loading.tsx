@@ -1,10 +1,12 @@
-import LinearProgress from "@mui/joy/LinearProgress";
+import LinearProgress, { LinearProgressProps } from "@mui/joy/LinearProgress";
 import { type FunctionComponent } from "react";
 
-const Loading: FunctionComponent = () => {
+const Loading: FunctionComponent<LinearProgressProps> = ({ sx, ...props }) => {
   return (
     <LinearProgress
+      {...props}
       sx={{
+        ...sx,
         position: "absolute",
         top: 0,
         left: 0,

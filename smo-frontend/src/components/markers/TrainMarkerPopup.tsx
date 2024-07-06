@@ -37,6 +37,7 @@ export interface TrainMarkerPopupProps {
   showTrainRouteButton?: boolean;
   onToggleCollapse?: () => void;
   isCollapsed?: boolean;
+  hideButtons?: boolean;
 }
 
 function getThumbnailUrl(vehicle: string): string {
@@ -58,6 +59,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
   showTrainRouteButton,
   onToggleCollapse,
   isCollapsed,
+  hideButtons = false,
 }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(`(max-height: ${theme.breakpoints.values.md}px)`);
@@ -404,88 +406,92 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         />
       )}
 
-      <Stack
-        spacing={1}
-        sx={{ width: "100%" }}>
-        {selectedTrain?.trainNo === train.TrainNoLocal ? (
-          <ButtonGroup size={isSmallScreen ? "sm" : "md"}>
-            {selectedTrain.follow ? (
+      {!hideButtons && (
+        <Stack
+          spacing={1}
+          sx={{ width: "100%" }}>
+          {selectedTrain?.trainNo === train.TrainNoLocal ? (
+            <ButtonGroup size={isSmallScreen ? "sm" : "md"}>
+              {selectedTrain.follow ? (
+                <Button
+                  fullWidth
+                  variant="solid"
+                  color="warning"
+                  onClick={() => {
+                    setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: false });
+                    setMapLines(null);
+                  }}>
+                  Unfollow
+                </Button>
+              ) : (
+                <Button
+                  fullWidth
+                  variant="solid"
+                  color="success"
+                  onClick={() =>
+                    setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: true })
+                  }>
+                  Follow
+                </Button>
+              )}
+              <Button
+                variant="solid"
+                color="danger"
+                onClick={() => {
+                  setSelectedTrain(null);
+                  setMapLines(null);
+                }}>
+                Unpin
+              </Button>
+            </ButtonGroup>
+          ) : (
+            <ButtonGroup size={isSmallScreen ? "sm" : "md"}>
               <Button
                 fullWidth
                 variant="solid"
-                color="warning"
-                onClick={() => {
-                  setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: false });
-                  setMapLines(null);
-                }}>
-                Unfollow
+                color="primary"
+                onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true })}>
+                Follow
+              </Button>
+              <Button
+                variant="solid"
+                color="neutral"
+                onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: false })}>
+                Pin
+              </Button>
+            </ButtonGroup>
+          )}
+          {showTrainRouteButton &&
+            (selectedRoute !== train.TrainNoLocal ? (
+              <Button
+                color="neutral"
+                size="sm"
+                endDecorator={
+                  <Chip
+                    color="danger"
+                    variant="solid">
+                    BETA
+                  </Chip>
+                }
+                onClick={() => setSelectedRoute(train.TrainNoLocal)}>
+                Show route
               </Button>
             ) : (
               <Button
-                fullWidth
-                variant="solid"
-                color="success"
-                onClick={() => setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: true })}>
-                Follow
+                size="sm"
+                endDecorator={
+                  <Chip
+                    color="danger"
+                    variant="solid">
+                    BETA
+                  </Chip>
+                }
+                onClick={() => setSelectedRoute(null)}>
+                Hide route
               </Button>
-            )}
-            <Button
-              variant="solid"
-              color="danger"
-              onClick={() => {
-                setSelectedTrain(null);
-                setMapLines(null);
-              }}>
-              Unpin
-            </Button>
-          </ButtonGroup>
-        ) : (
-          <ButtonGroup size={isSmallScreen ? "sm" : "md"}>
-            <Button
-              fullWidth
-              variant="solid"
-              color="primary"
-              onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true })}>
-              Follow
-            </Button>
-            <Button
-              variant="solid"
-              color="neutral"
-              onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: false })}>
-              Pin
-            </Button>
-          </ButtonGroup>
-        )}
-        {showTrainRouteButton &&
-          (selectedRoute !== train.TrainNoLocal ? (
-            <Button
-              color="neutral"
-              size="sm"
-              endDecorator={
-                <Chip
-                  color="danger"
-                  variant="solid">
-                  BETA
-                </Chip>
-              }
-              onClick={() => setSelectedRoute(train.TrainNoLocal)}>
-              Show route
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              endDecorator={
-                <Chip
-                  color="danger"
-                  variant="solid">
-                  BETA
-                </Chip>
-              }
-              onClick={() => setSelectedRoute(null)}>
-              Hide route
-            </Button>
-          ))}
-      </Stack>
+            ))}
+        </Stack>
+      )}
     </Stack>
   );
 };
