@@ -272,23 +272,45 @@ export interface Data {
 }
 
 const timetableCache = new LRUCache<string, Timetable>({ max: 10, ttl: 1000 * 60 * 60 }); // 1 hour
+const timetablePromiseCache = new LRUCache<string, Promise<Timetable | null>>({
+  max: 10,
+  ttl: 1000 * 60 * 60,
+});
 
 export async function fetchTimetable(train: string) {
-  return new Promise<Timetable | null>((resolve) => {
-    const cached = timetableCache.get(train);
+  const cached = timetableCache.get(train);
 
-    if (cached) {
-      console.log("Got cached timetable for train ", train);
-      resolve(cached);
-      return;
-    }
+  if (cached) {
+    console.log("Got cached timetable for train", train);
+    return cached;
+  }
 
+  const cachedPromise = timetablePromiseCache.get(train);
+
+  if (cachedPromise) {
+    console.log("Got cached timetable promise for train", train);
+    return cachedPromise;
+  }
+
+  const promise = new Promise<Timetable | null>((resolve) => {
     socket.emit("get-train-timetable", train, (timetable: Timetable) => {
-      console.log("Got timetable for train ", train);
+      console.log("Got timetable for train", train);
       timetableCache.set(train, timetable);
       resolve(timetable);
     });
+
+    setTimeout(() => {
+      resolve(null);
+    }, 30000); // 30 seconds timeout
   });
+
+  promise.finally(() => {
+    timetablePromiseCache.delete(train);
+  });
+
+  timetablePromiseCache.set(train, promise);
+
+  return promise;
 }
 
 export async function fetchRoutePoints(trainRoute: string) {

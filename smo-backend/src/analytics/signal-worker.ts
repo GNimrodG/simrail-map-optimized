@@ -17,6 +17,8 @@ const logger = new ModuleLogger("SIGNALS-PROC-WORKER");
 const MIN_DISTANCE_TO_SIGNAL =
   (process.env.MIN_DISTANCE_TO_SIGNAL && parseInt(process.env.MIN_DISTANCE_TO_SIGNAL)) || 10;
 
+logger.info(`Min distance to signal to discover: ${MIN_DISTANCE_TO_SIGNAL}`);
+
 // if we don't get info about a train for 30 seconds, then we clear it from the cache so it doesn't create a wrong connection
 const TrainPreviousSignals = new TTLCache<string, [name: string, speed: number]>({
   ttl: 1000 * 30, // 30 sec

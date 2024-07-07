@@ -95,6 +95,12 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
     <>
       <Typography level={mainStation ? "body-md" : "body-sm"}>
         {station.nameOfPoint}
+        {station.track && station.platform && (
+          <Typography level={mainStation ? "body-sm" : "body-xs"}>
+            {" "}
+            {station.track}/{station.platform}
+          </Typography>
+        )}
         {STOP_TYPE_TECHNICAL[station.stopType] && (
           <>
             {" "}

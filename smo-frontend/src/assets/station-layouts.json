@@ -253,5 +253,49 @@
       "|||||<A1|1162;4|1180;4|1196;4|1216;4|1230;4|Ol>",
       "|||||<A2|1145;4|1163;4|1181;4|1197;4|1217;4|Ol>"
     ]
+  },
+  "WDC": {
+    "_defs": {
+      "4D": ["WZD_E", "L2_4DN"],
+      "6D": ["L2_4D", "WDC_A"],
+      "8D": ["L2_6D", null],
+
+      "3D": ["WZD_C", "L2_3D"],
+      "5D": ["L2_3DN", "WDC_B"],
+      "7D": ["L2_5DN", null],
+
+      "JT8": ["WDC_K", "WDC_L", "p", null, null, 8, "IV"],
+      "JT6": ["WDC_J", "WDC_M", "p", null, null, 6, "IV"],
+      "JT4": ["WDC_H", "WDC_N", "p", null, null, 4, "III"],
+      "JT2": ["WDC_G", "WDC_O", "p", null, null, 2, "III"],
+      "JT1": ["WDC_F", "WDC_P", "p", null, null, 1, "II"],
+      "JT3": ["WDC_I", "WDC_R", "p", null, null, 3, "II"],
+      "JT5": ["WDC_D", "WDC_S", "p", null, null, 5, "I"],
+      "JT7": ["WDC_C", "WDC_T", "p", null, null, 7, "I"],
+
+      "2DN": [null, "L2_2DNN"],
+      "10D": ["WDC_W", "L2_10DN"],
+      "12D": ["L2_10D", "L2_12DN"],
+      "14D": ["L2_12D", "L2_14DN"],
+      "16D": ["L2_14D", "L2_16DN"],
+      "18D": ["L2_16D", "WSD_A"],
+
+      "3DD": [null, "L2_3DD"],
+      "9D": ["WDC_U", "L2_11D"],
+      "11D": ["L2_11DN", "L2_13D"],
+      "13D": ["L2_13DN", "L2_15D"],
+      "15D": ["L2_15DN", "L2_17D"],
+      "17D": ["L2_17DN", "WSD_B"]
+    },
+    "Simplified": [
+      "||||b,r|JT8;1|l,b",
+      "||||v,r|JT6;1|v,l",
+      "||||v,r|JT4;1|v,l",
+      "<WZD|4D;1|6D;1|8D;1|h,v|JT2;1|h,v|2DN;1|10D;1|12D;1|14D;1|16D;1|18D;1|WSD>",
+      "<WZD|3D;1|5D;1|7D;1|h,v|JT1;1|h,v|3DD;1|9D;1|11D;1|13D;1|15D;1|17D;1|WSD>",
+      "||||v,r|JT3;1|v,l",
+      "||||v,r|JT5;1|v,l",
+      "||||t,r|JT7;1|l,t"
+    ]
   }
 }
