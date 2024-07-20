@@ -1,4 +1,8 @@
-FROM node:slim AS build
+FROM node:current-slim AS base
+
+RUN apt update && apt install -y curl openssl && rm -rf /var/lib/apt/lists/*
+
+FROM base AS build
 
 WORKDIR /app
 
@@ -14,7 +18,7 @@ RUN yarn prisma generate
 
 RUN yarn build:no-sentry
 
-FROM node:slim AS dependencies
+FROM base AS dependencies
 
 WORKDIR /app
 
@@ -23,12 +27,6 @@ COPY ./package.json ./yarn.lock ./
 ENV NODE_ENV=production
 
 RUN yarn install --frozen-lockfile --production
-
-RUN yarn prisma generate
-
-FROM node:slim AS base
-
-RUN apt update && apt install -y curl && rm -rf /var/lib/apt/lists/*
 
 FROM base AS release
 
