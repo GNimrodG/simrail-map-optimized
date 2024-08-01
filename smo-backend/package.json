@@ -34,7 +34,7 @@
     "rxjs": "^7.8.1",
     "socket.io": "^4.7.5",
     "socket.io-msgpack-parser": "^3.0.2",
-    "winston": "^3.13.0",
+    "winston": "^3.13.1",
     "winston-daily-rotate-file": "^5.0.0"
   },
   "optionalDependencies": {
