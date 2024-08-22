@@ -5,6 +5,7 @@ services:
       - "3000:3000"
     environment:
       - DATABASE_URL=postgres://smo:smo@db:5432/smo?schema=public
+      - MIN_DISTANCE_TO_SIGNAL=200
     depends_on:
       db:
         condition: service_healthy

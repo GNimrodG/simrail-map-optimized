@@ -1,4 +1,3 @@
-import { readFileSync, renameSync, statSync } from "fs";
 import type { Train } from "../api-helper";
 import { parentPort } from "worker_threads";
 import { ModuleLogger } from "../logger";
@@ -9,7 +8,6 @@ import {
   BLOCK_SIGNAL_REVERSE_REGEX,
   getSignalRole,
   getSignalType,
-  loadFileLinesToDatabase,
   tryLogError,
 } from "./signal-utils";
 
@@ -17,33 +15,20 @@ const logger = new ModuleLogger("SIGNALS-PROC-WORKER");
 const MIN_DISTANCE_TO_SIGNAL =
   (process.env.MIN_DISTANCE_TO_SIGNAL && parseInt(process.env.MIN_DISTANCE_TO_SIGNAL)) || 10;
 
-logger.info(`Min distance to signal to discover: ${MIN_DISTANCE_TO_SIGNAL}`);
+logger.info(`Min distance to signal to discover: ${MIN_DISTANCE_TO_SIGNAL}m`);
+
+const MIN_DISTANCE_BETWEEN_SIGNALS =
+  (process.env.MIN_DISTANCE_BETWEEN_SIGNALS &&
+    parseInt(process.env.MIN_DISTANCE_BETWEEN_SIGNALS)) ||
+  200;
+
+logger.info(`Min distance between signals: ${MIN_DISTANCE_BETWEEN_SIGNALS}m`);
 
 // if we don't get info about a train for 30 seconds, then we clear it from the cache so it doesn't create a wrong connection
 const TrainPreviousSignals = new TTLCache<string, [name: string, speed: number]>({
   ttl: 1000 * 30, // 30 sec
   updateAgeOnGet: true,
 });
-
-try {
-  statSync("data/signals.csv");
-  logger.info("Loading signals...");
-  loadFileLinesToDatabase(readFileSync("data/signals.csv", "utf-8").split("\n")).then();
-
-  renameSync("data/signals.csv", `data/signals-${Date.now()}.csv`);
-
-  logger.info(`Signals loaded from file to the database`);
-
-  if (statSync("data/signals-old.csv")?.isFile()) {
-    logger.info("Merging old signal data...");
-
-    loadFileLinesToDatabase(readFileSync("data/signals-old.csv", "utf-8").split("\n")).then();
-
-    renameSync("data/signals-old.csv", `data/signals-old-merged-${Date.now()}.csv`);
-  }
-} catch (e) {
-  logger.warn(`No signals file found (${e})`);
-}
 
 type SignalData = {
   prevSignalConnections: {
@@ -53,15 +38,20 @@ type SignalData = {
     prev: string;
   }[];
   name: string;
+  accuracy: number;
   type: string | null;
   role: string | null;
   prev_finalized: boolean;
   next_finalized: boolean;
   prev_regex: string | null;
   next_regex: string | null;
+  pos?: { lat: number; lon: number };
 };
 
-type ConnectionValidator = (prev: SignalData, curr: SignalData) => true | string | null;
+type ConnectionValidator = (
+  prev: SignalData,
+  curr: SignalData
+) => true | string | null | Promise<true | string | null>;
 
 // Return true if connection is valid, otherwise return error message or null if connection should be ignored
 const CONNECTION_VALIDATORS: ConnectionValidator[] = [
@@ -111,7 +101,99 @@ const CONNECTION_VALIDATORS: ConnectionValidator[] = [
     // check if signals are parallel
     curr.name.replace(/(_[A-Z])\d+$/, "$1") !== prev.name.replace(/(_[A-Z])\d+$/, "$1") ||
     `Signals ${prev.name} and ${curr.name} are probably parallel and can't be connected!`,
+  (prev, curr) => {
+    const prevMatch = RegExp(/_([A-Z])$/).exec(prev.name);
+    const currMatch = RegExp(/_([A-Z])$/).exec(curr.name);
+
+    if (
+      prevMatch?.[1] &&
+      currMatch?.[1] &&
+      Math.abs(prevMatch[1].charCodeAt(0) - currMatch[1].charCodeAt(0)) === 1 // check if letters are next to each other
+    ) {
+      return `Signals ${prev.name} and ${curr.name} are probably parallel and can't be connected!`;
+    }
+
+    return true;
+  },
+  async (prev, curr) => {
+    const prevPos = prev.pos || (await getSignalPos(prev.name));
+    const currPos = curr.pos || (await getSignalPos(curr.name));
+
+    if (!prevPos || !currPos) {
+      return `Failed to get position for signals ${prev.name} and/or ${curr.name}!`;
+    }
+
+    // check if distance between signals is less than MIN_DISTANCE_BETWEEN_SIGNALS
+    const distance = await getDistanceBetweenPoints(
+      prevPos.lat,
+      prevPos.lon,
+      currPos.lat,
+      currPos.lon
+    );
+
+    if (distance < MIN_DISTANCE_BETWEEN_SIGNALS) {
+      return `Signals ${prev.name} and ${curr.name} are too close (${distance}m)!`;
+    }
+
+    return true;
+  },
 ];
+
+async function getSignalPos(name: string) {
+  return prisma.$queryRaw<{ lat: number; lon: number }[]>`
+    SELECT ST_X(point) as lon, ST_Y(point) as lat
+    FROM signals
+    WHERE name = ${name}
+    `.then((res) => res[0]);
+}
+
+async function getDistanceBetweenPoints(lat1: number, lon1: number, lat2: number, lon2: number) {
+  return prisma
+    .$queryRawUnsafe<{ distance: number }[]>(
+      `SELECT ST_DistanceSphere(ST_GeomFromText('POINT(${lon1} ${lat1})', 4326), ST_GeomFromText('POINT(${lon2} ${lat2})', 4326)) as distance`
+    )
+    .then((res) => res[0].distance);
+}
+
+async function updateSignalRoles() {
+  const count = await prisma.signals.count();
+
+  if (count === 0) {
+    logger.warn("No signals found, skipping role update...");
+    return;
+  }
+
+  const parts = Math.ceil(count / 1000);
+
+  for (let i = 0; i < parts; i++) {
+    const signals = await prisma.signals.findMany({
+      skip: i * 1000,
+      take: 1000,
+      select: {
+        name: true,
+        nextSignalConnections: { select: { prev: true } },
+        prevSignalConnections: { select: { next: true } },
+      },
+    });
+
+    for (const signal of signals) {
+      const role = getSignalRole(signal);
+
+      try {
+        await prisma.signals.update({
+          where: { name: signal.name },
+          data: { role: role },
+        });
+      } catch (e) {
+        logger.error(`Failed to set signal ${signal.name} role to ${role}: ${e}`);
+      }
+    }
+  }
+
+  logger.success(`Updated roles for ${count} signals!`);
+}
+
+updateSignalRoles();
 
 let running = false;
 
@@ -166,7 +248,7 @@ async function analyzeTrains(trains: Train[]) {
       }
 
       const [signalId, extra] = train.TrainData.SignalInFront.split("@");
-      let signal = signals.find((signal) => signal.name === signalId);
+      let signal: SignalData | undefined = signals.find((signal) => signal.name === signalId);
       const type = getSignalType(train);
       const role = signal ? getSignalRole(signal) : null;
 
@@ -230,6 +312,7 @@ async function analyzeTrains(trains: Train[]) {
               next_regex: null,
               prevSignalConnections: [],
               nextSignalConnections: [],
+              pos: { lat: train.TrainData.Latititute, lon: train.TrainData.Longitute },
             };
             signals.push(signal);
 
@@ -269,6 +352,7 @@ async function analyzeTrains(trains: Train[]) {
             where: { name: prevSignalId },
             select: {
               name: true,
+              accuracy: true,
               type: true,
               role: true,
               prev_finalized: true,
@@ -286,8 +370,6 @@ async function analyzeTrains(trains: Train[]) {
               signal ? "" : "unknown "
             }signal ${signalId} from unknown signal ${prevSignalId}`
           );
-
-          tryLogError(prevSignalId, signalId, `Unknown signal ${prevSignalId}`, trainId);
         } else if (signal && !prevSignal.next_finalized) {
           // if signal is known and prevSignal is also known and not finalized
 
@@ -295,7 +377,7 @@ async function analyzeTrains(trains: Train[]) {
 
           for (const validator of CONNECTION_VALIDATORS) {
             try {
-              const result = validator(prevSignal, signal);
+              const result = await validator(prevSignal, signal);
 
               if (result === true) {
                 continue;
