@@ -52,6 +52,10 @@ const BaseSvg = styled("svg")({
   minHeight: "1rem",
 });
 
+// 60 = orange
+// 100 = yellow
+// VMAX = green
+
 const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ cell, showText }) => {
   const theme = useTheme();
 

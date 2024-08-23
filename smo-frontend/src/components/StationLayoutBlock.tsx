@@ -105,7 +105,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
   const platformType = defs[blockName][2] || null;
   const lengthSignal1 = +defs[blockName][3] || null;
   const lengthSignal2 = +defs[blockName][4] || null;
-  const track = +defs[blockName]?.[5] || null;
+  const track = defs[blockName]?.[5] || null;
   const platform = defs[blockName]?.[6] || null;
 
   // Show previous train if it was within 30 seconds
