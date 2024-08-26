@@ -166,6 +166,32 @@ async function getSignalPos(name: string) {
     `.then((res) => res[0]);
 }
 
+function getTrainId(train: Train) {
+  return `${train.TrainNoLocal}@${train.ServerCode}-${train.id}`;
+}
+
+async function getDistanceForTrains(trains: Train[]) {
+  const data = await Promise.all(
+    trains
+      .map((t) => ({
+        id: t.id,
+        currPoint: { lat: t.TrainData.Latititute, lon: t.TrainData.Longitute },
+        prevPoint: TrainPreviousSignals.get(getTrainId(t))?.[2],
+      }))
+      .filter(({ prevPoint }) => !!prevPoint)
+      .map(({ id, currPoint, prevPoint }) =>
+        getDistanceBetweenPoints(prevPoint!.lat, prevPoint!.lon, currPoint.lat, currPoint.lon)
+          .then((distance) => ({ id, distance }))
+          .catch((e) => {
+            logger.error(`Failed to get distance for train ${id}: ${e}`);
+            return { id, distance: null };
+          })
+      )
+  );
+
+  return Object.fromEntries(data.map(({ id, distance }) => [id, distance]));
+}
+
 async function getDistanceBetweenPoints(lat1: number, lon1: number, lat2: number, lon2: number) {
   return prisma
     .$queryRawUnsafe<{ distance: number }[]>(
@@ -249,8 +275,10 @@ async function analyzeTrains(trains: Train[]) {
       },
     });
 
+    const distanceData = await getDistanceForTrains(trains);
+
     for (const train of trains) {
-      const trainId = `${train.TrainNoLocal}@${train.ServerCode}-${train.id}`;
+      const trainId = getTrainId(train);
 
       if (!train.TrainData.Latititute || !train.TrainData.Longitute) {
         logger.warn(
@@ -362,7 +390,7 @@ async function analyzeTrains(trains: Train[]) {
       const prevSignalData = TrainPreviousSignals.get(trainId);
 
       if (prevSignalData) {
-        const [prevSignalId, prevSignalSpeed, prevLocation, prevTime, prevSpeed] = prevSignalData;
+        const [prevSignalId, prevSignalSpeed, _prevLocation, prevTime, prevSpeed] = prevSignalData;
 
         // Convert prevSpeed from km/h to m/s
         const prevSpeedInMetersPerSecond = prevSpeed * (1000 / 3600);
@@ -374,16 +402,14 @@ async function analyzeTrains(trains: Train[]) {
         const maxDistancePossible =
           prevSpeedInMetersPerSecond * timeDifferenceInSeconds + BUFFER_DISTANCE_BETWEEN_POSITIONS;
 
-        const distance = await getDistanceBetweenPoints(
-          prevLocation.lat,
-          prevLocation.lon,
-          train.TrainData.Latititute,
-          train.TrainData.Longitute
-        );
+        const distance = distanceData[train.id];
 
         let isValid = true;
 
-        if (distance > maxDistancePossible) {
+        if (typeof distance !== "number") {
+          logger.warn(`Failed to get distance for train ${trainId}, ignoring current location!`);
+          isValid = false;
+        } else if (distance > maxDistancePossible) {
           logger.warn(
             `Train ${trainId} moved too far (${distance.toFixed(
               0

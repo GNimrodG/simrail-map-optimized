@@ -31,10 +31,10 @@ export function analyzeTrainsForRoutes(trains: Train[]) {
 
 export async function getRoutePoints(routeId: string): Promise<[number, number][]> {
   const data =
-    await prisma.$queryRaw`SELECT ST_X(point) as lat, ST_Y(point) as lon FROM routepoints WHERE route_id = ${routeId}`;
+    await prisma.$queryRaw`SELECT ST_X(point) as lon, ST_Y(point) as lat FROM routepoints WHERE route_id = ${routeId}`;
   if (!data || !Array.isArray(data)) {
     return [];
   }
 
-  return data.map((point) => [point.lat, point.lon]);
+  return data.map((point) => [point.lon, point.lat]);
 }
