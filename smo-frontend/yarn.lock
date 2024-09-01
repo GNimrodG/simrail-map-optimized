@@ -717,10 +717,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@mantine/hooks@^7.11.0":
-  version "7.11.0"
-  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-7.11.0.tgz#aaf3e4805c4065a28ce26bca375b792d8b413aab"
-  integrity sha512-T3472GhUXFhuhXUHlxjHv0wfb73lFyNuaw631c7Ddtgvewq0WKtNqYd7j/Zz/k02DuS3r0QXA7e12/XgqHBZjg==
+"@mantine/hooks@^7.12.2":
+  version "7.12.2"
+  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-7.12.2.tgz#f8e6a8345bb0892d8d1f5d1dc544a568572b79f4"
+  integrity sha512-dVMw8jpM0hAzc8e7/GNvzkk9N0RN/m+PKycETB3H6lJGuXJJSRR4wzzgQKpEhHwPccktDpvb4rkukKDq2jA8Fg==
 
 "@mui/base@5.0.0-beta.42":
   version "5.0.0-beta.42"
