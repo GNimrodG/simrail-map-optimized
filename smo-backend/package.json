@@ -27,7 +27,7 @@
     "@sentry/profiling-node": "^8.27.0",
     "chalk": "^4.1.2",
     "cors": "^2.8.5",
-    "express": "^4.19.2",
+    "express": "^4.20.0",
     "logform": "^2.6.0",
     "notepack.io": "^3.0.1",
     "prisma": "^5.19.0",
