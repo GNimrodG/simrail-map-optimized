@@ -28,7 +28,7 @@
     "chalk": "^4.1.2",
     "cors": "^2.8.5",
     "express": "^4.20.0",
-    "logform": "^2.6.0",
+    "logform": "^2.6.1",
     "notepack.io": "^3.0.1",
     "prisma": "^5.19.0",
     "rxjs": "^7.8.1",
