@@ -322,10 +322,10 @@
   dependencies:
     "@opentelemetry/core" "^1.1.0"
 
-"@prisma/client@^5.19.0":
-  version "5.19.0"
-  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-5.19.0.tgz#db0b4a5b536aeda7f91126e83685e6663c1d2ed1"
-  integrity sha512-CzOpau+q1kEWQyoQMvlnXIHqPvwmWbh48xZ4n8KWbAql0p8PC0BIgSTYW5ncxXa4JSEff0tcoxSZB874wDstdg==
+"@prisma/client@^5.20.0":
+  version "5.20.0"
+  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-5.20.0.tgz#4fc9f2b2341c9c997c139df4445688dd6b39663b"
+  integrity sha512-CLv55ZuMuUawMsxoqxGtLT3bEZoa2W8L3Qnp6rDIFWy+ZBrUcOFKdoeGPSnbBqxc3SkdxJrF+D1veN/WNynZYA==
 
 "@prisma/debug@5.19.0":
   version "5.19.0"
