@@ -1,6 +1,7 @@
 import Option from "@mui/joy/Option";
 import Select from "@mui/joy/Select";
 import { type FunctionComponent, useCallback, useContext } from "react";
+import { useTranslation } from "react-i18next";
 
 import { selectServer, serverData$ } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
@@ -9,6 +10,7 @@ import { useSetting } from "../utils/use-setting";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
 
 const ServerSelector: FunctionComponent = () => {
+  const { t } = useTranslation();
   const { setSelectedTrain } = useContext(SelectedTrainContext);
   const { setSelectedRoute } = useContext(SelectedRouteContext);
   const [selectedServer, setSelectedServer] = useSetting("selectedServer");
@@ -30,7 +32,7 @@ const ServerSelector: FunctionComponent = () => {
     <Select
       sx={{ width: "14rem" }}
       value={selectedServer}
-      placeholder={!servers?.length ? "Loading..." : selectedServer || "Select Server"}
+      placeholder={!servers?.length ? t("Loading") : selectedServer || t("SelectServer")}
       onChange={(_e, v) => handleServerChange(v!)}>
       {servers?.map((server) => (
         <Option
@@ -44,7 +46,7 @@ const ServerSelector: FunctionComponent = () => {
         <Option
           value="loading"
           disabled>
-          Loading...
+          {t("Loading")}
         </Option>
       )}
     </Select>

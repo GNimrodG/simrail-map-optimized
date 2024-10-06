@@ -1,0 +1,428 @@
+{
+  "en": {
+    "translation": {
+      "Loading": "Loading...",
+      "SelectServer": "Select Server",
+      "Search": "Search",
+      "ToggleTheme": "Toggle Theme",
+      "Layers": {
+        "Background": {
+          "orm-infra": "OpenRailwayMap - Infrastructure",
+          "orm-maxspeed": "OpenRailwayMap - Maxspeed",
+          "orm-signals": "OpenRailwayMap - Signals",
+          "orm-electrification": "OpenRailwayMap - Electrification"
+        },
+        "Overlay": {
+          "stations": "Stations",
+          "trains": "Trains",
+          "active-signals": "Active Signals",
+          "passive-signals": "Passive Signals",
+          "selected-route": "Selected Route",
+          "unplayable-stations": "Unplayable Stations",
+          "stats": "Stats"
+        }
+      },
+      "Stats": {
+        "Trains": "T: {{player}}/{{total}}",
+        "Stations": "S: {{player}}/{{total}}"
+      },
+      "Settings": {
+        "Title": "Settings",
+        "Language": "Language",
+        "LanguageName": "English",
+        "SystemLanguage": "System Language",
+        "General": "General",
+        "useAltTracking": {
+          "Label": "Use alternative following method",
+          "Description": "Use alternative method to follow trains on the map. This method is less smooth but uses less CPU."
+        },
+        "TrainWindow": "Train Window",
+        "expandScheduleDefault": {
+          "Label": "Expand schedule by default"
+        },
+        "hideTrainPictures": {
+          "Label": "Hide train pictures"
+        },
+        "showLineToNextSignal": {
+          "Label": "Show line to next signal"
+        },
+        "CollapsedTrainWindow": "Collapsed Train Window",
+        "showSpeedInfoCollapsed": {
+          "Label": "Show speed"
+        },
+        "showSignalInfoCollapsed": {
+          "Label": "Show signal info"
+        },
+        "showNextStationInfoCollapsed": {
+          "Label": "Show next station info"
+        },
+        "MapTheme": "Map Theme (For Dark Mode)",
+        "alternativeTheme": {
+          "Label": "Monochrome map"
+        }
+      },
+      "TrainMakerPopup": {
+        "NextSignal": "Next Signal:",
+        "Consist": "Consist",
+        "OOB": "Outside of playeable area",
+        "Unfollow": "Unfollow",
+        "Follow": "Follow",
+        "Unpin": "Unpin",
+        "Pin": "Pin",
+        "ShowRoute": "Show Route",
+        "HideRoute": "Hide Route"
+      },
+      "SelectedRoute": "Selected Route",
+      "Hide": "Hide",
+      "SignalMarker": {
+        "SignalSpeed": "Signal speed: ",
+        "TrainApproaching": "Train <0>{{TrainNoLocal}} ({{TrainName}})</0> is approaching this signal at <1>{{Velocity}} km/h</1> and is <2>{{DistanceToSignalInFront}} m</2> away.",
+        "TrainAhead": "Train <0>{{TrainNoLocal}} ({{TrainName}})</0> is in the <1>block ahead</1> going <2>{{Velocity}} km/h</2> and is <3>{{DistanceToSignalInFront}} m</3> away from signal <4>{{SignalName}}</4>.",
+        "NextSignalWithTrainAhead": "The next signal <0>{{nextSignalWithTrainAhead}}</0> has a train in the <1>block ahead</1>.",
+        "NoTrainApproaching": {
+          "Title": "No train approaching.",
+          "Description": "We can't show information about signals without a train approaching."
+        },
+        "Extra": "Extra:",
+        "Type": "Type:",
+        "Role": "Role:",
+        "Accuracy": "Accuracy:",
+        "Unknown": "Unknown",
+        "PreviousSignals": "Previous signals",
+        "NextSignals": "Next signals",
+        "HideSignalLines": "Hide signal lines",
+        "ShowSignalLines": "Show signal lines",
+        "ShowSignalLinesFurther": {
+          "Description": "Show signal lines further",
+          "Title": "Depending on the number of signals, this can be slow"
+        },
+        "Red": "Red",
+        "Orange": "Orange",
+        "Blue": "Blue",
+        "Purple": "Purple",
+        "AdminActions": {
+          "Title": "Admin actions:",
+          "DeleteSignal": "Delete this signal",
+          "UnFinalizePrev": "Un-finalize previous signals",
+          "FinalizePrev": "Finalize previous signals",
+          "UnFinalizeNext": "Un-finalize next signals",
+          "FinalizeNext": "Finalize next signals"
+        },
+        "Footer": {
+          "Finalized": "(This data has been checked and is accurate)",
+          "UnFinalized": "(This data has not been checked and may be inaccurate)"
+        }
+      },
+      "StationDisplay": {
+        "StopType": {
+          "CommercialStop": "Commercial stop",
+          "NoncommercialStop": "Non-commercial stop"
+        },
+        "ShouldArrive": {
+          "Now": "This train should arrive at this station now.",
+          "Past": "This train should have arrived at this station {{time}}.",
+          "Future": "This train should arrive at this station {{time}}."
+        }
+      },
+      "StationMarkerPopup": {
+        "Difficulty": "Difficulty: {{difficulty}}",
+        "UnplayableStation": "Unplayable Station",
+        "SignalCount": "Signals: {{signalCount}}",
+        "Signal": "Signal",
+        "Role": "Role",
+        "Speed": "Speed",
+        "ShowStationLayout": "Show station layout",
+        "HideStationArea": "Hide station area",
+        "ShowStationArea": "Show station area",
+        "StationLayoutTitle": "{{stationName}} - Station Layout",
+        "ShowTexts": "Show texts",
+        "HelpText": "<0>Green</0> lines are VMAX lines. <1>They're not active paths set by the dispatcher.</1> The background color of a block indicates the train's speed that's currently in it."
+      },
+      "BugReport": "Report a bug!"
+    }
+  },
+  "de": {
+    "translation": {
+      "Loading": "Laden...",
+      "SelectServer": "Server auswählen",
+      "Search": "Suche",
+      "ToggleTheme": "Thema wechseln",
+      "Layers": {
+        "Background": {
+          "orm-infra": "OpenRailwayMap - Infrastruktur",
+          "orm-maxspeed": "OpenRailwayMap - Höchstgeschwindigkeit",
+          "orm-signals": "OpenRailwayMap - Signale",
+          "orm-electrification": "OpenRailwayMap - Elektrifizierung"
+        },
+        "Overlay": {
+          "stations": "Bahnhöfe",
+          "trains": "Züge",
+          "active-signals": "Aktive Signale",
+          "passive-signals": "Passive Signale",
+          "selected-route": "Ausgewählte Route",
+          "unplayable-stations": "Nicht spielbare Bahnhöfe",
+          "stats": "Statistiken"
+        }
+      },
+      "Stats": {
+        "Trains": "Z: {{player}}/{{total}}",
+        "Stations": "B: {{player}}/{{total}}"
+      },
+      "Settings": {
+        "Title": "Einstellungen",
+        "Language": "Sprache",
+        "LanguageName": "Deutsch (German)",
+        "SystemLanguage": "Systemsprache",
+        "General": "Allgemein",
+        "useAltTracking": {
+          "Label": "Alternative Methode zum Verfolgen von Zügen verwenden",
+          "Description": "Eine alternative Methode verwenden, um Züge auf der Karte zu verfolgen. Diese Methode ist weniger flüssig, aber verbraucht weniger CPU."
+        },
+        "TrainWindow": "Zugfenster",
+        "expandScheduleDefault": {
+          "Label": "Fahrplan automatisch erweitern"
+        },
+        "hideTrainPictures": {
+          "Label": "Zugbilder ausblenden"
+        },
+        "showLineToNextSignal": {
+          "Label": "Linie zum nächsten Signal anzeigen"
+        },
+        "CollapsedTrainWindow": "Zusammengeklapptes Zugfenster",
+        "showSpeedInfoCollapsed": {
+          "Label": "Geschwindigkeit anzeigen"
+        },
+        "showSignalInfoCollapsed": {
+          "Label": "Signalinformationen anzeigen"
+        },
+        "showNextStationInfoCollapsed": {
+          "Label": "Informationen zum nächsten Bahnhof anzeigen"
+        },
+        "MapTheme": "Kartenthema (für den Dunkelmodus)",
+        "alternativeTheme": {
+          "Label": "Monochromatische Karte"
+        }
+      },
+      "TrainMakerPopup": {
+        "NextSignal": "Nächstes Signal:",
+        "Consist": "Zuggarnitur",
+        "OOB": "Außerhalb des Bereichs",
+        "Unfollow": "Nicht mehr folgen",
+        "Follow": "Folgen",
+        "Unpin": "Lösen",
+        "Pin": "Anheften",
+        "ShowRoute": "Route anzeigen",
+        "HideRoute": "Route ausblenden"
+      },
+      "SelectedRoute": "Ausgewählte Route",
+      "Hide": "Ausblenden",
+      "SignalMarker": {
+        "SignalSpeed": "Signalgeschwindigkeit: ",
+        "TrainApproaching": "Der Zug <0>{{TrainNoLocal}} ({{TrainName}})</0> nähert sich diesem Signal mit <1>{{Velocity}} km/h</1> und ist noch <2>{{DistanceToSignalInFront}} m</2> entfernt.",
+        "TrainAhead": "Zug <0>{{TrainNoLocal}} ({{TrainName}})</0> befindet sich im <1>Block voraus</1> mit <2>{{Velocity}} km/h</2> und ist <3>{{DistanceToSignalInFront}} m</3> entfernt vom Signal <4>{{SignalName}}</4>.",
+        "NextSignalWithTrainAhead": "Das nächste Signal <0>{{nextSignalWithTrainAhead}}</0> hat einen Zug im <1>Block voraus</1>.",
+        "NoTrainApproaching": {
+          "Title": "Es nähert sich kein Zug.",
+          "Description": "Wir können keine Informationen zu Signalen ohne sich nähernde Züge anzeigen."
+        },
+        "Extra": "Zusätzlich:",
+        "Type": "Typ:",
+        "Role": "Rolle:",
+        "Accuracy": "Genauigkeit:",
+        "Unknown": "Unbekannt",
+        "PreviousSignals": "Vorherige Signale",
+        "NextSignals": "Nächste Signale",
+        "HideSignalLines": "Signal-Linien ausblenden",
+        "ShowSignalLines": "Signal-Linien anzeigen",
+        "ShowSignalLinesFurther": {
+          "Description": "Signal-Linien weiter entfernt anzeigen",
+          "Title": "Abhängig von der Anzahl der Signale kann dies langsam sein"
+        },
+        "Red": "Rot",
+        "Orange": "Orange",
+        "Blue": "Blau",
+        "Purple": "Lila",
+        "AdminActions": {
+          "Title": "Admin-Aktionen:",
+          "DeleteSignal": "Dieses Signal löschen",
+          "UnFinalizePrev": "Vorherige Signale nicht abschließen",
+          "FinalizePrev": "Vorherige Signale abschließen",
+          "UnFinalizeNext": "Nächste Signale nicht abschließen",
+          "FinalizeNext": "Nächste Signale abschließen"
+        },
+        "Footer": {
+          "Finalized": "(Diese Daten wurden überprüft und sind korrekt)",
+          "UnFinalized": "(Diese Daten wurden nicht überprüft und können ungenau sein)"
+        }
+      },
+      "StationDisplay": {
+        "StopType": {
+          "CommercialStop": "Kommmerzieller Halt",
+          "NoncommercialStop": "Nicht-kommerzieller Halt"
+        },
+        "ShouldArrive": {
+          "Now": "Dieser Zug sollte jetzt an diesem Bahnhof ankommen.",
+          "Past": "Dieser Zug sollte an diesem Bahnhof {{time}} ankommen.",
+          "Future": "Dieser Zug sollte an diesem Bahnhof {{time}} ankommen."
+        }
+      },
+      "StationMarkerPopup": {
+        "Difficulty": "Schwierigkeit: {{difficulty}}",
+        "UnplayableStation": "Nicht spielbarer Bahnhof",
+        "SignalCount": "Signale: {{signalCount}}",
+        "Signal": "Signal",
+        "Role": "Rolle",
+        "Speed": "Geschwindigkeit",
+        "ShowStationLayout": "Bahnhofslayout anzeigen",
+        "HideStationArea": "Bahnhofsbereich ausblenden",
+        "ShowStationArea": "Bahnhofsbereich anzeigen",
+        "StationLayoutTitle": "{{stationName}} - Bahnhofslayout",
+        "ShowTexts": "Texte anzeigen",
+        "HelpText": "<0>Grüne</0> Linien sind VMAX-Linien. <1>Sie sind keine aktiven Pfade, die vom Dispatcher festgelegt wurden.</1> Die Hintergrundfarbe eines Blocks zeigt die Geschwindigkeit des Zuges an, der sich derzeit darin befindet."
+      },
+      "BugReport": "Einen Fehler melden!"
+    }
+  },
+  "hu": {
+    "translation": {
+      "Loading": "Betöltés...",
+      "SelectServer": "Szerver kiválasztása",
+      "Search": "Keresés",
+      "ToggleTheme": "Téma váltása",
+      "Layers": {
+        "Background": {
+          "orm-infra": "OpenRailwayMap - Infrastruktúra",
+          "orm-maxspeed": "OpenRailwayMap - Maximális sebesség",
+          "orm-signals": "OpenRailwayMap - Jelzők",
+          "orm-electrification": "OpenRailwayMap - Villamosítás"
+        },
+        "Overlay": {
+          "stations": "Állomások",
+          "trains": "Vonatok",
+          "active-signals": "Aktív jelzők",
+          "passive-signals": "Passzív jelzők",
+          "selected-route": "Kiválasztott útvonal",
+          "unplayable-stations": "Nem játszható állomások",
+          "stats": "Statisztikák"
+        }
+      },
+      "Stats": {
+        "Trains": "V: {{player}}/{{total}}",
+        "Stations": "Á: {{player}}/{{total}}"
+      },
+      "Settings": {
+        "Title": "Beállítások",
+        "Language": "Nyelv",
+        "LanguageName": "Magyar (Hungarian)",
+        "SystemLanguage": "Rendszer nyelve",
+        "General": "Általános",
+        "useAltTracking": {
+          "Label": "Alternatív követési módszer használata",
+          "Description": "Alternatív módszer használata a vonatok követésére a térképen. Ez a módszer kicsit darabosabb, de kevesebb CPU-t használ."
+        },
+        "TrainWindow": "Vonat ablak",
+        "expandScheduleDefault": {
+          "Label": "Menetrend alapértelmezett lenyitása"
+        },
+        "hideTrainPictures": {
+          "Label": "Vonatképek elrejtése"
+        },
+        "showLineToNextSignal": {
+          "Label": "Vonal a következő jelzőig"
+        },
+        "CollapsedTrainWindow": "Összecsukott vonat ablak",
+        "showSpeedInfoCollapsed": {
+          "Label": "Sebesség megjelenítése"
+        },
+        "showSignalInfoCollapsed": {
+          "Label": "Jelző információk megjelenítése"
+        },
+        "showNextStationInfoCollapsed": {
+          "Label": "Következő állomás megjelenítése"
+        },
+        "MapTheme": "Térkép téma (sötét módhoz)",
+        "alternativeTheme": {
+          "Label": "Monokróm térkép"
+        }
+      },
+      "TrainMakerPopup": {
+        "NextSignal": "Következő jelző:",
+        "Consist": "Vonatösszeállítás",
+        "OOB": "Játéktéren kívül",
+        "Unfollow": "Követés megszüntetése",
+        "Follow": "Követés",
+        "Unpin": "Elrejtés",
+        "Pin": "Kitűzés",
+        "ShowRoute": "Útvonal megjelenítése",
+        "HideRoute": "Útvonal elrejtése"
+      },
+      "SelectedRoute": "Kiválasztott útvonal",
+      "Hide": "Elrejtés",
+      "SignalMarker": {
+        "SignalSpeed": "Jelző állás: ",
+        "TrainApproaching": "A(z) <0>{{TrainNoLocal}} ({{TrainName}})</0> vonat közeledik ehhez a jelzőhöz <1>{{Velocity}} km/h</1> sebességgel és <2>{{DistanceToSignalInFront}} m</2> távolságra van.",
+        "TrainAhead": "A(z) <0>{{TrainNoLocal}} ({{TrainName}})</0> vonat a <1>következő blokkban</1> van <2>{{Velocity}} km/h</2> sebességgel és <3>{{DistanceToSignalInFront}} m</3> távolságra van a(z) <4>{{SignalName}}</4> jelzőtől.",
+        "NextSignalWithTrainAhead": "A következő jelzőnél <0>{{nextSignalWithTrainAhead}}</0> van egy vonat a <1>következő blokkban</1>.",
+        "NoTrainApproaching": {
+          "Title": "Nincs a közelben vonat.",
+          "Description": "Nem tudunk információkat megjeleníteni a jelzőkről, ha nincs közelgő vonat."
+        },
+        "Extra": "Extra:",
+        "Type": "Típus:",
+        "Role": "Szerep:",
+        "Accuracy": "Pontosság:",
+        "Unknown": "Ismeretlen",
+        "PreviousSignals": "Előző jelzők",
+        "NextSignals": "Következő jelzők",
+        "HideSignalLines": "Jelző vonalak elrejtése",
+        "ShowSignalLines": "Jelző vonalak megjelenítése",
+        "ShowSignalLinesFurther": {
+          "Description": "További jelző vonalak megjelenítése",
+          "Title": "A jelzők számától függően ez lassú lehet"
+        },
+        "Red": "Piros",
+        "Orange": "Narancs",
+        "Blue": "Kék",
+        "Purple": "Lila",
+        "AdminActions": {
+          "Title": "Admin műveletek:",
+          "DeleteSignal": "Jelző törlése",
+          "UnFinalizePrev": "Előző jelzők véglegesítése megszüntetése",
+          "FinalizePrev": "Előző jelzők véglegesítése",
+          "UnFinalizeNext": "Következő jelzők véglegesítése megszüntetése",
+          "FinalizeNext": "Következő jelzők véglegesítése"
+        },
+        "Footer": {
+          "Finalized": "(Ez az adat ellenőrizve és pontos)",
+          "UnFinalized": "(Ez az adat nincs ellenőrizve és pontatlan lehet)"
+        }
+      },
+      "StationDisplay": {
+        "StopType": {
+          "CommercialStop": "Kereskedelmi megálló",
+          "NoncommercialStop": "Nem kereskedelmi megálló"
+        },
+        "ShouldArrive": {
+          "Now": "Ez a vonat most kellene, hogy megérkezzen a megállóba.",
+          "Past": "Ez a vonat {{time}} kellett volna, hogy megérkezzen a megállóba.",
+          "Future": "Ez a vonat {{time}} kellene, hogy megérkezzen a megállóba."
+        }
+      },
+      "StationMarkerPopup": {
+        "Difficulty": "Nehézség: {{difficulty}}",
+        "UnplayableStation": "Nem játszható állomás",
+        "SignalCount": "Jelzők: {{signalCount}}",
+        "Signal": "Jelző",
+        "Role": "Szerep",
+        "Speed": "Jelző állása",
+        "ShowStationLayout": "Állomás térkép megjelenítése",
+        "HideStationArea": "Állomás terület elrejtése",
+        "ShowStationArea": "Állomás terület megjelenítése",
+        "StationLayoutTitle": "{{stationName}} - Állomás térkép",
+        "ShowTexts": "Szövegek megjelenítése",
+        "HelpText": "<0>Zöld</0> vonalak a VMAX vonalak. <1>Ezek nem aktív utak, amelyeket a diszpécser állított be.</1> Egy blokk háttérszíne a blokkban lévő vonat sebességét mutatja."
+      },
+      "BugReport": "Hiba jelentése!"
+    }
+  }
+}

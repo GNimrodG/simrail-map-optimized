@@ -1,22 +1,27 @@
 import IconButton from "@mui/joy/IconButton";
 import Modal from "@mui/joy/Modal";
 import ModalClose from "@mui/joy/ModalClose";
+import Option from "@mui/joy/Option";
+import Select from "@mui/joy/Select";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent, useState } from "react";
+import { useTranslation } from "react-i18next";
 
+import { SUPPORTED_LANGUAGES } from "../../i18n";
 import SettingsIcon from "../icons/SettingsIcon";
 import SettingCheckbox from "./SettingCheckbox";
 
 const Settings: FunctionComponent = () => {
+  const { t, i18n } = useTranslation("translation", { keyPrefix: "Settings" });
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
       <Tooltip
-        title="Settings"
+        title={t("Title")}
         placement="left"
         variant="outlined"
         arrow>
@@ -53,7 +58,7 @@ const Settings: FunctionComponent = () => {
             textColor="inherit"
             fontWeight="lg"
             mb={1}>
-            Settings
+            {t("Title")}
           </Typography>
 
           <Stack
@@ -62,16 +67,23 @@ const Settings: FunctionComponent = () => {
             <Typography
               sx={{ pt: 2 }}
               level="h4">
-              General
+              {t("Language")}
             </Typography>
             <Stack
               direction="column"
               spacing={1}>
-              <SettingCheckbox
-                settingKey="useAltTracking"
-                label="Use alternative following method"
-                description="Use alternative method to follow trains on the map. This method is less smooth but uses less CPU."
-              />
+              <Select
+                value={i18n.language}
+                onChange={(_e, v) => v && i18n.changeLanguage(v)}
+                size="sm">
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <Option
+                    key={lang}
+                    value={lang}>
+                    {t("LanguageName", { lng: lang })}
+                  </Option>
+                ))}
+              </Select>
             </Stack>
           </Stack>
 
@@ -81,44 +93,41 @@ const Settings: FunctionComponent = () => {
             <Typography
               sx={{ pt: 2 }}
               level="h4">
-              Train Window
+              {t("General")}
             </Typography>
             <Stack
               direction="column"
               spacing={1}>
-              <SettingCheckbox
-                settingKey="expandScheduleDefault"
-                label="Expand schedule by default"
-              />
-              <SettingCheckbox
-                settingKey="hideTrainPictures"
-                label="Hide train pictures"
-              />
-              <SettingCheckbox
-                settingKey="showLineToNextSignal"
-                label="Show line to next signal"
-              />
+              <SettingCheckbox settingKey="useAltTracking" />
+            </Stack>
+          </Stack>
+
+          <Stack
+            direction="column"
+            spacing={0.5}>
+            <Typography
+              sx={{ pt: 2 }}
+              level="h4">
+              {t("TrainWindow")}
+            </Typography>
+            <Stack
+              direction="column"
+              spacing={1}>
+              <SettingCheckbox settingKey="expandScheduleDefault" />
+              <SettingCheckbox settingKey="hideTrainPictures" />
+              <SettingCheckbox settingKey="showLineToNextSignal" />
 
               <Typography
                 sx={{ pt: 1 }}
                 level="body-lg">
-                Collapsed Train Window
+                {t("CollapsedTrainWindow")}
               </Typography>
               <Stack
                 direction="column"
                 spacing={1}>
-                <SettingCheckbox
-                  settingKey="showSpeedInfoCollapsed"
-                  label="Show speed"
-                />
-                <SettingCheckbox
-                  settingKey="showSignalInfoCollapsed"
-                  label="Show signal info"
-                />
-                <SettingCheckbox
-                  settingKey="showNextStationInfoCollapsed"
-                  label="Show next station info"
-                />
+                <SettingCheckbox settingKey="showSpeedInfoCollapsed" />
+                <SettingCheckbox settingKey="showSignalInfoCollapsed" />
+                <SettingCheckbox settingKey="showNextStationInfoCollapsed" />
               </Stack>
             </Stack>
           </Stack>
@@ -129,15 +138,12 @@ const Settings: FunctionComponent = () => {
             <Typography
               sx={{ pt: 2 }}
               level="h4">
-              Map Theme(For Dark Mode)
+              {t("MapTheme")}
             </Typography>
             <Stack
               direction="column"
               spacing={1}>
-              <SettingCheckbox
-                settingKey="alternativeTheme"
-                label="Monochrome map"
-              />
+              <SettingCheckbox settingKey="alternativeTheme" />
             </Stack>
           </Stack>
         </Sheet>

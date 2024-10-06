@@ -1,5 +1,6 @@
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
+import { t } from "i18next";
 import { type FunctionComponent } from "react";
 
 import { stationsData$, trainsData$ } from "../utils/data-manager";
@@ -36,7 +37,9 @@ const StatsDisplay: FunctionComponent = () => {
           boxShadow:
             "var(--joy-shadowRing, 0 0 #000),0px 1px 2px 0px rgba(var(--joy-shadowChannel, 21 21 21) / var(--joy-shadowOpacity, 0.08))",
         }}>
-        T: {playerTrains}/{driveableTrains} | S: {playerStations}/{stations.length}
+        {t("Stats.Trains", { player: playerTrains, total: driveableTrains })}
+        {" | "}
+        {t("Stats.Stations", { player: playerStations, total: stations.length })}
       </Typography>
     </Tooltip>
   );

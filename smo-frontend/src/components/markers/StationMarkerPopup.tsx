@@ -15,6 +15,7 @@ import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import L from "leaflet";
 import { type FunctionComponent, useCallback, useMemo, useState, useTransition } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 
 import _stationLayouts from "../../assets/station-layouts.json";
@@ -51,6 +52,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
   userData,
   onClosePopup,
 }) => {
+  const { t } = useTranslation("translation", { keyPrefix: "StationMarkerPopup" });
   const [isPending, startTransition] = useTransition();
   const map = useMap();
   const [stationArea, setStationArea] = useState<L.Polygon | null>(
@@ -133,21 +135,23 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
           {station.Name}
         </Typography>
         {station.DifficultyLevel >= 0 ? (
-          <Typography>Difficulty: {station.DifficultyLevel}</Typography>
+          <Typography>{t("Difficulty", { difficulty: station.DifficultyLevel })}</Typography>
         ) : (
           <Typography
             level="body-lg"
             color="warning"
             variant="solid"
             noWrap>
-            Unplayable station
+            {t("UnplayableStation")}
           </Typography>
         )}
         <Stack
           direction="row"
           spacing={1}
           alignItems="center">
-          <Typography component="div">Signals: {signals.length}</Typography>
+          <Typography component="div">
+            {t("SignalCount", { signalCount: signals.length })}
+          </Typography>
           <Tooltip
             arrow
             variant="outlined"
@@ -166,9 +170,9 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
                   stickyHeader>
                   <thead>
                     <tr>
-                      <th scope="col">Signal</th>
-                      <th scope="col">Role</th>
-                      <th scope="col">Speed</th>
+                      <th scope="col">{t("Signal")}</th>
+                      <th scope="col">{t("Role")}</th>
+                      <th scope="col">{t("Speed")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -216,7 +220,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
                 setStationLayoutModalOpen(true);
               });
             }}>
-            Show Station Layout
+            {t("ShowStationLayout")}
           </Button>
         )}
         {!!signals.length &&
@@ -226,7 +230,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
               variant="solid"
               color="danger"
               onClick={hideStationArea}>
-              Hide Station Area
+              {t("HideStationArea")}
             </Button>
           ) : (
             <Button
@@ -234,7 +238,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
               variant="solid"
               color="success"
               onClick={showStationArea}>
-              Show Station Area
+              {t("ShowStationArea")}
             </Button>
           ))}
       </Stack>
@@ -264,7 +268,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
           <Typography
             level="h3"
             textAlign="center">
-            {station.Name} - Station Layout
+            {t("StationLayoutTitle", { stationName: station.Name })}
           </Typography>
 
           <Stack
@@ -282,7 +286,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
                   }
                 />
               }>
-              Show texts
+              {t("ShowTexts")}
             </Typography>
           </Stack>
 
@@ -320,9 +324,19 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
             )}
           </Box>
           <Typography level="body-sm">
-            <Typography color="success">Green</Typography> lines are VMAX lines.{" "}
-            <Typography level="body-xs">They're not active paths set by the dispatcher.</Typography>{" "}
-            The background color of a block indicates the train's speed that's currently in it.
+            <Trans
+              i18nKey="StationMarkerPopup.HelpText"
+              components={[
+                <Typography
+                  key="helper-success"
+                  color="success"
+                />,
+                <Typography
+                  key="helper-body-xs"
+                  level="body-xs"
+                />,
+              ]}
+            />
           </Typography>
         </Sheet>
       </Modal>

@@ -13,6 +13,7 @@ import { styled, useTheme } from "@mui/joy/styles";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { fetchTimetable, Timetable, Train } from "../../utils/data-manager";
 import MapLinesContext from "../../utils/map-lines-context";
@@ -61,6 +62,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
   isCollapsed,
   hideButtons = false,
 }) => {
+  const { t } = useTranslation("translation", { keyPrefix: "TrainMakerPopup" });
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(`(max-height: ${theme.breakpoints.values.md}px)`);
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
@@ -125,7 +127,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
       sx={{ width: "100%" }}>
       {train.TrainData.SignalInFront && (
         <>
-          {!isCollapsed && <Typography level="body-sm">Next signal:</Typography>}
+          {!isCollapsed && <Typography level="body-sm">{t("NextSignal")}</Typography>}
           <Typography level="body-lg">
             {train.TrainData.SignalInFront?.split("@")[0]}{" "}
             {train.TrainData.SignalInFrontSpeed !== null && <SignalSpeedDisplay train={train} />}{" "}
@@ -266,7 +268,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
               <Typography
                 level="body-lg"
                 textAlign="center">
-                Consist
+                {t("Consist")}
               </Typography>
               <Stack sx={{ p: 1 }}>
                 {train.Vehicles.map((vehicle, index) => (
@@ -393,7 +395,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           color="warning"
           variant="solid"
           noWrap>
-          Outside of playeable area
+          {t("OOB")}
         </Typography>
       )}
 
@@ -421,7 +423,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                     setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: false });
                     setMapLines(null);
                   }}>
-                  Unfollow
+                  {t("Unfollow")}
                 </Button>
               ) : (
                 <Button
@@ -431,7 +433,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                   onClick={() =>
                     setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: true })
                   }>
-                  Follow
+                  {t("Follow")}
                 </Button>
               )}
               <Button
@@ -441,7 +443,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                   setSelectedTrain(null);
                   setMapLines(null);
                 }}>
-                Unpin
+                {t("Unpin")}
               </Button>
             </ButtonGroup>
           ) : (
@@ -451,13 +453,13 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                 variant="solid"
                 color="primary"
                 onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true })}>
-                Follow
+                {t("Follow")}
               </Button>
               <Button
                 variant="solid"
                 color="neutral"
                 onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: false })}>
-                Pin
+                {t("Pin")}
               </Button>
             </ButtonGroup>
           )}
@@ -474,7 +476,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                   </Chip>
                 }
                 onClick={() => setSelectedRoute(train.TrainNoLocal)}>
-                Show route
+                {t("ShowRoute")}
               </Button>
             ) : (
               <Button
@@ -487,7 +489,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                   </Chip>
                 }
                 onClick={() => setSelectedRoute(null)}>
-                Hide route
+                {t("HideRoute")}
               </Button>
             ))}
         </Stack>

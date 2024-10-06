@@ -4,6 +4,7 @@ import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import moment from "moment";
 import { type FunctionComponent, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { TimetableEntry } from "../../utils/data-manager";
 import { timeSubj$ } from "../../utils/time";
@@ -16,11 +17,6 @@ export interface StationDisplayProps {
   mainStation?: boolean;
   pastStation?: boolean;
 }
-
-const STOP_TYPE_FRIENDLY: Partial<Record<TimetableEntry["stopType"], string>> = {
-  CommercialStop: "Commercial Stop", // PH
-  NoncommercialStop: "Non-Commercial Stop", // PT
-};
 
 const STOP_TYPE_TECHNICAL: Partial<Record<TimetableEntry["stopType"], string>> = {
   CommercialStop: "PH",
@@ -37,6 +33,7 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
   mainStation,
   pastStation,
 }) => {
+  const { t } = useTranslation("translation", { keyPrefix: "StationDisplay" });
   const theme = useTheme();
   const isSmallHeight = useMediaQuery(`(max-height: ${theme.breakpoints.values.md}px)`);
   const [timeUntil, setTimeUntil] = useState<number | null>(null);
@@ -71,14 +68,14 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
         arrow
         title={
           !timeUntil
-            ? "This train should arrive at this station now."
+            ? t("ShouldArrive.Now")
             : timeUntil < 0
-            ? `This train should arrive at this station ${moment
-                .duration({ m: -timeUntil })
-                .humanize(true)}.`
-            : `This train should have arrived at this station ${moment
-                .duration({ m: -timeUntil })
-                .humanize(true)}.`
+            ? t("ShouldArrive.Future", {
+                time: moment.duration({ m: -timeUntil }).humanize(true),
+              })
+            : t("ShouldArrive.Past", {
+                time: moment.duration({ m: -timeUntil }).humanize(true),
+              })
         }
         color={timeColor}>
         <Typography
@@ -106,7 +103,7 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
             {" "}
             <Tooltip
               arrow
-              title={STOP_TYPE_FRIENDLY[station.stopType]}>
+              title={t(`StopType.${station.stopType}`)}>
               <Typography
                 variant="outlined"
                 level="body-sm"

@@ -1,3 +1,5 @@
+import "./i18n.ts";
+
 import * as Sentry from "@sentry/react";
 import React from "react";
 import ReactDOM from "react-dom/client";

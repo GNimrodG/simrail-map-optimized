@@ -8,9 +8,11 @@ import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import L from "leaflet";
 import { type FunctionComponent, useContext, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { MapContainer, useMap } from "react-leaflet";
 import Control from "react-leaflet-custom-control";
 
+import i18n from "../i18n";
 import { isConnected$ } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
@@ -36,7 +38,7 @@ import ThemeToggle from "./utils/ThemeToggle";
 const MAIN_ATTRIBUTIONS = [
   '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
   '<a href="https://github.com/GNimrodG/simrail-map-optimized" target="_blank">GitHub</a>',
-  '<a onclick="window.feedback()" href="#">Report a bug!</a>',
+  `<a onclick="window.feedback()" href="#">${i18n.t("BugReport")}</a>`,
   'This website is not affiliated with the <a href="https://simrail.eu" target="_blank">SimRail</a> team.',
 ].join(" | ");
 
@@ -71,6 +73,7 @@ const RefreshableTileLayer: React.FC<{ className: string; url: string; attributi
 };
 
 const MainMap: FunctionComponent = () => {
+  const { t } = useTranslation();
   const { setSelectedTrain } = useContext(SelectedTrainContext);
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
   const [alternativeTheme] = useSetting("alternativeTheme");
@@ -170,7 +173,7 @@ const MainMap: FunctionComponent = () => {
                 borderRadius: "var(--joy-radius-sm)",
               }}>
               <Stack>
-                <Typography level="body-md">Selected Route</Typography>
+                <Typography level="body-md">{t("SelectedRoute")}</Typography>
                 <Stack
                   spacing={1}
                   direction="row"
@@ -186,7 +189,7 @@ const MainMap: FunctionComponent = () => {
                     variant="outlined"
                     color="danger"
                     onClick={() => setSelectedRoute(null)}>
-                    Clear
+                    {t("Hide")}
                   </Button>
                 </Stack>
               </Stack>

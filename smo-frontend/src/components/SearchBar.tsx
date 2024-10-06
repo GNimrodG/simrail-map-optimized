@@ -1,6 +1,7 @@
 import Autocomplete, { createFilterOptions } from "@mui/joy/Autocomplete";
 import L from "leaflet";
 import { type FunctionComponent, useContext } from "react";
+import { useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 
 import UnplayableStations from "../assets/unplayable-stations.json";
@@ -26,6 +27,7 @@ const filterOptions = createFilterOptions<ListItem>({
 });
 
 const SearchBar: FunctionComponent = () => {
+  const { t } = useTranslation();
   const map = useMap();
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
   const trains = useBehaviorSubj(trainsData$);
@@ -79,7 +81,7 @@ const SearchBar: FunctionComponent = () => {
       loading={options.length === 0}
       sx={{ width: "14rem" }}
       inputMode="search"
-      placeholder="Search"
+      placeholder={t("Search")}
       options={options}
       disableListWrap
       filterOptions={filterOptions}
@@ -91,7 +93,7 @@ const SearchBar: FunctionComponent = () => {
       }
       renderOption={(props, option) => [props, getLabel(option)] as React.ReactNode}
       renderGroup={(params) => params as unknown as React.ReactNode}
-      groupBy={(option) => option.type}
+      groupBy={(option) => t(`Layers.Overlay.${option.type.toLowerCase()}`)}
       getOptionLabel={(option) => getLabel(option)}
       value={null}
       onChange={(_e, v) => {

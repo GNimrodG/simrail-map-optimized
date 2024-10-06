@@ -3,24 +3,20 @@ import IconButton from "@mui/joy/IconButton";
 import Stack from "@mui/joy/Stack";
 import Tooltip from "@mui/joy/Tooltip";
 import { type FunctionComponent, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import LayersIcon from "./icons/LayersIcon";
 
-const BACKGROUND_LAYERS = [
-  { name: "OpenRailwayMap - Infrastructure", key: "orm-infra" },
-  { name: "OpenRailwayMap - Maxspeed", key: "orm-maxspeed" },
-  { name: "OpenRailwayMap - Signals", key: "orm-signals" },
-  { name: "OpenRailwayMap - Electrification", key: "orm-electrification" },
-];
+const BACKGROUND_LAYERS = ["orm-infra", "orm-maxspeed", "orm-signals", "orm-electrification"];
 
 const LAYERS = [
-  { name: "Stations", key: "stations" },
-  { name: "Trains", key: "trains" },
-  { name: "Active Signals", key: "active-signals" },
-  { name: "Passive Signals", key: "passive-signals" },
-  { name: "Selected Route", key: "selected-route" },
-  { name: "Unplayable Stations", key: "unplayable-stations" },
-  { name: "Stats", key: "stats" },
+  "stations",
+  "trains",
+  "active-signals",
+  "passive-signals",
+  "selected-route",
+  "unplayable-stations",
+  "stats",
 ];
 
 export interface LayerMenuProps {
@@ -29,6 +25,7 @@ export interface LayerMenuProps {
 }
 
 const LayerMenu: FunctionComponent<LayerMenuProps> = ({ visibleLayers, setVisibleLayers }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -46,32 +43,32 @@ const LayerMenu: FunctionComponent<LayerMenuProps> = ({ visibleLayers, setVisibl
               slotProps={{
                 checkbox: { sx: { borderRadius: "50%" } },
               }}
-              key={layer.key}
-              value={layer.key}
-              label={layer.name}
+              key={layer}
+              value={layer}
+              label={t(`Layers.Background.${layer}`)}
               size="sm"
               name="background-layers"
-              checked={visibleLayers.includes(layer.key)}
+              checked={visibleLayers.includes(layer)}
               onChange={(e) => {
                 setVisibleLayers((visibleLayers: string[]) => [
-                  ...visibleLayers.filter((l) => !BACKGROUND_LAYERS.find((bl) => bl.key === l)),
-                  ...(!visibleLayers.includes(e.target.value) ? [layer.key] : []),
+                  ...visibleLayers.filter((l) => !BACKGROUND_LAYERS.find((bl) => bl === l)),
+                  ...(!visibleLayers.includes(e.target.value) ? [layer] : []),
                 ]);
               }}
             />
           ))}
           {LAYERS.map((layer) => (
             <Checkbox
-              key={layer.key}
-              checked={visibleLayers.includes(layer.key)}
+              key={layer}
+              checked={visibleLayers.includes(layer)}
               onChange={(e) => {
                 if (e.target.checked) {
-                  setVisibleLayers([...visibleLayers, layer.key]);
+                  setVisibleLayers([...visibleLayers, layer]);
                 } else {
-                  setVisibleLayers(visibleLayers.filter((l) => l !== layer.key));
+                  setVisibleLayers(visibleLayers.filter((l) => l !== layer));
                 }
               }}
-              label={layer.name}
+              label={t(`Layers.Overlay.${layer}`)}
               size="sm"
             />
           ))}
