@@ -17,6 +17,7 @@
           "trains": "Trains",
           "active-signals": "Active Signals",
           "passive-signals": "Passive Signals",
+          "signals": "Signals",
           "selected-route": "Selected Route",
           "unplayable-stations": "Unplayable Stations",
           "stats": "Stats"
@@ -159,6 +160,7 @@
           "trains": "Züge",
           "active-signals": "Aktive Signale",
           "passive-signals": "Passive Signale",
+          "signals": "Signale",
           "selected-route": "Ausgewählte Route",
           "unplayable-stations": "Nicht spielbare Bahnhöfe",
           "stats": "Statistiken"
@@ -301,6 +303,7 @@
           "trains": "Vonatok",
           "active-signals": "Aktív jelzők",
           "passive-signals": "Passzív jelzők",
+          "signals": "Jelzők",
           "selected-route": "Kiválasztott útvonal",
           "unplayable-stations": "Nem játszható állomások",
           "stats": "Statisztikák"
