@@ -427,5 +427,148 @@
       },
       "BugReport": "Hiba jelentése!"
     }
+  },
+    "tr": {
+    "translation": {
+      "Loading": "Yükleniyor...",
+      "SelectServer": "Sunucu Seç",
+      "Search": "Ara",
+      "ToggleTheme": "Temayı Değiştir",
+      "Layers": {
+        "Background": {
+          "orm-infra": "OpenRailwayMap - Altyapı",
+          "orm-maxspeed": "OpenRailwayMap - Maksimum Hız",
+          "orm-signals": "OpenRailwayMap - Sinyalizasyon",
+          "orm-electrification": "OpenRailwayMap - Elektrik Altyapısı"
+        },
+        "Overlay": {
+          "stations": "İstasyonlar",
+          "trains": "Trenler",
+          "active-signals": "Aktif Sinyaller",
+          "passive-signals": "Pasif Sinyaller",
+          "signals": "Sinyaller",
+          "selected-route": "Seçili Rota",
+          "unplayable-stations": "Oynanamaz İstasyonlar",
+          "stats": "İstatistikler"
+        }
+      },
+      "Stats": {
+        "Trains": "T: {{player}}/{{total}}",
+        "Stations": "İ: {{player}}/{{total}}"
+      },
+      "Settings": {
+        "Title": "Ayarlar",
+        "Language": "Dil",
+        "LanguageName": "Türkçe (Turkish)",
+        "SystemLanguage": "Sistem Dili",
+        "General": "Genel",
+        "useAltTracking": {
+          "Label": "Alternatif takip yöntemi kullan",
+          "Description": "Haritada trenleri takip etmek için alternatif bir yöntem kullanın. Bu yöntem daha az pürüzsüz olabilir ancak daha az CPU kullanır."
+        },
+        "TrainWindow": "Tren Penceresi",
+        "expandScheduleDefault": {
+          "Label": "Varsayılan olarak programı genişlet"
+        },
+        "hideTrainPictures": {
+          "Label": "Tren görsellerini gizle"
+        },
+        "showLineToNextSignal": {
+          "Label": "Bir sonraki sinyale çizgi göster"
+        },
+        "CollapsedTrainWindow": "Daraltılmış Tren Penceresi",
+        "showSpeedInfoCollapsed": {
+          "Label": "Hızı göster"
+        },
+        "showSignalInfoCollapsed": {
+          "Label": "Sinyal bilgisini göster"
+        },
+        "showNextStationInfoCollapsed": {
+          "Label": "Bir sonraki istasyon bilgisini göster"
+        },
+        "MapTheme": "Harita Teması (Karanlık Mod İçin)",
+        "alternativeTheme": {
+          "Label": "Monokrom harita"
+        }
+      },
+      "TrainMakerPopup": {
+        "NextSignal": "Bir Sonraki Sinyal:",
+        "Consist": "Tren Yapısı (Motor ve Vagonlar)",
+        "OOB": "Oynanabilir bölgenin dışında",
+        "Unfollow": "Takibi Bırak",
+        "Follow": "Takip Et",
+        "Unpin": "Sabitlemeyi Kaldır",
+        "Pin": "Sabitle",
+        "ShowRoute": "Rotayı Göster",
+        "HideRoute": "Rotayı Gizle"
+      },
+      "SelectedRoute": "Seçili Rota",
+      "Hide": "Gizle",
+      "SignalMarker": {
+        "SignalSpeed": "Sinyal hızı: ",
+        "TrainApproaching": "Tren <0>{{TrainNoLocal}} ({{TrainName}})</0> bu sinyale <1>{{Velocity}} km/s</1> hızla yaklaşıyor ve <2>{{DistanceToSignalInFront}} m</2> uzaklıkta.",
+        "TrainAhead": "Tren <0>{{TrainNoLocal}} ({{TrainName}})</0> <1>bir sonraki blokta</1> bulunuyor ve <2>{{Velocity}} km/s</2> hızla ilerliyor. <3>{{DistanceToSignalInFront}} m</3> uzaklıkta ve <4>{{SignalName}}</4> sinyaline yaklaşıyor.",
+        "NextSignalWithTrainAhead": "Bir sonraki sinyalin <0>{{nextSignalWithTrainAhead}}</0> <1>önündeki blokta</1> bir tren var.",
+        "NoTrainApproaching": {
+          "Title": "Yaklaşan tren yok.",
+          "Description": "Yaklaşan bir tren olmadan sinyaller hakkında bilgi gösteremeyiz."
+        },
+        "Extra": "Ekstra:",
+        "Type": "Tür:",
+        "Role": "Rol:",
+        "Accuracy": "Doğruluk:",
+        "Unknown": "Bilinmiyor",
+        "PreviousSignals": "Önceki sinyaller",
+        "NextSignals": "Sonraki sinyaller",
+        "HideSignalLines": "Sinyal çizgilerini gizle",
+        "ShowSignalLines": "Sinyal çizgilerini göster",
+        "ShowSignalLinesFurther": {
+          "Description": "Daha fazla sinyal çizgisi göster",
+          "Title": "Sinyal sayısına bağlı olarak bu yavaş olabilir"
+        },
+        "Red": "Kırmızı",
+        "Orange": "Turuncu",
+        "Blue": "Mavi",
+        "Purple": "Mor",
+        "AdminActions": {
+          "Title": "Yönetici işlemleri:",
+          "DeleteSignal": "Bu sinyali sil",
+          "UnFinalizePrev": "Önceki sinyallerin onayını kaldır",
+          "FinalizePrev": "Önceki sinyalleri onayla",
+          "UnFinalizeNext": "Sonraki sinyallerin onayını kaldır",
+          "FinalizeNext": "Sonraki sinyalleri onayla"
+        },
+        "Footer": {
+          "Finalized": "(Bu veri kontrol edildi ve doğrudur)",
+          "UnFinalized": "(Bu veri kontrol edilmedi ve yanlış olabilir)"
+        }
+      },
+      "StationDisplay": {
+        "StopType": {
+          "CommercialStop": "Yolcu istasyonu",
+          "NoncommercialStop": "Bekleme istasyonu"
+        },
+        "ShouldArrive": {
+          "Now": "Bu tren şu anda bu istasyona varmalı.",
+          "Past": "Bu tren bu istasyona {{time}} varmalıydı.",
+          "Future": "Bu tren bu istasyona {{time}} varmalı."
+        }
+      },
+      "StationMarkerPopup": {
+        "Difficulty": "Zorluk: {{difficulty}}",
+        "UnplayableStation": "Oynanamaz İstasyon",
+        "SignalCount": "Sinyal Sayısı: {{signalCount}}",
+        "Signal": "Sinyal",
+        "Role": "Rol",
+        "Speed": "Hız",
+        "ShowStationLayout": "İstasyon düzenini göster",
+        "HideStationArea": "İstasyon alanını gizle",
+        "ShowStationArea": "İstasyon alanını göster",
+        "StationLayoutTitle": "{{stationName}} - İstasyon Düzeni",
+        "ShowTexts": "Metinleri göster",
+        "HelpText": "<0>Yeşil</0> çizgiler VMAX çizgileridir. <1>Bunlar, dispeçer tarafından belirlenmiş aktif yollar değildir.</1> Bir bloğun arka plan rengi, içindeki trenin hızını gösterir."
+      },
+      "BugReport": "Hata bildir!"
+    }
   }
 }
