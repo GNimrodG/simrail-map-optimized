@@ -25,7 +25,11 @@
       },
       "Stats": {
         "Trains": "T: {{player}}/{{total}}",
-        "Stations": "S: {{player}}/{{total}}"
+        "Stations": "S: {{player}}/{{total}}",
+        "Tooltip": {
+          "Trains": "Train Driver: {{player}}/{{total}}",
+          "Stations": "Station Dispatchers: {{player}}/{{total}}"
+        }
       },
       "Settings": {
         "Title": "Settings",
@@ -168,7 +172,11 @@
       },
       "Stats": {
         "Trains": "Z: {{player}}/{{total}}",
-        "Stations": "B: {{player}}/{{total}}"
+        "Stations": "B: {{player}}/{{total}}",
+        "Tooltip": {
+          "Trains": "Zugführer: {{player}}/{{total}}",
+          "Stations": "Bahnhof-Dispatcher: {{player}}/{{total}}"
+        }
       },
       "Settings": {
         "Title": "Einstellungen",
@@ -311,7 +319,11 @@
       },
       "Stats": {
         "Trains": "V: {{player}}/{{total}}",
-        "Stations": "Á: {{player}}/{{total}}"
+        "Stations": "Á: {{player}}/{{total}}",
+        "Tooltip": {
+          "Trains": "Vonatvezető: {{player}}/{{total}}",
+          "Stations": "Állomás diszpécser: {{player}}/{{total}}"
+        }
       },
       "Settings": {
         "Title": "Beállítások",
@@ -428,7 +440,7 @@
       "BugReport": "Hiba jelentése!"
     }
   },
-    "tr": {
+  "tr": {
     "translation": {
       "Loading": "Yükleniyor...",
       "SelectServer": "Sunucu Seç",
@@ -454,7 +466,11 @@
       },
       "Stats": {
         "Trains": "T: {{player}}/{{total}}",
-        "Stations": "İ: {{player}}/{{total}}"
+        "Stations": "İ: {{player}}/{{total}}",
+        "Tooltip": {
+          "Trains": "Tren Sürücüsü: {{player}}/{{total}}",
+          "Stations": "İstasyon Dispeçeri: {{player}}/{{total}}"
+        }
       },
       "Settings": {
         "Title": "Ayarlar",
