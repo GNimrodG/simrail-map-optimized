@@ -550,8 +550,8 @@
         },
         "ShouldArrive": {
           "Now": "Bu tren şu anda bu istasyona varmalı.",
-          "Past": "Bu tren bu istasyona {{time}} önce varmalıydı.",
-          "Future": "Bu tren bu istasyona {{time}} sonra varmalı."
+          "Past": "Bu tren bu istasyona {{time}} varmalıydı.",
+          "Future": "Bu tren bu istasyona {{time}} varmalı."
         }
       },
       "StationMarkerPopup": {

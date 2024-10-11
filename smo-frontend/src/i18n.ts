@@ -1,5 +1,6 @@
 import "moment/dist/locale/de";
 import "moment/dist/locale/hu";
+import "moment/dist/locale/tr";
 
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
@@ -9,7 +10,7 @@ import { initReactI18next } from "react-i18next";
 import resources from "./assets/translations.json";
 import { captureEvent } from "@sentry/react";
 
-export const SUPPORTED_LANGUAGES = ["en", "de", "hu"];
+export const SUPPORTED_LANGUAGES = ["en", "de", "hu", "tr"];
 
 i18n
   // detect user language
