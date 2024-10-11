@@ -2,13 +2,13 @@ import "moment/dist/locale/de";
 import "moment/dist/locale/hu";
 import "moment/dist/locale/tr";
 
+import { captureEvent } from "@sentry/react";
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import moment from "moment";
 import { initReactI18next } from "react-i18next";
 
 import resources from "./assets/translations.json";
-import { captureEvent } from "@sentry/react";
 
 export const SUPPORTED_LANGUAGES = ["en", "de", "hu", "tr"];
 

@@ -19,9 +19,9 @@ const StatsDisplay: FunctionComponent = () => {
       variant="outlined"
       title={
         <Typography>
-          Train Drivers: {playerTrains}/{driveableTrains}
+          {t("Stats.Tooltip.Trains", { player: playerTrains, total: driveableTrains })}
           <br />
-          Station Dispatchers: {playerStations}/{stations.length}
+          {t("Stats.Tooltip.Stations", { player: playerStations, total: stations.length })}
         </Typography>
       }>
       <Typography
