@@ -1,3 +1,4 @@
+import "core-js/actual/array/to-sorted";
 import "./i18n.ts";
 
 import * as Sentry from "@sentry/react";
