@@ -3,6 +3,7 @@
     "translation": {
       "Loading": "Loading...",
       "SelectServer": "Select Server",
+      "ServerInactive": "The selected server is offline!",
       "Search": "Search",
       "ToggleTheme": "Toggle Theme",
       "Layers": {
@@ -150,6 +151,7 @@
     "translation": {
       "Loading": "Laden...",
       "SelectServer": "Server auswählen",
+      "ServerInactive": "Der ausgewählte Server ist offline!",
       "Search": "Suche",
       "ToggleTheme": "Thema wechseln",
       "Layers": {
@@ -297,6 +299,7 @@
     "translation": {
       "Loading": "Betöltés...",
       "SelectServer": "Szerver kiválasztása",
+      "ServerInactive": "A kiválasztott szerver offline!",
       "Search": "Keresés",
       "ToggleTheme": "Téma váltása",
       "Layers": {
@@ -444,6 +447,7 @@
     "translation": {
       "Loading": "Yükleniyor...",
       "SelectServer": "Sunucu Seç",
+      "ServerInactive": "Seçilen sunucu çevrimdışı!",
       "Search": "Ara",
       "ToggleTheme": "Temayı Değiştir",
       "Layers": {
@@ -585,6 +589,154 @@
         "HelpText": "<0>Yeşil</0> çizgiler VMAX çizgileridir. <1>Bunlar, dispeçer tarafından belirlenmiş aktif yollar değildir.</1> Bir bloğun arka plan rengi, içindeki trenin hızını gösterir."
       },
       "BugReport": "Hata bildir!"
+    }
+  },
+  "pl": {
+    "translation": {
+      "Loading": "Ładowanie...",
+      "SelectServer": "Wybierz Serwer",
+      "ServerInactive": "Wybrany serwer jest offline!",
+      "Search": "Szukaj",
+      "ToggleTheme": "Zmień Motyw",
+      "Layers": {
+        "Background": {
+          "orm-infra": "OpenRailwayMap - Infrastruktura",
+          "orm-maxspeed": "OpenRailwayMap - Maksymalna Prędkość",
+          "orm-signals": "OpenRailwayMap - Sygnalizacja",
+          "orm-electrification": "OpenRailwayMap - Elektryfikacja"
+        },
+        "Overlay": {
+          "stations": "Stacje",
+          "trains": "Pociągi",
+          "active-signals": "Aktywne Sygnały",
+          "passive-signals": "Pasywne Sygnały",
+          "signals": "Sygnały",
+          "selected-route": "Wybrana Trasa",
+          "unplayable-stations": "Niegrywalne Stacje",
+          "stats": "Statystyki"
+        }
+      },
+      "Stats": {
+        "Trains": "P: {{player}}/{{total}}",
+        "Stations": "S: {{player}}/{{total}}",
+        "Tooltip": {
+          "Trains": "Maszynista: {{player}}/{{total}}",
+          "Stations": "Dyspozytor Stacji: {{player}}/{{total}}"
+        }
+      },
+      "Settings": {
+        "Title": "Ustawienia",
+        "Language": "Język",
+        "LanguageName": "Polski (Polish)",
+        "SystemLanguage": "Język Systemu",
+        "General": "Ogólne",
+        "useAltTracking": {
+          "Label": "Użyj alternatywnej metody śledzenia",
+          "Description": "Użyj alternatywnej metody śledzenia pociągów na mapie. Ta metoda jest mniej płynna, ale zużywa mniej procesora."
+        },
+        "TrainWindow": "Okno Pociągu",
+        "expandScheduleDefault": {
+          "Label": "Domyślnie rozwijaj rozkład jazdy"
+        },
+        "hideTrainPictures": {
+          "Label": "Ukryj zdjęcia pociągów"
+        },
+        "showLineToNextSignal": {
+          "Label": "Pokaż linię do następnego sygnału"
+        },
+        "CollapsedTrainWindow": "Zwinięte Okno Pociągu",
+        "showSpeedInfoCollapsed": {
+          "Label": "Pokaż prędkość"
+        },
+        "showSignalInfoCollapsed": {
+          "Label": "Pokaż informacje o sygnale"
+        },
+        "showNextStationInfoCollapsed": {
+          "Label": "Pokaż informacje o następnej stacji"
+        },
+        "MapTheme": "Motyw Mapy (dla trybu ciemnego)",
+        "alternativeTheme": {
+          "Label": "Monochromatyczna mapa"
+        }
+      },
+      "TrainMakerPopup": {
+        "NextSignal": "Następny Sygnał:",
+        "Consist": "Skład",
+        "OOB": "Poza obszarem gry",
+        "Unfollow": "Przestań śledzić",
+        "Follow": "Śledź",
+        "Unpin": "Odepnij",
+        "Pin": "Przypnij",
+        "ShowRoute": "Pokaż Trasę",
+        "HideRoute": "Ukryj Trasę"
+      },
+      "SelectedRoute": "Wybrana Trasa",
+      "Hide": "Ukryj",
+      "SignalMarker": {
+        "SignalSpeed": "Prędkość sygnału: ",
+        "TrainApproaching": "Pociąg <0>{{TrainNoLocal}} ({{TrainName}})</0> zbliża się do tego sygnału z prędkością <1>{{Velocity}} km/h</1> i znajduje się w odległości <2>{{DistanceToSignalInFront}} m</2>.",
+        "TrainAhead": "Pociąg <0>{{TrainNoLocal}} ({{TrainName}})</0> znajduje się w <1>bloku przed nim</1> i porusza się z prędkością <2>{{Velocity}} km/h</2>, będąc <3>{{DistanceToSignalInFront}} m</3> od sygnału <4>{{SignalName}}</4>.",
+        "NextSignalWithTrainAhead": "Następny sygnał <0>{{nextSignalWithTrainAhead}}</0> ma pociąg w <1>bloku przed nim</1>.",
+        "NoTrainApproaching": {
+          "Title": "Brak nadjeżdżającego pociągu.",
+          "Description": "Nie możemy wyświetlić informacji o sygnałach bez nadjeżdżającego pociągu."
+        },
+        "Extra": "Dodatkowe:",
+        "Type": "Typ:",
+        "Role": "Rola:",
+        "Accuracy": "Dokładność:",
+        "Unknown": "Nieznany",
+        "PreviousSignals": "Poprzednie sygnały",
+        "NextSignals": "Następne sygnały",
+        "HideSignalLines": "Ukryj linie sygnałów",
+        "ShowSignalLines": "Pokaż linie sygnałów",
+        "ShowSignalLinesFurther": {
+          "Description": "Pokaż dalsze linie sygnałów",
+          "Title": "W zależności od liczby sygnałów, może to być wolne"
+        },
+        "Red": "Czerwony",
+        "Orange": "Pomarańczowy",
+        "Blue": "Niebieski",
+        "Purple": "Fioletowy",
+        "AdminActions": {
+          "Title": "Akcje administratora:",
+          "DeleteSignal": "Usuń ten sygnał",
+          "UnFinalizePrev": "Cofnij zatwierdzenie poprzednich sygnałów",
+          "FinalizePrev": "Zatwierdź poprzednie sygnały",
+          "UnFinalizeNext": "Cofnij zatwierdzenie następnych sygnałów",
+          "FinalizeNext": "Zatwierdź następne sygnały"
+        },
+        "Footer": {
+          "Finalized": "(Te dane zostały sprawdzone i są dokładne)",
+          "UnFinalized": "(Te dane nie zostały sprawdzone i mogą być niedokładne)"
+        }
+      },
+      "StationDisplay": {
+        "StopType": {
+          "CommercialStop": "Postój komercyjny",
+          "NoncommercialStop": "Postój niekomercyjny"
+        },
+        "ShouldArrive": {
+          "Now": "Ten pociąg powinien teraz dotrzeć do tej stacji.",
+          "Past": "Ten pociąg powinien dotrzeć do tej stacji {{time}}.",
+          "Future": "Ten pociąg powinien dotrzeć do tej stacji {{time}}."
+        }
+      },
+      "StationMarkerPopup": {
+        "Difficulty": "Trudność: {{difficulty}}",
+        "UnplayableStation": "Stacja niegrywalna",
+        "SignalCount": "Liczba sygnałów: {{signalCount}}",
+        "Signal": "Sygnał",
+        "Role": "Rola",
+        "Speed": "Prędkość",
+        "ShowStationLayout": "Pokaż układ stacji",
+        "HideStationArea": "Ukryj obszar stacji",
+        "ShowStationArea": "Pokaż obszar stacji",
+        "StationLayoutTitle": "{{stationName}} - Układ stacji",
+        "ShowTexts": "Pokaż teksty",
+        "HelpText": "<0>Zielone</0> linie to linie VMAX. <1>Nie są to aktywne ścieżki ustawione przez dyspozytora.</1> Kolor tła bloku pokazuje prędkość pociągu w nim."
+      },
+      "BugReport": "Zgłoś błąd!"
     }
   }
 }

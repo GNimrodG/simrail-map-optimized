@@ -1,5 +1,6 @@
 import Option from "@mui/joy/Option";
 import Select from "@mui/joy/Select";
+import Tooltip from "@mui/joy/Tooltip";
 import { type FunctionComponent, useCallback, useContext } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -28,9 +29,21 @@ const ServerSelector: FunctionComponent = () => {
 
   const servers = useBehaviorSubj(serverData$);
 
-  return (
+  const activeServer = servers?.find((server) => server.ServerCode === selectedServer);
+
+  const isServerInactive = !!activeServer && !activeServer.IsActive;
+
+  const select = (
     <Select
-      sx={{ width: "14rem" }}
+      sx={{
+        width: "14rem",
+        ...(isServerInactive && {
+          backgroundColor: "var(--joy-palette-danger-solidBg)",
+          "--variant-outlinedHoverBg": "var(--joy-palette-danger-solidHoverBg)",
+          "--variant-outlinedColor": "var(--joy-palette-danger-solidColor)",
+          "--variant-outlinedBorder": "var(--joy-palette-danger-solidBg)",
+        }),
+      }}
       value={selectedServer}
       placeholder={!servers?.length ? t("Loading") : selectedServer || t("SelectServer")}
       onChange={(_e, v) => handleServerChange(v!)}>
@@ -51,6 +64,19 @@ const ServerSelector: FunctionComponent = () => {
       )}
     </Select>
   );
+
+  if (isServerInactive) {
+    return (
+      <Tooltip
+        arrow
+        title={t("ServerInactive")}
+        color="danger">
+        {select}
+      </Tooltip>
+    );
+  }
+
+  return select;
 };
 
 export default ServerSelector;
