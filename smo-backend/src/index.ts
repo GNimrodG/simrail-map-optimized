@@ -13,7 +13,7 @@ import logger from "./logger";
 import {
   addSignalNextSignal,
   addSignalPrevSignal,
-  analyzeTrains,
+  analyzeTrainsForSignal,
   checkSignalExists,
   deleteSignal,
   getSignal,
@@ -33,6 +33,7 @@ import { filter, take } from "rxjs";
 import msgpackParser from "socket.io-msgpack-parser";
 import cors from "cors";
 import express from "express";
+import { analyzeTrainsForTrail } from "./analytics/train-trails";
 
 function buildHttpsServer(
   app: http.RequestListener<typeof http.IncomingMessage, typeof http.ServerResponse> | undefined
@@ -169,7 +170,11 @@ trainFetcher.data$.subscribe(async (data) => {
   logger.debug(`There are ${trains.length} trains in total.`);
 
   if (!process.env.DISABLE_SIGNAL_ANALYSIS) {
-    analyzeTrains(trains);
+    analyzeTrainsForSignal(trains);
+  }
+
+  if (process.env.ENABLE_TRAIL_ANALYSIS) {
+    analyzeTrainsForTrail(trains);
   }
 
   if (!process.env.DISABLE_ROUTE_ANALYSIS) {

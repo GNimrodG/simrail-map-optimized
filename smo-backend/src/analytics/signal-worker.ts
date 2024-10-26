@@ -8,6 +8,7 @@ import {
   BLOCK_SIGNAL_REVERSE_REGEX,
   getSignalRole,
   getSignalType,
+  getTrainId,
   tryLogError,
 } from "./signal-utils";
 
@@ -166,10 +167,6 @@ async function getSignalPos(name: string) {
     `.then((res) => res[0]);
 }
 
-function getTrainId(train: Train) {
-  return `${train.TrainNoLocal}@${train.ServerCode}-${train.id}`;
-}
-
 async function getDistanceForTrains(trains: Train[]) {
   const data = await Promise.all(
     trains
@@ -193,6 +190,10 @@ async function getDistanceForTrains(trains: Train[]) {
 }
 
 async function getDistanceBetweenPoints(lat1: number, lon1: number, lat2: number, lon2: number) {
+  if (!lat1 || !lon1 || !lat2 || !lon2) {
+    throw new Error(`Invalid coordinates: ${lat1}, ${lon1}, ${lat2}, ${lon2}`);
+  }
+
   return prisma
     .$queryRawUnsafe<{ distance: number }[]>(
       `SELECT ST_DistanceSphere(ST_GeomFromText('POINT(${lon1} ${lat1})', 4326), ST_GeomFromText('POINT(${lon2} ${lat2})', 4326)) as distance`
@@ -252,6 +253,7 @@ async function analyzeTrains(trains: Train[]) {
 
   try {
     const start = Date.now();
+    let invalidTrains = 0;
     const signals = await prisma.signals.findMany({
       where: {
         name: {
@@ -421,6 +423,10 @@ async function analyzeTrains(trains: Train[]) {
           isValid = false;
         }
 
+        if (!isValid) {
+          invalidTrains++;
+        }
+
         if (isValid && prevSignalId !== signalId && !signal?.prev_finalized) {
           // train reached a new signal from a previous signal
 
@@ -529,6 +535,7 @@ async function analyzeTrains(trains: Train[]) {
           service_id: "SIGNALS-PROC",
           count: trains.length,
           duration: duration,
+          server_count: invalidTrains,
         },
       })
       .catch((e) => {

@@ -21,7 +21,7 @@ worker.on("exit", (code) => {
   }
 });
 
-export function analyzeTrains(trains: Train[]) {
+export function analyzeTrainsForSignal(trains: Train[]) {
   worker.postMessage({ type: "analyze", data: trains });
 }
 

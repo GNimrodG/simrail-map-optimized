@@ -79,3 +79,16 @@ model signalConnectionErrors {
   @@id([prev, next, error], map: "signal_connection_errors_pk")
   @@map("signal_connection_errors")
 }
+
+model trainTrails {
+  id         Int      @id @default(autoincrement())
+  train_id   String   @db.VarChar(24)
+  speed      Float
+  creator    String   @db.VarChar(40)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+
+  point Unsupported("geometry(Point, 4326)")
+
+  @@index([train_id], map: "train_id_index")
+  @@index([point], map: "traintrails_point_index", type: Gist)
+}

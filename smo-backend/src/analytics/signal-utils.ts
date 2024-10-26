@@ -154,3 +154,7 @@ export function tryLogError(prev: string, next: string, error: string, trainId: 
       logger.error(`Failed to log error: ${e}`);
     });
 }
+
+export function getTrainId(train: Train) {
+  return `${train.TrainNoLocal}@${train.ServerCode}-${train.id}`;
+}
