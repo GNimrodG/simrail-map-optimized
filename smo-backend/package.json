@@ -12,7 +12,7 @@
     "prod:migrate": "prisma migrate deploy && yarn prod"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
+    "@types/express": "^5.0.0",
     "@types/node": "^20.14.9",
     "dotenv": "^16.4.5",
     "ts-node-dev": "^2.0.0",
