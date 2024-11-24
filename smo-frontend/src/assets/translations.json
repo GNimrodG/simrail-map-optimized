@@ -142,7 +142,18 @@
         "ShowStationArea": "Show station area",
         "StationLayoutTitle": "{{stationName}} - Station Layout",
         "ShowTexts": "Show texts",
-        "HelpText": "<0>Green</0> lines are VMAX lines. <1>They're not active paths set by the dispatcher.</1> The background color of a block indicates the train's speed that's currently in it."
+        "HelpText": "<0>Green</0> lines are VMAX lines. <1>They're not active paths set by the dispatcher.</1> The background color of a block indicates the train's speed that's currently in it.",
+        "StationLayout": {
+          "Cargo": "Cargo platform",
+          "Passenger": "Passenger platform",
+          "Siding": "Siding",
+          "Names": {
+            "Simplified": "Simplified",
+            "Detailed": "Detailed",
+            "Detailed (Wrapped)": "Detailed (Wrapped)",
+            "Simplified (Dispatch side)": "Simplified (Dispatch side)"
+          }
+        }
       },
       "BugReport": "Report a bug!"
     }
@@ -290,7 +301,18 @@
         "ShowStationArea": "Bahnhofsbereich anzeigen",
         "StationLayoutTitle": "{{stationName}} - Bahnhofslayout",
         "ShowTexts": "Texte anzeigen",
-        "HelpText": "<0>Grüne</0> Linien sind VMAX-Linien. <1>Sie sind keine aktiven Pfade, die vom Dispatcher festgelegt wurden.</1> Die Hintergrundfarbe eines Blocks zeigt die Geschwindigkeit des Zuges an, der sich derzeit darin befindet."
+        "HelpText": "<0>Grüne</0> Linien sind VMAX-Linien. <1>Sie sind keine aktiven Pfade, die vom Dispatcher festgelegt wurden.</1> Die Hintergrundfarbe eines Blocks zeigt die Geschwindigkeit des Zuges an, der sich derzeit darin befindet.",
+        "StationLayout": {
+          "Cargo": "Güterbahnsteig",
+          "Passenger": "Personenbahnsteig",
+          "Siding": "Abstellgleis",
+          "Names": {
+            "Simplified": "Vereinfacht",
+            "Detailed": "Detailliert",
+            "Detailed (Wrapped)": "Detailliert (Gewickelt)",
+            "Simplified (Dispatch side)": "Vereinfacht (Dispatcher-Seite)"
+          }
+        }
       },
       "BugReport": "Einen Fehler melden!"
     }
@@ -438,7 +460,18 @@
         "ShowStationArea": "Állomás terület megjelenítése",
         "StationLayoutTitle": "{{stationName}} - Állomás térkép",
         "ShowTexts": "Szövegek megjelenítése",
-        "HelpText": "<0>Zöld</0> vonalak a VMAX vonalak. <1>Ezek nem aktív utak, amelyeket a diszpécser állított be.</1> Egy blokk háttérszíne a blokkban lévő vonat sebességét mutatja."
+        "HelpText": "<0>Zöld</0> vonalak a VMAX vonalak. <1>Ezek nem aktív utak, amelyeket a diszpécser állított be.</1> Egy blokk háttérszíne a blokkban lévő vonat sebességét mutatja.",
+        "StationLayout": {
+          "Cargo": "Rakodó peron",
+          "Passenger": "Utas peron",
+          "Siding": "Tárolóvágány",
+          "Names": {
+            "Simplified": "Egyszerűsített",
+            "Detailed": "Részletes",
+            "Detailed (Wrapped)": "Részletes (Darabolt)",
+            "Simplified (Dispatch side)": "Egyszerűsített (Diszpécser oldaláról)"
+          }
+        }
       },
       "BugReport": "Hiba jelentése!"
     }
@@ -586,7 +619,18 @@
         "ShowStationArea": "İstasyon alanını göster",
         "StationLayoutTitle": "{{stationName}} - İstasyon Düzeni",
         "ShowTexts": "Metinleri göster",
-        "HelpText": "<0>Yeşil</0> çizgiler VMAX çizgileridir. <1>Bunlar, dispeçer tarafından belirlenmiş aktif yollar değildir.</1> Bir bloğun arka plan rengi, içindeki trenin hızını gösterir."
+        "HelpText": "<0>Yeşil</0> çizgiler VMAX çizgileridir. <1>Bunlar, dispeçer tarafından belirlenmiş aktif yollar değildir.</1> Bir bloğun arka plan rengi, içindeki trenin hızını gösterir.",
+        "StationLayout": {
+          "Cargo": "Yük platformu",
+          "Passenger": "Yolcu platformu",
+          "Siding": "Yan yol",
+          "Names": {
+            "Simplified": "Basitleştirilmiş",
+            "Detailed": "Detaylı",
+            "Detailed (Wrapped)": "Detaylı (Sarılı)",
+            "Simplified (Dispatch side)": "Basitleştirilmiş (Dispeçer tarafı)"
+          }
+        }
       },
       "BugReport": "Hata bildir!"
     }
@@ -734,7 +778,18 @@
         "ShowStationArea": "Pokaż obszar stacji",
         "StationLayoutTitle": "{{stationName}} - Układ stacji",
         "ShowTexts": "Pokaż teksty",
-        "HelpText": "<0>Zielone</0> linie to linie VMAX. <1>Nie są to aktywne ścieżki ustawione przez dyspozytora.</1> Kolor tła bloku pokazuje prędkość pociągu w nim."
+        "HelpText": "<0>Zielone</0> linie to linie VMAX. <1>Nie są to aktywne ścieżki ustawione przez dyspozytora.</1> Kolor tła bloku pokazuje prędkość pociągu w nim.",
+        "StationLayout": {
+          "Cargo": "Peron towarowy",
+          "Passenger": "Peron pasażerski",
+          "Siding": "Bocznica",
+          "Names": {
+            "Simplified": "Uproszczony",
+            "Detailed": "Szczegółowy",
+            "Detailed (Wrapped)": "Szczegółowy (Zawinięty)",
+            "Simplified (Dispatch side)": "Uproszczony (Strona dyspozytora)"
+          }
+        }
       },
       "BugReport": "Zgłoś błąd!"
     }

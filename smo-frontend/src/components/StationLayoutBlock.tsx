@@ -8,6 +8,7 @@ import { styled } from "@mui/joy/styles";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Train } from "../utils/data-manager";
 import { getColorTrainMarker, getDistanceColorForSignal } from "../utils/ui";
@@ -87,6 +88,7 @@ const TrainDisplay = styled(Input, { shouldForwardProp: (p) => p !== "isPrev" })
 }));
 
 const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, defs, train }) => {
+  const { t } = useTranslation("translation", { keyPrefix: "StationMarkerPopup.StationLayout" });
   const [_prevTrain, prevTrainTime] = usePrevious(train, true);
   const blockName = data[0];
   const colSpan = +data[1];
@@ -167,7 +169,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
             )}
             {platformType === "c" && (
               <Tooltip
-                title="Cargo platform"
+                title={t("Cargo")}
                 arrow>
                 <div>
                   <CargoIcon />
@@ -176,7 +178,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
             )}
             {platformType === "p" && (
               <Tooltip
-                title="Passanger platform"
+                title={t("Passenger")}
                 arrow>
                 <div>
                   <PersonIcon />
@@ -185,7 +187,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
             )}
             {platformType === "s" && (
               <Tooltip
-                title="Siding"
+                title={t("Siding")}
                 arrow>
                 <div>
                   <SidingIcon />

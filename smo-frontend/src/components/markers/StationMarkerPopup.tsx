@@ -300,7 +300,10 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
                     key={variant}
                     disabled={isPending}
                     value={variant}>
-                    {variant.endsWith("-inverted") ? variant.slice(0, -9) : variant}
+                    {t(
+                      "StationLayout.Names." +
+                        (variant.endsWith("-inverted") ? variant.slice(0, -9) : variant)
+                    )}
                   </Tab>
                 ))}
               </TabList>
