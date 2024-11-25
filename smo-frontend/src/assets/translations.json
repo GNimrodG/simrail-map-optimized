@@ -627,8 +627,8 @@
           "Names": {
             "Simplified": "Basitleştirilmiş",
             "Detailed": "Detaylı",
-            "Detailed (Wrapped)": "Detaylı (Sarılı)",
-            "Simplified (Dispatch side)": "Basitleştirilmiş (Dispeçer tarafı)"
+            "Detailed (Wrapped)": "Detaylı (Sıkıştırılmış)",
+            "Simplified (Dispatch side)": "Basitleştirilmiş (Dispeçer gözünden)"
           }
         }
       },
