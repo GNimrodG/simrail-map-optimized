@@ -26,11 +26,13 @@ import CollapseIcon from "../icons/CollapseIcon";
 import ExpandIcon from "../icons/ExpandIcon";
 import InfoIcon from "../icons/InfoIcon";
 import SteamProfileDisplay from "../SteamProfileDisplay";
+import { getThumbnailUrl } from "../utils/general-utils";
 import SignalSpeedDisplay from "../utils/SignalSpeedDisplay";
 import LengthIcon from "./icons/LengthIcon";
 import SpeedIcon from "./icons/SpeedIcon";
 import WeightIcon from "./icons/WeightIcon";
 import StationDisplay from "./StationDisplay";
+import TrainConsistDisplay from "./TrainConsistDisplay";
 
 export interface TrainMarkerPopupProps {
   train: Train;
@@ -39,10 +41,6 @@ export interface TrainMarkerPopupProps {
   onToggleCollapse?: () => void;
   isCollapsed?: boolean;
   hideButtons?: boolean;
-}
-
-function getThumbnailUrl(vehicle: string): string {
-  return `/thumbnails/vehicles/${vehicle.replace(/.+\/(.+)$/, "$1").replace(" Variant", "")}.png`;
 }
 
 const Image = styled("img")(({ theme }) => ({
@@ -282,15 +280,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                 }}>
                 {t("Consist")}
               </Typography>
-              <Stack sx={{ p: 1 }}>
-                {train.Vehicles.map((vehicle, index) => (
-                  <Typography
-                    key={index + vehicle}
-                    level="body-md">
-                    #{index + 1}: {vehicle}
-                  </Typography>
-                ))}
-              </Stack>
+              <TrainConsistDisplay consist={train.Vehicles} />
             </Box>
           }>
           <Stack
