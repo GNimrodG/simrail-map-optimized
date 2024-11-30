@@ -264,22 +264,34 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           placement="right"
           describeChild
           title={
-            <>
+            <Box
+              sx={{
+                maxHeight: "90vh",
+                overflowY: "auto",
+                position: "relative",
+              }}>
               <Typography
                 level="body-lg"
-                textAlign="center">
+                textAlign="center"
+                sx={{
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 1,
+                  backgroundColor: theme.palette.background.surface,
+                  boxShadow: `0px 4px 10px ${theme.palette.background.surface}`,
+                }}>
                 {t("Consist")}
               </Typography>
               <Stack sx={{ p: 1 }}>
                 {train.Vehicles.map((vehicle, index) => (
                   <Typography
-                    key={vehicle}
+                    key={index + vehicle}
                     level="body-md">
                     #{index + 1}: {vehicle}
                   </Typography>
                 ))}
               </Stack>
-            </>
+            </Box>
           }>
           <Stack
             alignItems="center"
