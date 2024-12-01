@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@isaacs/ttlcache": "^1.4.1",
-    "@opentelemetry/instrumentation-socket.io": "^0.43.0",
+    "@opentelemetry/instrumentation-socket.io": "^0.44.0",
     "@prisma/client": "^5.21.1",
     "@sentry/cli": "^2.38.0",
     "@sentry/node": "^8.36.0",
