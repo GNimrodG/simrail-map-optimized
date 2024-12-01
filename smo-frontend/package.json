@@ -16,7 +16,7 @@
     "@mantine/hooks": "^7.12.2",
     "@mui/joy": "^5.0.0-beta.36",
     "@sentry/react": "^8.27.0",
-    "@sentry/vite-plugin": "^2.22.4",
+    "@sentry/vite-plugin": "^2.22.6",
     "@turf/turf": "^7.1.0",
     "core-js": "^3.39.0",
     "geojson": "^0.5.0",
