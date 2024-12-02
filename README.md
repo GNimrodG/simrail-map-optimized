@@ -1,5 +1,8 @@
 # Simrail Map Optimalized (SMO)
 
+[![Frontend](https://github.com/GNimrodG/simrail-map-optimized/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/GNimrodG/simrail-map-optimized/actions/workflows/build-frontend.yml)
+[![Backend](https://github.com/GNimrodG/simrail-map-optimized/actions/workflows/build-backend.yml/badge.svg)](https://github.com/GNimrodG/simrail-map-optimized/actions/workflows/build-backend.yml)
+
 ## This project hosted at [https://smo.data-unknown.com](https://smo.data-unknown.com/)
 
 ## Table of Contents
