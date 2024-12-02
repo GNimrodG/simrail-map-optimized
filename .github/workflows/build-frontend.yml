@@ -1,4 +1,4 @@
-name: Frontend test build
+name: Frontend
 
 on:
   push:
@@ -14,19 +14,53 @@ on:
 
 jobs:
   build-frontend:
-    name: Frontend test build
+    name: Build
     runs-on: ubuntu-latest
+    env:
+      SHOULD_PUSH: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' && secrets.DOCKER_REGISTRY_USERNAME != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # list of Docker images to use as base name for tags
+          images: ${{ vars.DOCKER_REGISTRY_URL }}/smo-frontend
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}
+            type=sha
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+      - name: Login to the registry
+        if: ${{ env.SHOULD_PUSH == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.DOCKER_REGISTRY_URL }}
+          username: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
+          password: ${{ secrets.DOCKER_REGISTRY_TOKEN }}
       - name: Build
         uses: docker/build-push-action@v5
         with:
           context: ./smo-frontend
-          push: false
+          push: ${{ env.SHOULD_PUSH == 'true' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
+      # webhook to trigger deployment
+      - name: Deploy
+        env:
+          DEPLOYMENT_WEBHOOK_URL: ${{ secrets.DEPLOYMENT_WEBHOOK_URL }}
+        continue-on-error: true
+        # only trigger on new tags and if the DEPLOYMENT_WEBHOOK_URL secret is set
+        if: github.event_name == 'create' && startsWith(github.ref, 'refs/tags/v') && env.DEPLOYMENT_WEBHOOK_URL != ''
+        uses: wei/curl@v1
+        with:
+          args: -X POST ${{ secrets.DEPLOYMENT_WEBHOOK_URL }}
