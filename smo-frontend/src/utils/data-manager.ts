@@ -56,7 +56,7 @@ export interface Station {
     {
       ServerCode: string;
       SteamId: string;
-    }
+    },
   ];
   id: string;
 }
@@ -98,8 +98,7 @@ const SERVER_URL =
 
 const _SERVER_URL = new URL(SERVER_URL);
 
-const SERVER_API_URL =
-  (_SERVER_URL.protocol === "wss:" ? "https://" : "http://") + _SERVER_URL.host;
+const SERVER_API_URL = (_SERVER_URL.protocol === "wss:" ? "https://" : "http://") + _SERVER_URL.host;
 
 export function deletePrevSignal(signal: string, prevSignal: string) {
   fetch(`${SERVER_API_URL}/signals/${encodeURIComponent(signal)}/prev`, {
@@ -148,7 +147,7 @@ export function updateSignal(
   type: string | null,
   role: string | null,
   prevFinalized: boolean,
-  nextFinalized: boolean
+  nextFinalized: boolean,
 ) {
   fetch(`${SERVER_API_URL}/signals/${encodeURIComponent(signal)}`, {
     method: "PATCH",

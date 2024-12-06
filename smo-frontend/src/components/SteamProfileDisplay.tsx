@@ -13,9 +13,7 @@ export interface SteamProfileDisplayProps {
 
 const SteamProfileDisplay: FunctionComponent<SteamProfileDisplayProps> = ({ profile, steamId }) => {
   return (
-    <Sheet
-      variant="outlined"
-      sx={{ p: 1, borderRadius: 10 }}>
+    <Sheet variant="outlined" sx={{ p: 1, borderRadius: 10 }}>
       <Stack
         component="a"
         href={`https://steamcommunity.com/profiles/${steamId}`}
@@ -23,11 +21,9 @@ const SteamProfileDisplay: FunctionComponent<SteamProfileDisplayProps> = ({ prof
         sx={{ textDecoration: "none", color: "inherit" }}
         direction="row"
         spacing={1}
-        alignItems="center">
-        <Avatar
-          src={profile.avatar}
-          alt={profile.personaname}
-        />
+        alignItems="center"
+      >
+        <Avatar src={profile.avatar} alt={profile.personaname} />
         <Typography level="h3">{profile.personaname}</Typography>
       </Stack>
     </Sheet>

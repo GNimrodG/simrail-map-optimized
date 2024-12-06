@@ -5,6 +5,7 @@ import { LayerGroup, useMap } from "react-leaflet";
 import { signalsData$, SignalWithTrain } from "../../utils/data-manager";
 import { debounce } from "../../utils/debounce";
 import { goToSignal } from "../../utils/geom-utils";
+import { useSetting } from "../../utils/use-setting";
 import useBehaviorSubj from "../../utils/useBehaviorSubj";
 import SignalMarker from "../markers/SignalMarker";
 
@@ -21,15 +22,13 @@ function getVisibleSignals(signals: SignalWithTrain[], map: LeafletMap | null) {
 
 const ActiveSignalsLayer: FunctionComponent = () => {
   const map = useMap();
+  const [layerOpacities] = useSetting("layerOpacities");
 
   const signals = useBehaviorSubj(signalsData$);
 
   const activeSignals = useMemo(
-    () =>
-      signals.filter(
-        (signal) => !!signal.train || !!signal.trainAhead || !!signal.nextSignalWithTrainAhead
-      ),
-    [signals]
+    () => signals.filter((signal) => !!signal.train || !!signal.trainAhead || !!signal.nextSignalWithTrainAhead),
+    [signals],
   );
 
   const [visibleSignals, setVisibleSignals] = useState<SignalWithTrain[]>([]);
@@ -72,6 +71,7 @@ const ActiveSignalsLayer: FunctionComponent = () => {
           key={signal.name}
           signal={signal}
           onSignalSelect={handleSignalSelect}
+          opacity={layerOpacities["active-signals"]}
         />
       ))}
     </LayerGroup>

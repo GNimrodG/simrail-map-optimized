@@ -13,15 +13,12 @@ const STATION_PREFIX_OVERRIDES = new Map<string, string[]>([
 ]);
 
 export function getSignalsForStation(station: Station): SignalWithTrain[] {
-  const stationPrefixList = (STATION_PREFIX_OVERRIDES.get(station.Prefix) || [station.Prefix]).map(
-    (x) => x + "_"
-  );
+  const stationPrefixList = (STATION_PREFIX_OVERRIDES.get(station.Prefix) || [station.Prefix]).map((x) => x + "_");
   const altStationPrefixRegex = new RegExp(`^${normalizeString(station.Prefix)}\\d?_`, "g");
 
   return signalsData$.value?.filter(
     (signal) =>
-      stationPrefixList.some((x) => signal.name.startsWith(x)) ||
-      RegExp(altStationPrefixRegex).exec(signal.name)
+      stationPrefixList.some((x) => signal.name.startsWith(x)) || RegExp(altStationPrefixRegex).exec(signal.name),
   );
 }
 
@@ -31,10 +28,9 @@ export function getStationGeometry(station: Station): L.LatLngExpression[] {
   if (stationSignals?.length) {
     // add polygon around the station using the signals
     const geoms = turf.featureCollection(
-      [
-        [station.Latititude, station.Longitude],
-        ...stationSignals.map((signal) => [signal.lat, signal.lon]),
-      ].map((x) => turf.point(x))
+      [[station.Latititude, station.Longitude], ...stationSignals.map((signal) => [signal.lat, signal.lon])].map((x) =>
+        turf.point(x),
+      ),
     );
 
     let maxEdge = 0.6;

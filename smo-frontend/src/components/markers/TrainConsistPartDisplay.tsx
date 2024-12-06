@@ -19,25 +19,14 @@ const TrainConsistPartDisplay: FunctionComponent<TrainConsistPartDisplayProps> =
   const allSame = vehicles.every((x) => x === vehicles[0]);
 
   return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      justifyContent="space-between"
-      sx={{ width: "100%" }}
-      gap={1}>
+    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ width: "100%" }} gap={1}>
       <Stack>
         <Typography level="title-md">{shortName}</Typography>
         {(allSame ? [vehicles[0]] : vehicles).map((x, i) => (
-          <Typography
-            key={i + x}
-            fontFamily="monospace"
-            level="body-sm">
+          <Typography key={i + x} fontFamily="monospace" level="body-sm">
             {x
               .replace(/.+\/(.+?)(@.+)?$/, "$1")
-              .replace(
-                /(.+)_(\d{2})(\d{2})(\d{2})(\d{2})(\d{3})[-_]?(\d)(:(\w:\d+))?/,
-                "$2 $3 $4-$5 $6-$7 ($1) $9"
-              )
+              .replace(/(.+)_(\d{2})(\d{2})(\d{2})(\d{2})(\d{3})[-_]?(\d)(:(\w:\d+))?/, "$2 $3 $4-$5 $6-$7 ($1) $9")
               .trim()}
 
             {x.includes("@") && (

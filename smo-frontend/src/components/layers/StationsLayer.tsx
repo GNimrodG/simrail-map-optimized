@@ -43,12 +43,7 @@ const StationsLayer: FunctionComponent = () => {
 
   return (
     <LayerGroup>
-      {visibleStations?.map((stationIcon) => (
-        <StationMarker
-          key={stationIcon.id}
-          station={stationIcon}
-        />
-      ))}
+      {visibleStations?.map((stationIcon) => <StationMarker key={stationIcon.id} station={stationIcon} />)}
     </LayerGroup>
   );
 };

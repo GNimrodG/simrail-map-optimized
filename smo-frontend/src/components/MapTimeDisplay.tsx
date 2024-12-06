@@ -22,7 +22,8 @@ const MapTimeDisplay: FunctionComponent = () => {
         marginInline: 0,
         boxShadow:
           "var(--joy-shadowRing, 0 0 #000),0px 1px 2px 0px rgba(var(--joy-shadowChannel, 21 21 21) / var(--joy-shadowOpacity, 0.08))",
-      }}>
+      }}
+    >
       {new Date(currentTime).toLocaleTimeString()}{" "}
       {timeData && (
         <Typography level="body-md">

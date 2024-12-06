@@ -1,6 +1,6 @@
 import { DivIcon, Icon, IconOptions } from "leaflet";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
-import { Popup } from "react-leaflet";
+import { Marker, Popup } from "react-leaflet";
 
 import { Train } from "../../utils/data-manager";
 import SelectedTrainContext from "../../utils/selected-train-context";
@@ -26,7 +26,7 @@ function getIcon(
   colorClass: string,
   inBorderStationArea: boolean,
   isSelected: boolean,
-  avatar?: string
+  avatar?: string,
 ) {
   if (avatar) {
     return new DivIcon({
@@ -52,6 +52,8 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
   const [userData, setUserData] = useState<ProfileResponse | null>(null);
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(DEFAULT_ICON);
   const [useAltTracking] = useSetting("useAltTracking");
+  const [disableSlidingMarkers] = useSetting("disableSlidingMarkers");
+  const [layerOpacities] = useSetting("layerOpacities");
 
   useEffect(() => {
     if (!train.TrainData.ControlledBySteamID) {
@@ -64,38 +66,37 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
     });
   }, [train.TrainData.ControlledBySteamID]);
 
-  const trainMarkerColor = useMemo(
-    () => getColorTrainMarker(train.TrainData.Velocity),
-    [train.TrainData.Velocity]
-  );
+  const trainMarkerColor = useMemo(() => getColorTrainMarker(train.TrainData.Velocity), [train.TrainData.Velocity]);
 
   const isSelected = useMemo(
     () => selectedTrain?.trainNo === train.TrainNoLocal,
-    [selectedTrain?.trainNo, train.TrainNoLocal]
+    [selectedTrain?.trainNo, train.TrainNoLocal],
   );
 
   const shouldFollow = useMemo(
     () => isSelected && selectedTrain?.follow && useAltTracking,
-    [selectedTrain?.follow, isSelected, useAltTracking]
+    [selectedTrain?.follow, isSelected, useAltTracking],
   );
 
   useEffect(() => {
     setIcon(
-      getIcon(
-        train.TrainNoLocal,
-        trainMarkerColor,
-        train.TrainData.InBorderStationArea,
-        isSelected,
-        userData?.avatar
-      )
+      getIcon(train.TrainNoLocal, trainMarkerColor, train.TrainData.InBorderStationArea, isSelected, userData?.avatar),
     );
-  }, [
-    isSelected,
-    train.TrainData.InBorderStationArea,
-    train.TrainNoLocal,
-    trainMarkerColor,
-    userData?.avatar,
-  ]);
+  }, [isSelected, train.TrainData.InBorderStationArea, train.TrainNoLocal, trainMarkerColor, userData?.avatar]);
+
+  const popup = !isSelected && (
+    <Popup autoPan={false}>
+      <TrainMarkerPopup train={train} userData={userData} showTrainRouteButton />
+    </Popup>
+  );
+
+  if (disableSlidingMarkers) {
+    return (
+      <Marker position={[train.TrainData.Latititute, train.TrainData.Longitute]} icon={icon}>
+        {popup}
+      </Marker>
+    );
+  }
 
   return (
     <ReactLeafletDriftMarker
@@ -103,16 +104,10 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
       duration={1000}
       position={[train.TrainData.Latititute, train.TrainData.Longitute]}
       keepAtCenter={shouldFollow}
-      icon={icon}>
-      {!isSelected && (
-        <Popup autoPan={false}>
-          <TrainMarkerPopup
-            train={train}
-            userData={userData}
-            showTrainRouteButton
-          />
-        </Popup>
-      )}
+      icon={icon}
+      opacity={layerOpacities["trains"]}
+    >
+      {popup}
     </ReactLeafletDriftMarker>
   );
 };

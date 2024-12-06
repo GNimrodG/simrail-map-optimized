@@ -13,7 +13,7 @@ function getVisibleTrains(trains: Train[], map: LeafletMap | null) {
     (train) =>
       !!train.TrainData.Latititute &&
       !!train.TrainData.Longitute &&
-      bounds?.contains([train.TrainData.Latititute, train.TrainData.Longitute])
+      bounds?.contains([train.TrainData.Latititute, train.TrainData.Longitute]),
   );
 }
 
@@ -49,10 +49,7 @@ const TrainsLayer: FunctionComponent = () => {
   return (
     <LayerGroup>
       {visibleTrains.map((train) => (
-        <TrainMarker
-          key={train.id}
-          train={train}
-        />
+        <TrainMarker key={train.id} train={train} />
       ))}
     </LayerGroup>
   );

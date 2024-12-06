@@ -33,9 +33,7 @@ class DriftMarker extends L.Marker {
     this._slideKeepAtCenter = !!options.keepAtCenter;
 
     this._slideDraggingWasAllowed =
-      this._slideDraggingWasAllowed !== undefined
-        ? this._slideDraggingWasAllowed
-        : this._map.dragging.enabled();
+      this._slideDraggingWasAllowed !== undefined ? this._slideDraggingWasAllowed : this._map.dragging.enabled();
 
     this.slideCancel();
     this.fire("movestart");

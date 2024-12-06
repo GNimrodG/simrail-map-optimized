@@ -4,9 +4,7 @@ import { BehaviorSubject } from "rxjs";
 function useBehaviorSubj<T>(subj: BehaviorSubject<T>, selector?: never): T;
 function useBehaviorSubj<T, S>(subj: BehaviorSubject<S>, selector?: (data: S) => T): T;
 function useBehaviorSubj<T, S>(subj: BehaviorSubject<S>, selector?: (data: S) => T) {
-  const [value, setValue] = useState(
-    selector ? selector(subj.value) : (subj.value as unknown as T)
-  );
+  const [value, setValue] = useState(selector ? selector(subj.value) : (subj.value as unknown as T));
 
   useEffect(() => {
     const subscription = subj.subscribe((data) => {

@@ -28,11 +28,7 @@ const STOP_TYPE_COLOR: Partial<Record<TimetableEntry["stopType"], ColorPalettePr
   NoncommercialStop: "neutral",
 };
 
-const StationDisplay: FunctionComponent<StationDisplayProps> = ({
-  station,
-  mainStation,
-  pastStation,
-}) => {
+const StationDisplay: FunctionComponent<StationDisplayProps> = ({ station, mainStation, pastStation }) => {
   const { t } = useTranslation("translation", { keyPrefix: "StationDisplay" });
   const theme = useTheme();
   const isSmallHeight = useMediaQuery(`(max-height: ${theme.breakpoints.values.md}px)`);
@@ -50,16 +46,9 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
     (isSmallHeight &&
       !!station.arrivalTime &&
       (!station.departureTime || station.departureTime === station.arrivalTime)) ||
-    (!!station.departureTime &&
-      (!station.arrivalTime || station.departureTime === station.arrivalTime));
+    (!!station.departureTime && (!station.arrivalTime || station.departureTime === station.arrivalTime));
 
-  const timeColor = !timeUntil
-    ? "neutral"
-    : timeUntil < 0
-    ? "success"
-    : timeUntil > 15
-    ? "danger"
-    : "warning";
+  const timeColor = !timeUntil ? "neutral" : timeUntil < 0 ? "success" : timeUntil > 15 ? "danger" : "warning";
 
   const timeUntilDisplay = (
     <>
@@ -70,18 +59,16 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
           !timeUntil
             ? t("ShouldArrive.Now")
             : timeUntil < 0
-            ? t("ShouldArrive.Future", {
-                time: moment.duration({ m: -timeUntil }).humanize(true),
-              })
-            : t("ShouldArrive.Past", {
-                time: moment.duration({ m: -timeUntil }).humanize(true),
-              })
+              ? t("ShouldArrive.Future", {
+                  time: moment.duration({ m: -timeUntil }).humanize(true),
+                })
+              : t("ShouldArrive.Past", {
+                  time: moment.duration({ m: -timeUntil }).humanize(true),
+                })
         }
-        color={timeColor}>
-        <Typography
-          variant="outlined"
-          level="body-xs"
-          color={timeColor}>
+        color={timeColor}
+      >
+        <Typography variant="outlined" level="body-xs" color={timeColor}>
           {timeUntil}'
         </Typography>
       </Tooltip>
@@ -101,13 +88,8 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
         {STOP_TYPE_TECHNICAL[station.stopType] && (
           <>
             {" "}
-            <Tooltip
-              arrow
-              title={t(`StopType.${station.stopType}`)}>
-              <Typography
-                variant="outlined"
-                level="body-sm"
-                color={STOP_TYPE_COLOR[station.stopType]}>
+            <Tooltip arrow title={t(`StopType.${station.stopType}`)}>
+              <Typography variant="outlined" level="body-sm" color={STOP_TYPE_COLOR[station.stopType]}>
                 {STOP_TYPE_TECHNICAL[station.stopType]}
               </Typography>
             </Tooltip>
@@ -117,44 +99,27 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
           <>
             {" "}
             <Typography level="body-sm">
-              <TimeDisplay
-                time={station.arrivalTime!}
-                noSeconds
-              />
+              <TimeDisplay time={station.arrivalTime!} noSeconds />
             </Typography>
             {timeUntil !== null && timeUntilDisplay}
           </>
         )}
       </Typography>
       <Typography level={mainStation ? "body-sm" : "body-xs"}>
-        {!shouldCollapse && station.arrivalTime && (
-          <TimeDisplay
-            time={station.arrivalTime}
-            noSeconds={isSmallHeight}
-          />
+        {!shouldCollapse && station.arrivalTime && <TimeDisplay time={station.arrivalTime} noSeconds={isSmallHeight} />}
+        {!shouldCollapse && station.departureTime && station.departureTime !== station.arrivalTime && (
+          <>
+            {station.arrivalTime && " - "}
+            <TimeDisplay time={station.departureTime} noSeconds={isSmallHeight} />
+            {station.arrivalTime && (
+              <>
+                {" "}
+                (
+                <TimeDiffDisplay start={station.arrivalTime} end={station.departureTime} />)
+              </>
+            )}
+          </>
         )}
-        {!shouldCollapse &&
-          station.departureTime &&
-          station.departureTime !== station.arrivalTime && (
-            <>
-              {station.arrivalTime && " - "}
-              <TimeDisplay
-                time={station.departureTime}
-                noSeconds={isSmallHeight}
-              />
-              {station.arrivalTime && (
-                <>
-                  {" "}
-                  (
-                  <TimeDiffDisplay
-                    start={station.arrivalTime}
-                    end={station.departureTime}
-                  />
-                  )
-                </>
-              )}
-            </>
-          )}
         {!shouldCollapse && timeUntil !== null && timeUntilDisplay}
       </Typography>
     </>

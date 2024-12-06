@@ -42,6 +42,13 @@
           "Label": "Use alternative following method",
           "Description": "Use alternative method to follow trains on the map. This method is less smooth but uses less CPU."
         },
+        "disableSlidingMarkers": {
+          "Label": "Disable sliding markers",
+          "Description": "Disable sliding markers for trains. This can improve performance on some devices."
+        },
+        "passiveSignalOpacity": {
+          "Label": "Passive signal layer opacity"
+        },
         "TrainWindow": "Train Window",
         "expandScheduleDefault": {
           "Label": "Expand schedule by default"
@@ -65,7 +72,8 @@
         "MapTheme": "Map Theme (For Dark Mode)",
         "alternativeTheme": {
           "Label": "Monochrome map"
-        }
+        },
+        "LayerOpacity": "Layer Opacity"
       },
       "TrainMakerPopup": {
         "NextSignal": "Next Signal:",
@@ -201,6 +209,13 @@
           "Label": "Alternative Methode zum Verfolgen von Zügen verwenden",
           "Description": "Eine alternative Methode verwenden, um Züge auf der Karte zu verfolgen. Diese Methode ist weniger flüssig, aber verbraucht weniger CPU."
         },
+        "disableSlidingMarkers": {
+          "Label": "Schiebemarkierungen deaktivieren",
+          "Description": "Schiebemarkierungen für Züge deaktivieren. Dies kann die Leistung auf einigen Geräten verbessern."
+        },
+        "passiveSignalOpacity": {
+          "Label": "Deckkraft der passiven Signal-Ebene"
+        },
         "TrainWindow": "Zugfenster",
         "expandScheduleDefault": {
           "Label": "Fahrplan automatisch erweitern"
@@ -224,7 +239,8 @@
         "MapTheme": "Kartenthema (für den Dunkelmodus)",
         "alternativeTheme": {
           "Label": "Monochromatische Karte"
-        }
+        },
+        "LayerOpacity": "Ebenen-Deckkraft"
       },
       "TrainMakerPopup": {
         "NextSignal": "Nächstes Signal:",
@@ -360,6 +376,13 @@
           "Label": "Alternatív követési módszer használata",
           "Description": "Alternatív módszer használata a vonatok követésére a térképen. Ez a módszer kicsit darabosabb, de kevesebb CPU-t használ."
         },
+        "disableSlidingMarkers": {
+          "Label": "Csúszó jelölők letiltása",
+          "Description": "Csúszó jelölők letiltása a vonatokhoz. Ez javíthatja a teljesítményt néhány eszközön."
+        },
+        "passiveSignalOpacity": {
+          "Label": "Passzív jelző réteg átlátszósága"
+        },
         "TrainWindow": "Vonat ablak",
         "expandScheduleDefault": {
           "Label": "Menetrend alapértelmezett lenyitása"
@@ -383,7 +406,8 @@
         "MapTheme": "Térkép téma (sötét módhoz)",
         "alternativeTheme": {
           "Label": "Monokróm térkép"
-        }
+        },
+        "LayerOpacity": "Rétegek átlátszósága"
       },
       "TrainMakerPopup": {
         "NextSignal": "Következő jelző:",
@@ -519,6 +543,13 @@
           "Label": "Alternatif takip yöntemi kullan",
           "Description": "Haritada trenleri takip etmek için alternatif bir yöntem kullanın. Bu yöntem daha az pürüzsüz olabilir ancak daha az CPU kullanır."
         },
+        "disableSlidingMarkers": {
+          "Label": "Kaydırma işaretlerini devre dışı bırak",
+          "Description": "Trenler için kaydırma işaretlerini devre dışı bırakın. Bu, bazı cihazlarda performansı artırabilir."
+        },
+        "passiveSignalOpacity": {
+          "Label": "Pasif sinyal katmanı opaklığı"
+        },
         "TrainWindow": "Tren Penceresi",
         "expandScheduleDefault": {
           "Label": "Varsayılan olarak programı genişlet"
@@ -542,7 +573,8 @@
         "MapTheme": "Harita Teması (Karanlık Mod İçin)",
         "alternativeTheme": {
           "Label": "Monokrom harita"
-        }
+        },
+        "LayerOpacity": "Katman Opaklığı"
       },
       "TrainMakerPopup": {
         "NextSignal": "Bir Sonraki Sinyal:",
@@ -678,6 +710,13 @@
           "Label": "Użyj alternatywnej metody śledzenia",
           "Description": "Użyj alternatywnej metody śledzenia pociągów na mapie. Ta metoda jest mniej płynna, ale zużywa mniej procesora."
         },
+        "disableSlidingMarkers": {
+          "Label": "Wyłącz przesuwane markery",
+          "Description": "Wyłącz przesuwane markery dla pociągów. Może to poprawić wydajność na niektórych urządzeniach."
+        },
+        "passiveSignalOpacity": {
+          "Label": "Przezroczystość pasywnej warstwy sygnałów"
+        },
         "TrainWindow": "Okno Pociągu",
         "expandScheduleDefault": {
           "Label": "Domyślnie rozwijaj rozkład jazdy"
@@ -701,7 +740,8 @@
         "MapTheme": "Motyw Mapy (dla trybu ciemnego)",
         "alternativeTheme": {
           "Label": "Monochromatyczna mapa"
-        }
+        },
+        "LayerOpacity": "Przezroczystość Warstw"
       },
       "TrainMakerPopup": {
         "NextSignal": "Następny Sygnał:",

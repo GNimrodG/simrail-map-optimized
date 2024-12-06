@@ -53,9 +53,7 @@ const Signal = styled(SignalIcon, {
 const TrainDisplay = styled(Input, { shouldForwardProp: (p) => p !== "isPrev" })<{
   isPrev: boolean;
 }>(({ isPrev, theme }) => ({
-  animation: isPrev
-    ? `${theme.palette.mode === "dark" ? "pulse-dark" : "pulse-light"} 2s infinite`
-    : "none",
+  animation: isPrev ? `${theme.palette.mode === "dark" ? "pulse-dark" : "pulse-light"} 2s infinite` : "none",
   // this is a fix for the animation getting stuck on the light theme if you toggle the theme
   ...(theme.palette.mode === "light"
     ? {
@@ -114,9 +112,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
   const prevTrain = Date.now() - prevTrainTime < 30000 ? _prevTrain : null;
 
   return (
-    <Box
-      component="td"
-      colSpan={colSpan}>
+    <Box component="td" colSpan={colSpan}>
       <FormControl
         sx={{
           borderRadius: "sm",
@@ -124,14 +120,16 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
           borderColor: "neutral.600",
           p: 0.5,
           minWidth: "200px",
-        }}>
+        }}
+      >
         <FormLabel
           sx={{
             position: "relative",
             display: "inline-block",
             width: "100%",
             textAlign: "center",
-          }}>
+          }}
+        >
           {lengthSignal1 && (
             <Typography
               component="span"
@@ -140,7 +138,8 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                 position: "absolute",
                 left: 1,
                 top: 0,
-              }}>
+              }}
+            >
               {lengthSignal1}m
             </Typography>
           )}
@@ -152,43 +151,34 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
               position: "absolute",
               right: 1,
               top: 0,
-            }}>
+            }}
+          >
             {track && platform && (
-              <Typography
-                component="span"
-                color="neutral">
+              <Typography component="span" color="neutral">
                 {track}/{platform}
               </Typography>
             )}
             {lengthSignal2 && (
-              <Typography
-                component="span"
-                color="neutral">
+              <Typography component="span" color="neutral">
                 {lengthSignal2}m
               </Typography>
             )}
             {platformType === "c" && (
-              <Tooltip
-                title={t("Cargo")}
-                arrow>
+              <Tooltip title={t("Cargo")} arrow>
                 <div>
                   <CargoIcon />
                 </div>
               </Tooltip>
             )}
             {platformType === "p" && (
-              <Tooltip
-                title={t("Passenger")}
-                arrow>
+              <Tooltip title={t("Passenger")} arrow>
                 <div>
                   <PersonIcon />
                 </div>
               </Tooltip>
             )}
             {platformType === "s" && (
-              <Tooltip
-                title={t("Siding")}
-                arrow>
+              <Tooltip title={t("Siding")} arrow>
                 <div>
                   <SidingIcon />
                 </div>
@@ -210,9 +200,8 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                         <SignalSpeedDisplay train={train} />
                         <Typography
                           textAlign="center"
-                          color={getDistanceColorForSignal(
-                            train.TrainData.DistanceToSignalInFront
-                          )}>
+                          color={getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront)}
+                        >
                           {Math.round(train.TrainData.DistanceToSignalInFront)}m
                         </Typography>
                       </>
@@ -220,7 +209,8 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                   </Stack>
                 )
               }
-              arrow>
+              arrow
+            >
               <SignalContainer disabled={!signal1}>
                 {signal1 && (
                   <Signal
@@ -229,10 +219,10 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                       !train?.TrainData.SignalInFront?.startsWith(signal1)
                         ? "neutral"
                         : train.TrainData.SignalInFrontSpeed === 0
-                        ? "danger"
-                        : train.TrainData.SignalInFrontSpeed > 200
-                        ? "success"
-                        : "warning"
+                          ? "danger"
+                          : train.TrainData.SignalInFrontSpeed > 200
+                            ? "success"
+                            : "warning"
                     }
                   />
                 )}
@@ -247,13 +237,9 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                   describeChild
                   enterDelay={500}
                   keepMounted
-                  title={
-                    <TrainMarkerPopup
-                      train={train}
-                      hideButtons
-                    />
-                  }
-                  arrow>
+                  title={<TrainMarkerPopup train={train} hideButtons />}
+                  arrow
+                >
                   <Stack
                     sx={{
                       position: "absolute",
@@ -263,7 +249,8 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                       color: "neutral.200",
                     }}
                     alignItems="center"
-                    justifyContent="center">
+                    justifyContent="center"
+                  >
                     <InfoIcon />
                   </Stack>
                 </Tooltip>
@@ -279,9 +266,8 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                           <SignalSpeedDisplay train={train} />
                           <Typography
                             textAlign="center"
-                            color={getDistanceColorForSignal(
-                              train.TrainData.DistanceToSignalInFront
-                            )}>
+                            color={getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront)}
+                          >
                             {Math.round(train.TrainData.DistanceToSignalInFront)}m
                           </Typography>
                         </>
@@ -289,7 +275,8 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                     </Stack>
                   )
                 }
-                arrow>
+                arrow
+              >
                 <SignalContainer disabled={!signal2}>
                   {signal2 && (
                     <Signal
@@ -298,10 +285,10 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                         !train?.TrainData.SignalInFront?.startsWith(signal2)
                           ? "neutral"
                           : train.TrainData.SignalInFrontSpeed === 0
-                          ? "danger"
-                          : train.TrainData.SignalInFrontSpeed > 200
-                          ? "success"
-                          : "warning"
+                            ? "danger"
+                            : train.TrainData.SignalInFrontSpeed > 200
+                              ? "success"
+                              : "warning"
                       }
                     />
                   )}

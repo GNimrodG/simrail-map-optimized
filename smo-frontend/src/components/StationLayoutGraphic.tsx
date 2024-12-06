@@ -23,19 +23,17 @@ function getTextAlign(align: string): CSSProperties["textAlign"] {
   }
 }
 
-const BaseBox = styled("div", { shouldForwardProp: (p) => p !== "color" })<{ color?: string }>(
-  ({ color }) => ({
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    display: "flex",
-    ["--line-width"]: "4px",
-    ["--line-color"]: color,
-    minHeight: "1rem",
-  })
-);
+const BaseBox = styled("div", { shouldForwardProp: (p) => p !== "color" })<{ color?: string }>(({ color }) => ({
+  position: "absolute",
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
+  display: "flex",
+  ["--line-width"]: "4px",
+  ["--line-color"]: color,
+  minHeight: "1rem",
+}));
 
 const BaseLine = styled("div")({
   width: "var(--line-width)",
@@ -75,278 +73,128 @@ const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ ce
       switch (shape) {
         case "h": // horizontal
           shapes.push(
-            <BaseBox
-              key={key}
-              color={color}
-              sx={{ alignItems: "center" }}>
+            <BaseBox key={key} color={color} sx={{ alignItems: "center" }}>
               <BaseLine sx={{ width: "100%" }} />
-            </BaseBox>
+            </BaseBox>,
           );
           break;
         case "v": // vertical
           shapes.push(
-            <BaseBox
-              key={key}
-              color={color}
-              sx={{ justifyContent: "center" }}>
+            <BaseBox key={key} color={color} sx={{ justifyContent: "center" }}>
               <BaseLine sx={{ height: "100%" }} />
-            </BaseBox>
+            </BaseBox>,
           );
           break;
         case "l": // left
           shapes.push(
-            <BaseBox
-              key={key}
-              color={color}
-              sx={{ alignItems: "center" }}>
+            <BaseBox key={key} color={color} sx={{ alignItems: "center" }}>
               <BaseLine sx={{ width: "calc(50% + var(--line-width) / 2)" }} />
-            </BaseBox>
+            </BaseBox>,
           );
           break;
         case "r": // right
           shapes.push(
-            <BaseBox
-              key={key}
-              color={color}
-              sx={{ alignItems: "center", justifyContent: "flex-end", height: "100%" }}>
+            <BaseBox key={key} color={color} sx={{ alignItems: "center", justifyContent: "flex-end", height: "100%" }}>
               <BaseLine sx={{ width: "calc(50% + var(--line-width) / 2)" }} />
-            </BaseBox>
+            </BaseBox>,
           );
           break;
         case "t": // top
           shapes.push(
-            <BaseBox
-              key={key}
-              color={color}
-              sx={{ justifyContent: "center" }}>
+            <BaseBox key={key} color={color} sx={{ justifyContent: "center" }}>
               <BaseLine sx={{ height: "calc(100% - 2rem - var(--line-width) / 2)" }} />
-            </BaseBox>
+            </BaseBox>,
           );
           break;
         case "b": // bottom
           shapes.push(
-            <BaseBox
-              key={key}
-              color={color}
-              sx={{ alignItems: "flex-end", justifyContent: "center" }}>
+            <BaseBox key={key} color={color} sx={{ alignItems: "flex-end", justifyContent: "center" }}>
               <BaseLine sx={{ height: "calc(2rem + var(--line-width) / 2)" }} />
-            </BaseBox>
+            </BaseBox>,
           );
           break;
         case "tl": // top-left to center
           shapes.push(
-            <BaseSvg
-              key={key}
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              viewBox="0 0 100 100">
-              <line
-                x1="0"
-                y1="0"
-                x2="50"
-                y2="50"
-                stroke={color}
-                strokeWidth="6"
-              />
-            </BaseSvg>
+            <BaseSvg key={key} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <line x1="0" y1="0" x2="50" y2="50" stroke={color} strokeWidth="6" />
+            </BaseSvg>,
           );
           break;
         case "tr": // top-right to center
           shapes.push(
-            <BaseSvg
-              key={key}
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              viewBox="0 0 100 100">
-              <line
-                x1="100"
-                y1="0"
-                x2="50"
-                y2="50"
-                stroke={color}
-                strokeWidth="6"
-              />
-            </BaseSvg>
+            <BaseSvg key={key} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <line x1="100" y1="0" x2="50" y2="50" stroke={color} strokeWidth="6" />
+            </BaseSvg>,
           );
           break;
         case "bl": // bottom-left to center
           shapes.push(
-            <BaseSvg
-              key={key}
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              viewBox="0 0 100 100">
-              <line
-                x1="0"
-                y1="100"
-                x2="50"
-                y2="50"
-                stroke={color}
-                strokeWidth="6"
-              />
-            </BaseSvg>
+            <BaseSvg key={key} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <line x1="0" y1="100" x2="50" y2="50" stroke={color} strokeWidth="6" />
+            </BaseSvg>,
           );
           break;
         case "br": // bottom-right to center
           shapes.push(
-            <BaseSvg
-              key={key}
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              viewBox="0 0 100 100">
-              <line
-                x1="100"
-                y1="100"
-                x2="50"
-                y2="50"
-                stroke={color}
-                strokeWidth="6"
-              />
-            </BaseSvg>
+            <BaseSvg key={key} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <line x1="100" y1="100" x2="50" y2="50" stroke={color} strokeWidth="6" />
+            </BaseSvg>,
           );
           break;
         case "lb": // left to bottom
           shapes.push(
-            <BaseSvg
-              key={key}
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              viewBox="0 0 100 100">
-              <line
-                x1="0"
-                y1="50"
-                x2="50"
-                y2="100"
-                stroke={color}
-                strokeWidth="6"
-              />
-            </BaseSvg>
+            <BaseSvg key={key} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <line x1="0" y1="50" x2="50" y2="100" stroke={color} strokeWidth="6" />
+            </BaseSvg>,
           );
           break;
         case "lt": // left to top
           shapes.push(
-            <BaseSvg
-              key={key}
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              viewBox="0 0 100 100">
-              <line
-                x1="0"
-                y1="50"
-                x2="50"
-                y2="0"
-                stroke={color}
-                strokeWidth="6"
-              />
-            </BaseSvg>
+            <BaseSvg key={key} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <line x1="0" y1="50" x2="50" y2="0" stroke={color} strokeWidth="6" />
+            </BaseSvg>,
           );
           break;
         case "rb": // right to bottom
           shapes.push(
-            <BaseSvg
-              key={key}
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              viewBox="0 0 100 100">
-              <line
-                x1="100"
-                y1="50"
-                x2="50"
-                y2="100"
-                stroke={color}
-                strokeWidth="6"
-              />
-            </BaseSvg>
+            <BaseSvg key={key} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <line x1="100" y1="50" x2="50" y2="100" stroke={color} strokeWidth="6" />
+            </BaseSvg>,
           );
           break;
         case "rt": // right to top
           shapes.push(
-            <BaseSvg
-              key={key}
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              viewBox="0 0 100 100">
-              <line
-                x1="100"
-                y1="50"
-                x2="50"
-                y2="0"
-                stroke={color}
-                strokeWidth="6"
-              />
-            </BaseSvg>
+            <BaseSvg key={key} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <line x1="100" y1="50" x2="50" y2="0" stroke={color} strokeWidth="6" />
+            </BaseSvg>,
           );
           break;
         case "lbf": // left to bottom to right
           shapes.push(
-            <BaseSvg
-              key={key}
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              viewBox="0 0 100 100">
-              <line
-                x1="0"
-                y1="50"
-                x2="100"
-                y2="100"
-                stroke={color}
-                strokeWidth="6"
-              />
-            </BaseSvg>
+            <BaseSvg key={key} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <line x1="0" y1="50" x2="100" y2="100" stroke={color} strokeWidth="6" />
+            </BaseSvg>,
           );
           break;
         case "ltf": // left to top to right
           shapes.push(
-            <BaseSvg
-              key={key}
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              viewBox="0 0 100 100">
-              <line
-                x1="0"
-                y1="50"
-                x2="100"
-                y2="0"
-                stroke={color}
-                strokeWidth="6"
-              />
-            </BaseSvg>
+            <BaseSvg key={key} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <line x1="0" y1="50" x2="100" y2="0" stroke={color} strokeWidth="6" />
+            </BaseSvg>,
           );
           break;
         case "rtf": // right to top to left
           shapes.push(
-            <BaseSvg
-              key={key}
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              viewBox="0 0 100 100">
-              <line
-                x1="100"
-                y1="50"
-                x2="0"
-                y2="0"
-                stroke={color}
-                strokeWidth="6"
-              />
-            </BaseSvg>
+            <BaseSvg key={key} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <line x1="100" y1="50" x2="0" y2="0" stroke={color} strokeWidth="6" />
+            </BaseSvg>,
           );
           break;
         case "rbf": // right to bottom to left
           shapes.push(
-            <BaseSvg
-              key={key}
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              viewBox="0 0 100 100">
-              <line
-                x1="100"
-                y1="50"
-                x2="0"
-                y2="100"
-                stroke={color}
-                strokeWidth="6"
-              />
-            </BaseSvg>
+            <BaseSvg key={key} xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <line x1="100" y1="50" x2="0" y2="100" stroke={color} strokeWidth="6" />
+            </BaseSvg>,
           );
           break;
         case "MB": // main building
@@ -358,7 +206,8 @@ const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ ce
                 border: (theme) => `4px double ${theme.palette.neutral[600]}`,
                 width: "80%",
                 height: "50%",
-              }}>
+              }}
+            >
               <Box
                 sx={{
                   position: "absolute",
@@ -383,7 +232,7 @@ const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ ce
                   borderRadius: "50%",
                 }}
               />
-            </Box>
+            </Box>,
           );
           break;
         case "B": // building
@@ -396,7 +245,7 @@ const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ ce
                 width: "80%",
                 height: "50%",
               }}
-            />
+            />,
           );
           break;
         default:
@@ -410,9 +259,10 @@ const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ ce
                 textSizeAdjust: "auto",
                 whiteSpace: "nowrap",
                 height: "1em",
-              }}>
+              }}
+            >
               {shape}
-            </Typography>
+            </Typography>,
           );
           break;
       }
@@ -438,7 +288,8 @@ const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ ce
         position: "relative",
         width: "100%",
         height: "100%",
-      }}>
+      }}
+    >
       {shapes}
 
       {showText && (
@@ -447,7 +298,8 @@ const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ ce
             alignItems: "center",
             justifyContent: "space-around",
             flexDirection: "column",
-          }}>
+          }}
+        >
           {texts}
         </BaseBox>
       )}

@@ -19,7 +19,7 @@ const noSecondsFormatter = new Intl.DateTimeFormat(undefined, {
 const TimeDisplay: FunctionComponent<TimeDisplayProps> = ({ time, noSeconds }) => {
   const timeString = useMemo(
     () => (noSeconds ? noSecondsFormatter : dateFormatter).format(new Date(time)),
-    [time, noSeconds]
+    [time, noSeconds],
   );
 
   return timeString;

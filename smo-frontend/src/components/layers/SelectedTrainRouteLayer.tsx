@@ -22,9 +22,7 @@ const SelectedTrainRouteLayer: FunctionComponent = () => {
   const map = useMap();
   const { selectedRoute } = useContext(SelectedRouteContext);
   const [routePoints, setRoutePoints] = useState<[number, number][]>([]);
-  const [visibleSelectedTrainRoutePoints, setVisibleSelectedTrainRoutePoints] = useState<
-    [number, number][]
-  >([]);
+  const [visibleSelectedTrainRoutePoints, setVisibleSelectedTrainRoutePoints] = useState<[number, number][]>([]);
 
   useEffect(() => {
     let shouldCancel = false;
@@ -67,12 +65,7 @@ const SelectedTrainRouteLayer: FunctionComponent = () => {
   return (
     <LayerGroup>
       {visibleSelectedTrainRoutePoints.map((point) => (
-        <Marker
-          key={point[0] + "-" + point[1]}
-          position={point}
-          interactive={false}
-          icon={SELECTED_ROUTE_ICON}
-        />
+        <Marker key={point[0] + "-" + point[1]} position={point} interactive={false} icon={SELECTED_ROUTE_ICON} />
       ))}
     </LayerGroup>
   );

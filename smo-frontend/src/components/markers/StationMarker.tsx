@@ -4,6 +4,7 @@ import { Marker, Popup } from "react-leaflet";
 
 import { Station } from "../../utils/data-manager";
 import { getSteamProfileInfo, ProfileResponse } from "../../utils/steam";
+import { useSetting } from "../../utils/use-setting";
 import BotIcon from "./icons/bot.svg?raw";
 import StationMarkerPopup from "./StationMarkerPopup";
 
@@ -39,6 +40,7 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
   const markerRef = useRef<L.Marker>(null);
   const [userData, setUserData] = useState<ProfileResponse | null>(null);
   const [icon, setIcon] = useState<L.Icon<Partial<L.IconOptions>>>(DEFAULT_ICON);
+  const [layerOpacities] = useSetting("layerOpacities");
 
   useEffect(() => {
     if (!station.DispatchedBy?.[0]?.SteamId) {
@@ -58,7 +60,9 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
       ref={markerRef}
       key={station.id}
       position={[station.Latititude, station.Longitude]}
-      icon={icon}>
+      icon={icon}
+      opacity={layerOpacities["stations"]}
+    >
       <Popup autoPan={false}>
         <StationMarkerPopup
           station={station}

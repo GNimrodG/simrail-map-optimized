@@ -24,7 +24,7 @@ const ServerSelector: FunctionComponent = () => {
       setSelectedServer(serverCode);
       selectServer(serverCode);
     },
-    [setSelectedRoute, setSelectedServer, setSelectedTrain]
+    [setSelectedRoute, setSelectedServer, setSelectedTrain],
   );
 
   const servers = useBehaviorSubj(serverData$);
@@ -38,7 +38,7 @@ const ServerSelector: FunctionComponent = () => {
       sx={{
         width: "14rem",
         ...(isServerInactive && {
-          backgroundColor: "var(--joy-palette-danger-solidBg)",
+          "backgroundColor": "var(--joy-palette-danger-solidBg)",
           "--variant-outlinedHoverBg": "var(--joy-palette-danger-solidHoverBg)",
           "--variant-outlinedColor": "var(--joy-palette-danger-solidColor)",
           "--variant-outlinedBorder": "var(--joy-palette-danger-solidBg)",
@@ -46,19 +46,15 @@ const ServerSelector: FunctionComponent = () => {
       }}
       value={selectedServer}
       placeholder={!servers?.length ? t("Loading") : selectedServer || t("SelectServer")}
-      onChange={(_e, v) => handleServerChange(v!)}>
+      onChange={(_e, v) => handleServerChange(v!)}
+    >
       {servers?.map((server) => (
-        <Option
-          key={server.id}
-          value={server.ServerCode}
-          disabled={!server.IsActive}>
+        <Option key={server.id} value={server.ServerCode} disabled={!server.IsActive}>
           {server.ServerName}
         </Option>
       ))}
       {!servers?.length && (
-        <Option
-          value="loading"
-          disabled>
+        <Option value="loading" disabled>
           {t("Loading")}
         </Option>
       )}
@@ -67,10 +63,7 @@ const ServerSelector: FunctionComponent = () => {
 
   if (isServerInactive) {
     return (
-      <Tooltip
-        arrow
-        title={t("ServerInactive")}
-        color="danger">
+      <Tooltip arrow title={t("ServerInactive")} color="danger">
         {select}
       </Tooltip>
     );

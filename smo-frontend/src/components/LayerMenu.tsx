@@ -73,12 +73,14 @@ const LayerMenu: FunctionComponent<LayerMenuProps> = ({ visibleLayers, setVisibl
             />
           ))}
         </Stack>
-      }>
+      }
+    >
       <IconButton
         variant="outlined"
         sx={{ backgroundColor: "var(--joy-palette-background-surface)" }}
         onClick={() => setIsOpen((isOpen) => !isOpen)}
-        color="neutral">
+        color="neutral"
+      >
         <LayersIcon />
       </IconButton>
     </Tooltip>

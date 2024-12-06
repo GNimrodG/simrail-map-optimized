@@ -12,27 +12,23 @@ import SelectedTrainContext from "./utils/selected-train-context";
 
 function App() {
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
-  const [selectedTrain, setSelectedTrain] = useState<{ trainNo: string; follow: boolean } | null>(
-    null
-  );
+  const [selectedTrain, setSelectedTrain] = useState<{ trainNo: string; follow: boolean } | null>(null);
   const [mapLines, setMapLines] = useState<MapLineData | null>(null);
 
   const selectedRouteContextValue = useMemo(
     () => ({ selectedRoute, setSelectedRoute }),
-    [selectedRoute, setSelectedRoute]
+    [selectedRoute, setSelectedRoute],
   );
 
   const selectedTrainContextValue = useMemo(
     () => ({ selectedTrain, setSelectedTrain }),
-    [selectedTrain, setSelectedTrain]
+    [selectedTrain, setSelectedTrain],
   );
 
   const mapLinesContextValue = useMemo(() => ({ mapLines, setMapLines }), [mapLines, setMapLines]);
 
   return (
-    <CssVarsProvider
-      colorSchemeStorageKey="color-scheme"
-      defaultMode="system">
+    <CssVarsProvider colorSchemeStorageKey="color-scheme" defaultMode="system">
       <CssBaseline />
       <SelectedRouteContext.Provider value={selectedRouteContextValue}>
         <SelectedTrainContext.Provider value={selectedTrainContextValue}>

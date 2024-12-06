@@ -3,6 +3,7 @@ import { type FunctionComponent, useMemo, useRef } from "react";
 import { Marker, Popup } from "react-leaflet";
 
 import { Station } from "../../utils/data-manager";
+import { useSetting } from "../../utils/use-setting";
 import TrainIcon from "./icons/train.svg?raw";
 import StationMarkerPopup from "./StationMarkerPopup";
 
@@ -12,6 +13,8 @@ export interface UnplayableStationProps {
 
 const UnplayableStation: FunctionComponent<UnplayableStationProps> = ({ station }) => {
   const markerRef = useRef<L.Marker>(null);
+  const [layerOpacities] = useSetting("layerOpacities");
+
   const icon = useMemo(() => {
     return new L.DivIcon({
       html: `${TrainIcon}<span class="tooltip">${station.Name}</span>`,
@@ -25,13 +28,11 @@ const UnplayableStation: FunctionComponent<UnplayableStationProps> = ({ station 
     <Marker
       ref={markerRef}
       position={[station.Latititude, station.Longitude]}
-      icon={icon}>
+      icon={icon}
+      opacity={layerOpacities["unplayable-stations"]}
+    >
       <Popup autoPan={false}>
-        <StationMarkerPopup
-          station={station}
-          userData={null}
-          onClosePopup={() => markerRef.current?.closePopup()}
-        />
+        <StationMarkerPopup station={station} userData={null} onClosePopup={() => markerRef.current?.closePopup()} />
       </Popup>
     </Marker>
   );

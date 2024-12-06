@@ -52,5 +52,5 @@ export default createLayerComponent<LeafletDriftMarker, ReactLeafletDriftMarkerP
         keepAtCenter: props.keepAtCenter,
       });
     }
-  }
+  },
 );

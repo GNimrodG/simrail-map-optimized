@@ -9,10 +9,7 @@ const UnplayableStationsLayer: FunctionComponent = () => {
   return (
     <LayerGroup>
       {UnplayableStations.map((station) => (
-        <UnplayableStation
-          key={station.Name}
-          station={station as unknown as Station}
-        />
+        <UnplayableStation key={station.Name} station={station as unknown as Station} />
       ))}
     </LayerGroup>
   );

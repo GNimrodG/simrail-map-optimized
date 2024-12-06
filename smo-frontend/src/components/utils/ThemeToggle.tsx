@@ -12,16 +12,13 @@ const ThemeToggle: FunctionComponent = () => {
   const { mode, setMode } = useColorScheme();
 
   return (
-    <Tooltip
-      title={t("ToggleTheme")}
-      placement="left"
-      variant="outlined"
-      arrow>
+    <Tooltip title={t("ToggleTheme")} placement="left" variant="outlined" arrow>
       <IconButton
         variant="outlined"
         sx={{ backgroundColor: "var(--joy-palette-background-surface)" }}
         color="neutral"
-        onClick={() => setMode(mode === "light" ? "dark" : "light")}>
+        onClick={() => setMode(mode === "light" ? "dark" : "light")}
+      >
         {mode === "light" ? <MoonIcon /> : <SunIcon />}
       </IconButton>
     </Tooltip>

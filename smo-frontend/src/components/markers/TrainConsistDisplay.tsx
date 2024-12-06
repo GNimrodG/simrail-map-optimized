@@ -15,39 +15,37 @@ export interface TrainConsistDisplayProps {
 const TrainConsistDisplay: FunctionComponent<TrainConsistDisplayProps> = ({ consist }) => {
   const consistData = useMemo(
     () =>
-      consist.reduce((acc, vehicle) => {
-        const [shortName] = vehicle.split("/");
-        const lastItem = acc[acc.length - 1];
+      consist.reduce(
+        (acc, vehicle) => {
+          const [shortName] = vehicle.split("/");
+          const lastItem = acc[acc.length - 1];
 
-        if (!lastItem || lastItem.shortName !== shortName) {
-          acc.push({ count: 1, shortName, vehicles: [vehicle] });
-        } else {
-          lastItem.count++;
-          lastItem.vehicles.push(vehicle);
-        }
+          if (!lastItem || lastItem.shortName !== shortName) {
+            acc.push({ count: 1, shortName, vehicles: [vehicle] });
+          } else {
+            lastItem.count++;
+            lastItem.vehicles.push(vehicle);
+          }
 
-        return acc;
-      }, [] as { count: number; shortName: string; vehicles: string[] }[]),
-    [consist]
+          return acc;
+        },
+        [] as { count: number; shortName: string; vehicles: string[] }[],
+      ),
+    [consist],
   );
 
   return (
-    <List
-      sx={{ p: 1 }}
-      size="sm">
+    <List sx={{ p: 1 }} size="sm">
       {consistData.map(({ count, vehicles, shortName }, index) => (
         <Fragment key={index + shortName}>
           {index > 0 && <ListDivider />}
           <ListItem>
-            <Stack
-              sx={{ width: "100%" }}
-              gap={1}
-              alignItems="flex-start"
-              direction="row">
+            <Stack sx={{ width: "100%" }} gap={1} alignItems="flex-start" direction="row">
               <Box
                 sx={{
                   width: "3rem",
-                }}>
+                }}
+              >
                 <Typography level="title-lg">{count}x</Typography>
               </Box>
 

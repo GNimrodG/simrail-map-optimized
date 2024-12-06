@@ -17,20 +17,14 @@ function renderRow(props: ListChildComponentProps) {
 
   if (Object.hasOwn(dataSet, "group")) {
     return (
-      <ListSubheader
-        key={dataSet.key}
-        component="li"
-        style={inlineStyle}>
+      <ListSubheader key={dataSet.key} component="li" style={inlineStyle}>
         {dataSet.group}
       </ListSubheader>
     );
   }
 
   return (
-    <AutocompleteOption
-      {...dataSet[0]}
-      key={dataSet[0].key}
-      style={inlineStyle}>
+    <AutocompleteOption {...dataSet[0]} key={dataSet[0].key} style={inlineStyle}>
       {dataSet[1]}
     </AutocompleteOption>
   );
@@ -79,12 +73,7 @@ const ListboxComponent = forwardRef<
   const itemSize = 40;
 
   return (
-    <Popper
-      ref={ref}
-      anchorEl={anchorEl}
-      open={open}
-      modifiers={modifiers}
-      style={{ zIndex: 1000 }}>
+    <Popper ref={ref} anchorEl={anchorEl} open={open} modifiers={modifiers} style={{ zIndex: 1000 }}>
       <OuterElementContext.Provider value={other}>
         <FixedSizeList
           itemData={itemData}
@@ -94,7 +83,8 @@ const ListboxComponent = forwardRef<
           innerElementType="ul"
           itemSize={itemSize}
           overscanCount={5}
-          itemCount={itemCount}>
+          itemCount={itemCount}
+        >
           {renderRow}
         </FixedSizeList>
       </OuterElementContext.Provider>

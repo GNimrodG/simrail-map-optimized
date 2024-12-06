@@ -10,11 +10,7 @@ export interface SignalSpeedDisplayProps {
 
 const SignalSpeedDisplay: FunctionComponent<SignalSpeedDisplayProps> = ({ train }) => {
   return train.TrainData.SignalInFrontSpeed > 200 ? (
-    <Typography
-      component="span"
-      color="success"
-      variant="outlined"
-      textAlign="center">
+    <Typography component="span" color="success" variant="outlined" textAlign="center">
       VMAX
     </Typography>
   ) : (
@@ -22,7 +18,8 @@ const SignalSpeedDisplay: FunctionComponent<SignalSpeedDisplayProps> = ({ train 
       component="span"
       color={getColorTrainMarker(train.TrainData.SignalInFrontSpeed)}
       variant="outlined"
-      textAlign="center">
+      textAlign="center"
+    >
       {Math.round(train.TrainData.SignalInFrontSpeed)} km/h
     </Typography>
   );

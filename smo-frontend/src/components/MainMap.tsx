@@ -7,9 +7,9 @@ import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import L from "leaflet";
-import { type FunctionComponent, useContext, useEffect, useRef } from "react";
+import { type FunctionComponent, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { MapContainer, useMap } from "react-leaflet";
+import { MapContainer } from "react-leaflet";
 import Control from "react-leaflet-custom-control";
 
 import i18n from "../i18n";
@@ -33,6 +33,7 @@ import SelectedTrainInfo from "./SelectedTrainInfo";
 import ServerSelector from "./ServerSelector";
 import Settings from "./settings/Settings";
 import StatsDisplay from "./StatsDisplay";
+import RefreshableTileLayer from "./utils/RefreshableTileLayer";
 import ThemeToggle from "./utils/ThemeToggle";
 
 const MAIN_ATTRIBUTIONS = [
@@ -41,36 +42,6 @@ const MAIN_ATTRIBUTIONS = [
   `<a onclick="window.feedback()" href="#">${i18n.t("BugReport")}</a>`,
   'This website is not affiliated with the <a href="https://simrail.eu" target="_blank">SimRail</a> team.',
 ].join(" | ");
-
-const RefreshableTileLayer: React.FC<{ className: string; url: string; attribution: string }> = ({
-  className,
-  url,
-  attribution,
-}) => {
-  const map = useMap();
-  const layerRef = useRef<L.TileLayer | null>(null);
-
-  useEffect(() => {
-    if (layerRef.current) {
-      map.removeLayer(layerRef.current);
-    }
-
-    const layer = L.tileLayer(url, {
-      attribution,
-      className,
-    }).addTo(map);
-
-    layerRef.current = layer;
-
-    return () => {
-      if (layerRef.current) {
-        map.removeLayer(layerRef.current);
-      }
-    };
-  }, [className, url, attribution, map]);
-
-  return null;
-};
 
 const MainMap: FunctionComponent = () => {
   const { t } = useTranslation();
@@ -81,6 +52,9 @@ const MainMap: FunctionComponent = () => {
   const isConnected = useBehaviorSubj(isConnected$);
 
   const [visibleLayers, setVisibleLayers] = useSetting("visibleLayers");
+  const [layerOpacities] = useSetting("layerOpacities");
+
+  const [renderer] = useState(() => new L.Canvas());
 
   useHotkeys([
     [
@@ -100,7 +74,9 @@ const MainMap: FunctionComponent = () => {
         zoom={8}
         scrollWheelZoom
         zoomControl={false}
-        style={{ height: "100vh", width: "100vw" }}>
+        style={{ height: "100vh", width: "100vw" }}
+        renderer={renderer}
+      >
         <RefreshableTileLayer
           className={alternativeTheme ? "alternativemap" : "defaultmap"}
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -108,9 +84,7 @@ const MainMap: FunctionComponent = () => {
         />
 
         {/* placeholder control */}
-        <Control
-          prepend
-          position="topleft">
+        <Control prepend position="topleft">
           <Box sx={{ p: 2, visible: "none" }} />
         </Control>
 
@@ -126,7 +100,8 @@ const MainMap: FunctionComponent = () => {
           }}
           useFlexGap
           direction="row"
-          spacing={1}>
+          spacing={1}
+        >
           <ServerSelector />
           <SearchBar />
           <MapTimeDisplay />
@@ -150,11 +125,9 @@ const MainMap: FunctionComponent = () => {
           }}
           useFlexGap
           direction="column"
-          spacing={1}>
-          <LayerMenu
-            visibleLayers={visibleLayers}
-            setVisibleLayers={setVisibleLayers}
-          />
+          spacing={1}
+        >
+          <LayerMenu visibleLayers={visibleLayers} setVisibleLayers={setVisibleLayers} />
 
           <ThemeToggle />
 
@@ -162,33 +135,22 @@ const MainMap: FunctionComponent = () => {
         </Stack>
 
         {/* Selected Route */}
-        <Control
-          prepend
-          position="bottomright">
+        <Control prepend position="bottomright">
           {selectedRoute && (
             <Sheet
               variant="outlined"
               sx={{
                 p: 1,
                 borderRadius: "var(--joy-radius-sm)",
-              }}>
+              }}
+            >
               <Stack>
                 <Typography level="body-md">{t("SelectedRoute")}</Typography>
-                <Stack
-                  spacing={1}
-                  direction="row"
-                  alignItems="center">
-                  <Typography
-                    level="body-lg"
-                    variant="outlined"
-                    color="primary">
+                <Stack spacing={1} direction="row" alignItems="center">
+                  <Typography level="body-lg" variant="outlined" color="primary">
                     {selectedRoute}
                   </Typography>
-                  <Button
-                    size="sm"
-                    variant="outlined"
-                    color="danger"
-                    onClick={() => setSelectedRoute(null)}>
+                  <Button size="sm" variant="outlined" color="danger" onClick={() => setSelectedRoute(null)}>
                     {t("Hide")}
                   </Button>
                 </Stack>
@@ -203,6 +165,7 @@ const MainMap: FunctionComponent = () => {
             className={alternativeTheme ? "alternativelayers" : "defaultmap"}
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png"
+            opacity={layerOpacities["orm-infra"]}
           />
         )}
         {/* orm-maxspeed */}
@@ -211,6 +174,7 @@ const MainMap: FunctionComponent = () => {
             className={alternativeTheme ? "alternativelayers" : "defaultmap"}
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/maxspeed/{z}/{x}/{y}.png"
+            opacity={layerOpacities["orm-maxspeed"]}
           />
         )}
         {/* orm-signals */}
@@ -219,6 +183,7 @@ const MainMap: FunctionComponent = () => {
             className={alternativeTheme ? "alternativelayers" : "defaultmap"}
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/signals/{z}/{x}/{y}.png"
+            opacity={layerOpacities["orm-signals"]}
           />
         )}
         {/* orm-electrification */}
@@ -227,9 +192,9 @@ const MainMap: FunctionComponent = () => {
             className={alternativeTheme ? "alternativelayers" : "defaultmap"}
             attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
             url="https://{s}.tiles.openrailwaymap.org/electrification/{z}/{x}/{y}.png"
+            opacity={layerOpacities["orm-electrification"]}
           />
         )}
-        {/* orm-overlays */}
 
         {/* Stations, Trains, Signals, Active route, Unplayable stations*/}
         {visibleLayers.includes("stations") && <StationsLayer />}

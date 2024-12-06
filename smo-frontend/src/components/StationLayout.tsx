@@ -7,11 +7,7 @@ import useBehaviorSubj from "../utils/useBehaviorSubj";
 import StationLayoutBlock from "./StationLayoutBlock";
 import StationLayoutGraphic from "./StationLayoutGraphic";
 
-export type StationLayoutData = (
-  | string
-  | [string, number, string | null, string | null]
-  | null
-)[][];
+export type StationLayoutData = (string | [string, number, string | null, string | null] | null)[][];
 
 export interface StationLayoutProps {
   layout: string[];
@@ -30,16 +26,10 @@ const StationGrid = styled("table")({
 
 function getTrainForTrack(trains: Train[], signals: (string | null)[] | null) {
   if (!signals) return null;
-  return (
-    trains.find((train) => signals.includes(train.TrainData.SignalInFront?.split("@")[0])) || null
-  );
+  return trains.find((train) => signals.includes(train.TrainData.SignalInFront?.split("@")[0])) || null;
 }
 
-const StationLayout: FunctionComponent<StationLayoutProps> = ({
-  layout: rawLayout,
-  showText: _showText,
-  defs,
-}) => {
+const StationLayout: FunctionComponent<StationLayoutProps> = ({ layout: rawLayout, showText: _showText, defs }) => {
   const showText = _showText ?? true;
   const layout = useMemo(
     () =>
@@ -47,20 +37,17 @@ const StationLayout: FunctionComponent<StationLayoutProps> = ({
         row.split("|").map((x) => {
           const parts = x.split(";");
           return parts.length > 1 ? parts : x;
-        })
+        }),
       ),
-    [rawLayout]
+    [rawLayout],
   );
   const trains = useBehaviorSubj(trainsData$);
   const trainData = useMemo(
     () =>
       layout.map((row) =>
-        row.map(
-          (cell) =>
-            (Array.isArray(cell) && getTrainForTrack(trains, defs[cell[0]]?.slice(0, 2))) || null
-        )
+        row.map((cell) => (Array.isArray(cell) && getTrainForTrack(trains, defs[cell[0]]?.slice(0, 2))) || null),
       ),
-    [layout, trains, defs]
+    [layout, trains, defs],
   );
 
   const columns = useMemo(
@@ -70,10 +57,10 @@ const StationLayout: FunctionComponent<StationLayoutProps> = ({
           x.reduce((acc, curr) => {
             if (Array.isArray(curr)) return acc + (+curr[1] || 1);
             return acc + 1;
-          }, 0)
-        )
+          }, 0),
+        ),
       ),
-    [layout]
+    [layout],
   );
 
   return (
@@ -84,9 +71,7 @@ const StationLayout: FunctionComponent<StationLayoutProps> = ({
             .constructor(columns)
             .fill(null)
             .map((_: null, i: number) => (
-              <Box
-                component="td"
-                key={`slh_${i}_${columns}`}>
+              <Box component="td" key={`slh_${i}_${columns}`}>
                 <Box sx={{ width: 50 }} />
               </Box>
             ))}
@@ -94,31 +79,17 @@ const StationLayout: FunctionComponent<StationLayoutProps> = ({
       </thead>
       <tbody>
         {layout.map((row, i) => (
-          <Box
-            component="tr"
-            sx={{ height: 70 }}
-            key={`slr_${i}_${row.length}`}>
+          <Box component="tr" sx={{ height: 70 }} key={`slr_${i}_${row.length}`}>
             {row.map((cell, j) => {
               if (!cell) return <td key={`slc_empty_${i}-${j}`} />;
 
               if (Array.isArray(cell)) {
                 return (
-                  <StationLayoutBlock
-                    key={`slc_block_${i}-${j}`}
-                    data={cell}
-                    defs={defs}
-                    train={trainData[i][j]}
-                  />
+                  <StationLayoutBlock key={`slc_block_${i}-${j}`} data={cell} defs={defs} train={trainData[i][j]} />
                 );
               }
 
-              return (
-                <StationLayoutGraphic
-                  key={`slc_graphic_${i}-${j}`}
-                  cell={cell}
-                  showText={showText}
-                />
-              );
+              return <StationLayoutGraphic key={`slc_graphic_${i}-${j}`} cell={cell} showText={showText} />;
             })}
           </Box>
         ))}

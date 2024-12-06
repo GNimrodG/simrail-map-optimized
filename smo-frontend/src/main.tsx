@@ -12,7 +12,7 @@ export const feedbackIntegration = Sentry.feedbackSyncIntegration(
   },
   {
     includeReplay: true,
-  }
+  },
 );
 
 feedbackIntegration.createForm().then((form) => {
@@ -47,5 +47,5 @@ import App from "./App.tsx";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>
+  </React.StrictMode>,
 );

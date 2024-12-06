@@ -5,14 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 
 import UnplayableStations from "../assets/unplayable-stations.json";
-import {
-  signalsData$,
-  SignalWithTrain,
-  Station,
-  stationsData$,
-  Train,
-  trainsData$,
-} from "../utils/data-manager";
+import { signalsData$, SignalWithTrain, Station, stationsData$, Train, trainsData$ } from "../utils/data-manager";
 import { getStationGeometry, goToSignal } from "../utils/geom-utils";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { normalizeString } from "../utils/ui";
@@ -88,9 +81,7 @@ const SearchBar: FunctionComponent = () => {
       slots={{
         listbox: ListboxComponent,
       }}
-      isOptionEqualToValue={(option, value) =>
-        option.type === value?.type && option.data === value?.data
-      }
+      isOptionEqualToValue={(option, value) => option.type === value?.type && option.data === value?.data}
       renderOption={(props, option) => [props, getLabel(option)] as React.ReactNode}
       renderGroup={(params) => params as unknown as React.ReactNode}
       groupBy={(option) => t(`Layers.Overlay.${option.type.toLowerCase()}`)}

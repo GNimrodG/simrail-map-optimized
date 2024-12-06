@@ -47,17 +47,11 @@ export interface StationMarkerPopupProps {
 
 const STATION_AREA_MAP = new Map<string, L.Polygon>();
 
-const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
-  station,
-  userData,
-  onClosePopup,
-}) => {
+const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ station, userData, onClosePopup }) => {
   const { t } = useTranslation("translation", { keyPrefix: "StationMarkerPopup" });
   const [isPending, startTransition] = useTransition();
   const map = useMap();
-  const [stationArea, setStationArea] = useState<L.Polygon | null>(
-    STATION_AREA_MAP.get(station.id) || null
-  );
+  const [stationArea, setStationArea] = useState<L.Polygon | null>(STATION_AREA_MAP.get(station.id) || null);
   const signals = useMemo(() => getSignalsForStation(station), [station]);
 
   const [stationLayoutModalOpen, setStationLayoutModalOpen] = useState(false);
@@ -94,7 +88,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
 
     if (stationLayoutVariant?.endsWith("-inverted")) {
       return Object.fromEntries(
-        Object.entries(defs).map(([key, [s1, s2, t, s1l, s2l]]) => [key, [s2, s1, t, s2l, s1l]])
+        Object.entries(defs).map(([key, [s1, s2, t, s1l, s2l]]) => [key, [s2, s1, t, s2l, s1l]]),
       );
     }
 
@@ -103,55 +97,33 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
 
   const layoutOptions = useMemo(
     () =>
-      (station.Prefix &&
-        Object.keys(StationLayouts[station.Prefix] || {}).filter(
-          (x) => !!x && !x.startsWith("_")
-        )) ||
+      (station.Prefix && Object.keys(StationLayouts[station.Prefix] || {}).filter((x) => !!x && !x.startsWith("_"))) ||
       [],
-    [station.Prefix]
+    [station.Prefix],
   );
 
   const layout: string[] | null = useMemo(
     () => (stationLayoutVariant && StationLayouts[station.Prefix][stationLayoutVariant]) || null,
-    [station.Prefix, stationLayoutVariant]
+    [station.Prefix, stationLayoutVariant],
   );
 
   return (
     <>
       {isPending && <Loading color="warning" />}
-      <Stack
-        alignItems="center"
-        spacing={1}>
-        {station.MainImageURL && (
-          <img
-            style={{ width: 300 }}
-            src={station.MainImageURL}
-            alt={station.Name}
-          />
-        )}
-        <Typography
-          level="h4"
-          endDecorator={station.Prefix && <Chip>{station.Prefix}</Chip>}>
+      <Stack alignItems="center" spacing={1}>
+        {station.MainImageURL && <img style={{ width: 300 }} src={station.MainImageURL} alt={station.Name} />}
+        <Typography level="h4" endDecorator={station.Prefix && <Chip>{station.Prefix}</Chip>}>
           {station.Name}
         </Typography>
         {station.DifficultyLevel >= 0 ? (
           <Typography>{t("Difficulty", { difficulty: station.DifficultyLevel })}</Typography>
         ) : (
-          <Typography
-            level="body-lg"
-            color="warning"
-            variant="solid"
-            noWrap>
+          <Typography level="body-lg" color="warning" variant="solid" noWrap>
             {t("UnplayableStation")}
           </Typography>
         )}
-        <Stack
-          direction="row"
-          spacing={1}
-          alignItems="center">
-          <Typography component="div">
-            {t("SignalCount", { signalCount: signals.length })}
-          </Typography>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Typography component="div">{t("SignalCount", { signalCount: signals.length })}</Typography>
           <Tooltip
             arrow
             variant="outlined"
@@ -163,11 +135,9 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
                   maxWidth: "max(20vw, 200px)",
                   height: "min(200px, 90vh)",
                   overflowY: "auto",
-                }}>
-                <Table
-                  size="sm"
-                  hoverRow
-                  stickyHeader>
+                }}
+              >
+                <Table size="sm" hoverRow stickyHeader>
                   <thead>
                     <tr>
                       <th scope="col">{t("Signal")}</th>
@@ -183,32 +153,27 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
                         onClick={() => {
                           onClosePopup();
                           goToSignal(signal, map);
-                        }}>
+                        }}
+                      >
                         <td>{signal.name}</td>
                         <td>{signal.role}</td>
                         <td>
-                          <Typography>
-                            {signal.train && <SignalSpeedDisplay train={signal.train} />}
-                          </Typography>
+                          <Typography>{signal.train && <SignalSpeedDisplay train={signal.train} />}</Typography>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </Table>
               </Box>
-            }>
-            <Stack
-              alignItems="center"
-              justifyContent="center">
+            }
+          >
+            <Stack alignItems="center" justifyContent="center">
               <InfoIcon />
             </Stack>
           </Tooltip>
         </Stack>
         {userData && station.DispatchedBy?.[0]?.SteamId && (
-          <SteamProfileDisplay
-            profile={userData}
-            steamId={station.DispatchedBy[0].SteamId}
-          />
+          <SteamProfileDisplay profile={userData} steamId={station.DispatchedBy[0].SteamId} />
         )}
         {!!layoutDefs && (
           <Button
@@ -219,25 +184,18 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
                 setStationLayoutVariant(layoutOptions[0]);
                 setStationLayoutModalOpen(true);
               });
-            }}>
+            }}
+          >
             {t("ShowStationLayout")}
           </Button>
         )}
         {!!signals.length &&
           (stationArea ? (
-            <Button
-              fullWidth
-              variant="solid"
-              color="danger"
-              onClick={hideStationArea}>
+            <Button fullWidth variant="solid" color="danger" onClick={hideStationArea}>
               {t("HideStationArea")}
             </Button>
           ) : (
-            <Button
-              fullWidth
-              variant="solid"
-              color="success"
-              onClick={showStationArea}>
+            <Button fullWidth variant="solid" color="success" onClick={showStationArea}>
               {t("ShowStationArea")}
             </Button>
           ))}
@@ -247,7 +205,8 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
         hideBackdrop
         open={stationLayoutModalOpen}
         onClose={() => setStationLayoutModalOpen(false)}
-        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
         <Sheet
           variant="outlined"
           sx={{
@@ -255,7 +214,8 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
             p: 1,
             boxShadow: "lg",
             position: "relative",
-          }}>
+          }}
+        >
           {isPending && <Loading color="warning" />}
           <ModalClose
             variant="plain"
@@ -265,27 +225,21 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
               right: (theme) => theme.spacing(1),
             }}
           />
-          <Typography
-            level="h3"
-            textAlign="center">
+          <Typography level="h3" textAlign="center">
             {t("StationLayoutTitle", { stationName: station.Name })}
           </Typography>
 
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ margin: 1 }}>
+          <Stack direction="row" spacing={1} sx={{ margin: 1 }}>
             <Typography
               component="label"
               endDecorator={
                 <Switch
                   disabled={isPending}
                   checked={stationLayoutShowTexts}
-                  onChange={(e) =>
-                    startTransition(() => setStationLayoutShowTexts(e.target.checked))
-                  }
+                  onChange={(e) => startTransition(() => setStationLayoutShowTexts(e.target.checked))}
                 />
-              }>
+              }
+            >
               {t("ShowTexts")}
             </Typography>
           </Stack>
@@ -293,17 +247,12 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
           {layoutOptions.length > 1 && (
             <Tabs
               value={stationLayoutVariant}
-              onChange={(_e, v) => startTransition(() => setStationLayoutVariant(v as string))}>
+              onChange={(_e, v) => startTransition(() => setStationLayoutVariant(v as string))}
+            >
               <TabList>
                 {layoutOptions.map((variant) => (
-                  <Tab
-                    key={variant}
-                    disabled={isPending}
-                    value={variant}>
-                    {t(
-                      "StationLayout.Names." +
-                        (variant.endsWith("-inverted") ? variant.slice(0, -9) : variant)
-                    )}
+                  <Tab key={variant} disabled={isPending} value={variant}>
+                    {t("StationLayout.Names." + (variant.endsWith("-inverted") ? variant.slice(0, -9) : variant))}
                   </Tab>
                 ))}
               </TabList>
@@ -317,27 +266,18 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
               maxWidth: "90vw",
               maxHeight: "80vh",
               overflow: "scroll",
-            }}>
+            }}
+          >
             {layout && layoutDefs && (
-              <StationLayout
-                layout={layout}
-                defs={layoutDefs}
-                showText={stationLayoutShowTexts}
-              />
+              <StationLayout layout={layout} defs={layoutDefs} showText={stationLayoutShowTexts} />
             )}
           </Box>
           <Typography level="body-sm">
             <Trans
               i18nKey="StationMarkerPopup.HelpText"
               components={[
-                <Typography
-                  key="helper-success"
-                  color="success"
-                />,
-                <Typography
-                  key="helper-body-xs"
-                  level="body-xs"
-                />,
+                <Typography key="helper-success" color="success" />,
+                <Typography key="helper-body-xs" level="body-xs" />,
               ]}
             />
           </Typography>
