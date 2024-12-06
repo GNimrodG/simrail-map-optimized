@@ -60,7 +60,7 @@ jobs:
           DEPLOYMENT_WEBHOOK_URL: ${{ secrets.DEPLOYMENT_WEBHOOK_URL }}
         continue-on-error: true
         # only trigger on new tags and if the DEPLOYMENT_WEBHOOK_URL secret is set
-        if: github.event_name == 'create' && startsWith(github.ref, 'refs/tags/v') && env.DEPLOYMENT_WEBHOOK_URL != ''
+        if: env.SHOULD_PUSH == 'true' && env.DEPLOYMENT_WEBHOOK_URL != ''
         uses: wei/curl@v1
         with:
           args: -X POST ${{ secrets.DEPLOYMENT_WEBHOOK_URL }}
