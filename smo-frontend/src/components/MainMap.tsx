@@ -7,7 +7,7 @@ import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import L from "leaflet";
-import { type FunctionComponent, useContext, useState } from "react";
+import { type FunctionComponent, lazy, Suspense, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MapContainer } from "react-leaflet";
 import Control from "react-leaflet-custom-control";
@@ -19,22 +19,23 @@ import SelectedTrainContext from "../utils/selected-train-context";
 import { useSetting } from "../utils/use-setting";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
 import LayerMenu from "./LayerMenu";
-import ActiveSignalsLayer from "./layers/ActiveSignalsLayer";
-import MapLinesLayer from "./layers/MapLinesLayer";
-import PassiveSignalsLayer from "./layers/PassiveSignalsLayer";
-import SelectedTrainRouteLayer from "./layers/SelectedTrainRouteLayer";
-import StationsLayer from "./layers/StationsLayer";
-import TrainsLayer from "./layers/TrainsLayer";
-import UnplayableStationsLayer from "./layers/UnplayableStationsLayer";
 import Loading from "./Loading";
 import MapTimeDisplay from "./MapTimeDisplay";
 import SearchBar from "./SearchBar";
 import SelectedTrainInfo from "./SelectedTrainInfo";
 import ServerSelector from "./ServerSelector";
-import Settings from "./settings/Settings";
+import SettingsModal from "./settings/SettingsModal";
 import StatsDisplay from "./StatsDisplay";
 import RefreshableTileLayer from "./utils/RefreshableTileLayer";
 import ThemeToggle from "./utils/ThemeToggle";
+
+const ActiveSignalsLayer = lazy(() => import("./layers/ActiveSignalsLayer"));
+const MapLinesLayer = lazy(() => import("./layers/MapLinesLayer"));
+const PassiveSignalsLayer = lazy(() => import("./layers/PassiveSignalsLayer"));
+const SelectedTrainRouteLayer = lazy(() => import("./layers/SelectedTrainRouteLayer"));
+const StationsLayer = lazy(() => import("./layers/StationsLayer"));
+const TrainsLayer = lazy(() => import("./layers/TrainsLayer"));
+const UnplayableStationsLayer = lazy(() => import("./layers/UnplayableStationsLayer"));
 
 const MAIN_ATTRIBUTIONS = [
   '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
@@ -131,7 +132,7 @@ const MainMap: FunctionComponent = () => {
 
           <ThemeToggle />
 
-          <Settings />
+          <SettingsModal />
         </Stack>
 
         {/* Selected Route */}
@@ -196,14 +197,17 @@ const MainMap: FunctionComponent = () => {
           />
         )}
 
-        {/* Stations, Trains, Signals, Active route, Unplayable stations*/}
-        {visibleLayers.includes("stations") && <StationsLayer />}
-        {visibleLayers.includes("trains") && <TrainsLayer />}
-        {visibleLayers.includes("passive-signals") && <PassiveSignalsLayer />}
-        {visibleLayers.includes("active-signals") && <ActiveSignalsLayer />}
-        {visibleLayers.includes("selected-route") && <SelectedTrainRouteLayer />}
-        {visibleLayers.includes("unplayable-stations") && <UnplayableStationsLayer />}
-        <MapLinesLayer />
+        <Suspense fallback={<Loading color="success" />}>
+          {/* Stations, Trains, Signals, Active route, Unplayable stations*/}
+          {visibleLayers.includes("stations") && <StationsLayer />}
+          {visibleLayers.includes("trains") && <TrainsLayer />}
+          {visibleLayers.includes("passive-signals") && <PassiveSignalsLayer />}
+          {visibleLayers.includes("active-signals") && <ActiveSignalsLayer />}
+          {visibleLayers.includes("selected-route") && <SelectedTrainRouteLayer />}
+          {visibleLayers.includes("unplayable-stations") && <UnplayableStationsLayer />}
+
+          <MapLinesLayer />
+        </Suspense>
       </MapContainer>
     </>
   );

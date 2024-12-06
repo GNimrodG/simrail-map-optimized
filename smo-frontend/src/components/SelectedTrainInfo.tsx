@@ -1,5 +1,5 @@
 import Sheet from "@mui/joy/Sheet";
-import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
+import { type FunctionComponent, lazy, Suspense, useContext, useEffect, useMemo, useState } from "react";
 import { useMap } from "react-leaflet";
 
 import { signalsData$, trainsData$ } from "../utils/data-manager";
@@ -8,7 +8,9 @@ import SelectedTrainContext from "../utils/selected-train-context";
 import { getSteamProfileInfo, ProfileResponse } from "../utils/steam";
 import { useSetting } from "../utils/use-setting";
 import useBehaviorSubj from "../utils/useBehaviorSubj";
-import TrainMarkerPopup from "./markers/TrainMarkerPopup";
+import Loading from "./Loading";
+
+const TrainMarkerPopup = lazy(() => import("./markers/TrainMarkerPopup"));
 
 const SelectedTrainInfo: FunctionComponent = () => {
   const map = useMap();
@@ -89,13 +91,15 @@ const SelectedTrainInfo: FunctionComponent = () => {
           borderRadius: "var(--joy-radius-sm)",
         }}
       >
-        <TrainMarkerPopup
-          train={selectedTrainData}
-          userData={selectedTrainUserData}
-          showTrainRouteButton
-          isCollapsed={isCollapsed}
-          onToggleCollapse={() => setIsCollapsed((isCollapsed) => !isCollapsed)}
-        />
+        <Suspense fallback={<Loading />}>
+          <TrainMarkerPopup
+            train={selectedTrainData}
+            userData={selectedTrainUserData}
+            showTrainRouteButton
+            isCollapsed={isCollapsed}
+            onToggleCollapse={() => setIsCollapsed((isCollapsed) => !isCollapsed)}
+          />
+        </Suspense>
       </Sheet>
     )
   );

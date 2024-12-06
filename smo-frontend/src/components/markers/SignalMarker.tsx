@@ -4,7 +4,7 @@ import Stack from "@mui/joy/Stack";
 import { DefaultColorPalette } from "@mui/joy/styles/types";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
-import { DivIcon, DivIconOptions } from "leaflet";
+import { DivIcon, DivIconOptions, Icon, IconOptions } from "leaflet";
 import { type FunctionComponent, useContext, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Marker, Popup } from "react-leaflet";
@@ -20,16 +20,6 @@ import {
 import MapLinesContext, { MapLineData } from "../../utils/map-lines-context";
 import { getDistanceColorForSignal } from "../../utils/ui";
 import SignalIcon from "./icons/signals/signal.svg?raw";
-import SignalBlockGreenIcon from "./icons/signals/signal-block-green.svg?raw";
-import SignalBlockRedIcon from "./icons/signals/signal-block-red.svg?raw";
-import SignalBlockYellowIcon from "./icons/signals/signal-block-yellow.svg?raw";
-import SignalMain40Icon from "./icons/signals/signal-main-40.svg?raw";
-import SignalMain60Icon from "./icons/signals/signal-main-60.svg?raw";
-import SignalMain100Icon from "./icons/signals/signal-main-100.svg?raw";
-import SignalMainGreenIcon from "./icons/signals/signal-main-green.svg?raw";
-import SignalMainRedIcon from "./icons/signals/signal-main-red.svg?raw";
-import SignalSmallRedIcon from "./icons/signals/signal-small-red.svg?raw";
-import SignalSmallWhiteIcon from "./icons/signals/signal-small-white.svg?raw";
 
 export interface SignalMarkerProps {
   signal: SignalWithTrain;
@@ -37,10 +27,12 @@ export interface SignalMarkerProps {
   opacity?: number;
 }
 
+const className = "icon signal";
+
 const DEFAULT_ICON_OPTIONS: DivIconOptions = {
   html: SignalIcon,
   iconSize: [14, 14],
-  className: "icon signal",
+  className,
 };
 
 const SECONDARY_ICON = new DivIcon({
@@ -48,63 +40,63 @@ const SECONDARY_ICON = new DivIcon({
   className: `${DEFAULT_ICON_OPTIONS.className} secondary`,
 });
 
-const BLOCK_SIGNAL_RED_ICON = new DivIcon({
-  ...DEFAULT_ICON_OPTIONS,
-  html: SignalBlockRedIcon,
+const BLOCK_SIGNAL_RED_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-block-red.svg",
   iconSize: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
 });
 
-const BLOCK_SIGNAL_YELLOW_ICON = new DivIcon({
-  ...DEFAULT_ICON_OPTIONS,
-  html: SignalBlockYellowIcon,
+const BLOCK_SIGNAL_YELLOW_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-block-yellow.svg",
   iconSize: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
 });
 
-const BLOCK_SIGNAL_GREEN_ICON = new DivIcon({
-  ...DEFAULT_ICON_OPTIONS,
-  html: SignalBlockGreenIcon,
+const BLOCK_SIGNAL_GREEN_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-block-green.svg",
   iconSize: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
 });
 
-const MAIN_SIGNAL_RED_ICON = new DivIcon({
-  ...DEFAULT_ICON_OPTIONS,
-  html: SignalMainRedIcon,
+const MAIN_SIGNAL_RED_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-red.svg",
   iconSize: [15, 51], // base size 5x17 x3
 });
 
-const MAIN_SIGNAL_40_ICON = new DivIcon({
-  ...DEFAULT_ICON_OPTIONS,
-  html: SignalMain40Icon,
+const MAIN_SIGNAL_40_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-40.svg",
   iconSize: [15, 39.3], // base size 5x13.1 x3
 });
 
-const MAIN_SIGNAL_60_ICON = new DivIcon({
-  ...DEFAULT_ICON_OPTIONS,
-  html: SignalMain60Icon,
+const MAIN_SIGNAL_60_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-60.svg",
   iconSize: [15, 39.3], // base size 5x13.1 x3
 });
 
-const MAIN_SIGNAL_100_ICON = new DivIcon({
-  ...DEFAULT_ICON_OPTIONS,
-  html: SignalMain100Icon,
+const MAIN_SIGNAL_100_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-100.svg",
   iconSize: [15, 39.3], // base size 5x13.1 x3
 });
 
-const MAIN_SIGNAL_GREEN_ICON = new DivIcon({
-  ...DEFAULT_ICON_OPTIONS,
-  html: SignalMainGreenIcon,
+const MAIN_SIGNAL_GREEN_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-green.svg",
   iconSize: [15, 51], // base size 5x17 x2
 });
 
-const SMALL_SIGNAL_RED_ICON = new DivIcon({
-  ...DEFAULT_ICON_OPTIONS,
-  html: SignalSmallRedIcon,
+const SMALL_SIGNAL_RED_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-small-red.svg",
   iconSize: [15, 21.99], // base size 5x7.33 x3
 });
 
-const SMALL_SIGNAL_WHITE_ICON = new DivIcon({
-  ...DEFAULT_ICON_OPTIONS,
-  html: SignalSmallWhiteIcon,
+const SMALL_SIGNAL_WHITE_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-small-white.svg",
   iconSize: [15, 21.99], // base size 5x7.33 x3
 });
 
@@ -148,7 +140,7 @@ const PREV_FURTHER_COLOR = "#FFA500";
 
 const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSelect, opacity = 1 }) => {
   const { t } = useTranslation("translation", { keyPrefix: "SignalMarker" });
-  const [icon, setIcon] = useState<DivIcon>(new DivIcon(DEFAULT_ICON_OPTIONS));
+  const [icon, setIcon] = useState<Icon<DivIconOptions | IconOptions>>(new DivIcon(DEFAULT_ICON_OPTIONS));
   const { mapLines, setMapLines } = useContext(MapLinesContext);
 
   useEffect(() => {

@@ -3,12 +3,14 @@ import "@fontsource/inter";
 
 import CssBaseline from "@mui/joy/CssBaseline";
 import { CssVarsProvider } from "@mui/joy/styles";
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 
-import MainMap from "./components/MainMap";
+import Loading from "./components/Loading";
 import MapLinesContext, { MapLineData } from "./utils/map-lines-context";
 import SelectedRouteContext from "./utils/selected-route-context";
 import SelectedTrainContext from "./utils/selected-train-context";
+
+const MainMap = lazy(() => import("./components/MainMap"));
 
 function App() {
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
@@ -33,7 +35,9 @@ function App() {
       <SelectedRouteContext.Provider value={selectedRouteContextValue}>
         <SelectedTrainContext.Provider value={selectedTrainContextValue}>
           <MapLinesContext.Provider value={mapLinesContextValue}>
-            <MainMap />
+            <Suspense fallback={<Loading color="success" />}>
+              <MainMap />
+            </Suspense>
           </MapLinesContext.Provider>
         </SelectedTrainContext.Provider>
       </SelectedRouteContext.Provider>

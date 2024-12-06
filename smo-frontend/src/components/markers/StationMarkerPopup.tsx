@@ -14,7 +14,7 @@ import Tabs from "@mui/joy/Tabs";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import L from "leaflet";
-import { type FunctionComponent, useCallback, useMemo, useState, useTransition } from "react";
+import { type FunctionComponent, lazy, Suspense, useCallback, useMemo, useState, useTransition } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 
@@ -24,9 +24,10 @@ import { getSignalsForStation, getStationGeometry, goToSignal } from "../../util
 import { ProfileResponse } from "../../utils/steam";
 import InfoIcon from "../icons/InfoIcon";
 import Loading from "../Loading";
-import StationLayout from "../StationLayout";
 import SteamProfileDisplay from "../SteamProfileDisplay";
 import SignalSpeedDisplay from "../utils/SignalSpeedDisplay";
+
+const StationLayout = lazy(() => import("../StationLayout"));
 
 type StationLayouts = Record<
   string,
@@ -268,9 +269,11 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
               overflow: "scroll",
             }}
           >
-            {layout && layoutDefs && (
-              <StationLayout layout={layout} defs={layoutDefs} showText={stationLayoutShowTexts} />
-            )}
+            <Suspense fallback={<Loading color="neutral" />}>
+              {layout && layoutDefs && (
+                <StationLayout layout={layout} defs={layoutDefs} showText={stationLayoutShowTexts} />
+              )}
+            </Suspense>
           </Box>
           <Typography level="body-sm">
             <Trans
