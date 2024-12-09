@@ -89,8 +89,7 @@ const SelectedTrainInfo: FunctionComponent = () => {
         sx={{
           p: isCollapsed ? 1 : 2,
           borderRadius: "var(--joy-radius-sm)",
-        }}
-      >
+        }}>
         <Suspense fallback={<Loading />}>
           <TrainMarkerPopup
             train={selectedTrainData}

@@ -47,8 +47,7 @@ const MapLinesLayer: FunctionComponent = () => {
           key={`selected-signal-line-${line.index}-${line.color}-${line.label}-${line.coords[0][0]}-${line.coords[0][1]}`}
           positions={line.coords}
           color={line.color}
-          weight={5}
-        >
+          weight={5}>
           <Tooltip permanent direction="center">
             {line.label}
           </Tooltip>

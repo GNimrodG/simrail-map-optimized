@@ -105,8 +105,7 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
       position={[train.TrainData.Latititute, train.TrainData.Longitute]}
       keepAtCenter={shouldFollow}
       icon={icon}
-      opacity={layerOpacities["trains"]}
-    >
+      opacity={layerOpacities["trains"]}>
       {popup}
     </ReactLeafletDriftMarker>
   );

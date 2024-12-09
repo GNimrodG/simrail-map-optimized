@@ -120,16 +120,14 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
           borderColor: "neutral.600",
           p: 0.5,
           minWidth: "200px",
-        }}
-      >
+        }}>
         <FormLabel
           sx={{
             position: "relative",
             display: "inline-block",
             width: "100%",
             textAlign: "center",
-          }}
-        >
+          }}>
           {lengthSignal1 && (
             <Typography
               component="span"
@@ -138,8 +136,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                 position: "absolute",
                 left: 1,
                 top: 0,
-              }}
-            >
+              }}>
               {lengthSignal1}m
             </Typography>
           )}
@@ -151,8 +148,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
               position: "absolute",
               right: 1,
               top: 0,
-            }}
-          >
+            }}>
             {track && platform && (
               <Typography component="span" color="neutral">
                 {track}/{platform}
@@ -200,8 +196,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                         <SignalSpeedDisplay train={train} />
                         <Typography
                           textAlign="center"
-                          color={getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront)}
-                        >
+                          color={getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront)}>
                           {Math.round(train.TrainData.DistanceToSignalInFront)}m
                         </Typography>
                       </>
@@ -209,8 +204,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                   </Stack>
                 )
               }
-              arrow
-            >
+              arrow>
               <SignalContainer disabled={!signal1}>
                 {signal1 && (
                   <Signal
@@ -238,8 +232,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                   enterDelay={500}
                   keepMounted
                   title={<TrainMarkerPopup train={train} hideButtons />}
-                  arrow
-                >
+                  arrow>
                   <Stack
                     sx={{
                       position: "absolute",
@@ -249,8 +242,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                       color: "neutral.200",
                     }}
                     alignItems="center"
-                    justifyContent="center"
-                  >
+                    justifyContent="center">
                     <InfoIcon />
                   </Stack>
                 </Tooltip>
@@ -266,8 +258,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                           <SignalSpeedDisplay train={train} />
                           <Typography
                             textAlign="center"
-                            color={getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront)}
-                          >
+                            color={getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront)}>
                             {Math.round(train.TrainData.DistanceToSignalInFront)}m
                           </Typography>
                         </>
@@ -275,8 +266,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                     </Stack>
                   )
                 }
-                arrow
-              >
+                arrow>
                 <SignalContainer disabled={!signal2}>
                   {signal2 && (
                     <Signal

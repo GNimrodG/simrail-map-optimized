@@ -46,8 +46,7 @@ const ServerSelector: FunctionComponent = () => {
       }}
       value={selectedServer}
       placeholder={!servers?.length ? t("Loading") : selectedServer || t("SelectServer")}
-      onChange={(_e, v) => handleServerChange(v!)}
-    >
+      onChange={(_e, v) => handleServerChange(v!)}>
       {servers?.map((server) => (
         <Option key={server.id} value={server.ServerCode} disabled={!server.IsActive}>
           {server.ServerName}

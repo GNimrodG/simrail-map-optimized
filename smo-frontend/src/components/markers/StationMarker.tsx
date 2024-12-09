@@ -61,8 +61,7 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
       key={station.id}
       position={[station.Latititude, station.Longitude]}
       icon={icon}
-      opacity={layerOpacities["stations"]}
-    >
+      opacity={layerOpacities["stations"]}>
       <Popup autoPan={false}>
         <StationMarkerPopup
           station={station}

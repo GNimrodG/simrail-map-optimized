@@ -21,8 +21,7 @@ const SteamProfileDisplay: FunctionComponent<SteamProfileDisplayProps> = ({ prof
         sx={{ textDecoration: "none", color: "inherit" }}
         direction="row"
         spacing={1}
-        alignItems="center"
-      >
+        alignItems="center">
         <Avatar src={profile.avatar} alt={profile.personaname} />
         <Typography level="h3">{profile.personaname}</Typography>
       </Stack>

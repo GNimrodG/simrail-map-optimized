@@ -136,8 +136,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
                   maxWidth: "max(20vw, 200px)",
                   height: "min(200px, 90vh)",
                   overflowY: "auto",
-                }}
-              >
+                }}>
                 <Table size="sm" hoverRow stickyHeader>
                   <thead>
                     <tr>
@@ -154,8 +153,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
                         onClick={() => {
                           onClosePopup();
                           goToSignal(signal, map);
-                        }}
-                      >
+                        }}>
                         <td>{signal.name}</td>
                         <td>{signal.role}</td>
                         <td>
@@ -166,8 +164,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
                   </tbody>
                 </Table>
               </Box>
-            }
-          >
+            }>
             <Stack alignItems="center" justifyContent="center">
               <InfoIcon />
             </Stack>
@@ -185,8 +182,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
                 setStationLayoutVariant(layoutOptions[0]);
                 setStationLayoutModalOpen(true);
               });
-            }}
-          >
+            }}>
             {t("ShowStationLayout")}
           </Button>
         )}
@@ -206,8 +202,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
         hideBackdrop
         open={stationLayoutModalOpen}
         onClose={() => setStationLayoutModalOpen(false)}
-        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-      >
+        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
         <Sheet
           variant="outlined"
           sx={{
@@ -215,8 +210,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
             p: 1,
             boxShadow: "lg",
             position: "relative",
-          }}
-        >
+          }}>
           {isPending && <Loading color="warning" />}
           <ModalClose
             variant="plain"
@@ -239,8 +233,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
                   checked={stationLayoutShowTexts}
                   onChange={(e) => startTransition(() => setStationLayoutShowTexts(e.target.checked))}
                 />
-              }
-            >
+              }>
               {t("ShowTexts")}
             </Typography>
           </Stack>
@@ -248,8 +241,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
           {layoutOptions.length > 1 && (
             <Tabs
               value={stationLayoutVariant}
-              onChange={(_e, v) => startTransition(() => setStationLayoutVariant(v as string))}
-            >
+              onChange={(_e, v) => startTransition(() => setStationLayoutVariant(v as string))}>
               <TabList>
                 {layoutOptions.map((variant) => (
                   <Tab key={variant} disabled={isPending} value={variant}>
@@ -267,8 +259,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
               maxWidth: "90vw",
               maxHeight: "80vh",
               overflow: "scroll",
-            }}
-          >
+            }}>
             <Suspense fallback={<Loading color="neutral" />}>
               {layout && layoutDefs && (
                 <StationLayout layout={layout} defs={layoutDefs} showText={stationLayoutShowTexts} />

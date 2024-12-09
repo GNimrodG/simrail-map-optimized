@@ -17,8 +17,7 @@ const ThemeToggle: FunctionComponent = () => {
         variant="outlined"
         sx={{ backgroundColor: "var(--joy-palette-background-surface)" }}
         color="neutral"
-        onClick={() => setMode(mode === "light" ? "dark" : "light")}
-      >
+        onClick={() => setMode(mode === "light" ? "dark" : "light")}>
         {mode === "light" ? <MoonIcon /> : <SunIcon />}
       </IconButton>
     </Tooltip>

@@ -29,8 +29,7 @@ const UnplayableStation: FunctionComponent<UnplayableStationProps> = ({ station 
       ref={markerRef}
       position={[station.Latititude, station.Longitude]}
       icon={icon}
-      opacity={layerOpacities["unplayable-stations"]}
-    >
+      opacity={layerOpacities["unplayable-stations"]}>
       <Popup autoPan={false}>
         <StationMarkerPopup station={station} userData={null} onClosePopup={() => markerRef.current?.closePopup()} />
       </Popup>

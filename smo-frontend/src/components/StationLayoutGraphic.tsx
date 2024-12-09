@@ -206,8 +206,7 @@ const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ ce
                 border: (theme) => `4px double ${theme.palette.neutral[600]}`,
                 width: "80%",
                 height: "50%",
-              }}
-            >
+              }}>
               <Box
                 sx={{
                   position: "absolute",
@@ -259,8 +258,7 @@ const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ ce
                 textSizeAdjust: "auto",
                 whiteSpace: "nowrap",
                 height: "1em",
-              }}
-            >
+              }}>
               {shape}
             </Typography>,
           );
@@ -288,8 +286,7 @@ const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ ce
         position: "relative",
         width: "100%",
         height: "100%",
-      }}
-    >
+      }}>
       {shapes}
 
       {showText && (
@@ -298,8 +295,7 @@ const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ ce
             alignItems: "center",
             justifyContent: "space-around",
             flexDirection: "column",
-          }}
-        >
+          }}>
           {texts}
         </BaseBox>
       )}

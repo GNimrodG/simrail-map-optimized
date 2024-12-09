@@ -54,8 +54,7 @@ const ValueLabelComponent: FunctionComponent<{ children: React.ReactNode }> = (p
         "lineHeight": theme.lineHeight.md,
         "paddingInline": "0.375rem",
         "minWidth": "24px",
-      })}
-    >
+      })}>
       {(+(props.children?.toString() || 0)).toFixed(0)}%
     </Box>
   );

@@ -83,8 +83,7 @@ const ListboxComponent = forwardRef<
           innerElementType="ul"
           itemSize={itemSize}
           overscanCount={5}
-          itemCount={itemCount}
-        >
+          itemCount={itemCount}>
           {renderRow}
         </FixedSizeList>
       </OuterElementContext.Provider>

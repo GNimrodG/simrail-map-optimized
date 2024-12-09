@@ -44,8 +44,7 @@ const TrainConsistDisplay: FunctionComponent<TrainConsistDisplayProps> = ({ cons
               <Box
                 sx={{
                   width: "3rem",
-                }}
-              >
+                }}>
                 <Typography level="title-lg">{count}x</Typography>
               </Box>
 

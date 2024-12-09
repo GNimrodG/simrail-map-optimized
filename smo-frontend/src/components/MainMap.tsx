@@ -76,8 +76,7 @@ const MainMap: FunctionComponent = () => {
         scrollWheelZoom
         zoomControl={false}
         style={{ height: "100vh", width: "100vw" }}
-        renderer={renderer}
-      >
+        renderer={renderer}>
         <RefreshableTileLayer
           className={alternativeTheme ? "alternativemap" : "defaultmap"}
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -101,8 +100,7 @@ const MainMap: FunctionComponent = () => {
           }}
           useFlexGap
           direction="row"
-          spacing={1}
-        >
+          spacing={1}>
           <ServerSelector />
           <SearchBar />
           <MapTimeDisplay />
@@ -126,8 +124,7 @@ const MainMap: FunctionComponent = () => {
           }}
           useFlexGap
           direction="column"
-          spacing={1}
-        >
+          spacing={1}>
           <LayerMenu visibleLayers={visibleLayers} setVisibleLayers={setVisibleLayers} />
 
           <ThemeToggle />
@@ -143,8 +140,7 @@ const MainMap: FunctionComponent = () => {
               sx={{
                 p: 1,
                 borderRadius: "var(--joy-radius-sm)",
-              }}
-            >
+              }}>
               <Stack>
                 <Typography level="body-md">{t("SelectedRoute")}</Typography>
                 <Stack spacing={1} direction="row" alignItems="center">

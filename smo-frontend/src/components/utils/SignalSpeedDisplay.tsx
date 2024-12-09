@@ -18,8 +18,7 @@ const SignalSpeedDisplay: FunctionComponent<SignalSpeedDisplayProps> = ({ train 
       component="span"
       color={getColorTrainMarker(train.TrainData.SignalInFrontSpeed)}
       variant="outlined"
-      textAlign="center"
-    >
+      textAlign="center">
       {Math.round(train.TrainData.SignalInFrontSpeed)} km/h
     </Typography>
   );

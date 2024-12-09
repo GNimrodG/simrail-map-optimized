@@ -66,8 +66,7 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({ station, mainS
                   time: moment.duration({ m: -timeUntil }).humanize(true),
                 })
         }
-        color={timeColor}
-      >
+        color={timeColor}>
         <Typography variant="outlined" level="body-xs" color={timeColor}>
           {timeUntil}'
         </Typography>

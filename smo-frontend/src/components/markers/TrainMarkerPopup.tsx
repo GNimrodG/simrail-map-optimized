@@ -138,8 +138,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         useFlexGap
         sx={{
           width: "14rem",
-        }}
-      >
+        }}>
         <Stack spacing={0.5} direction="row" alignItems="center">
           <Typography level="body-lg">
             {train.TrainNoLocal} ({train.TrainName})
@@ -150,8 +149,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                 display: "flex",
                 justifyContent: "flex-end",
                 gridArea: "1 / 3 / 2 / 4",
-              }}
-            >
+              }}>
               <IconButton size="sm" onClick={onToggleCollapse}>
                 <ExpandIcon />
               </IconButton>
@@ -181,8 +179,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         maxHeight: "calc(100vh - 6rem)",
         minWidth: "16rem",
         overflowY: "auto",
-      }}
-    >
+      }}>
       {!timetable && (
         <LinearProgress
           sx={{
@@ -203,14 +200,12 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           alignItems: "center",
           gridTemplateColumns: "1fr auto 1fr",
           width: "100%",
-        }}
-      >
+        }}>
         <Typography
           level="h3"
           sx={{
             gridArea: "1 / 2 / 2 / 3",
-          }}
-        >
+          }}>
           {train.TrainNoLocal} ({train.TrainName})
         </Typography>
 
@@ -220,8 +215,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
               display: "flex",
               justifyContent: "flex-end",
               gridArea: "1 / 3 / 2 / 4",
-            }}
-          >
+            }}>
             <IconButton size="sm" onClick={onToggleCollapse}>
               <CollapseIcon />
             </IconButton>
@@ -242,8 +236,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                 maxHeight: "90vh",
                 overflowY: "auto",
                 position: "relative",
-              }}
-            >
+              }}>
               <Typography
                 level="body-lg"
                 textAlign="center"
@@ -253,14 +246,12 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                   zIndex: 1,
                   backgroundColor: theme.palette.background.surface,
                   boxShadow: `0px 4px 10px ${theme.palette.background.surface}`,
-                }}
-              >
+                }}>
                 {t("Consist")}
               </Typography>
               <TrainConsistDisplay consist={train.Vehicles} />
             </Box>
-          }
-        >
+          }>
           <Stack alignItems="center" justifyContent="center">
             <InfoIcon />
           </Stack>
@@ -286,8 +277,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           sx={{
             "--Step-indicatorDotSize": "0.5rem",
           }}
-          completed
-        >
+          completed>
           {firstStation ? (
             <StationDisplay station={firstStation} pastStation mainStation />
           ) : (
@@ -315,12 +305,10 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsTimeTableExpanded((expanded) => !expanded);
-                  }}
-                >
+                  }}>
                   {isTimeTableExpanded ? <CollapseIcon /> : <ExpandIcon />}
                 </StepIndicator>
-              }
-            >
+              }>
               <StationDisplay station={currentStation} mainStation={isTimeTableExpanded} />
             </Step>
             {isTimeTableExpanded && nextStation && (
@@ -333,8 +321,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         <Step
           sx={{
             "--Step-indicatorDotSize": "0.5rem",
-          }}
-        >
+          }}>
           {lastStation ? (
             <StationDisplay station={lastStation} mainStation />
           ) : (
@@ -367,8 +354,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                   onClick={() => {
                     setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: false });
                     setMapLines(null);
-                  }}
-                >
+                  }}>
                   {t("Unfollow")}
                 </Button>
               ) : (
@@ -376,8 +362,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                   fullWidth
                   variant="solid"
                   color="success"
-                  onClick={() => setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: true })}
-                >
+                  onClick={() => setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: true })}>
                   {t("Follow")}
                 </Button>
               )}
@@ -387,8 +372,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                 onClick={() => {
                   setSelectedTrain(null);
                   setMapLines(null);
-                }}
-              >
+                }}>
                 {t("Unpin")}
               </Button>
             </ButtonGroup>
@@ -398,15 +382,13 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                 fullWidth
                 variant="solid"
                 color="primary"
-                onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true })}
-              >
+                onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true })}>
                 {t("Follow")}
               </Button>
               <Button
                 variant="solid"
                 color="neutral"
-                onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: false })}
-              >
+                onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: false })}>
                 {t("Pin")}
               </Button>
             </ButtonGroup>
@@ -421,8 +403,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                     BETA
                   </Chip>
                 }
-                onClick={() => setSelectedRoute(train.TrainNoLocal)}
-              >
+                onClick={() => setSelectedRoute(train.TrainNoLocal)}>
                 {t("ShowRoute")}
               </Button>
             ) : (
@@ -433,8 +414,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                     BETA
                   </Chip>
                 }
-                onClick={() => setSelectedRoute(null)}
-              >
+                onClick={() => setSelectedRoute(null)}>
                 {t("HideRoute")}
               </Button>
             ))}

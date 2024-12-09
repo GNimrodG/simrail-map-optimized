@@ -448,8 +448,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                     localStorage.getItem("adminPassword") && (
                       <ChipDelete onDelete={() => deletePrevSignal(signal.name, s)} />
                     )
-                  }
-                >
+                  }>
                   {s}
                 </Chip>
               ))}
@@ -464,8 +463,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                     localStorage.getItem("adminPassword") && (
                       <ChipDelete onDelete={() => deleteNextSignal(signal.name, s)} />
                     )
-                  }
-                >
+                  }>
                   {s}
                 </Chip>
               ))}
@@ -491,8 +489,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                       <Typography sx={{ color: "purple" }}>{t("Purple")}</Typography>: {t("NextSignals")}
                     </Typography>
                   </>
-                }
-              >
+                }>
                 <Chip onClick={showSignalLines}>{t("ShowSignalLines")}</Chip>
               </Tooltip>
               <Tooltip color="danger" title={t("ShowSignalLinesFurther.Title")}>
@@ -506,8 +503,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
               <Chip
                 color="danger"
                 variant="outlined"
-                endDecorator={<ChipDelete onDelete={() => deleteSignal(signal.name)} />}
-              >
+                endDecorator={<ChipDelete onDelete={() => deleteSignal(signal.name)} />}>
                 {t("AdminActions.DeleteSignal")}
               </Chip>
               {signal.prevFinalized && (
@@ -521,8 +517,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                       signal.nextFinalized ?? false,
                     )
                   }
-                  color="warning"
-                >
+                  color="warning">
                   {t("AdminActions.UnFinalizePrev")}
                 </Chip>
               )}
@@ -537,8 +532,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                       signal.nextFinalized ?? false,
                     )
                   }
-                  color="success"
-                >
+                  color="success">
                   {t("AdminActions.FinalizePrev")}
                 </Chip>
               )}
@@ -553,8 +547,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                       false,
                     )
                   }
-                  color="warning"
-                >
+                  color="warning">
                   {t("AdminActions.UnFinalizeNext")}
                 </Chip>
               )}
@@ -569,8 +562,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                       true,
                     )
                   }
-                  color="success"
-                >
+                  color="success">
                   {t("AdminActions.FinalizeNext")}
                 </Chip>
               )}

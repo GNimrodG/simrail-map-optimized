@@ -3,5 +3,6 @@
   "trailingComma": "all",
   "quoteProps": "consistent",
   "endOfLine": "lf",
-  "printWidth": 120
+  "printWidth": 120,
+  "bracketSameLine": true
 }

@@ -26,8 +26,7 @@ const Settings: FunctionComponent = () => {
         p: 3,
         boxShadow: "lg",
         position: "relative",
-      }}
-    >
+      }}>
       <Box
         sx={(theme) => ({
           position: "sticky",
@@ -35,8 +34,7 @@ const Settings: FunctionComponent = () => {
           zIndex: 1,
           backgroundColor: theme.palette.background.surface,
           boxShadow: `0px 0px 16px 16px ${theme.palette.background.surface}`,
-        })}
-      >
+        })}>
         <Typography component="h2" id="modal-title" level="h3" textColor="inherit" fontWeight="lg" mb={1}>
           {t("Title")}
         </Typography>

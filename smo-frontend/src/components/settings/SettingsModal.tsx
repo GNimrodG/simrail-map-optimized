@@ -20,8 +20,7 @@ const SettingsModal: FunctionComponent = () => {
           variant="outlined"
           sx={{ backgroundColor: "var(--joy-palette-background-surface)" }}
           color="neutral"
-          onClick={() => setIsOpen((isOpen) => !isOpen)}
-        >
+          onClick={() => setIsOpen((isOpen) => !isOpen)}>
           <SettingsIcon />
         </IconButton>
       </Tooltip>
@@ -30,8 +29,7 @@ const SettingsModal: FunctionComponent = () => {
         open={isOpen}
         onClose={() => setIsOpen((isOpen) => !isOpen)}
         aria-labelledby="modal-title"
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
-      >
+        sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
         <Suspense fallback={<Loading />}>{isOpen && <Settings />}</Suspense>
       </Modal>
     </>

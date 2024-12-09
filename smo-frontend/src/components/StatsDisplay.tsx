@@ -23,8 +23,7 @@ const StatsDisplay: FunctionComponent = () => {
           <br />
           {t("Stats.Tooltip.Stations", { player: playerStations, total: stations.length })}
         </Typography>
-      }
-    >
+      }>
       <Typography
         variant="outlined"
         textAlign="center"
@@ -37,8 +36,7 @@ const StatsDisplay: FunctionComponent = () => {
           marginInline: 0,
           boxShadow:
             "var(--joy-shadowRing, 0 0 #000),0px 1px 2px 0px rgba(var(--joy-shadowChannel, 21 21 21) / var(--joy-shadowOpacity, 0.08))",
-        }}
-      >
+        }}>
         {t("Stats.Trains", { player: playerTrains, total: driveableTrains })}
         {" | "}
         {t("Stats.Stations", { player: playerStations, total: stations.length })}
