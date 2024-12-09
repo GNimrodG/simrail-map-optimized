@@ -46,12 +46,12 @@ const consoleLogFormat = format.combine(
   format.timestamp(),
   format.splat(),
   format.printf(({ level, message, timestamp, module, label, client, ...rest }) => {
-    let line = `[${new Date(timestamp).toISOString()}]`;
+    let line = `[${timestamp}]`;
     if (dev) line += chalk.bold.cyan("[DEV]");
-    if (module) line += `[${module}]`;
+    if (module) line += `[${module as string}]`;
     line += `[${levelColors[level?.toLowerCase() || "warn"](level.toUpperCase())}]`;
-    if (client) line += `[${client}]`;
-    line += ` ${message.replace(/\d+ms/g, chalk.bold.yellow("$&"))}`;
+    if (client) line += `[${client as string}]`;
+    line += ` ${message?.toString().replace(/\d+ms/g, chalk.bold.yellow("$&"))}`;
     if (Object.keys(rest).length) line += ` ${JSON.stringify(rest)}`;
 
     return line;
