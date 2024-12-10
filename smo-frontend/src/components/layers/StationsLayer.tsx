@@ -4,12 +4,23 @@ import { LayerGroup, useMap } from "react-leaflet";
 
 import { Station, stationsData$ } from "../../utils/data-manager";
 import { debounce } from "../../utils/debounce";
-import useBehaviorSubj from "../../utils/useBehaviorSubj";
+import useBehaviorSubj from "../../utils/use-behaviorSubj";
 import StationMarker from "../markers/StationMarker";
 
 function getVisibleStations(stations: Station[], map: LeafletMap | null) {
-  const bounds = map?.getBounds();
-  return stations.filter((station) => bounds?.contains([station.Latititude, station.Longitude]));
+  try {
+    const bounds = map?.getBounds();
+
+    if (!bounds) {
+      console.error("Map bounds not available for stations!");
+      return stations;
+    }
+
+    return stations.filter((station) => bounds?.contains([station.Latititude, station.Longitude]));
+  } catch (e) {
+    console.error("Failed to filter visible stations: ", e);
+    return stations; // Fallback to showing all stations
+  }
 }
 
 const StationsLayer: FunctionComponent = () => {

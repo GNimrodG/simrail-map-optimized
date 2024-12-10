@@ -1,20 +1,21 @@
 import Sheet from "@mui/joy/Sheet";
 import { type FunctionComponent, lazy, Suspense, useContext, useEffect, useMemo, useState } from "react";
 import { useMap } from "react-leaflet";
+import { debounceTime, fromEvent, throttleTime } from "rxjs";
 
 import { signalsData$, trainsData$ } from "../utils/data-manager";
 import MapLinesContext from "../utils/map-lines-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { getSteamProfileInfo, ProfileResponse } from "../utils/steam";
+import useBehaviorSubj from "../utils/use-behaviorSubj";
 import { useSetting } from "../utils/use-setting";
-import useBehaviorSubj from "../utils/useBehaviorSubj";
 import Loading from "./Loading";
 
 const TrainMarkerPopup = lazy(() => import("./markers/TrainMarkerPopup"));
 
 const SelectedTrainInfo: FunctionComponent = () => {
   const map = useMap();
-  const { selectedTrain } = useContext(SelectedTrainContext);
+  const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
   const { setMapLines } = useContext(MapLinesContext);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [useAltTracking] = useSetting("useAltTracking");
@@ -43,11 +44,75 @@ const SelectedTrainInfo: FunctionComponent = () => {
     return train;
   }, [selectedTrain, trains]);
 
+  // Pause following when dragging the map and resume after a delay
+  useEffect(() => {
+    if (!map || !selectedTrain?.follow) {
+      return;
+    }
+
+    let isPaused = false;
+    let timeout: number;
+
+    const setPaused = (paused: boolean) => {
+      isPaused = paused;
+      setSelectedTrain(
+        selectedTrain?.trainNo ? { trainNo: selectedTrain.trainNo, follow: selectedTrain.follow, paused } : null,
+      );
+    };
+
+    setPaused(false);
+
+    const clearPause = () => {
+      setPaused(false);
+    };
+
+    // Pause following when dragging the map
+    const startSub = fromEvent(map, "dragstart")
+      .pipe(throttleTime(100))
+      .subscribe(() => {
+        if (isPaused) {
+          clearTimeout(timeout);
+          timeout = setTimeout(clearPause, 5000);
+          return;
+        }
+
+        setPaused(true);
+      });
+
+    // This is to prevent the train from jumping back to the center of the map while dragging
+    const middleSub = fromEvent(map, "drag")
+      .pipe(debounceTime(100))
+      .subscribe(() => {
+        if (isPaused) {
+          clearTimeout(timeout);
+          timeout = setTimeout(clearPause, 5000);
+        }
+      });
+
+    // Resume following after dragging ends
+    const endSub = fromEvent(map, "dragend")
+      .pipe(debounceTime(500))
+      .subscribe(() => {
+        if (isPaused) {
+          clearTimeout(timeout);
+          timeout = setTimeout(clearPause, 5000);
+        }
+      });
+
+    return () => {
+      startSub.unsubscribe();
+      middleSub.unsubscribe();
+      endSub.unsubscribe();
+      clearTimeout(timeout);
+    };
+  }, [selectedTrain?.trainNo, selectedTrain?.follow, map, setSelectedTrain]);
+
+  // Follow selected train
   useEffect(() => {
     if (selectedTrain?.follow && map) {
       const train = trains.find((train) => train.TrainNoLocal === selectedTrain.trainNo);
       if (train) {
-        if (!useAltTracking) {
+        if (!useAltTracking && !selectedTrain.paused) {
           map.panTo([train.TrainData.Latititute, train.TrainData.Longitute], {
             animate: true,
             duration: 1,

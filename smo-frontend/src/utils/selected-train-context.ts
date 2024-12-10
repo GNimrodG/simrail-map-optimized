@@ -1,8 +1,10 @@
 import { createContext } from "react";
 
+export type SelectedTrainData = { trainNo: string; follow: boolean; paused: boolean };
+
 const SelectedTrainContext = createContext<{
-  selectedTrain: { trainNo: string; follow: boolean } | null;
-  setSelectedTrain: (value: { trainNo: string; follow: boolean } | null) => void;
+  selectedTrain: SelectedTrainData | null;
+  setSelectedTrain: (value: SelectedTrainData | null) => void;
 }>({ selectedTrain: null, setSelectedTrain: () => {} });
 
 export default SelectedTrainContext;

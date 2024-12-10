@@ -19,7 +19,7 @@ import {
 } from "../../utils/data-manager";
 import MapLinesContext, { MapLineData } from "../../utils/map-lines-context";
 import { getDistanceColorForSignal } from "../../utils/ui";
-import SignalIcon from "./icons/signals/signal.svg?raw";
+import SignalIcon from "./icons/signal.svg?raw";
 
 export interface SignalMarkerProps {
   signal: SignalWithTrain;

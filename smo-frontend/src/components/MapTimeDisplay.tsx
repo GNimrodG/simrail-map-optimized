@@ -3,7 +3,7 @@ import { type FunctionComponent } from "react";
 
 import { timeData$ } from "../utils/data-manager";
 import { timeSubj$ } from "../utils/time";
-import useBehaviorSubj from "../utils/useBehaviorSubj";
+import useBehaviorSubj from "../utils/use-behaviorSubj";
 
 const MapTimeDisplay: FunctionComponent = () => {
   const currentTime = useBehaviorSubj(timeSubj$);

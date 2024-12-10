@@ -350,9 +350,9 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                 <Button
                   fullWidth
                   variant="solid"
-                  color="warning"
+                  color={selectedTrain.paused ? "neutral" : "warning"}
                   onClick={() => {
-                    setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: false });
+                    setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: false, paused: false });
                     setMapLines(null);
                   }}>
                   {t("Unfollow")}
@@ -362,7 +362,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                   fullWidth
                   variant="solid"
                   color="success"
-                  onClick={() => setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: true })}>
+                  onClick={() => setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: true, paused: false })}>
                   {t("Follow")}
                 </Button>
               )}
@@ -382,13 +382,13 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                 fullWidth
                 variant="solid"
                 color="primary"
-                onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true })}>
+                onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true, paused: false })}>
                 {t("Follow")}
               </Button>
               <Button
                 variant="solid"
                 color="neutral"
-                onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: false })}>
+                onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: false, paused: false })}>
                 {t("Pin")}
               </Button>
             </ButtonGroup>

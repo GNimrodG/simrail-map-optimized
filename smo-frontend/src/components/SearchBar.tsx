@@ -9,7 +9,7 @@ import { signalsData$, SignalWithTrain, Station, stationsData$, Train, trainsDat
 import { getStationGeometry, goToSignal } from "../utils/geom-utils";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { normalizeString } from "../utils/ui";
-import useBehaviorSubj from "../utils/useBehaviorSubj";
+import useBehaviorSubj from "../utils/use-behaviorSubj";
 import ListboxComponent from "./utils/ListBoxComponent";
 
 const filterOptions = createFilterOptions<ListItem>({
@@ -66,7 +66,7 @@ const SearchBar: FunctionComponent = () => {
       animate: true,
       duration: 1,
     });
-    setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true });
+    setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true, paused: false });
   };
 
   return (

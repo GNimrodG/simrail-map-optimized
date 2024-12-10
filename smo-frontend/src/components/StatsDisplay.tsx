@@ -4,7 +4,7 @@ import { t } from "i18next";
 import { type FunctionComponent } from "react";
 
 import { stationsData$, trainsData$ } from "../utils/data-manager";
-import useBehaviorSubj from "../utils/useBehaviorSubj";
+import useBehaviorSubj from "../utils/use-behaviorSubj";
 
 const StatsDisplay: FunctionComponent = () => {
   const trains = useBehaviorSubj(trainsData$);

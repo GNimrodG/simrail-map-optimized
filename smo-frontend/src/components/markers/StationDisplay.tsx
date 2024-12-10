@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 
 import { TimetableEntry } from "../../utils/data-manager";
 import { timeSubj$ } from "../../utils/time";
-import useObservable from "../../utils/useObservable";
+import useObservable from "../../utils/use-observable";
 import TimeDiffDisplay from "../utils/TimeDiffDisplay";
 import TimeDisplay from "../utils/TimeDisplay";
 

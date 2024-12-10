@@ -3,7 +3,7 @@ import { styled } from "@mui/joy/styles";
 import { type FunctionComponent, useMemo } from "react";
 
 import { Train, trainsData$ } from "../utils/data-manager";
-import useBehaviorSubj from "../utils/useBehaviorSubj";
+import useBehaviorSubj from "../utils/use-behaviorSubj";
 import StationLayoutBlock from "./StationLayoutBlock";
 import StationLayoutGraphic from "./StationLayoutGraphic";
 

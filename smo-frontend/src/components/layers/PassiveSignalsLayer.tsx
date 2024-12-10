@@ -5,19 +5,30 @@ import { LayerGroup, useMap } from "react-leaflet";
 import { signalsData$, SignalWithTrain } from "../../utils/data-manager";
 import { debounce } from "../../utils/debounce";
 import { goToSignal } from "../../utils/geom-utils";
+import useBehaviorSubj from "../../utils/use-behaviorSubj";
 import { useSetting } from "../../utils/use-setting";
-import useBehaviorSubj from "../../utils/useBehaviorSubj";
 import SignalMarker from "../markers/SignalMarker";
 
 const MIN_ZOOM = 11;
 
 function getVisibleSignals(signals: SignalWithTrain[], map: LeafletMap | null) {
-  if ((map?.getZoom() || 0) < MIN_ZOOM) {
-    return [];
-  }
+  try {
+    if ((map?.getZoom() || 0) < MIN_ZOOM) {
+      return [];
+    }
 
-  const mapBounds = map?.getBounds();
-  return signals.filter((signal) => mapBounds?.contains([signal.lat, signal.lon]));
+    const mapBounds = map?.getBounds();
+
+    if (!mapBounds) {
+      console.error("Map bounds not available for passive signals!");
+      return [];
+    }
+
+    return signals.filter((signal) => mapBounds?.contains([signal.lat, signal.lon]));
+  } catch (e) {
+    console.error("Failed to filter visible passive signals: ", e);
+    return []; // Fallback to not showing any passive signals
+  }
 }
 
 const PassiveSignalsLayer: FunctionComponent = () => {

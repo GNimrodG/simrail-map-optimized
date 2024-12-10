@@ -4,6 +4,7 @@ import Tooltip from "@mui/joy/Tooltip";
 import { type FunctionComponent, lazy, Suspense, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import ErrorBoundary from "../ErrorBoundary";
 import SettingsIcon from "../icons/SettingsIcon";
 import Loading from "../Loading";
 
@@ -30,7 +31,9 @@ const SettingsModal: FunctionComponent = () => {
         onClose={() => setIsOpen((isOpen) => !isOpen)}
         aria-labelledby="modal-title"
         sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-        <Suspense fallback={<Loading />}>{isOpen && <Settings />}</Suspense>
+        <Suspense fallback={<Loading />}>
+          <ErrorBoundary location="Settings">{isOpen && <Settings />}</ErrorBoundary>
+        </Suspense>
       </Modal>
     </>
   );

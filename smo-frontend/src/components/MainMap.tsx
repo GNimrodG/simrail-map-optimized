@@ -16,8 +16,9 @@ import i18n from "../i18n";
 import { isConnected$ } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
+import useBehaviorSubj from "../utils/use-behaviorSubj";
 import { useSetting } from "../utils/use-setting";
-import useBehaviorSubj from "../utils/useBehaviorSubj";
+import ErrorBoundary from "./ErrorBoundary";
 import LayerMenu from "./LayerMenu";
 import Loading from "./Loading";
 import MapTimeDisplay from "./MapTimeDisplay";
@@ -101,15 +102,25 @@ const MainMap: FunctionComponent = () => {
           useFlexGap
           direction="row"
           spacing={1}>
-          <ServerSelector />
-          <SearchBar />
-          <MapTimeDisplay />
-          {visibleLayers.includes("stats") && <StatsDisplay />}
+          <ErrorBoundary location="MainMap - ServerSelector">
+            <ServerSelector />
+          </ErrorBoundary>
+          <ErrorBoundary location="MainMap - SearchBar">
+            <SearchBar />
+          </ErrorBoundary>
+          <ErrorBoundary location="MainMap - MapTimeDisplay">
+            <MapTimeDisplay />
+          </ErrorBoundary>
+          <ErrorBoundary location="MainMap - StatsDisplay">
+            {visibleLayers.includes("stats") && <StatsDisplay />}
+          </ErrorBoundary>
         </Stack>
 
         {/* Selected Train Popup */}
         <Control position="bottomleft">
-          <SelectedTrainInfo />
+          <ErrorBoundary location="MainMap - SelectedTrainInfo">
+            <SelectedTrainInfo />
+          </ErrorBoundary>
         </Control>
 
         {/* Layers */}
@@ -195,14 +206,40 @@ const MainMap: FunctionComponent = () => {
 
         <Suspense fallback={<Loading color="success" />}>
           {/* Stations, Trains, Signals, Active route, Unplayable stations*/}
-          {visibleLayers.includes("stations") && <StationsLayer />}
-          {visibleLayers.includes("trains") && <TrainsLayer />}
-          {visibleLayers.includes("passive-signals") && <PassiveSignalsLayer />}
-          {visibleLayers.includes("active-signals") && <ActiveSignalsLayer />}
-          {visibleLayers.includes("selected-route") && <SelectedTrainRouteLayer />}
-          {visibleLayers.includes("unplayable-stations") && <UnplayableStationsLayer />}
+          {visibleLayers.includes("stations") && (
+            <ErrorBoundary location="MainMap - StationsLayer">
+              <StationsLayer />
+            </ErrorBoundary>
+          )}
+          {visibleLayers.includes("trains") && (
+            <ErrorBoundary location="MainMap - TrainsLayer">
+              <TrainsLayer />
+            </ErrorBoundary>
+          )}
+          {visibleLayers.includes("passive-signals") && (
+            <ErrorBoundary location="MainMap - PassiveSignalsLayer">
+              <PassiveSignalsLayer />
+            </ErrorBoundary>
+          )}
+          {visibleLayers.includes("active-signals") && (
+            <ErrorBoundary location="MainMap - ActiveSignalsLayer">
+              <ActiveSignalsLayer />
+            </ErrorBoundary>
+          )}
+          {visibleLayers.includes("selected-route") && (
+            <ErrorBoundary location="MainMap - SelectedTrainRouteLayer">
+              <SelectedTrainRouteLayer />
+            </ErrorBoundary>
+          )}
+          {visibleLayers.includes("unplayable-stations") && (
+            <ErrorBoundary location="MainMap - UnplayableStationsLayer">
+              <UnplayableStationsLayer />
+            </ErrorBoundary>
+          )}
 
-          <MapLinesLayer />
+          <ErrorBoundary location="MainMap - MapLinesLayer">
+            <MapLinesLayer />
+          </ErrorBoundary>
         </Suspense>
       </MapContainer>
     </>

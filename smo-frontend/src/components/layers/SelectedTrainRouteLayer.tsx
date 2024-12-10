@@ -13,9 +13,20 @@ const SELECTED_ROUTE_ICON = new DivIcon({
   className: "icon selected-route",
 });
 
-function getVisibleTrainRoutePoints(route: [number, number][], map: LeafletMap | null) {
-  const bounds = map?.getBounds();
-  return route.filter((point) => bounds?.contains(point));
+function getVisibleTrainRoutePoints(route: [number, number][], map: LeafletMap | null): [number, number][] {
+  try {
+    const bounds = map?.getBounds();
+
+    if (!bounds) {
+      console.error("Map bounds not available for selected train route!");
+      return [];
+    }
+
+    return route.filter((point) => bounds?.contains(point));
+  } catch (e) {
+    console.error("Failed to filter visible train route points: ", e);
+    return []; // Fallback to not showing any points
+  }
 }
 
 const SelectedTrainRouteLayer: FunctionComponent = () => {

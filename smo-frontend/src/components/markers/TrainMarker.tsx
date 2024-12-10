@@ -1,6 +1,6 @@
 import { DivIcon, Icon, IconOptions } from "leaflet";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
-import { Marker, Popup } from "react-leaflet";
+import { Marker, Popup, useMap } from "react-leaflet";
 
 import { Train } from "../../utils/data-manager";
 import SelectedTrainContext from "../../utils/selected-train-context";
@@ -48,6 +48,7 @@ function getIcon(
 }
 
 const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
+  const map = useMap();
   const { selectedTrain } = useContext(SelectedTrainContext);
   const [userData, setUserData] = useState<ProfileResponse | null>(null);
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(DEFAULT_ICON);
@@ -74,8 +75,8 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
   );
 
   const shouldFollow = useMemo(
-    () => isSelected && selectedTrain?.follow && useAltTracking,
-    [selectedTrain?.follow, isSelected, useAltTracking],
+    () => isSelected && selectedTrain?.follow && !selectedTrain.paused && useAltTracking,
+    [isSelected, selectedTrain?.follow, selectedTrain?.paused, useAltTracking],
   );
 
   useEffect(() => {
@@ -83,6 +84,14 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
       getIcon(train.TrainNoLocal, trainMarkerColor, train.TrainData.InBorderStationArea, isSelected, userData?.avatar),
     );
   }, [isSelected, train.TrainData.InBorderStationArea, train.TrainNoLocal, trainMarkerColor, userData?.avatar]);
+
+  useEffect(() => {
+    if (!shouldFollow || !disableSlidingMarkers) {
+      return;
+    }
+
+    map.flyTo([train.TrainData.Latititute, train.TrainData.Longitute], map.getZoom(), { animate: true, duration: 0.5 });
+  }, [disableSlidingMarkers, map, shouldFollow, train.TrainData.Latititute, train.TrainData.Longitute]);
 
   const popup = !isSelected && (
     <Popup autoPan={false}>
