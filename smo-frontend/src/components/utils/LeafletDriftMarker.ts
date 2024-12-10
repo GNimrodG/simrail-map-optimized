@@ -20,6 +20,18 @@ class DriftMarker extends L.Marker {
     this.on("move", this.slideCancel, this);
   };
 
+  private readonly getLatFromLatLngExpression = (latlng: L.LatLngExpression) => {
+    return "lat" in latlng ? latlng.lat : latlng[0];
+  };
+
+  private readonly getLngFromLatLngExpression = (latlng: L.LatLngExpression) => {
+    return "lng" in latlng ? latlng.lng : latlng[1];
+  };
+
+  private readonly getPointFromLatLngExpression = (latlng: L.LatLngExpression) => {
+    return L.point(this.getLatFromLatLngExpression(latlng), this.getLngFromLatLngExpression(latlng));
+  };
+
   // 🍂method slideTo(latlng: LatLng, options: Slide Options): this
   // Moves this marker until `latlng`, like `setLatLng()`, but with a smooth
   // sliding animation. Fires `movestart` and `moveend` events.
@@ -48,7 +60,7 @@ class DriftMarker extends L.Marker {
     L.Util.cancelAnimFrame(this._slideFrame);
   }
 
-  private _slideTo = () => {
+  private readonly _slideTo = () => {
     if (!this._map) return;
 
     const remaining = this._slideToUntil - performance.now();
@@ -66,12 +78,12 @@ class DriftMarker extends L.Marker {
       return this;
     }
 
-    const startPoint = this._map.latLngToContainerPoint(this._slideFromLatLng);
-    const endPoint = this._map.latLngToContainerPoint(this._slideToLatLng);
+    const startPoint = this.getPointFromLatLngExpression(this._slideFromLatLng);
+    const endPoint = this.getPointFromLatLngExpression(this._slideToLatLng);
     const percentDone = (this._slideToDuration - remaining) / this._slideToDuration;
 
     const currPoint = endPoint.multiplyBy(percentDone).add(startPoint.multiplyBy(1 - percentDone));
-    const currLatLng = this._map.containerPointToLatLng(currPoint);
+    const currLatLng = L.latLng(currPoint.x, currPoint.y);
     this.setLatLng(currLatLng);
 
     if (this._slideKeepAtCenter) {
