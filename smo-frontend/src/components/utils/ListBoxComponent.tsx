@@ -70,7 +70,7 @@ const ListboxComponent = forwardRef<
   });
 
   const itemCount = itemData.length;
-  const itemSize = 40;
+  const itemSize = 44;
 
   return (
     <Popper ref={ref} anchorEl={anchorEl} open={open} modifiers={modifiers} style={{ zIndex: 1000 }}>

@@ -8,7 +8,7 @@ import UnplayableStations from "../assets/unplayable-stations.json";
 import { signalsData$, SignalWithTrain, Station, stationsData$, Train, trainsData$ } from "../utils/data-manager";
 import { getStationGeometry, goToSignal } from "../utils/geom-utils";
 import SelectedTrainContext from "../utils/selected-train-context";
-import { normalizeString } from "../utils/ui";
+import { getSpeedColorForSignal, normalizeString } from "../utils/ui";
 import useBehaviorSubj from "../utils/use-behaviorSubj";
 import ListboxComponent from "./utils/ListBoxComponent";
 
@@ -72,7 +72,7 @@ const SearchBar: FunctionComponent = () => {
   return (
     <Autocomplete
       loading={options.length === 0}
-      sx={{ width: "14rem" }}
+      sx={{ width: "17rem" }}
       inputMode="search"
       placeholder={t("Search")}
       options={options}
@@ -82,7 +82,7 @@ const SearchBar: FunctionComponent = () => {
         listbox: ListboxComponent,
       }}
       isOptionEqualToValue={(option, value) => option.type === value?.type && option.data === value?.data}
-      renderOption={(props, option) => [props, getLabel(option)] as React.ReactNode}
+      renderOption={(props, option) => [{ ...props, color: getColor(option) }, getLabel(option)] as React.ReactNode}
       renderGroup={(params) => params as unknown as React.ReactNode}
       groupBy={(option) => t(`Layers.Overlay.${option.type.toLowerCase()}`)}
       getOptionLabel={(option) => getLabel(option)}
@@ -114,9 +114,26 @@ function getLabel(option: ListItem) {
     case "Trains":
       return `${option.data.TrainNoLocal} (${option.data.TrainName})`;
     case "Stations":
-      return option.data.Name;
+      return option.data.Name + (option.data.Prefix ? ` (${option.data.Prefix})` : "");
     case "Signals":
       return option.data.name;
+  }
+}
+
+function getColor(option: ListItem) {
+  switch (option.type) {
+    case "Trains":
+      return option.data.TrainData.ControlledBySteamID?.[0] ? "neutral" : "success";
+    case "Stations":
+      return option.data.DifficultyLevel === -1 || option.data.DispatchedBy?.[0] ? "neutral" : "success";
+    case "Signals":
+      return option.data.train
+        ? getSpeedColorForSignal(option.data.train?.TrainData.SignalInFrontSpeed)
+        : option.data.trainAhead
+          ? "danger"
+          : option.data.nextSignalWithTrainAhead
+            ? "warning"
+            : "neutral";
   }
 }
 

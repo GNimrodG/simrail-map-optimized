@@ -1,9 +1,14 @@
+import { LRUCache } from "lru-cache";
+
 export interface ProfileResponse {
   avatar: string;
   personaname: string;
 }
 
-const cache = new Map<string, ProfileResponse>();
+const cache = new LRUCache<string, ProfileResponse>({
+  max: 100,
+  ttl: 1000 * 60 * 60, // 1 hour
+});
 
 export const getSteamProfileInfo = (steamId: string): Promise<ProfileResponse> =>
   cache.has(steamId)

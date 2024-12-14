@@ -24,6 +24,16 @@ export function getDistanceColorForSignal(distance: number): DefaultColorPalette
   return "primary";
 }
 
+export function getSpeedColorForSignal(velocity: number): DefaultColorPalette {
+  if (velocity < 10) {
+    return "danger";
+  } else if (velocity < 120) {
+    return "warning";
+  }
+
+  return "success";
+}
+
 export function normalizeString(str: string): string {
   return str
     .normalize("NFD")

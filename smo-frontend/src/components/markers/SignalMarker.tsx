@@ -1,7 +1,6 @@
 import Chip from "@mui/joy/Chip";
 import ChipDelete from "@mui/joy/ChipDelete";
 import Stack from "@mui/joy/Stack";
-import { DefaultColorPalette } from "@mui/joy/styles/types";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import { DivIcon, DivIconOptions, Icon, IconOptions } from "leaflet";
@@ -18,7 +17,7 @@ import {
   updateSignal,
 } from "../../utils/data-manager";
 import MapLinesContext, { MapLineData } from "../../utils/map-lines-context";
-import { getDistanceColorForSignal } from "../../utils/ui";
+import { getDistanceColorForSignal, getSpeedColorForSignal } from "../../utils/ui";
 import SignalIcon from "./icons/signal.svg?raw";
 
 export interface SignalMarkerProps {
@@ -99,16 +98,6 @@ const SMALL_SIGNAL_WHITE_ICON = new Icon({
   iconUrl: "/assets/signals/signal-small-white.svg",
   iconSize: [15, 21.99], // base size 5x7.33 x3
 });
-
-function getColor(velocity: number): DefaultColorPalette {
-  if (velocity < 10) {
-    return "danger";
-  } else if (velocity < 120) {
-    return "warning";
-  }
-
-  return "success";
-}
 
 /**
  * Darken a hex color by a percentage
@@ -202,7 +191,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
       setIcon(
         new DivIcon({
           ...DEFAULT_ICON_OPTIONS,
-          className: `${DEFAULT_ICON_OPTIONS.className} ${getColor(signal.train.TrainData.SignalInFrontSpeed)}`,
+          className: `${DEFAULT_ICON_OPTIONS.className} ${getSpeedColorForSignal(signal.train.TrainData.SignalInFrontSpeed)}`,
         }),
       );
 
@@ -347,7 +336,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                 {signal.train.TrainData.SignalInFrontSpeed > 200 ? (
                   <Typography color="success">VMAX</Typography>
                 ) : (
-                  <Typography color={getColor(signal.train.TrainData.SignalInFrontSpeed)}>
+                  <Typography color={getSpeedColorForSignal(signal.train.TrainData.SignalInFrontSpeed)}>
                     {Math.round(signal.train.TrainData.SignalInFrontSpeed)} km/h
                   </Typography>
                 )}
@@ -364,7 +353,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                     <Typography key="train-no" variant="outlined" color="success">
                       {signal.train.TrainNoLocal} ({signal.train.TrainName})
                     </Typography>,
-                    <Typography key="train-velocity" color={getColor(signal.train.TrainData.Velocity)} />,
+                    <Typography key="train-velocity" color={getSpeedColorForSignal(signal.train.TrainData.Velocity)} />,
                     <Typography
                       key="train-distance"
                       color={getDistanceColorForSignal(signal.train.TrainData.DistanceToSignalInFront)}
@@ -387,7 +376,10 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                 components={[
                   <Typography key="trainAhead-train-no" variant="outlined" color="warning" />,
                   <Typography key="trainAhead-warning" color="warning" />,
-                  <Typography key="trainAhead-train-velocity" color={getColor(signal.trainAhead.TrainData.Velocity)} />,
+                  <Typography
+                    key="trainAhead-train-velocity"
+                    color={getSpeedColorForSignal(signal.trainAhead.TrainData.Velocity)}
+                  />,
                   <Typography
                     key="trainAhead-train-distance"
                     color={getDistanceColorForSignal(signal.trainAhead.TrainData.DistanceToSignalInFront)}

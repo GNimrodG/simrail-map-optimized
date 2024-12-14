@@ -146,21 +146,33 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
                     </tr>
                   </thead>
                   <tbody>
-                    {signals.map((signal) => (
-                      <tr
-                        style={{ cursor: "pointer" }}
-                        key={signal.name}
-                        onClick={() => {
-                          onClosePopup();
-                          goToSignal(signal, map);
-                        }}>
-                        <td>{signal.name}</td>
-                        <td>{signal.role}</td>
-                        <td>
-                          <Typography>{signal.train && <SignalSpeedDisplay train={signal.train} />}</Typography>
-                        </td>
-                      </tr>
-                    ))}
+                    {signals
+                      .sort((a, b) => {
+                        const nameA = RegExp(/(.+?\D+)(\d+)$/).exec(a.name);
+                        const nameB = RegExp(/(.+?\D+)(\d+)$/).exec(b.name);
+                        if (nameA && nameB) {
+                          if (nameA[1] === nameB[1]) {
+                            return parseInt(nameA[2], 10) - parseInt(nameB[2], 10);
+                          }
+                          return nameA[1].localeCompare(nameB[1]);
+                        }
+                        return a.name.localeCompare(b.name);
+                      })
+                      .map((signal) => (
+                        <tr
+                          style={{ cursor: "pointer" }}
+                          key={signal.name}
+                          onClick={() => {
+                            onClosePopup();
+                            goToSignal(signal, map);
+                          }}>
+                          <td>{signal.name}</td>
+                          <td>{signal.role}</td>
+                          <td>
+                            <Typography>{signal.train && <SignalSpeedDisplay train={signal.train} />}</Typography>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </Table>
               </Box>

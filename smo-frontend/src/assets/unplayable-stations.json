@@ -84,18 +84,6 @@
     "id": "KJw"
   },
   {
-    "Name": "Starzyny",
-    "Prefix": "Str",
-    "DifficultyLevel": -1,
-    "MainImageURL": "",
-    "AdditionalImage1URL": "",
-    "AdditionalImage2URL": "",
-    "DispatchedBy": [],
-    "Latititude": 50.71272005979818,
-    "Longitude": 19.8013961821638,
-    "id": "Str"
-  },
-  {
     "Name": "Żelisławice",
     "Prefix": "Zes",
     "DifficultyLevel": -1,
@@ -205,7 +193,7 @@
   },
   {
     "Name": "Żyrardów",
-    "Prefix": "5431_Zy",
+    "Prefix": "Zy",
     "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
@@ -213,7 +201,7 @@
     "DispatchedBy": [],
     "Latititude": 52.05283204,
     "Longitude": 20.45168499,
-    "id": "5431_Zy"
+    "id": "Zy"
   },
   {
     "Name": "Józefinów",
@@ -247,8 +235,8 @@
     "AdditionalImage1URL": "",
     "AdditionalImage2URL": "",
     "DispatchedBy": [],
-    "Latititude": 52.2199119,
-    "Longitude": 20.9634155,
+    "Latititude": 52.220588,
+    "Longitude": 20.963494,
     "id": "WZD"
   },
   {
@@ -444,18 +432,6 @@
     "id": "Sd"
   },
   {
-    "Name": "Miechów",
-    "Prefix": "Mi",
-    "DifficultyLevel": -1,
-    "MainImageURL": "",
-    "AdditionalImage1URL": "",
-    "AdditionalImage2URL": "",
-    "DispatchedBy": [],
-    "Latititude": 50.35469185330557,
-    "Longitude": 20.01172180533395,
-    "id": "Mi"
-  },
-  {
     "Name": "Katowice Muchowiec Staszic",
     "Prefix": "StA",
     "DifficultyLevel": -1,
@@ -478,5 +454,113 @@
     "Latititude": 50.394329,
     "Longitude": 19.879798,
     "id": "GA"
+  },
+  {
+    "Name": "Dłubnia",
+    "Prefix": "Dl",
+    "DifficultyLevel": -1,
+    "MainImageURL": "",
+    "AdditionalImage1URL": "",
+    "AdditionalImage2URL": "",
+    "DispatchedBy": [],
+    "Latititude": 50.10242866166052,
+    "Longitude": 20.026786984046822,
+    "id": "Dl"
+  },
+  {
+    "Name": "Kraków Główny",
+    "Prefix": "KG",
+    "DifficultyLevel": -1,
+    "MainImageURL": "",
+    "AdditionalImage1URL": "",
+    "AdditionalImage2URL": "",
+    "DispatchedBy": [],
+    "Latititude": 50.071904472719126,
+    "Longitude": 19.947586302048965,
+    "id": "KG"
+  },
+  {
+    "Name": "Kraków Główny Towarowy",
+    "Prefix": "KGA",
+    "DifficultyLevel": -1,
+    "MainImageURL": "",
+    "AdditionalImage1URL": "",
+    "AdditionalImage2URL": "",
+    "DispatchedBy": [],
+    "Latititude": 50.081413116793115,
+    "Longitude": 19.926677932704614,
+    "id": "KGA"
+  },
+  {
+    "Name": "Koniecpol",
+    "Prefix": "Ko",
+    "DifficultyLevel": -1,
+    "MainImageURL": "",
+    "AdditionalImage1URL": "",
+    "AdditionalImage2URL": "",
+    "DispatchedBy": [],
+    "Latititude": 50.777605737386125,
+    "Longitude": 19.709217285850773,
+    "id": "Ko"
+  },
+  {
+    "Name": "Radziwiłłów Mazowiecki",
+    "Prefix": "RM",
+    "DifficultyLevel": -1,
+    "MainImageURL": "",
+    "AdditionalImage1URL": "",
+    "AdditionalImage2URL": "",
+    "DispatchedBy": [],
+    "Latititude": 52.00498622740066,
+    "Longitude": 20.303921397971767,
+    "id": "RM"
+  },
+  {
+    "Name": "Skierniewice",
+    "Prefix": "3877_Sk",
+    "DifficultyLevel": -1,
+    "MainImageURL": "",
+    "AdditionalImage1URL": "",
+    "AdditionalImage2URL": "",
+    "DispatchedBy": [],
+    "Latititude": 51.96756730742749,
+    "Longitude": 20.15229659216084,
+    "id": "3877_Sk"
+  },
+  {
+    "Name": "Warszawa Główna Towarowa",
+    "Prefix": "WGT",
+    "DifficultyLevel": -1,
+    "MainImageURL": "",
+    "AdditionalImage1URL": "",
+    "AdditionalImage2URL": "",
+    "DispatchedBy": [],
+    "Latititude": 52.214219,
+    "Longitude": 20.91372,
+    "id": "WGT"
+  },
+  {
+    "Name": "Warszawa Gołąbki",
+    "Prefix": "Gl",
+    "DifficultyLevel": -1,
+    "MainImageURL": "",
+    "AdditionalImage1URL": "",
+    "AdditionalImage2URL": "",
+    "DispatchedBy": [],
+    "Latititude": 52.21055738801418,
+    "Longitude": 20.880824191498498,
+    "id": "Gl"
+  },
+  {
+    "Name": "Warszawa Praga",
+    "Prefix": "WPT",
+    "DifficultyLevel": -1,
+    "MainImageURL": "",
+    "AdditionalImage1URL": "",
+    "AdditionalImage2URL": "",
+    "DispatchedBy": [],
+    "Latititude": 52.26321112394744,
+    "Longitude": 21.056409543860823,
+    "id": "WPT"
   }
 ]
