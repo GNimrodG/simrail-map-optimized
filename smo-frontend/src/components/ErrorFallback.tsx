@@ -37,6 +37,8 @@ const ErrorFallbackRender: FunctionComponent<ErrorFallbackProps> = ({ error, res
     );
   }
 
+  const isProbablyTranslationError = error instanceof Error && error.message.includes("removeChild");
+
   return (
     <>
       <Loading color="danger" />
@@ -59,12 +61,23 @@ const ErrorFallbackRender: FunctionComponent<ErrorFallbackProps> = ({ error, res
             backgroundColor: (theme) => theme.palette.danger.softBg,
           }}>
           <Typography level="h1" color="danger">
-            Something went wrong
+            Something went wrong!
           </Typography>
           <Typography fontFamily="monospace" sx={{ whiteSpace: "pre", marginBottom: 1 }}>
             {error instanceof Error ? error.message : "An error occurred"}
           </Typography>
           <Typography level="body-md">Please try again or if the issue persists, hide this message.</Typography>
+          {isProbablyTranslationError && (
+            <>
+              <Typography level="title-lg" color="warning">
+                If you have translated the page using the browser's built-in translation,
+                <br /> please try disabling it.{" "}
+              </Typography>
+              <Typography level="body-sm" color="warning">
+                There are already built-in translations for German, Hungarian, Turkish and Polish in the Settings.
+              </Typography>
+            </>
+          )}
           <Typography level="body-sm">This error has been logged and will be investigated.</Typography>
           <Typography level="body-sm" gutterBottom>
             If you would like to provide feedback, please click the report button.
