@@ -50,6 +50,7 @@ const ErrorFallbackRender: FunctionComponent<ErrorFallbackProps> = ({ error, res
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: (theme) => theme.palette.background.body,
+          pt: 2,
         }}>
         <Box
           sx={{
@@ -59,6 +60,9 @@ const ErrorFallbackRender: FunctionComponent<ErrorFallbackProps> = ({ error, res
             border: "1px solid",
             borderColor: (theme) => theme.palette.danger.outlinedBorder,
             backgroundColor: (theme) => theme.palette.danger.softBg,
+            maxWidth: "min(90vw, 500px)",
+            maxHeight: "90vh",
+            overflow: "auto",
           }}>
           <Typography level="h1" color="danger">
             Something went wrong!
@@ -70,8 +74,7 @@ const ErrorFallbackRender: FunctionComponent<ErrorFallbackProps> = ({ error, res
           {isProbablyTranslationError && (
             <>
               <Typography level="title-lg" color="warning">
-                If you have translated the page using the browser's built-in translation,
-                <br /> please try disabling it.{" "}
+                If you have translated the page using the browser's built-in translation, please try disabling it.
               </Typography>
               <Typography level="body-sm" color="warning">
                 There are already built-in translations for German, Hungarian, Turkish and Polish in the Settings.
