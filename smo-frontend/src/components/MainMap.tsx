@@ -21,6 +21,7 @@ import { useSetting } from "../utils/use-setting";
 import ErrorBoundary from "./ErrorBoundary";
 import LayerMenu from "./LayerMenu";
 import Loading from "./Loading";
+import LowSpeedWarning from "./LowSpeedWarning";
 import MapTimeDisplay from "./MapTimeDisplay";
 import SearchBar from "./SearchBar";
 import SelectedTrainInfo from "./SelectedTrainInfo";
@@ -241,6 +242,8 @@ const MainMap: FunctionComponent = () => {
             <MapLinesLayer />
           </ErrorBoundary>
         </Suspense>
+
+        <LowSpeedWarning />
       </MapContainer>
     </>
   );

@@ -73,7 +73,10 @@
         "alternativeTheme": {
           "Label": "Monochrome map"
         },
-        "LayerOpacity": "Layer Opacity"
+        "LayerOpacity": "Layer Opacity",
+        "disableLowSpeedWarning": {
+          "Label": "Disable low speed warning"
+        }
       },
       "TrainMakerPopup": {
         "NextSignal": "Next Signal:",
@@ -163,7 +166,12 @@
           }
         }
       },
-      "BugReport": "Report a bug!"
+      "BugReport": "Report a bug!",
+      "LowSpeedWarning": {
+        "Title": "Low average train speed",
+        "Description": "The average speed of the trains on this server is {{speed}} km/h.",
+        "Tooltip": "Tip: You can turn off this warning in the settings."
+      }
     }
   },
   "de": {
@@ -240,7 +248,10 @@
         "alternativeTheme": {
           "Label": "Monochromatische Karte"
         },
-        "LayerOpacity": "Ebenen-Deckkraft"
+        "LayerOpacity": "Ebenen-Deckkraft",
+        "disableLowSpeedWarning": {
+          "Label": "Warnung bei niedriger Durchschnittsgeschwindigkeit deaktivieren"
+        }
       },
       "TrainMakerPopup": {
         "NextSignal": "Nächstes Signal:",
@@ -330,7 +341,12 @@
           }
         }
       },
-      "BugReport": "Einen Fehler melden!"
+      "BugReport": "Einen Fehler melden!",
+      "LowSpeedWarning": {
+        "Title": "Niedrige durchschnittliche Zugsgeschwindigkeit",
+        "Description": "Die durchschnittliche Geschwindigkeit der Züge auf diesem Server beträgt {{speed}} km/h.",
+        "Tooltip": "Tipp: Sie können diese Warnung in den Einstellungen ausschalten."
+      }
     }
   },
   "hu": {
@@ -407,7 +423,10 @@
         "alternativeTheme": {
           "Label": "Monokróm térkép"
         },
-        "LayerOpacity": "Rétegek átlátszósága"
+        "LayerOpacity": "Rétegek átlátszósága",
+        "disableLowSpeedWarning": {
+          "Label": "Alacsony sebesség figyelmeztetés letiltása"
+        }
       },
       "TrainMakerPopup": {
         "NextSignal": "Következő jelző:",
@@ -497,7 +516,12 @@
           }
         }
       },
-      "BugReport": "Hiba jelentése!"
+      "BugReport": "Hiba jelentése!",
+      "LowSpeedWarning": {
+        "Title": "Alacsony átlagos vonatsebesség",
+        "Description": "A vonatok átlagos sebessége ezen a szerveren {{speed}} km/h.",
+        "Tooltip": "Tipp: Ezt a figyelmeztetést kikapcsolhatja az beállításokban."
+      }
     }
   },
   "tr": {
@@ -574,7 +598,10 @@
         "alternativeTheme": {
           "Label": "Monokrom harita"
         },
-        "LayerOpacity": "Katman Opaklığı"
+        "LayerOpacity": "Katman Opaklığı",
+        "disableLowSpeedWarning": {
+          "Label": "Düşük hız uyarısını devre dışı bırak"
+        }
       },
       "TrainMakerPopup": {
         "NextSignal": "Bir Sonraki Sinyal:",
@@ -664,7 +691,12 @@
           }
         }
       },
-      "BugReport": "Hata bildir!"
+      "BugReport": "Hata bildir!",
+      "LowSpeedWarning": {
+        "Title": "Düşük ortalama tren hızı",
+        "Description": "Bu sunucudaki trenlerin ortalama hızı {{speed}} km/s.",
+        "Tooltip": "İpucu: Bu uyarıyı ayarlarda kapatabilirsiniz."
+      }
     }
   },
   "pl": {
@@ -741,7 +773,10 @@
         "alternativeTheme": {
           "Label": "Monochromatyczna mapa"
         },
-        "LayerOpacity": "Przezroczystość Warstw"
+        "LayerOpacity": "Przezroczystość Warstw",
+        "disableLowSpeedWarning": {
+          "Label": "Wyłącz ostrzeżenie o niskiej prędkości"
+        }
       },
       "TrainMakerPopup": {
         "NextSignal": "Następny Sygnał:",
@@ -831,7 +866,12 @@
           }
         }
       },
-      "BugReport": "Zgłoś błąd!"
+      "BugReport": "Zgłoś błąd!",
+      "LowSpeedWarning": {
+        "Title": "Niska średnia prędkość pociągów",
+        "Description": "Średnia prędkość pociągów na tym serwerze wynosi {{speed}} km/h.",
+        "Tooltip": "Wskazówka: Możesz wyłączyć to ostrzeżenie w ustawieniach."
+      }
     }
   }
 }

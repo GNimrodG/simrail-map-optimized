@@ -1,6 +1,6 @@
 import { readLocalStorageValue } from "@mantine/hooks";
 import { LRUCache } from "lru-cache";
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, map } from "rxjs";
 import { io } from "socket.io-client";
 import msgpackParser from "socket.io-msgpack-parser";
 
@@ -244,6 +244,10 @@ export const trainsData$ = new BehaviorSubject<Train[]>([]);
 socket.on("trains", (trains: Train[]) => {
   trainsData$.next(trains);
 });
+
+export const trainsAvgSpeed$ = trainsData$.pipe(
+  map((trains) => trains.reduce((acc, train) => acc + train.TrainData.Velocity, 0) / trains.length),
+);
 
 export const signalsData$ = new BehaviorSubject<SignalWithTrain[]>([]);
 

@@ -62,7 +62,7 @@ serverFetcher.data$
   )
   .subscribe((data) => {
     logger.info(
-      "Initial server data fetched, starting other fetchers. Server count: " + data!.length
+      "Initial server data fetched, starting other fetchers. Server count: " + data.length
     );
     trainFetcher.start();
     stationFetcher.start();
@@ -163,7 +163,7 @@ timeFetcher.perServerData$.subscribe((data) => {
   io.to(data.server).emit("time", data.data);
 });
 
-trainFetcher.data$.subscribe(async (data) => {
+trainFetcher.data$.subscribe((data) => {
   if (!data) return;
 
   const trains = Array.from(data.values()).flatMap((trains) => trains);

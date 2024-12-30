@@ -9,11 +9,13 @@
     "build": "tsc && yarn sentry:sourcemaps",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org data-unknown --project smo-backend ./dist && sentry-cli sourcemaps upload --org data-unknown --project smo-backend ./dist",
     "prod": "node dist/index.js",
-    "prod:migrate": "prisma migrate deploy && yarn prod"
+    "prod:migrate": "prisma migrate deploy && yarn prod",
+    "prod:debug": "cross-env NODE_ENV=development node --inspect dist/index.js"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.8.6",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.7.2"

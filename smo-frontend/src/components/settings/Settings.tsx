@@ -70,6 +70,7 @@ const Settings: FunctionComponent = () => {
         <Stack direction="column" spacing={1}>
           <SettingCheckbox settingKey="useAltTracking" />
           <SettingCheckbox settingKey="disableSlidingMarkers" />
+          <SettingCheckbox settingKey="disableLowSpeedWarning" />
         </Stack>
       </Stack>
 

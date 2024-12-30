@@ -25,6 +25,7 @@ const SETTINGS = {
     "selected-route": 1,
     "unplayable-stations": 1,
   } as Record<string, number>,
+  disableLowSpeedWarning: false,
 } as const;
 
 export type TSettings = typeof SETTINGS;

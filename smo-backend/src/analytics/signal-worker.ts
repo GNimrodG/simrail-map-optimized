@@ -45,9 +45,6 @@ const TrainPreviousSignals = new TTLCache<
 >({
   ttl: 1000 * 30, // 30 sec
   updateAgeOnGet: true,
-  dispose: (key, value) => {
-    logger.debug(`Train ${key} previous signal expired! (${value[0]}@${value[1]}km/h)`);
-  },
 });
 
 type SignalData = {
