@@ -3,6 +3,7 @@ import { Train, getBaseTrain } from "../api-helper";
 import { extname } from "path";
 import { Worker } from "worker_threads";
 import { prisma } from "../db";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 const workerPath = __dirname + "/signal-worker" + extname(__filename); // Use the same extension as this file, in dev it's .ts, in prod it's .js
 
@@ -69,45 +70,61 @@ export async function deleteSignal(id: string) {
 }
 
 export async function removeSignalPrevSignal(signal: string, prevSignal: string) {
-  const result = await prisma.signalConnections.delete({
-    where: {
-      prev_next: {
-        prev: prevSignal,
-        next: signal,
+  try {
+    const result = await prisma.signalConnections.delete({
+      where: {
+        prev_next: {
+          prev: prevSignal,
+          next: signal,
+        },
       },
-    },
-  });
+    });
 
-  if (!result) {
-    logger.error(
-      `Failed to remove signal connection ${prevSignal}->${signal}, the signal may not exist.`
-    );
-    return false;
+    if (!result) {
+      logger.error(
+        `Failed to remove signal connection ${prevSignal}->${signal}, the signal may not exist.`
+      );
+      return false;
+    }
+
+    logger.success(`Signal connection ${prevSignal}->${signal} removed`);
+    return true;
+  } catch (error) {
+    if (error instanceof PrismaClientKnownRequestError && error.code === "P2025") {
+      logger.warn(`Signal connection ${prevSignal}->${signal} does not exist.`);
+      return false;
+    }
+    throw error;
   }
-
-  logger.success(`Signal connection ${prevSignal}->${signal} removed`);
-  return true;
 }
 
 export async function removeSignalNextSignal(signal: string, nextSignal: string) {
-  const result = await prisma.signalConnections.delete({
-    where: {
-      prev_next: {
-        prev: signal,
-        next: nextSignal,
+  try {
+    const result = await prisma.signalConnections.delete({
+      where: {
+        prev_next: {
+          prev: signal,
+          next: nextSignal,
+        },
       },
-    },
-  });
+    });
 
-  if (!result) {
-    logger.error(
-      `Failed to remove signal connection ${signal}->${nextSignal}, the signal may not exist.`
-    );
-    return false;
+    if (!result) {
+      logger.error(
+        `Failed to remove signal connection ${signal}->${nextSignal}, the signal may not exist.`
+      );
+      return false;
+    }
+
+    logger.success(`Signal connection ${signal}->${nextSignal} removed`);
+    return true;
+  } catch (error) {
+    if (error instanceof PrismaClientKnownRequestError && error.code === "P2025") {
+      logger.warn(`Signal connection ${signal}->${nextSignal} does not exist.`);
+      return false;
+    }
+    throw error;
   }
-
-  logger.success(`Signal connection ${signal}->${nextSignal} removed`);
-  return true;
 }
 
 export async function addSignalPrevSignal(signal: string, prevSignal: string) {
