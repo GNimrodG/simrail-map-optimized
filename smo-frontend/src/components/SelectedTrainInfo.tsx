@@ -10,6 +10,7 @@ import { getSteamProfileInfo, ProfileResponse } from "../utils/steam";
 import useBehaviorSubj from "../utils/use-behaviorSubj";
 import { useSetting } from "../utils/use-setting";
 import Loading from "./Loading";
+import AutoZoomCheckbox from "./AutoZoomCheckbox";
 
 const TrainMarkerPopup = lazy(() => import("./markers/TrainMarkerPopup"));
 
@@ -163,6 +164,7 @@ const SelectedTrainInfo: FunctionComponent = () => {
             isCollapsed={isCollapsed}
             onToggleCollapse={() => setIsCollapsed((isCollapsed) => !isCollapsed)}
           />
+          <AutoZoomCheckbox />
         </Suspense>
       </Sheet>
     )

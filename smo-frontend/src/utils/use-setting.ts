@@ -26,6 +26,7 @@ const SETTINGS = {
     "unplayable-stations": 1,
   } as Record<string, number>,
   disableLowSpeedWarning: false,
+  autoZoom: false,
 } as const;
 
 export type TSettings = typeof SETTINGS;
