@@ -246,7 +246,7 @@ socket.on("trains", (trains: Train[]) => {
 });
 
 export const trainsAvgSpeed$ = trainsData$.pipe(
-  map((trains) => trains.reduce((acc, train) => acc + train.TrainData.Velocity, 0) / trains.length),
+  map((trains) => (trains.length === 0 ? null : trains.reduce((acc, train) => acc + train.TrainData.Velocity, 0) / trains.length)),
 );
 
 export const signalsData$ = new BehaviorSubject<SignalWithTrain[]>([]);

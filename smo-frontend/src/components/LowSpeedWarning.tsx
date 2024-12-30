@@ -17,11 +17,11 @@ const LOW_SPEED_THRESHOLD = 40;
 const LowSpeedWarning: FunctionComponent = () => {
   const { t } = useTranslation();
   const [disableLowSpeedWarning] = useSetting("disableLowSpeedWarning");
-  const [trainsAvgSpeed, setTrainsAvgSpeed] = useState(-1);
+  const [trainsAvgSpeed, setTrainsAvgSpeed] = useState<number | null>(null);
 
   useObservable(trainsAvgSpeed$, setTrainsAvgSpeed);
 
-  if (disableLowSpeedWarning || trainsAvgSpeed < 0 || trainsAvgSpeed > LOW_SPEED_THRESHOLD) return null;
+  if (disableLowSpeedWarning || trainsAvgSpeed === null || trainsAvgSpeed > LOW_SPEED_THRESHOLD) return null;
 
   return (
     <Stack sx={{ position: "fixed", top: 0, left: 0, right: 0, pt: 1, mr: 8, zIndex: 1000 }} alignItems="end">
