@@ -18,6 +18,7 @@ import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import useBehaviorSubj from "../utils/use-behaviorSubj";
 import { useSetting } from "../utils/use-setting";
+import AutoZoomHandler from "./AutoZoom";
 import ErrorBoundary from "./ErrorBoundary";
 import LayerMenu from "./LayerMenu";
 import Loading from "./Loading";
@@ -75,6 +76,7 @@ const MainMap: FunctionComponent = () => {
       <MapContainer
         center={[51.015482, 19.572143]}
         zoom={8}
+        zoomSnap={0.1}
         scrollWheelZoom
         zoomControl={false}
         style={{ height: "100vh", width: "100vw" }}
@@ -244,6 +246,7 @@ const MainMap: FunctionComponent = () => {
         </Suspense>
 
         <LowSpeedWarning />
+        <AutoZoomHandler />
       </MapContainer>
     </>
   );

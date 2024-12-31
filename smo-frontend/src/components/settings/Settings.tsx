@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES } from "../../i18n";
 import LayerOpacitySlider from "./LayerOpacitySlider";
 import SettingCheckbox from "./SettingCheckbox";
+import SettingSlider from "./SettingSlider";
 
 const Settings: FunctionComponent = () => {
   const { t, i18n } = useTranslation("translation", { keyPrefix: "Settings" });
@@ -71,6 +72,7 @@ const Settings: FunctionComponent = () => {
           <SettingCheckbox settingKey="useAltTracking" />
           <SettingCheckbox settingKey="disableSlidingMarkers" />
           <SettingCheckbox settingKey="disableLowSpeedWarning" />
+          <SettingSlider settingKey="autoZoomLimits" min={100} max={300} step={1} />
         </Stack>
       </Stack>
 

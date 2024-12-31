@@ -25,6 +25,7 @@ import { useSetting } from "../../utils/use-setting";
 import CollapseIcon from "../icons/CollapseIcon";
 import ExpandIcon from "../icons/ExpandIcon";
 import InfoIcon from "../icons/InfoIcon";
+import SettingCheckbox from "../settings/SettingCheckbox";
 import SteamProfileDisplay from "../SteamProfileDisplay";
 import { getThumbnailUrl } from "../utils/general-utils";
 import SignalSpeedDisplay from "../utils/SignalSpeedDisplay";
@@ -345,37 +346,40 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
       {!hideButtons && (
         <Stack spacing={1} sx={{ width: "100%" }}>
           {selectedTrain?.trainNo === train.TrainNoLocal ? (
-            <ButtonGroup size={isSmallScreen ? "sm" : "md"}>
-              {selectedTrain.follow ? (
+            <>
+              <ButtonGroup size={isSmallScreen ? "sm" : "md"}>
+                {selectedTrain.follow ? (
+                  <Button
+                    fullWidth
+                    variant="solid"
+                    color={selectedTrain.paused ? "neutral" : "warning"}
+                    onClick={() => {
+                      setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: false, paused: false });
+                      setMapLines(null);
+                    }}>
+                    {t("Unfollow")}
+                  </Button>
+                ) : (
+                  <Button
+                    fullWidth
+                    variant="solid"
+                    color="success"
+                    onClick={() => setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: true, paused: false })}>
+                    {t("Follow")}
+                  </Button>
+                )}
                 <Button
-                  fullWidth
                   variant="solid"
-                  color={selectedTrain.paused ? "neutral" : "warning"}
+                  color="danger"
                   onClick={() => {
-                    setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: false, paused: false });
+                    setSelectedTrain(null);
                     setMapLines(null);
                   }}>
-                  {t("Unfollow")}
+                  {t("Unpin")}
                 </Button>
-              ) : (
-                <Button
-                  fullWidth
-                  variant="solid"
-                  color="success"
-                  onClick={() => setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: true, paused: false })}>
-                  {t("Follow")}
-                </Button>
-              )}
-              <Button
-                variant="solid"
-                color="danger"
-                onClick={() => {
-                  setSelectedTrain(null);
-                  setMapLines(null);
-                }}>
-                {t("Unpin")}
-              </Button>
-            </ButtonGroup>
+              </ButtonGroup>
+              <SettingCheckbox settingKey="autoZoom" />
+            </>
           ) : (
             <ButtonGroup size={isSmallScreen ? "sm" : "md"}>
               <Button

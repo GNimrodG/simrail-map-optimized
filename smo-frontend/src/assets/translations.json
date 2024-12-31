@@ -76,6 +76,13 @@
         "LayerOpacity": "Layer Opacity",
         "disableLowSpeedWarning": {
           "Label": "Disable low speed warning"
+        },
+        "autoZoom": {
+          "Label": "Auto-Zoom (Beta)"
+        },
+        "autoZoomLimits": {
+          "Label": "Auto-Zoom Limits",
+          "Description": "Controls how many objects are needed to trigger auto-zoom. If the two values are too close, the map will start zooming in and out frequently."
         }
       },
       "TrainMakerPopup": {
@@ -251,6 +258,13 @@
         "LayerOpacity": "Ebenen-Deckkraft",
         "disableLowSpeedWarning": {
           "Label": "Warnung bei niedriger Durchschnittsgeschwindigkeit deaktivieren"
+        },
+        "autoZoom": {
+          "Label": "Auto-Zoom (Beta)"
+        },
+        "autoZoomLimits": {
+          "Label": "Auto-Zoom-Grenzen",
+          "Description": "Steuerung, wie viele Objekte benötigt werden, um den Auto-Zoom auszulösen. Wenn die beiden Werte zu nah beieinander liegen, wird die Karte häufig ein- und auszoomen."
         }
       },
       "TrainMakerPopup": {
@@ -426,6 +440,13 @@
         "LayerOpacity": "Rétegek átlátszósága",
         "disableLowSpeedWarning": {
           "Label": "Alacsony sebesség figyelmeztetés letiltása"
+        },
+        "autoZoom": {
+          "Label": "Automatikus nagyítás (Beta)"
+        },
+        "autoZoomLimits": {
+          "Label": "Automatikus nagyítás korlátai",
+          "Description": "Szabályozza, hogy hány objektum szükséges az automatikus nagyításhoz. Ha a két érték túl közel van egymáshoz, a térkép gyakran nagyít és kicsinyít."
         }
       },
       "TrainMakerPopup": {
@@ -601,6 +622,13 @@
         "LayerOpacity": "Katman Opaklığı",
         "disableLowSpeedWarning": {
           "Label": "Düşük hız uyarısını devre dışı bırak"
+        },
+        "autoZoom": {
+          "Label": "Otomatik Yakınlaştır (Beta)"
+        },
+        "autoZoomLimits": {
+          "Label": "Otomatik Yakınlaştırma Sınırları",
+          "Description": "Otomatik yakınlaştırmanın tetiklenmesi için kaç nesne gerektiğini kontrol eder. İki değer birbirine çok yakınsa, harita sık sık yakınlaşıp uzaklaşmaya başlar."
         }
       },
       "TrainMakerPopup": {
@@ -776,6 +804,13 @@
         "LayerOpacity": "Przezroczystość Warstw",
         "disableLowSpeedWarning": {
           "Label": "Wyłącz ostrzeżenie o niskiej prędkości"
+        },
+        "autoZoom": {
+          "Label": "Automatyczne przybliżanie (Beta)"
+        },
+        "autoZoomLimits": {
+          "Label": "Limity automatycznego przybliżania",
+          "Description": "Kontroluje, ile obiektów jest wymaganych do automatycznego przybliżenia. Jeśli oba wartości są zbyt blisko siebie, mapa często przybliża i oddala."
         }
       },
       "TrainMakerPopup": {

@@ -2,7 +2,7 @@
   "singleQuote": false,
   "trailingComma": "all",
   "quoteProps": "consistent",
-  "endOfLine": "lf",
+  "endOfLine": "auto",
   "printWidth": 120,
   "bracketSameLine": true
 }
