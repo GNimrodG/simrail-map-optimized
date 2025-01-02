@@ -177,8 +177,9 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
       alignItems="center"
       useFlexGap
       sx={{
-        maxHeight: "calc(100vh - 6rem)",
-        minWidth: "16rem",
+        maxHeight: "calc(100vh - 16rem)",
+        minWidth: "min(16rem, 90vw)",
+        overflowX: "hidden",
         overflowY: "auto",
       }}>
       {!timetable && (

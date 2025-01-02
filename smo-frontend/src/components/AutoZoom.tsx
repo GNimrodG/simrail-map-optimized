@@ -1,6 +1,4 @@
-import Checkbox from "@mui/joy/Checkbox";
 import { useContext, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 
 import { signalsData$, stationsData$, trainsData$ } from "../utils/data-manager";
@@ -9,9 +7,8 @@ import useBehaviorSubj from "../utils/use-behaviorSubj";
 import { useSetting } from "../utils/use-setting";
 
 const AutoZoomHandler = () => {
-  const { t } = useTranslation();
   const map = useMap();
-  const [autoZoom, setAutoZoom] = useSetting("autoZoom");
+  const [autoZoom] = useSetting("autoZoom");
   const [autoZoomLimits, setAutoZoomLimits] = useSetting("autoZoomLimits");
   const { selectedTrain } = useContext(SelectedTrainContext);
 
@@ -77,9 +74,7 @@ const AutoZoomHandler = () => {
     };
   }, [autoZoom, map, selectedTrain, signals, stations, trains, autoZoomLimits, setAutoZoomLimits]);
 
-  return (
-    <Checkbox label={t("Settings.autoZoom.Label")} checked={autoZoom} onChange={(e) => setAutoZoom(e.target.checked)} />
-  );
+  return null;
 };
 
 export default AutoZoomHandler;

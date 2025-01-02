@@ -151,10 +151,21 @@ const SelectedTrainInfo: FunctionComponent = () => {
     selectedTrainData && (
       <Sheet
         variant="outlined"
-        sx={{
+        sx={(theme) => ({
           p: isCollapsed ? 1 : 2,
+          mr: 1,
           borderRadius: "var(--joy-radius-sm)",
-        }}>
+          // fix for the attribution overlapping on small screens
+          [theme.breakpoints.down("lg")]: {
+            mb: 3,
+          },
+          [theme.breakpoints.down("md")]: {
+            mb: 5,
+          },
+          [theme.breakpoints.down("sm")]: {
+            mb: 7,
+          },
+        })}>
         <Suspense fallback={<Loading />}>
           <TrainMarkerPopup
             train={selectedTrainData}
