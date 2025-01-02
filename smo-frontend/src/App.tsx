@@ -7,9 +7,9 @@ import { lazy, Suspense, useMemo, useState } from "react";
 
 import ErrorBoundary from "./components/ErrorBoundary";
 import Loading from "./components/Loading";
+import SelectedTrainProvider from "./components/SelectedTrainProvider";
 import MapLinesContext, { MapLineData } from "./utils/map-lines-context";
 import SelectedRouteContext from "./utils/selected-route-context";
-import SelectedTrainProvider from "./components/SelectedTrainProvider";
 
 const MainMap = lazy(() => import("./components/MainMap"));
 

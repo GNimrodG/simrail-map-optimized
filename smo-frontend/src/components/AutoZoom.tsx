@@ -12,7 +12,7 @@ const AutoZoomHandler = () => {
   const { t } = useTranslation();
   const map = useMap();
   const [autoZoom, setAutoZoom] = useSetting("autoZoom");
-  const [autoZoomLimits] = useSetting("autoZoomLimits");
+  const [autoZoomLimits, setAutoZoomLimits] = useSetting("autoZoomLimits");
   const { selectedTrain } = useContext(SelectedTrainContext);
 
   const trains = useBehaviorSubj(trainsData$);
@@ -25,28 +25,49 @@ const AutoZoomHandler = () => {
     const handleZoom = () => {
       if (!map) return;
 
-      const bounds = map.getBounds();
-      const visibleTrains = trains.filter((train) =>
-        bounds.contains([train.TrainData.Latititute, train.TrainData.Longitute]),
-      );
-      const visibleSignals = signals.filter((signal) => bounds.contains([signal.lat, signal.lon]));
-      const visibleStations = stations.filter((station) => bounds.contains([station.Latititude, station.Longitude]));
-      const selectedTrainData = selectedTrain
-        ? trains.find((train) => train.TrainNoLocal === selectedTrain.trainNo)
-        : null;
+      try {
+        const bounds = map.getBounds();
+        const visibleTrains = trains.filter((train) =>
+          bounds.contains([train.TrainData.Latititute, train.TrainData.Longitute]),
+        );
+        const visibleSignals = signals.filter((signal) => bounds.contains([signal.lat, signal.lon]));
+        const visibleStations = stations.filter((station) => bounds.contains([station.Latititude, station.Longitude]));
+        const selectedTrainData = selectedTrain
+          ? trains.find((train) => train.TrainNoLocal === selectedTrain.trainNo)
+          : null;
 
-      const selectedTrainSpeed = selectedTrainData ? selectedTrainData.TrainData.Velocity : 0;
+        const selectedTrainSpeed = selectedTrainData ? selectedTrainData.TrainData.Velocity : 0;
 
-      const totalVisibleObjects =
-        visibleTrains.length * 4 + // trains are more important
-        visibleStations.length * 2 + // stations are more important
-        visibleSignals.length +
-        (200 - selectedTrainSpeed); // the slower the more important, max speed is 200
+        const totalVisibleObjects =
+          visibleTrains.length * 4 + // trains are more important
+          visibleStations.length * 2 + // stations are more important
+          visibleSignals.length +
+          (200 - selectedTrainSpeed); // the slower the more important, max speed is 200
 
-      if (totalVisibleObjects < autoZoomLimits[0]) {
-        map.zoomOut(totalVisibleObjects / autoZoomLimits[0] / 4);
-      } else if (totalVisibleObjects > autoZoomLimits[1]) {
-        map.zoomIn(totalVisibleObjects / autoZoomLimits[1] / 4);
+        if (totalVisibleObjects < autoZoomLimits[0]) {
+          const zoomOutFactor = autoZoomLimits[0] / totalVisibleObjects / 4;
+          if (zoomOutFactor > 0.1) {
+            map.zoomOut(zoomOutFactor);
+          }
+        } else if (totalVisibleObjects > autoZoomLimits[1]) {
+          const zoomInFactor = totalVisibleObjects / autoZoomLimits[1] / 4;
+          if (zoomInFactor > 0.1) {
+            map.zoomIn(zoomInFactor);
+          }
+        }
+      } catch (error) {
+        if (error instanceof Error && (error.message === "too much recursion" || error.message === "regexp too big")) {
+          if (autoZoomLimits[0] !== 200 || autoZoomLimits[1] !== 250) {
+            // reset the autoZoomLimits to default values
+            map.off("moveend", handleZoom);
+            setAutoZoomLimits([200, 250]);
+
+            console.error("AutoZoomHandler: too much recursion, resetting autoZoomLimits to default values");
+          }
+          // else do nothing
+        }
+
+        console.error("AutoZoomHandler: ", error);
       }
     };
 
@@ -54,7 +75,7 @@ const AutoZoomHandler = () => {
     return () => {
       map.off("moveend", handleZoom);
     };
-  }, [autoZoom, map, selectedTrain, signals, stations, trains, autoZoomLimits]);
+  }, [autoZoom, map, selectedTrain, signals, stations, trains, autoZoomLimits, setAutoZoomLimits]);
 
   return (
     <Checkbox label={t("Settings.autoZoom.Label")} checked={autoZoom} onChange={(e) => setAutoZoom(e.target.checked)} />

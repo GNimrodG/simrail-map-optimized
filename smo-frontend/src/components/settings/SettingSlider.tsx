@@ -14,9 +14,10 @@ export interface SettingSliderProps {
   min: number;
   max: number;
   step: number;
+  minDistance?: number;
 }
 
-const SettingSlider: FunctionComponent<SettingSliderProps> = ({ settingKey: key, min, max, step }) => {
+const SettingSlider: FunctionComponent<SettingSliderProps> = ({ settingKey: key, min, max, step, minDistance }) => {
   const { t, i18n } = useTranslation("translation", { keyPrefix: "Settings" });
 
   const [value, setValue] = useSetting(key);
@@ -33,8 +34,22 @@ const SettingSlider: FunctionComponent<SettingSliderProps> = ({ settingKey: key,
         step={step}
         valueLabelDisplay="auto"
         value={value}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onChange={(_e, v) => setValue(v as unknown as any)}
+        onChange={(_e, v) => {
+          if (minDistance && Array.isArray(v)) {
+            if (v[1] - v[0] < minDistance) {
+              if (v[0] + minDistance > max) {
+                setValue([max - minDistance, max]);
+              } else {
+                setValue([v[0], v[0] + minDistance]);
+              }
+
+              return;
+            }
+          }
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          setValue(v as unknown as any);
+        }}
       />
       {i18n.exists(`Settings.${key}.Description`) && <FormHelperText>{t(`${key}.Description`)}</FormHelperText>}
     </FormControl>
