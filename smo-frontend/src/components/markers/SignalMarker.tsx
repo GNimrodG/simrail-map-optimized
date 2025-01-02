@@ -3,11 +3,10 @@ import ChipDelete from "@mui/joy/ChipDelete";
 import Stack from "@mui/joy/Stack";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
-import { DivIcon, DivIconOptions, Icon, IconOptions } from "leaflet";
+import { Icon, Style } from "ol/style";
 import equals from "lodash/isEqual";
 import { type FunctionComponent, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { Marker, Popup, useMap } from "react-leaflet";
 
 import UnplayableStations from "../../assets/unplayable-stations.json";
 import {
@@ -23,6 +22,8 @@ import {
 import { goToStation } from "../../utils/geom-utils.ts";
 import MapLinesContext, { MapLineData } from "../../utils/map-lines-context";
 import { getDistanceColorForSignal, getSpeedColorForSignal } from "../../utils/ui";
+import Marker from "../map/Marker";
+import Popup from "../map/Popup";
 import SignalIcon from "./icons/signal.svg?raw";
 
 export interface SignalMarkerProps {
@@ -33,75 +34,88 @@ export interface SignalMarkerProps {
 
 const className = "icon signal";
 
-const DEFAULT_ICON_OPTIONS: DivIconOptions = {
-  html: SignalIcon,
-  iconSize: [14, 14],
-  className,
+const DEFAULT_ICON_OPTIONS = {
+  src: "data:image/svg+xml;utf8," + SignalIcon.replace("<svg", `<svg class="${className}"`),
+  size: [20, 20],
 };
 
-const SECONDARY_ICON = new DivIcon({
-  ...DEFAULT_ICON_OPTIONS,
-  className: `${DEFAULT_ICON_OPTIONS.className} secondary`,
+const SECONDARY_ICON = new Style({
+  image: new Icon({
+    ...DEFAULT_ICON_OPTIONS,
+    src: "data:image/svg+xml;utf8," + SignalIcon.replace("<svg", `<svg class="${className} secondary"`),
+    color: "var(--joy-palette-neutral-600)",
+    size: [20, 20],
+  }),
 });
 
-const BLOCK_SIGNAL_RED_ICON = new Icon({
-  className,
-  iconUrl: "/assets/signals/signal-block-red.svg",
-  iconSize: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
+const BLOCK_SIGNAL_RED_ICON = new Style({
+  image: new Icon({
+    src: "/assets/signals/signal-block-red.svg",
+    size: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
+  }),
 });
 
-const BLOCK_SIGNAL_YELLOW_ICON = new Icon({
-  className,
-  iconUrl: "/assets/signals/signal-block-yellow.svg",
-  iconSize: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
+const BLOCK_SIGNAL_YELLOW_ICON = new Style({
+  image: new Icon({
+    src: "/assets/signals/signal-block-yellow.svg",
+    size: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
+  }),
 });
 
-const BLOCK_SIGNAL_GREEN_ICON = new Icon({
-  className,
-  iconUrl: "/assets/signals/signal-block-green.svg",
-  iconSize: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
+const BLOCK_SIGNAL_GREEN_ICON = new Style({
+  image: new Icon({
+    src: "/assets/signals/signal-block-green.svg",
+    size: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
+  }),
 });
 
-const MAIN_SIGNAL_RED_ICON = new Icon({
-  className,
-  iconUrl: "/assets/signals/signal-main-red.svg",
-  iconSize: [15, 51], // base size 5x17 x3
+const MAIN_SIGNAL_RED_ICON = new Style({
+  image: new Icon({
+    src: "/assets/signals/signal-main-red.svg",
+    size: [15, 51], // base size 5x17 x3
+  }),
 });
 
-const MAIN_SIGNAL_40_ICON = new Icon({
-  className,
-  iconUrl: "/assets/signals/signal-main-40.svg",
-  iconSize: [15, 39.3], // base size 5x13.1 x3
+const MAIN_SIGNAL_40_ICON = new Style({
+  image: new Icon({
+    src: "/assets/signals/signal-main-40.svg",
+    size: [15, 39.3], // base size 5x13.1 x3
+  }),
 });
 
-const MAIN_SIGNAL_60_ICON = new Icon({
-  className,
-  iconUrl: "/assets/signals/signal-main-60.svg",
-  iconSize: [15, 39.3], // base size 5x13.1 x3
+const MAIN_SIGNAL_60_ICON = new Style({
+  image: new Icon({
+    src: "/assets/signals/signal-main-60.svg",
+    size: [15, 39.3], // base size 5x13.1 x3
+  }),
 });
 
-const MAIN_SIGNAL_100_ICON = new Icon({
-  className,
-  iconUrl: "/assets/signals/signal-main-100.svg",
-  iconSize: [15, 39.3], // base size 5x13.1 x3
+const MAIN_SIGNAL_100_ICON = new Style({
+  image: new Icon({
+    src: "/assets/signals/signal-main-100.svg",
+    size: [15, 39.3], // base size 5x13.1 x3
+  }),
 });
 
-const MAIN_SIGNAL_GREEN_ICON = new Icon({
-  className,
-  iconUrl: "/assets/signals/signal-main-green.svg",
-  iconSize: [15, 51], // base size 5x17 x2
+const MAIN_SIGNAL_GREEN_ICON = new Style({
+  image: new Icon({
+    src: "/assets/signals/signal-main-green.svg",
+    size: [15, 51], // base size 5x17 x2
+  }),
 });
 
-const SMALL_SIGNAL_RED_ICON = new Icon({
-  className,
-  iconUrl: "/assets/signals/signal-small-red.svg",
-  iconSize: [15, 21.99], // base size 5x7.33 x3
+const SMALL_SIGNAL_RED_ICON = new Style({
+  image: new Icon({
+    src: "/assets/signals/signal-small-red.svg",
+    size: [15, 21.99], // base size 5x7.33 x3
+  }),
 });
 
-const SMALL_SIGNAL_WHITE_ICON = new Icon({
-  className,
-  iconUrl: "/assets/signals/signal-small-white.svg",
-  iconSize: [15, 21.99], // base size 5x7.33 x3
+const SMALL_SIGNAL_WHITE_ICON = new Style({
+  image: new Icon({
+    src: "/assets/signals/signal-small-white.svg",
+    size: [15, 21.99], // base size 5x7.33 x3
+  }),
 });
 
 /**
@@ -157,69 +171,97 @@ function findStation(signalName: string) {
 const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSelect, opacity = 1 }) => {
   const map = useMap();
   const { t } = useTranslation("translation", { keyPrefix: "SignalMarker" });
-  const [icon, setIcon] = useState<Icon<DivIconOptions | IconOptions>>(new DivIcon(DEFAULT_ICON_OPTIONS));
+  const [icon, setIcon] = useState<Style>(new Style({ image: new Icon({ ...DEFAULT_ICON_OPTIONS, opacity }) }));
   const { mapLines, setMapLines } = useContext(MapLinesContext);
 
   useEffect(() => {
     if (signal.train) {
       if (signal.type === "block") {
         if (signal.train.TrainData.SignalInFrontSpeed === 0) {
-          setIcon(BLOCK_SIGNAL_RED_ICON);
+          const newStyle = BLOCK_SIGNAL_RED_ICON.clone();
+          newStyle.getImage()!.setOpacity(opacity);
+          setIcon(newStyle);
           return;
         }
 
         if (signal.nextSignalWithTrainAhead) {
-          setIcon(BLOCK_SIGNAL_YELLOW_ICON);
+          const newStyle = BLOCK_SIGNAL_YELLOW_ICON.clone();
+          newStyle.getImage()!.setOpacity(opacity);
+          setIcon(newStyle);
           return;
         }
 
         if (signal.train.TrainData.SignalInFrontSpeed > 200) {
-          setIcon(BLOCK_SIGNAL_GREEN_ICON);
+          const newStyle = BLOCK_SIGNAL_GREEN_ICON.clone();
+          newStyle.getImage()!.setOpacity(opacity);
+          setIcon(newStyle);
           return;
         }
       }
 
       if (signal.type === "main") {
         if (signal.train.TrainData.SignalInFrontSpeed > 200) {
-          setIcon(MAIN_SIGNAL_GREEN_ICON);
+          const newStyle = MAIN_SIGNAL_GREEN_ICON.clone();
+          newStyle.getImage()!.setOpacity(opacity);
+          setIcon(newStyle);
           return;
         }
 
         if (signal.train.TrainData.SignalInFrontSpeed === 0) {
-          setIcon(MAIN_SIGNAL_RED_ICON);
+          const newStyle = MAIN_SIGNAL_RED_ICON.clone();
+          newStyle.getImage()!.setOpacity(opacity);
+          setIcon(newStyle);
           return;
         }
 
         if (signal.train.TrainData.SignalInFrontSpeed === 40) {
-          setIcon(MAIN_SIGNAL_40_ICON);
+          const newStyle = MAIN_SIGNAL_40_ICON.clone();
+          newStyle.getImage()!.setOpacity(opacity);
+          setIcon(newStyle);
           return;
         }
 
         if (signal.train.TrainData.SignalInFrontSpeed === 60) {
-          setIcon(MAIN_SIGNAL_60_ICON);
+          const newStyle = MAIN_SIGNAL_60_ICON.clone();
+          newStyle.getImage()!.setOpacity(opacity);
+          setIcon(newStyle);
           return;
         }
 
         if (signal.train.TrainData.SignalInFrontSpeed === 100) {
-          setIcon(MAIN_SIGNAL_100_ICON);
+          const newStyle = MAIN_SIGNAL_100_ICON.clone();
+          newStyle.getImage()!.setOpacity(opacity);
+          setIcon(newStyle);
           return;
         }
       }
 
       if (signal.type === "small") {
         if (signal.train.TrainData.SignalInFrontSpeed === 0) {
-          setIcon(SMALL_SIGNAL_RED_ICON);
+          const newStyle = SMALL_SIGNAL_RED_ICON.clone();
+          newStyle.getImage()!.setOpacity(opacity);
+          setIcon(newStyle);
           return;
         }
 
-        setIcon(SMALL_SIGNAL_WHITE_ICON);
+        const newStyle = SMALL_SIGNAL_WHITE_ICON.clone();
+        newStyle.getImage()!.setOpacity(opacity);
+        setIcon(newStyle);
         return;
       }
 
       setIcon(
-        new DivIcon({
-          ...DEFAULT_ICON_OPTIONS,
-          className: `${DEFAULT_ICON_OPTIONS.className} ${getSpeedColorForSignal(signal.train.TrainData.SignalInFrontSpeed)}`,
+        new Style({
+          image: new Icon({
+            ...DEFAULT_ICON_OPTIONS,
+            src:
+              "data:image/svg+xml;utf8," +
+              SignalIcon.replace(
+                "<svg",
+                `<svg class="${className} ${getSpeedColorForSignal(signal.train.TrainData.SignalInFrontSpeed)}"`,
+              ),
+            opacity,
+          }),
         }),
       );
 
@@ -228,17 +270,29 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
 
     // it's only guaranteed to be red if it's a block signal
     if (signal.trainAhead && signal.type === "block") {
-      setIcon(BLOCK_SIGNAL_RED_ICON);
+      const newStyle = BLOCK_SIGNAL_RED_ICON.clone();
+      newStyle.getImage()!.setOpacity(opacity);
+      setIcon(newStyle);
       return;
     }
 
     if (signal.nextSignalWithTrainAhead) {
-      setIcon(BLOCK_SIGNAL_YELLOW_ICON);
+      const newStyle = BLOCK_SIGNAL_YELLOW_ICON.clone();
+      newStyle.getImage()!.setOpacity(opacity);
+      setIcon(newStyle);
       return;
     }
 
     setIcon(SECONDARY_ICON);
-  }, [signal.extra, signal.trainAhead, signal.name, signal.train, signal.type, signal.nextSignalWithTrainAhead]);
+  }, [
+    signal.extra,
+    signal.trainAhead,
+    signal.name,
+    signal.train,
+    signal.type,
+    signal.nextSignalWithTrainAhead,
+    opacity,
+  ]);
 
   const showSignalLines = useCallback(() => {
     const lines: MapLineData["lines"] = [];
@@ -400,8 +454,8 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
   }, [signal]);
 
   return (
-    <Marker opacity={opacity} key={signal.name} position={[signal.lat, signal.lon]} icon={icon}>
-      <Popup autoPan={false}>
+    <Marker key={signal.name} position={[signal.lat, signal.lon]} icon={icon}>
+      <Popup>
         <Stack alignItems="center" spacing={1}>
           <Typography level="h3">{signal.name}</Typography>
           {signal.train && (

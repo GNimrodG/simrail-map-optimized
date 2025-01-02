@@ -1,14 +1,20 @@
 import Autocomplete, { createFilterOptions } from "@mui/joy/Autocomplete";
+import { Feature } from "ol";
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
+import Fill from "ol/style/Fill";
+import Stroke from "ol/style/Stroke";
+import Style from "ol/style/Style";
 import { type FunctionComponent, useContext } from "react";
 import { useTranslation } from "react-i18next";
-import { useMap } from "react-leaflet";
 
 import UnplayableStations from "../assets/unplayable-stations.json";
 import { signalsData$, SignalWithTrain, Station, stationsData$, Train, trainsData$ } from "../utils/data-manager";
-import { goToSignal, goToStation } from "../utils/geom-utils";
+import { getStationGeometry, goToSignal, goToStation, wgsToMercator } from "../utils/geom-utils";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { getSpeedColorForSignal, normalizeString } from "../utils/ui";
 import useBehaviorSubj from "../utils/use-behaviorSubj";
+import { useMap } from "./map/MapProvider";
 import ListboxComponent from "./utils/ListBoxComponent";
 
 const filterOptions = createFilterOptions<ListItem>({
@@ -44,18 +50,18 @@ const SearchBar: FunctionComponent = () => {
 
   const panToStation = (station: Station) => {
     setSelectedTrain(selectedTrain ? { ...selectedTrain, follow: false } : null);
-    goToStation(station, map);
+    goToStation(station, map!);
   };
 
   const panToSignal = (signal: SignalWithTrain) => {
     setSelectedTrain(selectedTrain ? { ...selectedTrain, follow: false } : null);
-    goToSignal(signal, map);
+    goToSignal(signal, map!);
   };
 
   const panToTrain = (train: Train) => {
-    map?.panTo([train.TrainData.Latititute, train.TrainData.Longitute], {
-      animate: true,
-      duration: 1,
+    map?.getView().animate({
+      center: wgsToMercator([train.TrainData.Latititute, train.TrainData.Longitute]),
+      duration: 1000,
     });
     setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true, paused: false });
   };

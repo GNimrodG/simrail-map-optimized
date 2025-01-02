@@ -1,6 +1,5 @@
 import Sheet from "@mui/joy/Sheet";
 import { type FunctionComponent, lazy, Suspense, useContext, useEffect, useMemo, useState } from "react";
-import { useMap } from "react-leaflet";
 import { debounceTime, fromEvent, throttleTime } from "rxjs";
 
 import { signalsData$, trainsData$ } from "../utils/data-manager";
@@ -10,6 +9,8 @@ import { getSteamProfileInfo, ProfileResponse } from "../utils/steam";
 import useBehaviorSubj from "../utils/use-behaviorSubj";
 import { useSetting } from "../utils/use-setting";
 import Loading from "./Loading";
+import { useMap } from "./map/MapProvider";
+import { wgsToMercator } from "../utils/geom-utils";
 
 const TrainMarkerPopup = lazy(() => import("./markers/TrainMarkerPopup"));
 
@@ -113,9 +114,9 @@ const SelectedTrainInfo: FunctionComponent = () => {
       const train = trains.find((train) => train.TrainNoLocal === selectedTrain.trainNo);
       if (train) {
         if (!useAltTracking && !selectedTrain.paused) {
-          map.panTo([train.TrainData.Latititute, train.TrainData.Longitute], {
-            animate: true,
-            duration: 1,
+          map.getView().animate({
+            center: wgsToMercator([train.TrainData.Latititute, train.TrainData.Longitute]),
+            duration: 1000,
           });
         }
 

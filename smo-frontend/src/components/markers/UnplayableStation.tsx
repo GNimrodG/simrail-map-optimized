@@ -1,9 +1,10 @@
-import L from "leaflet";
-import { type FunctionComponent, useMemo, useRef } from "react";
-import { Marker, Popup } from "react-leaflet";
+import { Fill, Icon, Stroke, Style, Text } from "ol/style";
+import { type FunctionComponent, useMemo } from "react";
 
 import { Station } from "../../utils/data-manager";
 import { useSetting } from "../../utils/use-setting";
+import Marker from "../map/Marker";
+import Popup from "../map/Popup";
 import TrainIcon from "./icons/train.svg?raw";
 import StationMarkerPopup from "./StationMarkerPopup";
 
@@ -12,26 +13,37 @@ export interface UnplayableStationProps {
 }
 
 const UnplayableStation: FunctionComponent<UnplayableStationProps> = ({ station }) => {
-  const markerRef = useRef<L.Marker>(null);
+  // const markerRef = useRef<L.Marker>(null);
   const [layerOpacities] = useSetting("layerOpacities");
 
   const icon = useMemo(() => {
-    return new L.DivIcon({
-      html: `${TrainIcon}<span class="tooltip">${station.Name}</span>`,
-      iconSize: [30, 30],
-      popupAnchor: [0, -15],
-      className: `icon station bot non-playable`,
+    return new Style({
+      image: new Icon({
+        // html: `${TrainIcon}<span class="tooltip">${station.Name}</span>`,
+        src: "data:image/svg+xml;utf8," + TrainIcon.replace("<svg", `<svg class="icon station bot non-playable"`),
+        size: [16, 16],
+        opacity: layerOpacities["unplayable-stations"],
+      }),
+      text: new Text({
+        text: station.Name,
+        font: "bold 12px sans-serif",
+        offsetY: 20,
+        fill: new Fill({ color: "black" }),
+        stroke: new Stroke({ color: "white", width: 2 }),
+      }),
     });
-  }, [station.Name]);
+  }, [layerOpacities, station.Name]);
 
   return (
-    <Marker
-      ref={markerRef}
-      position={[station.Latititude, station.Longitude]}
-      icon={icon}
-      opacity={layerOpacities["unplayable-stations"]}>
-      <Popup autoPan={false}>
-        <StationMarkerPopup station={station} userData={null} onClosePopup={() => markerRef.current?.closePopup()} />
+    <Marker position={[station.Latititude, station.Longitude]} icon={icon}>
+      <Popup>
+        <StationMarkerPopup
+          station={station}
+          userData={null}
+          onClosePopup={() => {
+            console.log("TODO: close popup");
+          }}
+        />
       </Popup>
     </Marker>
   );

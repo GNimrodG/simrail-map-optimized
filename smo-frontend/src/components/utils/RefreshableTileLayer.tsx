@@ -1,6 +1,8 @@
-import L from "leaflet";
+import TileLayer from "ol/layer/Tile";
+import { XYZ } from "ol/source";
 import { type FunctionComponent, useEffect, useRef } from "react";
-import { useMap } from "react-leaflet";
+
+import { useMap } from "../map/MapProvider";
 
 export interface RefreshableTileLayerProps {
   className: string;
@@ -16,23 +18,33 @@ const RefreshableTileLayer: FunctionComponent<RefreshableTileLayerProps> = ({
   opacity = 1,
 }) => {
   const map = useMap();
-  const layerRef = useRef<L.TileLayer | null>(null);
+  const layerRef = useRef<TileLayer | null>(null);
 
   useEffect(() => {
+    if (!map) return;
+
     if (layerRef.current) {
       map.removeLayer(layerRef.current);
     }
 
-    const layer = L.tileLayer(url, {
-      attribution,
-      className,
+    const layer = new TileLayer({
+      source: new XYZ({
+        url,
+        attributions: attribution,
+      }),
       opacity,
-    }).addTo(map);
+      className,
+    });
+
+    console.log("Adding layer", layer, "to map", map);
+
+    map.addLayer(layer);
 
     layerRef.current = layer;
 
     return () => {
       if (layerRef.current) {
+        console.log("Removing layer", layerRef.current, "from map", map);
         map.removeLayer(layerRef.current);
       }
     };

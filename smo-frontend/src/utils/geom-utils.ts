@@ -1,6 +1,11 @@
 import * as turf from "@turf/turf";
 import { Feature, Polygon } from "geojson";
-import L from "leaflet";
+import { Feature as OlFeature, Map as OlMap } from "ol";
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
+import Fill from "ol/style/Fill";
+import Stroke from "ol/style/Stroke";
+import Style from "ol/style/Style";
 
 import { Signal, signalsData$, SignalWithTrain, Station } from "./data-manager";
 import { normalizeString } from "./ui";
@@ -30,7 +35,7 @@ export function getSignalsForStation(station: Station, allowNumPrefix = false): 
   return signals || [];
 }
 
-export function getStationGeometry(station: Station): L.LatLngExpression[] {
+export function getStationGeometry(station: Station): OlFeature {
   const stationSignals = getSignalsForStation(station);
 
   if (stationSignals?.length) {
@@ -43,9 +48,11 @@ export function getStationGeometry(station: Station): L.LatLngExpression[] {
 
       const bufferedLine = turf.buffer(line, 0.05);
 
-      return bufferedLine?.geometry.type === "Polygon"
-        ? bufferedLine?.geometry.coordinates[0].map(([lat, lon]) => [lat, lon])
-        : [];
+      return new OlFeature(
+        bufferedLine?.geometry.type === "Polygon"
+          ? bufferedLine?.geometry.coordinates[0].map(([lat, lon]) => [lat, lon])
+          : [],
+      );
     } else {
       // add polygon around the station using the signals
       const geoms = turf.featureCollection(
@@ -79,26 +86,52 @@ export function getStationGeometry(station: Station): L.LatLngExpression[] {
 
       const paddedConvex = turf.buffer(stationArea, 0.05)!;
 
-      return paddedConvex.geometry.type === "Polygon"
-        ? paddedConvex?.geometry.coordinates[0].map(([lat, lon]) => [lat, lon])
-        : [];
+      return new OlFeature(
+        paddedConvex.geometry.type === "Polygon"
+          ? paddedConvex?.geometry.coordinates[0].map(([lat, lon]) => [lat, lon])
+          : [],
+      );
     }
   }
 
-  return [];
+  return new OlFeature();
 }
 
-export function goToSignal(signal: Signal, map: L.Map) {
-  map.flyTo([signal.lat, signal.lon], 18, { animate: true, duration: 1 });
+export function goToSignal(signal: Signal, map: OlMap) {
+  map.getView().animate({ center: wgsToMercator([signal.lat, signal.lon]), zoom: 18, duration: 1 });
 
   // add circle around the signal for 3 seconds for better visibility
-  const circle = L.circle([signal.lat, signal.lon], {
-    color: "red",
-    fillColor: "#f03",
-    fillOpacity: 0.5,
-    radius: 5,
-  }).addTo(map);
-  setTimeout(() => map?.removeLayer(circle), 3000);
+  const circle = new OlFeature(
+    turf
+      .circle(wgsToMercator([signal.lat, signal.lon]), 0.0005)
+      .geometry.coordinates[0].map(([lat, lon]) => [lat, lon]),
+  );
+
+  const circleLayer = new VectorLayer({
+    source: new VectorSource({
+      features: [circle],
+    }),
+    style: new Style({
+      fill: new Fill({ color: "#f03" }),
+      stroke: new Stroke({ color: "#f00", width: 2 }),
+    }),
+  });
+
+  map.addLayer(circleLayer);
+  // const circle = L.circle([signal.lat, signal.lon], {
+  //   color: "red",
+  //   fillColor: "#f03",
+  //   fillOpacity: 0.5,
+  //   radius: 5,
+  // }).addTo(map);
+  setTimeout(() => map?.removeLayer(circleLayer), 3000);
+}
+
+export function wgsToMercator([lat, lon]: [number, number]): [number, number] {
+  return [
+    (lon * 20037508.34) / 180,
+    ((Math.log(Math.tan(((90 + lat) * Math.PI) / 360)) / (Math.PI / 180)) * 20037508.34) / 180,
+  ];
 }
 
 export function goToStation(station: Station, map: L.Map) {
