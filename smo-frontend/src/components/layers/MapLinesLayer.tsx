@@ -1,10 +1,19 @@
 import { useHotkeys } from "@mantine/hooks";
-import { type FunctionComponent, useContext } from "react";
-import { LayerGroup, Polyline, Tooltip } from "react-leaflet";
+import { Feature } from "ol";
+import { LineString } from "ol/geom";
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
+import Fill from "ol/style/Fill";
+import Stroke from "ol/style/Stroke";
+import Style from "ol/style/Style";
+import Text from "ol/style/Text";
+import { type FunctionComponent, useContext, useEffect } from "react";
 
 import MapLinesContext from "../../utils/map-lines-context";
+import { useMap } from "../map/MapProvider";
 
 const MapLinesLayer: FunctionComponent = () => {
+  const map = useMap();
   const { mapLines, setMapLines } = useContext(MapLinesContext);
 
   useHotkeys([
@@ -40,21 +49,49 @@ const MapLinesLayer: FunctionComponent = () => {
     ],
   ]);
 
-  return (
-    <LayerGroup>
-      {mapLines?.lines.map((line) => (
-        <Polyline
-          key={`selected-signal-line-${line.index}-${line.color}-${line.label}-${line.coords[0][0]}-${line.coords[0][1]}`}
-          positions={line.coords}
-          color={line.color}
-          weight={5}>
-          <Tooltip permanent direction="center">
-            {line.label}
-          </Tooltip>
-        </Polyline>
-      ))}
-    </LayerGroup>
-  );
+  useEffect(() => {
+    if (!mapLines || !map) return;
+
+    const layerSource = new VectorSource({
+      features: mapLines.lines.map((line) => {
+        const coords = line.coords.map(([lon, lat]) => [lon, lat]);
+
+        const feature = new Feature({
+          geometry: new LineString(coords),
+        });
+
+        feature.set("color", line.color);
+        feature.set("label", line.label);
+
+        return feature;
+      }),
+    });
+
+    const layer = new VectorLayer({
+      source: layerSource,
+      style: (feature) => {
+        return new Style({
+          stroke: new Stroke({
+            color: feature.get("color"),
+            width: 2,
+          }),
+          text: new Text({
+            text: feature.get("label"),
+            font: "12px sans-serif",
+            fill: new Fill({ color: "#000" }),
+          }),
+        });
+      },
+    });
+
+    map.addLayer(layer);
+
+    return () => {
+      map?.removeLayer(layer);
+    };
+  }, [map, mapLines]);
+
+  return null;
 };
 
 export default MapLinesLayer;

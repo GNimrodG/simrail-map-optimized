@@ -1,10 +1,12 @@
 import { useContext, useEffect } from "react";
-import { useMap } from "react-leaflet";
 
 import { signalsData$, stationsData$, trainsData$ } from "../utils/data-manager";
 import SelectedTrainContext from "../utils/selected-train-context";
 import useBehaviorSubj from "../utils/use-behaviorSubj";
 import { useSetting } from "../utils/use-setting";
+import { useMap } from "./map/MapProvider";
+import { containsCoordinate } from "ol/extent";
+import { wgsToMercator } from "../utils/geom-utils";
 
 const AutoZoomHandler = () => {
   const map = useMap();
@@ -23,12 +25,16 @@ const AutoZoomHandler = () => {
       if (!map) return;
 
       try {
-        const bounds = map.getBounds();
+        const bounds = map.getView().calculateExtent(map.getSize());
         const visibleTrains = trains.filter((train) =>
-          bounds.contains([train.TrainData.Latititute, train.TrainData.Longitute]),
+          containsCoordinate(bounds, wgsToMercator([train.TrainData.Latititute, train.TrainData.Longitute])),
         );
-        const visibleSignals = signals.filter((signal) => bounds.contains([signal.lat, signal.lon]));
-        const visibleStations = stations.filter((station) => bounds.contains([station.Latititude, station.Longitude]));
+        const visibleSignals = signals.filter((signal) =>
+          containsCoordinate(bounds, wgsToMercator([signal.lat, signal.lon])),
+        );
+        const visibleStations = stations.filter((station) =>
+          containsCoordinate(bounds, wgsToMercator([station.Latititude, station.Longitude])),
+        );
         const selectedTrainData = selectedTrain
           ? trains.find((train) => train.TrainNoLocal === selectedTrain.trainNo)
           : null;
@@ -44,19 +50,19 @@ const AutoZoomHandler = () => {
         if (totalVisibleObjects < autoZoomLimits[0]) {
           const zoomOutFactor = autoZoomLimits[0] / totalVisibleObjects / 4;
           if (zoomOutFactor > 0.1) {
-            map.zoomOut(zoomOutFactor);
+            map.getView().setZoom((map.getView().getZoom() || 18) - zoomOutFactor);
           }
         } else if (totalVisibleObjects > autoZoomLimits[1]) {
           const zoomInFactor = totalVisibleObjects / autoZoomLimits[1] / 4;
           if (zoomInFactor > 0.1) {
-            map.zoomIn(zoomInFactor);
+            map.getView().setZoom((map.getView().getZoom() || 18) + zoomInFactor);
           }
         }
       } catch (error) {
         if (error instanceof Error && (error.message === "too much recursion" || error.message === "regexp too big")) {
           if (autoZoomLimits[0] !== 200 || autoZoomLimits[1] !== 250) {
             // reset the autoZoomLimits to default values
-            map.off("moveend", handleZoom);
+            map.un("moveend", handleZoom);
             setAutoZoomLimits([200, 250]);
 
             console.error("AutoZoomHandler: too much recursion, resetting autoZoomLimits to default values");
@@ -70,7 +76,7 @@ const AutoZoomHandler = () => {
 
     map.on("moveend", handleZoom);
     return () => {
-      map.off("moveend", handleZoom);
+      map.un("moveend", handleZoom);
     };
   }, [autoZoom, map, selectedTrain, signals, stations, trains, autoZoomLimits, setAutoZoomLimits]);
 

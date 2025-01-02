@@ -1,22 +1,27 @@
-import { Map as LeafletMap } from "leaflet";
+import { containsCoordinate } from "ol/extent";
+import OlMap from "ol/Map";
 import { type FunctionComponent, useEffect, useState } from "react";
-import { LayerGroup, useMap } from "react-leaflet";
 
 import { Station, stationsData$ } from "../../utils/data-manager";
 import { debounce } from "../../utils/debounce";
 import useBehaviorSubj from "../../utils/use-behaviorSubj";
+import LayerGroup from "../map/LayerGroup";
+import { useMap } from "../map/MapProvider";
 import StationMarker from "../markers/StationMarker";
+import { wgsToMercator } from "../../utils/geom-utils";
 
-function getVisibleStations(stations: Station[], map: LeafletMap | null) {
+function getVisibleStations(stations: Station[], map: OlMap | null) {
   try {
-    const bounds = map?.getBounds();
+    const bounds = map?.getView().calculateExtent(map.getSize());
 
     if (!bounds) {
       console.error("Map bounds not available for stations!");
       return stations;
     }
 
-    return stations.filter((station) => bounds?.contains([station.Latititude, station.Longitude]));
+    return stations.filter((station) =>
+      containsCoordinate(bounds, wgsToMercator([station.Latititude, station.Longitude])),
+    );
   } catch (e) {
     console.error("Failed to filter visible stations: ", e);
     return stations; // Fallback to showing all stations
@@ -36,14 +41,12 @@ const StationsLayer: FunctionComponent = () => {
     }, 500);
 
     if (map) {
-      map.on("move", handler);
-      map.on("zoom", handler);
-      map.on("resize", handler);
+      map.on("pointerdrag", handler);
+      map.on("moveend", handler);
 
       return () => {
-        map.off("move", handler);
-        map.off("zoom", handler);
-        map.off("resize", handler);
+        map.un("pointerdrag", handler);
+        map.un("moveend", handler);
       };
     }
   }, [map, stations]);

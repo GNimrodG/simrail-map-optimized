@@ -1,16 +1,11 @@
-import "leaflet/dist/leaflet.css";
-
 import { useHotkeys } from "@mantine/hooks";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
-import L from "leaflet";
-import { type FunctionComponent, lazy, Suspense, useContext, useState } from "react";
+import { type FunctionComponent, lazy, Suspense, useContext } from "react";
 import { useTranslation } from "react-i18next";
-import { MapContainer } from "react-leaflet";
-import Control from "react-leaflet-custom-control";
 
 import i18n from "../i18n";
 import { isConnected$ } from "../utils/data-manager";
@@ -23,6 +18,7 @@ import ErrorBoundary from "./ErrorBoundary";
 import LayerMenu from "./LayerMenu";
 import Loading from "./Loading";
 import LowSpeedWarning from "./LowSpeedWarning";
+import MapContainer from "./map/MapContainer";
 import MapTimeDisplay from "./MapTimeDisplay";
 import SearchBar from "./SearchBar";
 import SelectedTrainInfo from "./SelectedTrainInfo";
@@ -58,8 +54,6 @@ const MainMap: FunctionComponent = () => {
   const [visibleLayers, setVisibleLayers] = useSetting("visibleLayers");
   const [layerOpacities] = useSetting("layerOpacities");
 
-  const [renderer] = useState(() => new L.Canvas());
-
   useHotkeys([
     [
       "Escape",
@@ -73,24 +67,17 @@ const MainMap: FunctionComponent = () => {
   return (
     <>
       {!isConnected && <Loading />}
-      <MapContainer
-        center={[51.015482, 19.572143]}
-        zoom={8}
-        zoomSnap={0.1}
-        scrollWheelZoom
-        zoomControl={false}
-        style={{ height: "100vh", width: "100vw" }}
-        renderer={renderer}>
+      <MapContainer center={[51.015482, 19.572143]} zoom={8} zoomSnap={0.1} style={{ height: "100vh", width: "100vw" }}>
         <RefreshableTileLayer
           className={alternativeTheme ? "alternativemap" : "defaultmap"}
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution={MAIN_ATTRIBUTIONS}
         />
 
         {/* placeholder control */}
-        <Control prepend position="topleft">
+        {/* <Control prepend position="topleft">
           <Box sx={{ p: 2, visible: "none" }} />
-        </Control>
+        </Control> */}
 
         {/* Server Select | Search | Time */}
         <Stack
@@ -120,11 +107,13 @@ const MainMap: FunctionComponent = () => {
         </Stack>
 
         {/* Selected Train Popup */}
-        <Control position="bottomleft">
+        {/* <Control position="bottomleft"> */}
+        <Box sx={(theme) => ({ position: "absolute", bottom: theme.spacing(1), left: theme.spacing(1), zIndex: 1000 })}>
           <ErrorBoundary location="MainMap - SelectedTrainInfo">
             <SelectedTrainInfo />
           </ErrorBoundary>
-        </Control>
+        </Box>
+        {/* </Control> */}
 
         {/* Layers */}
         {/* ThemeToggle */}
@@ -147,28 +136,28 @@ const MainMap: FunctionComponent = () => {
         </Stack>
 
         {/* Selected Route */}
-        <Control prepend position="bottomright">
-          {selectedRoute && (
-            <Sheet
-              variant="outlined"
-              sx={{
-                p: 1,
-                borderRadius: "var(--joy-radius-sm)",
-              }}>
-              <Stack>
-                <Typography level="body-md">{t("SelectedRoute")}</Typography>
-                <Stack spacing={1} direction="row" alignItems="center">
-                  <Typography level="body-lg" variant="outlined" color="primary">
-                    {selectedRoute}
-                  </Typography>
-                  <Button size="sm" variant="outlined" color="danger" onClick={() => setSelectedRoute(null)}>
-                    {t("Hide")}
-                  </Button>
-                </Stack>
+        {/* <Control prepend position="bottomright"> */}
+        {selectedRoute && (
+          <Sheet
+            variant="outlined"
+            sx={{
+              p: 1,
+              borderRadius: "var(--joy-radius-sm)",
+            }}>
+            <Stack>
+              <Typography level="body-md">{t("SelectedRoute")}</Typography>
+              <Stack spacing={1} direction="row" alignItems="center">
+                <Typography level="body-lg" variant="outlined" color="primary">
+                  {selectedRoute}
+                </Typography>
+                <Button size="sm" variant="outlined" color="danger" onClick={() => setSelectedRoute(null)}>
+                  {t("Hide")}
+                </Button>
               </Stack>
-            </Sheet>
-          )}
-        </Control>
+            </Stack>
+          </Sheet>
+        )}
+        {/* </Control> */}
         {/* Layers */}
         {/* orm-infra */}
         {visibleLayers.includes("orm-infra") && (

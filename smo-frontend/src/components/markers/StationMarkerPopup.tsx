@@ -13,10 +13,10 @@ import TabList from "@mui/joy/TabList";
 import Tabs from "@mui/joy/Tabs";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
-import L from "leaflet";
+import { Feature } from "ol";
+import { Fill, Stroke, Style } from "ol/style";
 import { type FunctionComponent, lazy, Suspense, useCallback, useMemo, useState, useTransition } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { useMap } from "react-leaflet";
 
 import _stationLayouts from "../../assets/station-layouts.json";
 import { Station } from "../../utils/data-manager";
@@ -24,6 +24,8 @@ import { getSignalsForStation, getStationGeometry, goToSignal } from "../../util
 import { ProfileResponse } from "../../utils/steam";
 import InfoIcon from "../icons/InfoIcon";
 import Loading from "../Loading";
+import { useLayerGroup } from "../map/LayerContext";
+import { useMap } from "../map/MapProvider";
 import SteamProfileDisplay from "../SteamProfileDisplay";
 import SignalSpeedDisplay from "../utils/SignalSpeedDisplay";
 
@@ -46,13 +48,14 @@ export interface StationMarkerPopupProps {
   onClosePopup: () => void;
 }
 
-const STATION_AREA_MAP = new Map<string, L.Polygon>();
+const STATION_AREA_MAP = new Map<string, Feature>();
 
 const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ station, userData, onClosePopup }) => {
   const { t } = useTranslation("translation", { keyPrefix: "StationMarkerPopup" });
   const [isPending, startTransition] = useTransition();
   const map = useMap();
-  const [stationArea, setStationArea] = useState<L.Polygon | null>(STATION_AREA_MAP.get(station.id) || null);
+  const layerGroup = useLayerGroup();
+  const [stationArea, setStationArea] = useState<Feature | null>(STATION_AREA_MAP.get(station.id) || null);
   const signals = useMemo(() => getSignalsForStation(station), [station]);
 
   const [stationLayoutModalOpen, setStationLayoutModalOpen] = useState(false);
@@ -63,25 +66,39 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
   });
 
   const showStationArea = useCallback(() => {
-    const polygon = L.polygon(getStationGeometry(station), {
-      color: "blue",
-      fillColor: "#03f",
-      fillOpacity: 0.5,
-    });
+    const feature = getStationGeometry(station);
+    feature.setStyle(
+      new Style({
+        fill: new Fill({
+          color: "rgba(0, 0, 255, 0.5)",
+        }),
+        stroke: new Stroke({
+          color: "blue",
+          width: 1,
+        }),
+      }),
+    );
+    // new Feature({
+    //   geometry: new getStationGeometry(station),
+    //   style: new Style({}),
+    //   color: "blue",
+    //   fillColor: "#03f",
+    //   fillOpacity: 0.5,
+    // });
 
-    polygon.addTo(map);
+    layerGroup?.getSource()?.addFeature(feature);
 
-    STATION_AREA_MAP.set(station.id, polygon);
-    setStationArea(polygon);
-  }, [station, map]);
+    STATION_AREA_MAP.set(station.id, feature);
+    setStationArea(feature);
+  }, [station, layerGroup]);
 
   const hideStationArea = useCallback(() => {
     if (stationArea) {
-      map.removeLayer(stationArea);
+      layerGroup?.getSource()?.removeFeature(stationArea);
       STATION_AREA_MAP.delete(station.id);
       setStationArea(null);
     }
-  }, [map, station.id, stationArea]);
+  }, [layerGroup, station.id, stationArea]);
 
   const layoutDefs = useMemo(() => {
     const defs = (station.Prefix && StationLayouts[station.Prefix]?._defs) || null;
@@ -164,7 +181,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
                           key={signal.name}
                           onClick={() => {
                             onClosePopup();
-                            goToSignal(signal, map);
+                            goToSignal(signal, map!);
                           }}>
                           <td>{signal.name}</td>
                           <td>{signal.role}</td>
