@@ -87,6 +87,7 @@ const SelectedTrainRouteLayer: FunctionComponent = () => {
       style: new Style({
         image: SELECTED_ROUTE_ICON,
       }),
+      zIndex: 30,
     });
 
     map?.addLayer(layer);

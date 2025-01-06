@@ -1,4 +1,5 @@
-import { Fill, Icon, Stroke, Style, Text } from "ol/style";
+import { Circle, Fill, Icon, Stroke, Style, Text } from "ol/style";
+import { StyleLike } from "ol/style/Style";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 
 import { Train } from "../../utils/data-manager";
@@ -10,6 +11,8 @@ import { useSetting } from "../../utils/use-setting";
 import { useMap } from "../map/MapProvider";
 import Marker from "../map/Marker";
 import Popup from "../map/Popup";
+import { getCssVarValue } from "../utils/general-utils";
+import { getRoundedImage } from "../utils/image";
 import BotIcon from "./icons/bot.svg?raw";
 import TrainMarkerPopup from "./TrainMarkerPopup";
 
@@ -17,15 +20,14 @@ export interface TrainMarkerProps {
   train: Train;
 }
 
+const BOT_ICON_SRC = "data:image/svg+xml;utf8," + BotIcon;
+
 const DEFAULT_ICON = new Style({
   image: new Icon({
     size: [40, 40],
-    src: "data:image/svg+xml;utf8," + BotIcon,
+    src: BOT_ICON_SRC,
   }),
 });
-
-const FONT_FAMILY =
-  'var(--joy-fontFamily-body, "Inter",var(--joy-fontFamily-fallback, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol") )';
 
 function getIcon(
   trainNo: string,
@@ -34,49 +36,72 @@ function getIcon(
   isSelected: boolean,
   opacity: number,
   avatar?: string,
-) {
+): StyleLike {
   const text = new Text({
     text: trainNo,
-    font: "26px " + FONT_FAMILY,
-    offsetY: 30,
-    fill: new Fill({ color: "white" }),
-    stroke: new Stroke({ color: "white", width: 1 }),
-    backgroundFill: new Fill({ color: "black" }),
-    backgroundStroke: new Stroke({ color: "black", width: 1 }),
+    offsetY: 36,
+    font: getCssVarValue("--joy-fontSize-md") + " Inter",
+    fill: new Fill({ color: getCssVarValue("--joy-palette-text-primary") }),
+    backgroundFill: new Fill({
+      color: isSelected
+        ? getCssVarValue("--joy-palette-primary-500")
+        : getCssVarValue("--joy-palette-background-surface"),
+    }),
+    backgroundStroke: new Stroke({ color: getCssVarValue("--joy-palette-neutral-outlinedBorder"), width: 1 }),
+    padding: [2, 4, 2, 4], // Add padding to create space for the border radius
+  });
+
+  const background = new Style({
+    image: new Circle({
+      fill: new Fill({ color: getCssVarValue("--joy-palette-background-surface") }),
+      radius: 20,
+    }),
+  });
+
+  const overlay = new Style({
+    image: new Circle({
+      stroke: new Stroke({ color: getCssVarValue(`--joy-palette-${colorClass}-600`), width: 4 }),
+      radius: 18,
+    }),
   });
 
   if (avatar) {
-    return new Style({
-      image: new Icon({
-        // html: `<img src="${avatar}" /><span class="tooltip">${trainNo}</span>`,
-        src: avatar,
-        size: [24, 24],
-        opacity,
-        // className: `icon train player ${colorClass} ${isSelected ? "selected" : ""}`,
+    const image = getRoundedImage(avatar);
+
+    return [
+      background,
+      new Style({
+        image: new Icon({
+          img: image,
+          size: [32, 32],
+          opacity,
+        }),
+        text,
       }),
-      text,
-    });
+      overlay,
+    ];
   }
 
-  return new Style({
-    image: new Icon({
-      // html: `${BotIcon}<span class="tooltip">${trainNo}</span>`,
-      src: "data:image/svg+xml;utf8," + BotIcon,
-      size: [24, 24],
-      opacity,
-      // className: `icon train bot ${colorClass} ${inBorderStationArea ? "non-playable" : ""} ${
-      //   isSelected ? "selected" : ""
-      // }`,
+  return [
+    background,
+    new Style({
+      image: new Icon({
+        src: BOT_ICON_SRC,
+        size: [25, 26],
+        color: getCssVarValue(inBorderStationArea ? "--joy-palette-warning-400" : "--joy-palette-text-primary"),
+        opacity,
+      }),
+      text,
     }),
-    text,
-  });
+    overlay,
+  ];
 }
 
 const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
   const map = useMap();
   const { selectedTrain } = useContext(SelectedTrainContext);
   const [userData, setUserData] = useState<ProfileResponse | null>(null);
-  const [icon, setIcon] = useState<Style>(DEFAULT_ICON);
+  const [icon, setIcon] = useState<StyleLike>(DEFAULT_ICON);
   const [useAltTracking] = useSetting("useAltTracking");
   const [disableSlidingMarkers] = useSetting("disableSlidingMarkers");
   const [layerOpacities] = useSetting("layerOpacities");
@@ -135,15 +160,10 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
   }, [disableSlidingMarkers, map, shouldFollow, train.TrainData.Latititute, train.TrainData.Longitute]);
 
   const popup = !isSelected && (
-    <Popup>
+    <Popup className="train-popup" offset={[0, -30]}>
       <TrainMarkerPopup train={train} userData={userData} showTrainRouteButton />
     </Popup>
   );
-
-  useEffect(() => {
-    console.log("TrainMarker: created", train.TrainNoLocal);
-    return () => console.log("TrainMarker: destroyed", train.TrainNoLocal);
-  }, [train.TrainNoLocal]);
 
   if (disableSlidingMarkers) {
     return (

@@ -9,8 +9,10 @@ import Style from "ol/style/Style";
 import Text from "ol/style/Text";
 import { type FunctionComponent, useContext, useEffect } from "react";
 
+import { wgsToMercator } from "../../utils/geom-utils";
 import MapLinesContext from "../../utils/map-lines-context";
 import { useMap } from "../map/MapProvider";
+import { getCssVarValue } from "../utils/general-utils";
 
 const MapLinesLayer: FunctionComponent = () => {
   const map = useMap();
@@ -54,7 +56,7 @@ const MapLinesLayer: FunctionComponent = () => {
 
     const layerSource = new VectorSource({
       features: mapLines.lines.map((line) => {
-        const coords = line.coords.map(([lon, lat]) => [lon, lat]);
+        const coords = line.coords.map(wgsToMercator);
 
         const feature = new Feature({
           geometry: new LineString(coords),
@@ -73,15 +75,19 @@ const MapLinesLayer: FunctionComponent = () => {
         return new Style({
           stroke: new Stroke({
             color: feature.get("color"),
-            width: 2,
+            width: 4,
           }),
           text: new Text({
             text: feature.get("label"),
-            font: "12px sans-serif",
-            fill: new Fill({ color: "#000" }),
+            font: getCssVarValue("--joy-fontSize-sm") + " Inter",
+            fill: new Fill({ color: getCssVarValue("--joy-palette-text-primary") }),
+            backgroundFill: new Fill({ color: getCssVarValue("--joy-palette-background-surface") }),
+            backgroundStroke: new Stroke({ color: getCssVarValue("--joy-palette-neutral-outlinedBorder"), width: 1 }),
+            padding: [2, 4, 2, 4], // Add padding to create space for the border radius
           }),
         });
       },
+      zIndex: 30,
     });
 
     map.addLayer(layer);

@@ -6,9 +6,11 @@ import { type FunctionComponent } from "react";
 import { LayerGroupContext } from "./LayerContext";
 import { useMap } from "./MapProvider";
 
-export interface LayerGroupProps {}
+export interface LayerGroupProps {
+  zIndex?: number;
+}
 
-const LayerGroup: FunctionComponent<PropsWithChildren<LayerGroupProps>> = ({ children }) => {
+const LayerGroup: FunctionComponent<PropsWithChildren<LayerGroupProps>> = ({ children, zIndex }) => {
   const map = useMap();
   const [layerGroup, setLayerGroup] = useState<VectorLayer<VectorSource> | null>(null);
 
@@ -17,6 +19,7 @@ const LayerGroup: FunctionComponent<PropsWithChildren<LayerGroupProps>> = ({ chi
 
     const layer = new VectorLayer({
       source: new VectorSource(),
+      zIndex,
     });
 
     map.addLayer(layer);
@@ -27,7 +30,7 @@ const LayerGroup: FunctionComponent<PropsWithChildren<LayerGroupProps>> = ({ chi
       layer.setSource(null);
       map.removeLayer(layer);
     };
-  }, [map]);
+  }, [map, zIndex]);
 
   return <LayerGroupContext.Provider value={layerGroup}>{children}</LayerGroupContext.Provider>;
 };

@@ -4,11 +4,11 @@ import { type FunctionComponent, useEffect, useState } from "react";
 
 import { Station, stationsData$ } from "../../utils/data-manager";
 import { debounce } from "../../utils/debounce";
+import { wgsToMercator } from "../../utils/geom-utils";
 import useBehaviorSubj from "../../utils/use-behaviorSubj";
 import LayerGroup from "../map/LayerGroup";
 import { useMap } from "../map/MapProvider";
 import StationMarker from "../markers/StationMarker";
-import { wgsToMercator } from "../../utils/geom-utils";
 
 function getVisibleStations(stations: Station[], map: OlMap | null) {
   try {
@@ -56,7 +56,7 @@ const StationsLayer: FunctionComponent = () => {
   }, [stations, map]);
 
   return (
-    <LayerGroup>
+    <LayerGroup zIndex={50}>
       {visibleStations?.map((stationIcon) => <StationMarker key={stationIcon.id} station={stationIcon} />)}
     </LayerGroup>
   );

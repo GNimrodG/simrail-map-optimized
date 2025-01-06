@@ -24,6 +24,7 @@ import MapLinesContext, { MapLineData } from "../../utils/map-lines-context";
 import { getDistanceColorForSignal, getSpeedColorForSignal } from "../../utils/ui";
 import Marker from "../map/Marker";
 import Popup from "../map/Popup";
+import { getCssVarValue } from "../utils/general-utils";
 import SignalIcon from "./icons/signal.svg?raw";
 
 export interface SignalMarkerProps {
@@ -35,15 +36,15 @@ export interface SignalMarkerProps {
 const className = "icon signal";
 
 const DEFAULT_ICON_OPTIONS = {
-  src: "data:image/svg+xml;utf8," + SignalIcon.replace("<svg", `<svg class="${className}"`),
+  src: "data:image/svg+xml;utf8," + SignalIcon,
   size: [20, 20],
 };
 
 const SECONDARY_ICON = new Style({
   image: new Icon({
     ...DEFAULT_ICON_OPTIONS,
-    src: "data:image/svg+xml;utf8," + SignalIcon.replace("<svg", `<svg class="${className} secondary"`),
-    color: "var(--joy-palette-neutral-600)",
+    src: "data:image/svg+xml;utf8," + SignalIcon,
+    color: getCssVarValue("--joy-palette-neutral-600"),
     size: [20, 20],
   }),
 });
@@ -124,7 +125,6 @@ const SMALL_SIGNAL_WHITE_ICON = new Style({
  * @param percent - percentage to darken in range [0, 100]
  */
 function darkenColor(color: string, percent: number): string {
-  console.log(color, percent);
   const num = parseInt(color.replace("#", ""), 16);
   const amt = Math.round(2.55 * percent);
   const R = (num >> 16) - amt;
@@ -455,7 +455,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
 
   return (
     <Marker key={signal.name} position={[signal.lat, signal.lon]} icon={icon}>
-      <Popup>
+      <Popup offset={[0, -20]}>
         <Stack alignItems="center" spacing={1}>
           <Typography level="h3">{signal.name}</Typography>
           {signal.train && (
