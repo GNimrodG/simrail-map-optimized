@@ -76,7 +76,7 @@ const PassiveSignalsLayer: FunctionComponent = () => {
   };
 
   return (
-    <LayerGroup>
+    <LayerGroup zIndex={0}>
       {visibleSignals.map((signal) => (
         <SignalMarker
           key={signal.name}

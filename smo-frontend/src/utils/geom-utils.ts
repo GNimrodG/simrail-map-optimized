@@ -1,8 +1,11 @@
 import * as turf from "@turf/turf";
-import { Feature, Polygon } from "geojson";
+import { Feature, Polygon, Position } from "geojson";
 import { Feature as OlFeature, Map as OlMap } from "ol";
+import GeoJSON from "ol/format/GeoJSON";
+import { Point } from "ol/geom";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
+import { Circle as CircleStyle } from "ol/style";
 import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
@@ -48,11 +51,15 @@ export function getStationGeometry(station: Station): OlFeature {
 
       const bufferedLine = turf.buffer(line, 0.05);
 
-      return new OlFeature(
-        bufferedLine?.geometry.type === "Polygon"
-          ? bufferedLine?.geometry.coordinates[0].map(([lat, lon]) => [lat, lon])
-          : [],
-      );
+      if (!bufferedLine || bufferedLine.geometry.type !== "Polygon") {
+        console.error("Failed to create station area for station", station);
+        return new OlFeature();
+      }
+
+      // convert to mercator
+      bufferedLine.geometry.coordinates = bufferedLine.geometry.coordinates.map((coords) => coords.map(wgsToMercator));
+
+      return new GeoJSON().readFeature(bufferedLine) as OlFeature;
     } else {
       // add polygon around the station using the signals
       const geoms = turf.featureCollection(
@@ -75,7 +82,7 @@ export function getStationGeometry(station: Station): OlFeature {
           stationArea = turf.concave(geoms, { maxEdge: maxEdge }) as Feature<Polygon> | null;
         }
       } catch (e) {
-        console.log("Error in concave hull calculation", e);
+        console.error("Error in concave hull calculation", e);
         stationArea = null;
       }
 
@@ -86,11 +93,15 @@ export function getStationGeometry(station: Station): OlFeature {
 
       const paddedConvex = turf.buffer(stationArea, 0.05)!;
 
-      return new OlFeature(
-        paddedConvex.geometry.type === "Polygon"
-          ? paddedConvex?.geometry.coordinates[0].map(([lat, lon]) => [lat, lon])
-          : [],
-      );
+      if (!paddedConvex || paddedConvex.geometry.type !== "Polygon") {
+        console.error("Failed to create station area for station", station);
+        return new OlFeature();
+      }
+
+      // convert to mercator
+      paddedConvex.geometry.coordinates = paddedConvex.geometry.coordinates.map((coords) => coords.map(wgsToMercator));
+
+      return new GeoJSON().readFeature(paddedConvex) as OlFeature;
     }
   }
 
@@ -98,36 +109,29 @@ export function getStationGeometry(station: Station): OlFeature {
 }
 
 export function goToSignal(signal: Signal, map: OlMap) {
-  map.getView().animate({ center: wgsToMercator([signal.lat, signal.lon]), zoom: 18, duration: 1 });
+  map.getView().animate({ center: wgsToMercator([signal.lat, signal.lon]), zoom: 18, duration: 1000 });
 
   // add circle around the signal for 3 seconds for better visibility
-  const circle = new OlFeature(
-    turf
-      .circle(wgsToMercator([signal.lat, signal.lon]), 0.0005)
-      .geometry.coordinates[0].map(([lat, lon]) => [lat, lon]),
-  );
+  const point = new OlFeature(new Point(wgsToMercator([signal.lat, signal.lon])));
 
   const circleLayer = new VectorLayer({
     source: new VectorSource({
-      features: [circle],
+      features: [point],
     }),
     style: new Style({
-      fill: new Fill({ color: "#f03" }),
-      stroke: new Stroke({ color: "#f00", width: 2 }),
+      image: new CircleStyle({
+        fill: new Fill({ color: "rgba(255, 0, 51, 0.5)" }),
+        stroke: new Stroke({ color: "rgb(255, 0, 51)", width: 2 }),
+        radius: 14,
+      }),
     }),
   });
 
   map.addLayer(circleLayer);
-  // const circle = L.circle([signal.lat, signal.lon], {
-  //   color: "red",
-  //   fillColor: "#f03",
-  //   fillOpacity: 0.5,
-  //   radius: 5,
-  // }).addTo(map);
   setTimeout(() => map?.removeLayer(circleLayer), 3000);
 }
 
-export function wgsToMercator([lat, lon]: [number, number]): [number, number] {
+export function wgsToMercator([lat, lon]: [number, number] | Position): [number, number] {
   return [
     (lon * 20037508.34) / 180,
     ((Math.log(Math.tan(((90 + lat) * Math.PI) / 360)) / (Math.PI / 180)) * 20037508.34) / 180,

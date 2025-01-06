@@ -1,11 +1,13 @@
-import { Fill, Icon, Stroke, Style, Text } from "ol/style";
-import { type FunctionComponent, useEffect, useState } from "react";
+import { Fill, Icon, RegularShape, Stroke, Style, Text } from "ol/style";
+import { StyleLike } from "ol/style/Style";
+import { type FunctionComponent, useEffect, useRef, useState } from "react";
 
 import { Station } from "../../utils/data-manager";
 import { getSteamProfileInfo, ProfileResponse } from "../../utils/steam";
 import { useSetting } from "../../utils/use-setting";
 import Marker from "../map/Marker";
-import Popup from "../map/Popup";
+import Popup, { PopupRef } from "../map/Popup";
+import { getCssVarValue } from "../utils/general-utils";
 import BotIcon from "./icons/bot.svg?raw";
 import StationMarkerPopup from "./StationMarkerPopup";
 
@@ -21,46 +23,70 @@ const DEFAULT_ICON = new Style({
 });
 
 function getIcon(stationName: string, opacity: number, avatar?: string) {
-  if (avatar) {
-    return new Style({
-      image: new Icon({
-        // html: `<img src="${avatar}" /><span class="tooltip">${stationName}</span>`,
-        src: avatar,
-        size: [40, 40],
-        opacity,
-        // className: "icon station player",
-      }),
-      text: new Text({
-        text: stationName,
-        font: "bold 12px sans-serif",
-        offsetY: 30,
-        fill: new Fill({ color: "black" }),
-        stroke: new Stroke({ color: "white", width: 1 }),
-      }),
-    });
-  }
+  const text = new Text({
+    text: stationName,
+    offsetY: 36,
+    font: getCssVarValue("--joy-fontSize-md") + " Inter",
+    fill: new Fill({ color: getCssVarValue("--joy-palette-text-primary") }),
+    backgroundFill: new Fill({ color: getCssVarValue("--joy-palette-background-surface") }),
+    backgroundStroke: new Stroke({ color: getCssVarValue("--joy-palette-neutral-outlinedBorder"), width: 1 }),
+    padding: [4, 8, 4, 8], // Add padding to create space for the border radius
+  });
 
-  return new Style({
-    image: new Icon({
-      // html: `${BotIcon}<span class="tooltip">${stationName}</span>`,
-      src: "data:image/svg+xml;utf8," + BotIcon.replace("<svg", `<svg class="icon station bot"`),
-      size: [40, 40],
-      opacity,
-    }),
-    text: new Text({
-      text: stationName,
-      font: "bold 12px sans-serif",
-      offsetY: 30,
-      fill: new Fill({ color: "black" }),
-      stroke: new Stroke({ color: "white", width: 1 }),
+  const background = new Style({
+    image: new RegularShape({
+      fill: new Fill({ color: getCssVarValue("--joy-palette-background-surface") }),
+      radius: 25,
+      points: 4,
+      angle: Math.PI / 4,
     }),
   });
+
+  const overlay = new Style({
+    image: new RegularShape({
+      stroke: new Stroke({
+        color: getCssVarValue(avatar ? "--joy-palette-primary-600" : "--joy-palette-warning-600"),
+        width: 3,
+      }),
+      radius: 25,
+      points: 4,
+      angle: Math.PI / 4,
+    }),
+  });
+
+  if (avatar) {
+    return [
+      background,
+      new Style({
+        image: new Icon({
+          src: avatar,
+          size: [32, 32],
+          opacity,
+        }),
+        text,
+      }),
+      overlay,
+    ];
+  }
+
+  return [
+    background,
+    new Style({
+      image: new Icon({
+        src: "data:image/svg+xml;utf8," + BotIcon,
+        size: [24, 24],
+        opacity,
+      }),
+      text,
+    }),
+    overlay,
+  ];
 }
 
 const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
-  // const markerRef = useRef<L.Marker>(null);
+  const popupRef = useRef<PopupRef>(null);
   const [userData, setUserData] = useState<ProfileResponse | null>(null);
-  const [icon, setIcon] = useState<Style>(DEFAULT_ICON);
+  const [icon, setIcon] = useState<StyleLike>(DEFAULT_ICON);
   const [layerOpacities] = useSetting("layerOpacities");
 
   useEffect(() => {
@@ -74,22 +100,12 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
       setUserData(profile);
       setIcon(getIcon(station.Name, layerOpacities["stations"], profile.avatar));
     });
-  }, [station.DispatchedBy, station.Name]);
+  }, [layerOpacities, station.DispatchedBy, station.Name]);
 
   return (
-    <Marker
-      // ref={markerRef}
-      key={station.id}
-      position={[station.Latititude, station.Longitude]}
-      icon={icon}>
-      <Popup>
-        <StationMarkerPopup
-          station={station}
-          userData={userData}
-          onClosePopup={() => {
-            console.log("TODO: close popup");
-          }}
-        />
+    <Marker key={station.id} position={[station.Latititude, station.Longitude]} icon={icon}>
+      <Popup offset={[0, -30]} ref={popupRef}>
+        <StationMarkerPopup station={station} userData={userData} onClosePopup={() => popupRef.current?.close()} />
       </Popup>
     </Marker>
   );

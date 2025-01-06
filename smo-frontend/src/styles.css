@@ -10,6 +10,39 @@
   filter: invert(100%) hue-rotate(180deg) brightness(80%) contrast(90%) grayscale(0.25) !important;
 }
 
+.map-popup {
+  position: relative;
+  background-color: var(--joy-palette-background-surface);
+  color: var(--joy-palette-text-primary);
+  border: 1px solid var(--joy-palette-neutral-outlinedBorder);
+  border-radius: var(--joy-radius-sm);
+  padding: 1rem;
+  box-shadow:
+    var(--joy-shadowRing, 0 0 #000),
+    0px 1px 2px 0px rgba(var(--joy-shadowChannel, 21 21 21) / var(--joy-shadowOpacity, 0.08));
+
+  width: calc(min(330px, 95vw) + 2rem);
+}
+
+/* Popup arrow at bottom */
+.map-popup::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  border: 10px solid transparent;
+  border-top-color: var(--joy-palette-background-surface);
+}
+
+.map-popup .map-popup-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
 .leaflet-popup-content-wrapper,
 .leaflet-tooltip,
 .leaflet-touch .leaflet-control-layers,

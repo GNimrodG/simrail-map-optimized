@@ -62,7 +62,7 @@ const TrainsLayer: FunctionComponent = () => {
   }, [trains, map, selectedTrain?.trainNo]);
 
   return (
-    <LayerGroup>
+    <LayerGroup zIndex={100}>
       {visibleTrains.map((train) => (
         <TrainMarker key={train.id} train={train} />
       ))}

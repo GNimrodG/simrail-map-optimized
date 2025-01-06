@@ -36,15 +36,12 @@ const RefreshableTileLayer: FunctionComponent<RefreshableTileLayerProps> = ({
       className,
     });
 
-    console.log("Adding layer", layer, "to map", map);
-
     map.addLayer(layer);
 
     layerRef.current = layer;
 
     return () => {
       if (layerRef.current) {
-        console.log("Removing layer", layerRef.current, "from map", map);
         map.removeLayer(layerRef.current);
       }
     };

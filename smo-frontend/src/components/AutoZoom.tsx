@@ -1,12 +1,12 @@
+import { containsCoordinate } from "ol/extent";
 import { useContext, useEffect } from "react";
 
 import { signalsData$, stationsData$, trainsData$ } from "../utils/data-manager";
+import { wgsToMercator } from "../utils/geom-utils";
 import SelectedTrainContext from "../utils/selected-train-context";
 import useBehaviorSubj from "../utils/use-behaviorSubj";
 import { useSetting } from "../utils/use-setting";
 import { useMap } from "./map/MapProvider";
-import { containsCoordinate } from "ol/extent";
-import { wgsToMercator } from "../utils/geom-utils";
 
 const AutoZoomHandler = () => {
   const map = useMap();
@@ -50,12 +50,12 @@ const AutoZoomHandler = () => {
         if (totalVisibleObjects < autoZoomLimits[0]) {
           const zoomOutFactor = autoZoomLimits[0] / totalVisibleObjects / 4;
           if (zoomOutFactor > 0.1) {
-            map.getView().setZoom((map.getView().getZoom() || 18) - zoomOutFactor);
+            map.getView().animate({ zoom: (map.getView().getZoom() || 18) - zoomOutFactor, duration: 500 });
           }
         } else if (totalVisibleObjects > autoZoomLimits[1]) {
           const zoomInFactor = totalVisibleObjects / autoZoomLimits[1] / 4;
           if (zoomInFactor > 0.1) {
-            map.getView().setZoom((map.getView().getZoom() || 18) + zoomInFactor);
+            map.getView().animate({ zoom: (map.getView().getZoom() || 18) + zoomInFactor, duration: 500 });
           }
         }
       } catch (error) {

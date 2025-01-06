@@ -1,8 +1,9 @@
 import Sheet from "@mui/joy/Sheet";
 import { type FunctionComponent, lazy, Suspense, useContext, useEffect, useMemo, useState } from "react";
-import { debounceTime, fromEvent, throttleTime } from "rxjs";
+import { debounceTime, fromEvent, merge, throttleTime } from "rxjs";
 
 import { signalsData$, trainsData$ } from "../utils/data-manager";
+import { wgsToMercator } from "../utils/geom-utils";
 import MapLinesContext from "../utils/map-lines-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { getSteamProfileInfo, ProfileResponse } from "../utils/steam";
@@ -10,7 +11,6 @@ import useBehaviorSubj from "../utils/use-behaviorSubj";
 import { useSetting } from "../utils/use-setting";
 import Loading from "./Loading";
 import { useMap } from "./map/MapProvider";
-import { wgsToMercator } from "../utils/geom-utils";
 
 const TrainMarkerPopup = lazy(() => import("./markers/TrainMarkerPopup"));
 
@@ -68,42 +68,17 @@ const SelectedTrainInfo: FunctionComponent = () => {
     };
 
     // Pause following when dragging the map
-    const startSub = fromEvent(map, "dragstart")
-      .pipe(throttleTime(100))
-      .subscribe(() => {
-        if (isPaused) {
-          clearTimeout(timeout);
-          timeout = setTimeout(clearPause, 5000);
-          return;
-        }
-
-        setPaused(true);
-      });
-
-    // This is to prevent the train from jumping back to the center of the map while dragging
-    const middleSub = fromEvent(map, "drag")
-      .pipe(debounceTime(100))
-      .subscribe(() => {
-        if (isPaused) {
-          clearTimeout(timeout);
-          timeout = setTimeout(clearPause, 5000);
-        }
-      });
-
-    // Resume following after dragging ends
-    const endSub = fromEvent(map, "dragend")
-      .pipe(debounceTime(500))
-      .subscribe(() => {
-        if (isPaused) {
-          clearTimeout(timeout);
-          timeout = setTimeout(clearPause, 5000);
-        }
-      });
+    const dragSub = merge(
+      fromEvent(map, "pointerdrag").pipe(throttleTime(1000)), // pause immediately on the first drag
+      fromEvent(map, "pointerdrag").pipe(debounceTime(100)), // keep pausing while dragging
+    ).subscribe(() => {
+      if (!isPaused) setPaused(true);
+      clearTimeout(timeout);
+      timeout = setTimeout(clearPause, 5000);
+    });
 
     return () => {
-      startSub.unsubscribe();
-      middleSub.unsubscribe();
-      endSub.unsubscribe();
+      dragSub.unsubscribe();
       clearTimeout(timeout);
     };
   }, [selectedTrain?.trainNo, selectedTrain?.follow, map, setSelectedTrain]);

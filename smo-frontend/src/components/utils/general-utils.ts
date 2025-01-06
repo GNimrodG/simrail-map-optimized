@@ -6,3 +6,7 @@ export function getThumbnailUrl(vehicle: string): string {
 export type FilterFlags<Base, Condition> = {
   [K in keyof Base]: Base[K] extends Condition ? K : never;
 }[keyof Base];
+
+export function getCssVarValue(varName: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(varName);
+}

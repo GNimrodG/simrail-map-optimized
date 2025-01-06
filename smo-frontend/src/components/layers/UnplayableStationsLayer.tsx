@@ -7,7 +7,7 @@ import UnplayableStation from "../markers/UnplayableStation";
 
 const UnplayableStationsLayer: FunctionComponent = () => {
   return (
-    <LayerGroup>
+    <LayerGroup zIndex={20}>
       {UnplayableStations.map((station) => (
         <UnplayableStation key={station.Name} station={station as unknown as Station} />
       ))}

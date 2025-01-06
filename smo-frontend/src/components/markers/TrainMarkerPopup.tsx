@@ -160,7 +160,9 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
 
         {showSpeedInfoCollapsed && trainSpeed}
 
-        {showNextStationInfoCollapsed && currentStation && <StationDisplay station={currentStation} mainStation />}
+        {showNextStationInfoCollapsed && currentStation && (
+          <StationDisplay station={currentStation} mainStation center />
+        )}
 
         {showSignalInfoCollapsed && (
           <Stack direction="row" alignItems="center">

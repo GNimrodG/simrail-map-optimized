@@ -67,7 +67,7 @@ const MainMap: FunctionComponent = () => {
   return (
     <>
       {!isConnected && <Loading />}
-      <MapContainer center={[51.015482, 19.572143]} zoom={8} zoomSnap={0.1} style={{ height: "100vh", width: "100vw" }}>
+      <MapContainer center={[51.015482, 19.572143]} zoom={8} style={{ height: "100vh", width: "100vw" }}>
         <RefreshableTileLayer
           className={alternativeTheme ? "alternativemap" : "defaultmap"}
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"

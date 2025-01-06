@@ -78,7 +78,7 @@ const ActiveSignalsLayer: FunctionComponent = () => {
   };
 
   return (
-    <LayerGroup>
+    <LayerGroup zIndex={200}>
       {visibleSignals.map((signal) => (
         <SignalMarker
           key={signal.name}

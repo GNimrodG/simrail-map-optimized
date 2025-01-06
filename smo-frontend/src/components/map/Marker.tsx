@@ -1,6 +1,6 @@
 import { Feature } from "ol";
 import { Point } from "ol/geom";
-import { Style as OlStyle } from "ol/style";
+import { StyleLike } from "ol/style/Style";
 import { type FunctionComponent, PropsWithChildren, useEffect, useRef, useState } from "react";
 
 import { wgsToMercator } from "../../utils/geom-utils";
@@ -10,7 +10,7 @@ import { MarkerContext } from "./MarkerContext";
 
 export interface MarkerProps {
   position: [number, number];
-  icon: OlStyle;
+  icon: StyleLike;
   duration?: number;
   keepAtCenter?: boolean;
 }

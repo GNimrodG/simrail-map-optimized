@@ -66,7 +66,15 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
   });
 
   const showStationArea = useCallback(() => {
+    const source = layerGroup?.getSource();
+
+    if (!source) {
+      console.error("Layer group source not found");
+      return;
+    }
+
     const feature = getStationGeometry(station);
+
     feature.setStyle(
       new Style({
         fill: new Fill({
@@ -78,15 +86,8 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
         }),
       }),
     );
-    // new Feature({
-    //   geometry: new getStationGeometry(station),
-    //   style: new Style({}),
-    //   color: "blue",
-    //   fillColor: "#03f",
-    //   fillOpacity: 0.5,
-    // });
 
-    layerGroup?.getSource()?.addFeature(feature);
+    source.addFeature(feature);
 
     STATION_AREA_MAP.set(station.id, feature);
     setStationArea(feature);

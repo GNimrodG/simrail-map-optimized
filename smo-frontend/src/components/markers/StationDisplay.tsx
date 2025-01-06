@@ -16,6 +16,7 @@ export interface StationDisplayProps {
   station: TimetableEntry;
   mainStation?: boolean;
   pastStation?: boolean;
+  center?: boolean;
 }
 
 const STOP_TYPE_TECHNICAL: Partial<Record<TimetableEntry["stopType"], string>> = {
@@ -28,7 +29,7 @@ const STOP_TYPE_COLOR: Partial<Record<TimetableEntry["stopType"], ColorPalettePr
   NoncommercialStop: "neutral",
 };
 
-const StationDisplay: FunctionComponent<StationDisplayProps> = ({ station, mainStation, pastStation }) => {
+const StationDisplay: FunctionComponent<StationDisplayProps> = ({ station, mainStation, pastStation, center }) => {
   const { t } = useTranslation("translation", { keyPrefix: "StationDisplay" });
   const theme = useTheme();
   const isSmallHeight = useMediaQuery(`(max-height: ${theme.breakpoints.values.md}px)`);
@@ -76,7 +77,7 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({ station, mainS
 
   return (
     <>
-      <Typography level={mainStation ? "body-md" : "body-sm"}>
+      <Typography level={mainStation ? "body-md" : "body-sm"} textAlign={center ? "center" : "left"}>
         {station.nameOfPoint}
         {station.track && station.platform && (
           <Typography level={mainStation ? "body-sm" : "body-xs"}>
