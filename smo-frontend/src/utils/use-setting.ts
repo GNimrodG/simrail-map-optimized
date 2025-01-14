@@ -2,7 +2,7 @@ import { useLocalStorage } from "@mantine/hooks";
 import { useMemo } from "react";
 
 const SETTINGS = {
-  selectedServer: "en1",
+  selectedServer: "int1",
   visibleLayers: ["stations", "trains", "active-signals", "selected-route", "unplayable-stations"] as string[],
   useAltTracking: false,
   expandScheduleDefault: false,

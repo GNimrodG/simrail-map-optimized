@@ -205,7 +205,7 @@ const socket = io(SERVER_URL, {
 socket.on("connect", () => {
   isConnected$.next(true);
   console.log("Connected to server as", socket.id);
-  const selectedServer = readLocalStorageValue({ key: "selectedServer" }) || "en1";
+  const selectedServer = readLocalStorageValue({ key: "selectedServer" }) || "int1";
   socket.emit("switch-server", selectedServer, (success: boolean) => {
     if (success) {
       console.log("Switched to server", selectedServer);
@@ -246,7 +246,9 @@ socket.on("trains", (trains: Train[]) => {
 });
 
 export const trainsAvgSpeed$ = trainsData$.pipe(
-  map((trains) => (trains.length === 0 ? null : trains.reduce((acc, train) => acc + train.TrainData.Velocity, 0) / trains.length)),
+  map((trains) =>
+    trains.length === 0 ? null : trains.reduce((acc, train) => acc + train.TrainData.Velocity, 0) / trains.length,
+  ),
 );
 
 export const signalsData$ = new BehaviorSubject<SignalWithTrain[]>([]);
