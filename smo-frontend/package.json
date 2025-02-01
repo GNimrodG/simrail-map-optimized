@@ -15,7 +15,7 @@
     "@fontsource/inter": "^5.1.0",
     "@mantine/hooks": "^7.12.2",
     "@mui/joy": "^5.0.0-beta.51",
-    "@sentry/react": "^8.47.0",
+    "@sentry/react": "^8.53.0",
     "@sentry/vite-plugin": "^2.22.6",
     "@turf/turf": "^7.1.0",
     "core-js": "^3.39.0",
