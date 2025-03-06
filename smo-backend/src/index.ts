@@ -3,13 +3,18 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 import "./instrument";
+import logger from "./logger";
+
+if (!process.env.DATABASE_URL) {
+  logger.error("DATABASE_URL is not set.");
+  process.exit(1);
+}
 
 import * as Sentry from "@sentry/node";
 import * as http from "http";
 import * as https from "https";
 import { readFileSync } from "fs";
 import { Server as SocketIOServer } from "socket.io";
-import logger from "./logger";
 import {
   addSignalNextSignal,
   addSignalPrevSignal,

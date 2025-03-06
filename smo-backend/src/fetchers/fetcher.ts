@@ -1,4 +1,3 @@
-import { serverFetcher } from "./sever-fetcher";
 import { BehaviorSubject, Subject } from "rxjs";
 import { ModuleLogger } from "../logger";
 import { ServerStatus } from "../api-helper";
@@ -6,7 +5,6 @@ import { PrismaClient } from "@prisma/client";
 import { Worker } from "worker_threads";
 import { extname } from "path";
 import { statSync } from "fs";
-import { metrics } from "@sentry/node";
 
 const prisma = new PrismaClient();
 const WORKER_TIMEOUT = 5 * 60 * 1000;
@@ -16,7 +14,7 @@ export class Fetcher<T> {
   protected data: BehaviorSubject<T | null> = new BehaviorSubject<T | null>(null);
   public data$ = this.data.asObservable();
   private timeoutHandle: NodeJS.Timeout | null = null;
-  private refreshInterval: number;
+  private readonly refreshInterval: number;
   protected worker: Worker;
 
   protected avgRefreshTime = 0;
@@ -123,11 +121,6 @@ export class Fetcher<T> {
       })
       .then(() => this.logger.debug("Stats written"))
       .catch((e: unknown) => this.logger.error("Error writing stats: " + e));
-
-    metrics.gauge(`${this.module}_REFRESH_TIME`, time, {
-      unit: "millisecond",
-      tags: { count: this.refreshCount },
-    });
   }
 
   public get currentData(): T | null {
@@ -161,14 +154,14 @@ export class Fetcher<T> {
 }
 
 export class PerServerFetcher<T> extends Fetcher<Map<string, T>> {
-  private perServerData = new Subject<{ server: string; data: T }>();
+  private readonly perServerData = new Subject<{ server: string; data: T }>();
   public perServerData$ = this.perServerData.asObservable();
 
   constructor(
     module: string,
     defaultRefreshInterval: number,
-    private serverFetcher: Fetcher<ServerStatus[]>,
-    private delayBetweenServers = 0
+    private readonly serverFetcher: Fetcher<ServerStatus[]>,
+    private readonly delayBetweenServers = 0
   ) {
     super(module, defaultRefreshInterval);
   }
@@ -185,17 +178,12 @@ export class PerServerFetcher<T> extends Fetcher<Map<string, T>> {
       })
       .then(() => this.logger.debug("Stats written"))
       .catch((e: unknown) => this.logger.error("Error writing stats: " + e));
-
-    metrics.gauge(`${this.module}_REFRESH_TIME`, time, {
-      unit: "millisecond",
-      tags: { count: this.refreshCount, server_count: this.currentData?.size },
-    });
   }
 
   protected async fetchData() {
     const result = new Map<string, T>();
 
-    for (const server of serverFetcher.currentData || []) {
+    for (const server of this.serverFetcher.currentData || []) {
       const data = await this.fetchDataForServer(server.ServerCode);
       result.set(server.ServerCode, data);
       this.perServerData.next({ server: server.ServerCode, data });
