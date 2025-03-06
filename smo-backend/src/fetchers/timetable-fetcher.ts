@@ -10,7 +10,7 @@ type TimetableData = Record<string, Timetable>;
 const EMPTY_MAP = new Map<string, TimetableData>();
 
 class TimetableFetcher extends PerServerFetcher<TimetableData> {
-  private dataDir = `${process.cwd()}/data/${this.module}`;
+  private readonly dataDir = `${process.cwd()}/data/${this.module}`;
 
   constructor() {
     super("TIMETABLE", 1800000, serverFetcher);

@@ -1,4 +1,3 @@
-import { SocketIoInstrumentation } from "@opentelemetry/instrumentation-socket.io";
 import * as Sentry from "@sentry/node";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
 
@@ -10,5 +9,3 @@ Sentry.init({
   // Set sampling rate for profiling - this is relative to tracesSampleRate
   profilesSampleRate: 1.0,
 });
-
-Sentry.addOpenTelemetryInstrumentation(new SocketIoInstrumentation());

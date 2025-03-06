@@ -5,6 +5,7 @@ data
 tmp
 .env
 stats.csv
+tsconfig.tsbuildinfo
 
 # Sentry Config File
 .sentryclirc

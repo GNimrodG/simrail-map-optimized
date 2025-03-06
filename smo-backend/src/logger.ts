@@ -93,7 +93,7 @@ const logger = createLogger({
 export default logger;
 
 export class ModuleLogger {
-  constructor(private module: string) {}
+  constructor(private readonly module: string) {}
 
   error(message: string, meta?: Record<string, any>) {
     logger.error(message, { module: this.module, ...meta });
