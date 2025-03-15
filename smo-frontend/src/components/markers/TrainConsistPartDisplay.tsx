@@ -3,10 +3,17 @@ import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent } from "react";
 
-import { getThumbnailUrl } from "../utils/general-utils";
+import { formatVehicleName, getThumbnailUrl } from "../utils/general-utils";
 
 export interface TrainConsistPartDisplayProps {
   vehicles: string[];
+}
+
+function formatCargoName(cargo: string): string {
+  return cargo
+    .replace(/([A-Z])/g, " $1")
+    .replace(/(\D)(\d+x\d+)/g, "$1 $2")
+    .trim();
 }
 
 const TrainConsistPartDisplay: FunctionComponent<TrainConsistPartDisplayProps> = ({ vehicles }) => {
@@ -24,15 +31,12 @@ const TrainConsistPartDisplay: FunctionComponent<TrainConsistPartDisplayProps> =
         <Typography level="title-md">{shortName}</Typography>
         {(allSame ? [vehicles[0]] : vehicles).map((x, i) => (
           <Typography key={i + x} fontFamily="monospace" level="body-sm">
-            {x
-              .replace(/.+\/(.+?)(@.+)?$/, "$1")
-              .replace(/(.+)_(\d{2})(\d{2})(\d{2})(\d{2})(\d{3})[-_]?(\d)(:(\w:\d+))?/, "$2 $3 $4-$5 $6-$7 ($1) $9")
-              .trim()}
+            {formatVehicleName(x)}
 
             {x.includes("@") && (
               <>
                 {" - "}
-                {x.replace(/.+@(.+)$/, "$1").replace(/_/g, " ")}
+                {formatCargoName(x.replace(/.+@(.+)$/, "$1").replace(/_/g, " "))}
               </>
             )}
           </Typography>

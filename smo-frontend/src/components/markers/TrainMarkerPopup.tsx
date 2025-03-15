@@ -27,7 +27,7 @@ import ExpandIcon from "../icons/ExpandIcon";
 import InfoIcon from "../icons/InfoIcon";
 import SettingCheckbox from "../settings/SettingCheckbox";
 import SteamProfileDisplay from "../SteamProfileDisplay";
-import { getThumbnailUrl } from "../utils/general-utils";
+import { formatVehicleName, getThumbnailUrl } from "../utils/general-utils";
 import SignalSpeedDisplay from "../utils/SignalSpeedDisplay";
 import LengthIcon from "./icons/LengthIcon";
 import SpeedIcon from "./icons/SpeedIcon";
@@ -226,7 +226,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
       </Box>
 
       <Stack direction="row" spacing={1} alignItems="center">
-        <Typography level="body-sm">{train.Vehicles[0]}</Typography>
+        <Typography level="body-sm">{formatVehicleName(train.Vehicles[0], true)}</Typography>
         <Tooltip
           arrow
           variant="outlined"
