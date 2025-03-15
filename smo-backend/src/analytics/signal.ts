@@ -128,10 +128,12 @@ export async function removeSignalNextSignal(signal: string, nextSignal: string)
 }
 
 export async function addSignalPrevSignal(signal: string, prevSignal: string) {
-  const result = await prisma.$executeRaw`
-    INSERT INTO prev_signals (signal, prev_signal)
-    VALUES (${signal}, ${prevSignal})
-  `;
+  const result = await prisma.signalConnections.create({
+    data: {
+      prev: prevSignal,
+      next: signal,
+    },
+  });
 
   if (!result) {
     logger.error(
@@ -145,19 +147,21 @@ export async function addSignalPrevSignal(signal: string, prevSignal: string) {
 }
 
 export async function addSignalNextSignal(signal: string, nextSignal: string) {
-  const result = await prisma.$executeRaw`
-    INSERT INTO next_signals (signal, next_signal)
-    VALUES (${signal}, ${nextSignal})
-  `;
+  const result = await prisma.signalConnections.create({
+    data: {
+      prev: signal,
+      next: nextSignal,
+    },
+  });
 
   if (!result) {
     logger.error(
-      `Failed to add signal connection [${signal}]->${nextSignal}, the signal may not exist.`
+      `Failed to add signal connection ${signal}->${nextSignal}, the signal may not exist.`
     );
     return false;
   }
 
-  logger.success(`Signal connection [${signal}]->${nextSignal} added`);
+  logger.success(`Signal connection ${signal}->${nextSignal} added`);
   return true;
 }
 

@@ -100,3 +100,15 @@ export function goToSignal(signal: Signal, map: L.Map) {
   }).addTo(map);
   setTimeout(() => map?.removeLayer(circle), 3000);
 }
+
+export function goToStation(station: Station, map: L.Map) {
+  map.flyTo([station.Latititude, station.Longitude], 16, { animate: true, duration: 1 });
+
+  // add polygon around the station using the signals
+  const polygon = L.polygon(getStationGeometry(station), {
+    color: "red",
+    fillColor: "#f03",
+    fillOpacity: 0.5,
+  }).addTo(map);
+  setTimeout(() => map?.removeLayer(polygon), 3000);
+}

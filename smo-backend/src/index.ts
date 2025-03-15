@@ -230,7 +230,7 @@ ${Array.from(
   trainFetcher.currentData?.entries() || [],
   ([server, trains]) => `smo_train_count{server="${server}"} ${trains.length}`
 ).join("\n")}
-  
+
 # HELP smo_player_train_count Number of trains controlled by a player per server
 # TYPE smo_player_train_count gauge
 ${Array.from(
@@ -240,7 +240,7 @@ ${Array.from(
       trains.filter((train) => train.TrainData.ControlledBySteamID).length
     }`
 ).join("\n")}
-  
+
 # HELP smo_train_avg_speed Average speed of trains per server
 # TYPE smo_train_avg_speed gauge
 ${Array.from(
@@ -257,7 +257,7 @@ ${Array.from(
   stationFetcher.currentData?.entries() || [],
   ([server, stations]) => `smo_station_count{server="${server}"} ${stations.length}`
 ).join("\n")}
-  
+
 # HELP smo_player_station_count Number of stations controlled by a player per server
 # TYPE smo_player_station_count gauge
 ${Array.from(
@@ -274,7 +274,7 @@ ${Array.from(
   timeFetcher.currentData?.entries() || [],
   ([server, time]) => `smo_server_timezone{server="${server}"} ${time.timezone}`
 ).join("\n")}
-  
+
 # HELP smo_server_status Server status (active/inactive)
 # TYPE smo_server_status gauge
 ${Array.from(
@@ -297,12 +297,16 @@ if (process.env.ADMIN_PASSWORD) {
     }
   }
 
-  app.patch("/signals/:signal", express.json(), async (req, res) => {
+  app.use("/signals", express.json(), (req, res, next) => {
     if (req.body?.password !== process.env.ADMIN_PASSWORD) {
       res.status(401).json({ error: "Unauthorized" });
       return;
     }
 
+    next();
+  });
+
+  app.patch("/signals/:signal", async (req, res) => {
     const { type, role, prevFinalized, nextFinalized } = req.body || {};
 
     if (
@@ -328,12 +332,7 @@ if (process.env.ADMIN_PASSWORD) {
     }
   });
 
-  app.delete("/signals/:signal", express.json(), async (req, res) => {
-    if (req.body?.password !== process.env.ADMIN_PASSWORD) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
-
+  app.delete("/signals/:signal", async (req, res) => {
     if (!req.params?.signal) {
       res.status(400).json({ error: "Invalid request" });
       return;
@@ -354,12 +353,7 @@ if (process.env.ADMIN_PASSWORD) {
     }
   });
 
-  app.delete("/signals/:signal/prev", express.json(), async (req, res) => {
-    if (req.body?.password !== process.env.ADMIN_PASSWORD) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
-
+  app.delete("/signals/:signal/prev", async (req, res) => {
     if (!req.params?.signal || !req.body?.prevSignal) {
       res.status(400).json({ error: "Invalid request" });
       return;
@@ -386,12 +380,7 @@ if (process.env.ADMIN_PASSWORD) {
     }
   });
 
-  app.delete("/signals/:signal/next", express.json(), async (req, res) => {
-    if (req.body?.password !== process.env.ADMIN_PASSWORD) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
-
+  app.delete("/signals/:signal/next", async (req, res) => {
     if (!req.params?.signal || !req.body?.nextSignal) {
       res.status(400).json({ error: "Invalid request" });
       return;
@@ -423,12 +412,7 @@ if (process.env.ADMIN_PASSWORD) {
     }
   });
 
-  app.post("/signals/:signal/prev", express.json(), async (req, res) => {
-    if (req.body?.password !== process.env.ADMIN_PASSWORD) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
-
+  app.post("/signals/:signal/prev", async (req, res) => {
     if (!req.params?.signal || !req.body?.prevSignal) {
       res.status(400).json({ error: "Invalid request" });
       return;
@@ -455,12 +439,7 @@ if (process.env.ADMIN_PASSWORD) {
     }
   });
 
-  app.post("/signals/:signal/next", express.json(), async (req, res) => {
-    if (req.body?.password !== process.env.ADMIN_PASSWORD) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
-
+  app.post("/signals/:signal/next", async (req, res) => {
     if (!req.params?.signal || !req.body?.nextSignal) {
       res.status(400).json({ error: "Invalid request" });
       return;

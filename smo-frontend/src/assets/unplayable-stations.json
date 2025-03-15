@@ -37,7 +37,7 @@
   },
   {
     "Name": "Szabelnia",
-    "Prefix": "",
+    "Prefix": "Szb",
     "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
@@ -181,7 +181,7 @@
   },
   {
     "Name": "Marków",
-    "Prefix": "",
+    "Prefix": "Mr",
     "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
@@ -265,7 +265,7 @@
   },
   {
     "Name": "Warszawa Grochów",
-    "Prefix": "",
+    "Prefix": "WGr",
     "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
@@ -337,7 +337,7 @@
   },
   {
     "Name": "Sosnowiec Jęzor",
-    "Prefix": "",
+    "Prefix": "SJr",
     "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",
@@ -409,7 +409,7 @@
   },
   {
     "Name": "Klimontów",
-    "Prefix": "",
+    "Prefix": "Kl",
     "DifficultyLevel": -1,
     "MainImageURL": "",
     "AdditionalImage1URL": "",

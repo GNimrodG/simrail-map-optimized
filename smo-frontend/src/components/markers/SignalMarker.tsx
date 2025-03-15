@@ -4,18 +4,22 @@ import Stack from "@mui/joy/Stack";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import { DivIcon, DivIconOptions, Icon, IconOptions } from "leaflet";
-import { type FunctionComponent, useContext, useEffect, useState } from "react";
+import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { Marker, Popup } from "react-leaflet";
+import { Marker, Popup, useMap } from "react-leaflet";
 
+import UnplayableStations from "../../assets/unplayable-stations.json";
 import {
   deleteNextSignal,
   deletePrevSignal,
   deleteSignal,
   signalsData$,
   SignalWithTrain,
+  Station,
+  stationsData$,
   updateSignal,
 } from "../../utils/data-manager";
+import { goToStation } from "../../utils/geom-utils.ts";
 import MapLinesContext, { MapLineData } from "../../utils/map-lines-context";
 import { getDistanceColorForSignal, getSpeedColorForSignal } from "../../utils/ui";
 import SignalIcon from "./icons/signal.svg?raw";
@@ -127,7 +131,30 @@ const NEXT_FURTHER_COLOR = "#800080";
 const PREV_COLOR = "#FF0000";
 const PREV_FURTHER_COLOR = "#FFA500";
 
+function findStation(signalName: string) {
+  const options: Station[] = [];
+
+  for (const station of [...UnplayableStations, ...stationsData$.value]) {
+    if (RegExp(`^${station.Prefix}_|^\\d+_${station.Prefix}_`).exec(signalName)) {
+      options.push(station as Station); // we can't return early here because there are some cases where the prefix overlaps (Skierniewice (3877_Sk) and Stawiska (Sk))
+    }
+  }
+
+  if (options.length === 1) {
+    return options[0];
+  }
+
+  for (const station of options) {
+    if (signalName.startsWith(`${station.Prefix}_`)) {
+      return station;
+    }
+  }
+
+  return null;
+}
+
 const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSelect, opacity = 1 }) => {
+  const map = useMap();
   const { t } = useTranslation("translation", { keyPrefix: "SignalMarker" });
   const [icon, setIcon] = useState<Icon<DivIconOptions | IconOptions>>(new DivIcon(DEFAULT_ICON_OPTIONS));
   const { mapLines, setMapLines } = useContext(MapLinesContext);
@@ -324,6 +351,8 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
     setMapLines({ signal: signal.name, lines });
   };
 
+  const station = useMemo(() => findStation(signal.name), [signal.name]);
+
   return (
     <Marker opacity={opacity} key={signal.name} position={[signal.lat, signal.lon]} icon={icon}>
       <Popup autoPan={false}>
@@ -341,7 +370,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                   </Typography>
                 )}
               </Typography>
-              <Typography>
+              <Typography textAlign="center">
                 <Trans
                   i18nKey="SignalMarker.TrainApproaching"
                   values={{
@@ -364,7 +393,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
             </>
           )}{" "}
           {signal.trainAhead && (
-            <Typography level="body-lg">
+            <Typography level="body-lg" textAlign="center">
               <Trans
                 i18nKey="SignalMarker.TrainAhead"
                 values={{
@@ -393,7 +422,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
             </Typography>
           )}
           {signal.nextSignalWithTrainAhead && (
-            <Typography>
+            <Typography textAlign="center">
               <Trans
                 i18nKey="SignalMarker.NextSignalWithTrainAhead"
                 values={{ nextSignalWithTrainAhead: signal.nextSignalWithTrainAhead }}
@@ -416,22 +445,39 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
             </>
           )}
           <Stack spacing={0.1} alignItems="center">
+            {signal.type === "main" && (
+              <Stack direction="row" alignItems="center" gap={1}>
+                <Typography level="body-xs">{t("Station")}</Typography>
+                {station ? (
+                  <Chip onClick={() => goToStation(station, map)}>{station.Name}</Chip>
+                ) : (
+                  <Typography level="body-xs">{t("Unknown")}</Typography>
+                )}
+              </Stack>
+            )}
+
             <Typography level="body-xs">
               {t("Extra")} {signal.extra}
             </Typography>
+
             <Typography level="body-xs">
               {t("Type")} {signal.type || t("Unknown")}
             </Typography>
+
             {signal.role && (
               <Typography level="body-xs">
                 {t("Role")} {signal.role}
               </Typography>
             )}
+
             <Typography level="body-xs">
               {t("Accuracy")} {signal.accuracy} m
             </Typography>
-            <Typography level="body-xs" component="div">
-              {t("PreviousSignals") + ": "}
+
+            <Stack direction="row" alignItems="center" justifyContent="center" gap={0.5} flexWrap="wrap">
+              <Typography level="body-xs" component="div">
+                {t("PreviousSignals") + ": "}
+              </Typography>
               {signal.prevSignals.map((s) => (
                 <Chip
                   key={`${signal.name}-prev-${s}`}
@@ -444,9 +490,12 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                   {s}
                 </Chip>
               ))}
-            </Typography>
-            <Typography level="body-xs" component="div">
-              {t("NextSignals") + ": "}
+            </Stack>
+
+            <Stack direction="row" alignItems="center" justifyContent="center" gap={0.5} flexWrap="wrap">
+              <Typography level="body-xs" component="div">
+                {t("NextSignals") + ": "}
+              </Typography>
               {signal.nextSignals.map((s) => (
                 <Chip
                   key={`${signal.name}-next-${s}`}
@@ -459,7 +508,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                   {s}
                 </Chip>
               ))}
-            </Typography>
+            </Stack>
           </Stack>
           {mapLines?.signal === signal.name ? (
             <Chip onClick={() => setMapLines(null)} color="warning">

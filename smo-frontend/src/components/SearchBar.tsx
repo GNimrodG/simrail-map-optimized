@@ -1,12 +1,11 @@
 import Autocomplete, { createFilterOptions } from "@mui/joy/Autocomplete";
-import L from "leaflet";
 import { type FunctionComponent, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 
 import UnplayableStations from "../assets/unplayable-stations.json";
 import { signalsData$, SignalWithTrain, Station, stationsData$, Train, trainsData$ } from "../utils/data-manager";
-import { getStationGeometry, goToSignal } from "../utils/geom-utils";
+import { goToSignal, goToStation } from "../utils/geom-utils";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { getSpeedColorForSignal, normalizeString } from "../utils/ui";
 import useBehaviorSubj from "../utils/use-behaviorSubj";
@@ -45,15 +44,7 @@ const SearchBar: FunctionComponent = () => {
 
   const panToStation = (station: Station) => {
     setSelectedTrain(selectedTrain ? { ...selectedTrain, follow: false } : null);
-    map?.panTo([station.Latititude, station.Longitude], { animate: true, duration: 1 });
-
-    // add polygon around the station using the signals
-    const polygon = L.polygon(getStationGeometry(station), {
-      color: "red",
-      fillColor: "#f03",
-      fillOpacity: 0.5,
-    }).addTo(map);
-    setTimeout(() => map?.removeLayer(polygon), 3000);
+    goToStation(station, map);
   };
 
   const panToSignal = (signal: SignalWithTrain) => {

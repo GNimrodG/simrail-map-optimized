@@ -88,7 +88,7 @@
       "TrainMakerPopup": {
         "NextSignal": "Next Signal:",
         "Consist": "Consist",
-        "OOB": "Outside of playeable area",
+        "OOB": "Outside of playable area",
         "Unfollow": "Unfollow",
         "Follow": "Follow",
         "Unpin": "Unpin",
@@ -107,6 +107,7 @@
           "Title": "No train approaching.",
           "Description": "We can't show information about signals without a train approaching."
         },
+        "Station": "Control point:",
         "Extra": "Extra:",
         "Type": "Type:",
         "Role": "Role:",
@@ -289,6 +290,7 @@
           "Title": "Es nähert sich kein Zug.",
           "Description": "Wir können keine Informationen zu Signalen ohne sich nähernde Züge anzeigen."
         },
+        "Station": "Betriebsstelle:",
         "Extra": "Zusätzlich:",
         "Type": "Typ:",
         "Role": "Rolle:",
@@ -471,6 +473,7 @@
           "Title": "Nincs a közelben vonat.",
           "Description": "Nem tudunk információkat megjeleníteni a jelzőkről, ha nincs közelgő vonat."
         },
+        "Station": "Szolgálati hely:",
         "Extra": "Extra:",
         "Type": "Típus:",
         "Role": "Szerep:",
@@ -653,6 +656,7 @@
           "Title": "Yaklaşan tren yok.",
           "Description": "Yaklaşan bir tren olmadan sinyaller hakkında bilgi gösteremeyiz."
         },
+        "Station": "Kontrol noktası:",
         "Extra": "Ekstra:",
         "Type": "Tür:",
         "Role": "Rol:",
@@ -835,6 +839,7 @@
           "Title": "Brak nadjeżdżającego pociągu.",
           "Description": "Nie możemy wyświetlić informacji o sygnałach bez nadjeżdżającego pociągu."
         },
+        "Station": "Punkt kontrolny:",
         "Extra": "Dodatkowe:",
         "Type": "Typ:",
         "Role": "Rola:",
