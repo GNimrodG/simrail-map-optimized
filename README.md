@@ -24,6 +24,7 @@ This is a project that aims to provide an optimalized and feature rich online ma
 ## Features
 
 - **Signal display**
+- **Delay tracking**
 - Train schedule display
 - Train route display
 
