@@ -6,6 +6,7 @@ on:
       - master
     paths:
       - "smo-frontend/**"
+      - ".github/workflows/build-frontend.yml"
   pull_request:
     branches:
       - master
@@ -14,7 +15,7 @@ on:
 
 jobs:
   build-frontend:
-    name: Build
+    name: Build and Push
     runs-on: ubuntu-latest
     env:
       SHOULD_PUSH: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' && secrets.DOCKER_REGISTRY_USERNAME != '' }}

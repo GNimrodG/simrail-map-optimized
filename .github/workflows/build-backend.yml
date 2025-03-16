@@ -27,7 +27,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           # list of Docker images to use as base name for tags
-          images: ${{ vars.DOCKER_REGISTRY_URL }}/smo-frontend
+          images: ${{ vars.DOCKER_REGISTRY_URL }}/smo-backend
           # generate Docker tags based on the following events/attributes
           tags: |
             type=ref,event=branch
