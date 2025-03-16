@@ -38,7 +38,11 @@ import msgpackParser from "socket.io-msgpack-parser";
 import cors from "cors";
 import express from "express";
 import { analyzeTrainsForTrail } from "./analytics/train-trails";
-import { analyzeTrainsForDelays, getTrainDelays } from "./analytics/train-delay";
+import {
+  analyzeTrainsForDelays,
+  getServerPunctuality,
+  getTrainDelays,
+} from "./analytics/train-delay";
 import { addStatusEndpoints } from "./status-endpoints";
 
 function buildHttpsServer(
@@ -283,7 +287,17 @@ ${Array.from(
       status.ServerName
     }"} ${status.IsActive ? 1 : 0}`
 ).join("\n")}
-  `.trim()
+
+# HELP smo_server_punctuality Punctuality of each server
+# TYPE smo_server_punctuality gauge
+${Array.from(serverFetcher.currentData?.values() || [], (status) => [
+  status.ServerCode,
+  getServerPunctuality(status.ServerCode) || 0,
+])
+  .filter((x) => x[1] !== null)
+  .map(([server, p]) => `smo_server_punctuality{server="${server}"} ${p}`)
+  .join("\n")}
+`.trim()
   );
 });
 

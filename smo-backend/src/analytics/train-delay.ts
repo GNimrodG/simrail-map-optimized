@@ -9,6 +9,7 @@ import { join } from "path";
 import notepack from "notepack.io";
 import { prisma } from "../db";
 import { captureException } from "@sentry/node";
+import { trainFetcher } from "../fetchers/train-fetcher";
 
 const logger = new ModuleLogger("TRAIN-DELAY");
 
@@ -261,3 +262,20 @@ const parseScheduledTime = (timeString: string, timezoneHours: number): number =
 
   return date.getTime();
 };
+
+export function getServerPunctuality(server: string) {
+  const trains = trainFetcher.getDataForServer(server);
+  if (!trains) return null;
+
+  const delays = trains
+    .map((t) => getTrainDelays(t))
+    .filter(Boolean)
+    .map((d) => Object.values(d!).pop()!)
+    .filter((d) => typeof d === "number");
+
+  if (delays.length === 0) return null;
+
+  const total = delays.reduce((acc, delay) => acc + delay, 0);
+
+  return total / delays.length;
+}
