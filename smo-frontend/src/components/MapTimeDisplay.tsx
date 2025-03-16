@@ -9,6 +9,8 @@ const MapTimeDisplay: FunctionComponent = () => {
   const currentTime = useBehaviorSubj(timeSubj$);
   const timeData = useBehaviorSubj(timeData$);
 
+  const timezone = timeData?.timezone ?? 0;
+
   return (
     <Typography
       variant="outlined"
@@ -24,12 +26,10 @@ const MapTimeDisplay: FunctionComponent = () => {
           "var(--joy-shadowRing, 0 0 #000),0px 1px 2px 0px rgba(var(--joy-shadowChannel, 21 21 21) / var(--joy-shadowOpacity, 0.08))",
       }}>
       {new Date(currentTime).toLocaleTimeString()}{" "}
-      {timeData && (
-        <Typography level="body-md">
-          (UTC{timeData.timezone >= 0 ? "+" : ""}
-          {timeData.timezone.toString().padStart(2, "0")})
-        </Typography>
-      )}
+      <Typography level="body-lg" fontFamily="monospace">
+        (UTC{timezone >= 0 ? "+" : "-"}
+        {Math.abs(timezone).toString().padStart(2, "0")})
+      </Typography>
     </Typography>
   );
 };

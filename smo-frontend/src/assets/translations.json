@@ -69,6 +69,9 @@
         "showNextStationInfoCollapsed": {
           "Label": "Show next station info"
         },
+        "showDelayInfoCollapsed": {
+          "Label": "Show delay info"
+        },
         "MapTheme": "Map Theme (For Dark Mode)",
         "alternativeTheme": {
           "Label": "Monochrome map"
@@ -94,7 +97,11 @@
         "Unpin": "Unpin",
         "Pin": "Pin",
         "ShowRoute": "Show Route",
-        "HideRoute": "Hide Route"
+        "HideRoute": "Hide Route",
+        "Schedule": "Schedule",
+        "OnTime": "On time",
+        "Early": "{{delay}} early",
+        "Delay": "{{delay}} delayed"
       },
       "SelectedRoute": "Selected Route",
       "Hide": "Hide",
@@ -147,7 +154,10 @@
           "Now": "This train should arrive at this station now.",
           "Past": "This train should have arrived at this station {{time}}.",
           "Future": "This train should arrive at this station {{time}}."
-        }
+        },
+        "Delay": "This train departed this station with a delay of {{delay}}.",
+        "Early": "This train departed this station {{delay}} early.",
+        "OnTime": "This train departed this station on time."
       },
       "StationMarkerPopup": {
         "Difficulty": "Difficulty: {{difficulty}}",
@@ -252,6 +262,9 @@
         "showNextStationInfoCollapsed": {
           "Label": "Informationen zum nächsten Bahnhof anzeigen"
         },
+        "showDelayInfoCollapsed": {
+          "Label": "Verspätungsinformationen anzeigen"
+        },
         "MapTheme": "Kartenthema (für den Dunkelmodus)",
         "alternativeTheme": {
           "Label": "Monochromatische Karte"
@@ -277,7 +290,11 @@
         "Unpin": "Lösen",
         "Pin": "Anheften",
         "ShowRoute": "Route anzeigen",
-        "HideRoute": "Route ausblenden"
+        "HideRoute": "Route ausblenden",
+        "Schedule": "Fahrplan",
+        "OnTime": "Pünktlich",
+        "Early": "{{delay}} früher",
+        "Delay": "{{delay}} Verspätung"
       },
       "SelectedRoute": "Ausgewählte Route",
       "Hide": "Ausblenden",
@@ -330,7 +347,10 @@
           "Now": "Dieser Zug sollte jetzt an diesem Bahnhof ankommen.",
           "Past": "Dieser Zug sollte an diesem Bahnhof {{time}} ankommen.",
           "Future": "Dieser Zug sollte an diesem Bahnhof {{time}} ankommen."
-        }
+        },
+        "Delay": "Dieser Zug hat diesen Bahnhof {{delay}} früher verlassen.",
+        "Early": "Dieser Zug hat diesen Bahnhof {{delay}} zu früh verlassen.",
+        "OnTime": "Dieser Zug hat diesen Bahnhof pünktlich verlassen."
       },
       "StationMarkerPopup": {
         "Difficulty": "Schwierigkeit: {{difficulty}}",
@@ -435,6 +455,9 @@
         "showNextStationInfoCollapsed": {
           "Label": "Következő állomás megjelenítése"
         },
+        "showDelayInfoCollapsed": {
+          "Label": "Késés információk megjelenítése"
+        },
         "MapTheme": "Térkép téma (sötét módhoz)",
         "alternativeTheme": {
           "Label": "Monokróm térkép"
@@ -460,7 +483,11 @@
         "Unpin": "Elrejtés",
         "Pin": "Kitűzés",
         "ShowRoute": "Útvonal megjelenítése",
-        "HideRoute": "Útvonal elrejtése"
+        "HideRoute": "Útvonal elrejtése",
+        "Schedule": "Menetrend",
+        "OnTime": "Időben",
+        "Early": "Siet: {{delay}}",
+        "Delay": "Késés: {{delay}}"
       },
       "SelectedRoute": "Kiválasztott útvonal",
       "Hide": "Elrejtés",
@@ -513,7 +540,10 @@
           "Now": "Ez a vonat most kellene, hogy megérkezzen a megállóba.",
           "Past": "Ez a vonat {{time}} kellett volna, hogy megérkezzen a megállóba.",
           "Future": "Ez a vonat {{time}} kellene, hogy megérkezzen a megállóba."
-        }
+        },
+        "Delay": "Ez a vonat {{delay}} késéssel indult el a megállóból.",
+        "Early": "Ez a vonat korábban indult el a megállóból ennyi idővel: {{delay}}",
+        "OnTime": "Ez a vonat időben indult el a megállóból."
       },
       "StationMarkerPopup": {
         "Difficulty": "Nehézség: {{difficulty}}",
@@ -618,6 +648,9 @@
         "showNextStationInfoCollapsed": {
           "Label": "Bir sonraki istasyon bilgisini göster"
         },
+        "showDelayInfoCollapsed": {
+          "Label": "Gecikme bilgisini göster"
+        },
         "MapTheme": "Harita Teması (Karanlık Mod İçin)",
         "alternativeTheme": {
           "Label": "Monokrom harita"
@@ -643,7 +676,11 @@
         "Unpin": "Sabitlemeyi Kaldır",
         "Pin": "Sabitle",
         "ShowRoute": "Rotayı Göster",
-        "HideRoute": "Rotayı Gizle"
+        "HideRoute": "Rotayı Gizle",
+        "Schedule": "Program",
+        "OnTime": "Zamanında",
+        "Early": "{{delay}} erken",
+        "Delay": "{{delay}} gecikmeli"
       },
       "SelectedRoute": "Seçili Rota",
       "Hide": "Gizle",
@@ -696,7 +733,10 @@
           "Now": "Bu tren şu anda bu istasyona varmalı.",
           "Past": "Bu tren bu istasyona {{time}} varmalıydı.",
           "Future": "Bu tren bu istasyona {{time}} varmalı."
-        }
+        },
+        "Delay": "Bu tren bu istasyondan {{delay}} gecikmeli ayrıldı.",
+        "Early": "Bu tren bu istasyondan {{delay}} erken ayrıldı.",
+        "OnTime": "Bu tren bu istasyondan zamanında ayrıldı."
       },
       "StationMarkerPopup": {
         "Difficulty": "Zorluk: {{difficulty}}",
@@ -801,6 +841,9 @@
         "showNextStationInfoCollapsed": {
           "Label": "Pokaż informacje o następnej stacji"
         },
+        "showDelayInfoCollapsed": {
+          "Label": "Pokaż informacje o opóźnieniach"
+        },
         "MapTheme": "Motyw Mapy (dla trybu ciemnego)",
         "alternativeTheme": {
           "Label": "Monochromatyczna mapa"
@@ -826,7 +869,11 @@
         "Unpin": "Odepnij",
         "Pin": "Przypnij",
         "ShowRoute": "Pokaż Trasę",
-        "HideRoute": "Ukryj Trasę"
+        "HideRoute": "Ukryj Trasę",
+        "Schedule": "Rozkład Jazdy",
+        "OnTime": "Na Czas",
+        "Early": "{{delay}} wcześniej",
+        "Delay": "{{delay}} opóźniony"
       },
       "SelectedRoute": "Wybrana Trasa",
       "Hide": "Ukryj",
@@ -879,7 +926,10 @@
           "Now": "Ten pociąg powinien teraz dotrzeć do tej stacji.",
           "Past": "Ten pociąg powinien dotrzeć do tej stacji {{time}}.",
           "Future": "Ten pociąg powinien dotrzeć do tej stacji {{time}}."
-        }
+        },
+        "Delay": "Ten pociąg opuścił tę stację z opóźnieniem {{delay}}.",
+        "Early": "Ten pociąg opuścił tę stację {{delay}} wcześniej.",
+        "OnTime": "Ten pociąg opuścił tę stację na czas."
       },
       "StationMarkerPopup": {
         "Difficulty": "Trudność: {{difficulty}}",

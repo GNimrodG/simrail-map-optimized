@@ -11,6 +11,7 @@ const SETTINGS = {
   showSpeedInfoCollapsed: true,
   showSignalInfoCollapsed: true,
   showNextStationInfoCollapsed: false,
+  showDelayInfoCollapsed: true,
   alternativeTheme: false,
   disableSlidingMarkers: false,
   layerOpacities: {

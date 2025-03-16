@@ -12,16 +12,18 @@ import Stepper from "@mui/joy/Stepper";
 import { styled, useTheme } from "@mui/joy/styles";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
-import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
+import moment from "moment";
+import { type FunctionComponent, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { fetchTimetable, Timetable, Train } from "../../utils/data-manager";
+import { fetchTimetable, getDelaysForTrainId$, Timetable, Train } from "../../utils/data-manager";
 import MapLinesContext from "../../utils/map-lines-context";
 import SelectedRouteContext from "../../utils/selected-route-context";
 import SelectedTrainContext from "../../utils/selected-train-context";
 import { ProfileResponse } from "../../utils/steam";
 import { getColorTrainMarker, getDistanceColorForSignal } from "../../utils/ui";
 import { useSetting } from "../../utils/use-setting";
+import useSubject from "../../utils/use-subject";
 import CollapseIcon from "../icons/CollapseIcon";
 import ExpandIcon from "../icons/ExpandIcon";
 import InfoIcon from "../icons/InfoIcon";
@@ -29,11 +31,13 @@ import SettingCheckbox from "../settings/SettingCheckbox";
 import SteamProfileDisplay from "../SteamProfileDisplay";
 import { formatVehicleName, getThumbnailUrl } from "../utils/general-utils";
 import SignalSpeedDisplay from "../utils/SignalSpeedDisplay";
+import CalendarIcon from "./icons/calendar.svg?react";
 import LengthIcon from "./icons/LengthIcon";
 import SpeedIcon from "./icons/SpeedIcon";
 import WeightIcon from "./icons/WeightIcon";
 import StationDisplay from "./StationDisplay";
 import TrainConsistDisplay from "./TrainConsistDisplay";
+import TrainScheduleDisplay from "./TrainScheduleDisplay";
 
 export interface TrainMarkerPopupProps {
   train: Train;
@@ -52,6 +56,42 @@ const Image = styled("img")(({ theme }) => ({
   },
 }));
 
+function useTrainTimetable(trainNo: string) {
+  const [timetable, setTimetable] = useState<Timetable | null>(null);
+
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    fetchTimetable(trainNo, abortController.signal)
+      .then((data) => {
+        if (!abortController.signal.aborted) setTimetable(data);
+      })
+      .catch((e) => {
+        console.error("Failed to fetch timetable: ", e);
+      });
+
+    return () => {
+      abortController.abort();
+    };
+  }, [trainNo]);
+
+  return timetable;
+}
+
+function useTrainDelays(trainId: string) {
+  const delays = useSubject(
+    useMemo(() => getDelaysForTrainId$(trainId), [trainId]),
+    {},
+  );
+
+  const lastDelay = useMemo(() => {
+    const sortedDelays = Object.entries(delays).sort(([a], [b]) => Number(a) - Number(b));
+    return sortedDelays.length ? Math.round(sortedDelays[sortedDelays.length - 1][1] / 60) : null;
+  }, [delays]);
+
+  return { delays, lastDelay };
+}
+
 const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
   train,
   userData,
@@ -66,7 +106,6 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
   const { setMapLines } = useContext(MapLinesContext);
-  const [timetable, setTimetable] = useState<Timetable | null>(null);
   const [isTimeTableExpanded, setIsTimeTableExpanded] = useState(
     readLocalStorageValue({ key: "expandScheduleDefault", defaultValue: false }),
   );
@@ -74,37 +113,40 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
   const [hideTrainPictures] = useSetting("hideTrainPictures");
   const [showSpeedInfoCollapsed] = useSetting("showSpeedInfoCollapsed");
   const [showSignalInfoCollapsed] = useSetting("showSignalInfoCollapsed");
+  const [showDelayInfoCollapsed] = useSetting("showDelayInfoCollapsed");
   const [showNextStationInfoCollapsed] = useSetting("showNextStationInfoCollapsed");
 
   const thumbnailUrl = useMemo(() => getThumbnailUrl(train.Vehicles[0]), [train.Vehicles]);
 
-  useEffect(() => {
-    let shouldCancel = false;
+  const timetable = useTrainTimetable(train.TrainNoLocal);
 
-    fetchTimetable(train.TrainNoLocal).then((timetable) => {
-      if (shouldCancel) return;
-      setTimetable(timetable);
-    });
+  const trainTimetableIndex = useMemo(
+    () => train.TrainData.VDDelayedTimetableIndex,
+    [train.TrainData.VDDelayedTimetableIndex],
+  );
 
-    return () => {
-      shouldCancel = true;
+  const { delays, lastDelay } = useTrainDelays(train.id);
+
+  const lastDelayColor = useMemo(
+    () => (lastDelay ? (lastDelay <= 0 ? "success" : lastDelay < 6 ? "warning" : "danger") : "neutral"),
+    [lastDelay],
+  );
+
+  const prevStationDelay = useMemo(
+    () => delays[train.TrainData.VDDelayedTimetableIndex - 1],
+    [delays, train.TrainData.VDDelayedTimetableIndex],
+  );
+
+  const stationData = useMemo(() => {
+    if (!timetable) return { first: null, prev: null, current: null, next: null, last: null };
+    return {
+      first: timetable.timetable[0],
+      prev: timetable.timetable[train.TrainData.VDDelayedTimetableIndex - 1],
+      current: timetable.timetable[train.TrainData.VDDelayedTimetableIndex],
+      next: timetable.timetable[train.TrainData.VDDelayedTimetableIndex + 1],
+      last: timetable.timetable[timetable.timetable.length - 1],
     };
-  }, [train.TrainNoLocal]);
-
-  const firstStation = useMemo(() => timetable?.timetable[0], [timetable]);
-  const prevStation = useMemo(
-    () => timetable?.timetable[train.TrainData.VDDelayedTimetableIndex - 1],
-    [timetable, train.TrainData.VDDelayedTimetableIndex],
-  );
-  const currentStation = useMemo(
-    () => timetable?.timetable[train.TrainData.VDDelayedTimetableIndex],
-    [timetable, train.TrainData.VDDelayedTimetableIndex],
-  );
-  const nextStation = useMemo(
-    () => timetable?.timetable[train.TrainData.VDDelayedTimetableIndex + 1],
-    [timetable, train.TrainData.VDDelayedTimetableIndex],
-  );
-  const lastStation = useMemo(() => timetable?.timetable[timetable.timetable.length - 1], [timetable]);
+  }, [timetable, train.TrainData.VDDelayedTimetableIndex]);
 
   const trainSpeed = (
     <Typography level="body-lg" startDecorator={<SpeedIcon />}>
@@ -131,6 +173,42 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
     </Stack>
   );
 
+  const delayInfo = lastDelay !== null && (
+    <Stack justifyContent="center" direction="row">
+      <Typography level="body-md" color={lastDelayColor} variant="outlined" noWrap textAlign="center">
+        {t(lastDelay === 0 ? "OnTime" : lastDelay < 0 ? "Early" : "Delay", {
+          delay: moment.duration({ m: lastDelay }).humanize(),
+        })}
+      </Typography>
+    </Stack>
+  );
+
+  const handleFollow = useCallback(() => {
+    setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true, paused: false });
+  }, [setSelectedTrain, train.TrainNoLocal]);
+
+  const handleUnfollow = useCallback(() => {
+    setSelectedTrain({ trainNo: selectedTrain!.trainNo, follow: false, paused: false });
+    setMapLines(null);
+  }, [selectedTrain, setSelectedTrain, setMapLines]);
+
+  const handlePin = useCallback(() => {
+    setSelectedTrain({ trainNo: train.TrainNoLocal, follow: false, paused: false });
+  }, [setSelectedTrain, train.TrainNoLocal]);
+
+  const handleUnpin = useCallback(() => {
+    setSelectedTrain(null);
+    setMapLines(null);
+  }, [setMapLines, setSelectedTrain]);
+
+  const handleShowRoute = useCallback(() => {
+    setSelectedRoute(train.TrainNoLocal);
+  }, [setSelectedRoute, train.TrainNoLocal]);
+
+  const handleHideRoute = useCallback(() => {
+    setSelectedRoute(null);
+  }, [setSelectedRoute]);
+
   if (isCollapsed) {
     return (
       <Stack
@@ -138,10 +216,11 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         alignItems="center"
         useFlexGap
         sx={{
-          width: "14rem",
+          minWidth: "min(14rem, 90vw)",
+          maxWidth: "90vw",
         }}>
         <Stack spacing={0.5} direction="row" alignItems="center">
-          <Typography level="body-lg">
+          <Typography level="body-lg" noWrap>
             {train.TrainNoLocal} ({train.TrainName})
           </Typography>
           {onToggleCollapse && (
@@ -160,7 +239,11 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
 
         {showSpeedInfoCollapsed && trainSpeed}
 
-        {showNextStationInfoCollapsed && currentStation && <StationDisplay station={currentStation} mainStation />}
+        {showNextStationInfoCollapsed && stationData.current && (
+          <StationDisplay station={stationData.current} mainStation />
+        )}
+
+        {showDelayInfoCollapsed && delayInfo}
 
         {showSignalInfoCollapsed && (
           <Stack direction="row" alignItems="center">
@@ -178,7 +261,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
       useFlexGap
       sx={{
         maxHeight: "calc(100vh - 16rem)",
-        minWidth: "min(16rem, 90vw)",
+        minWidth: "min(18rem, 90vw)",
         overflowX: "hidden",
         overflowY: "auto",
       }}>
@@ -263,74 +346,113 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
       <Stack sx={{ width: "100%" }} direction="row" justifyContent="space-around" alignItems="center">
         {trainSpeed}
         {timetable && (
-          <Stack sx={{ width: "50%" }} spacing={1} direction="row" justifyContent="space-between" alignItems="center">
+          <Stack sx={{ width: "55%" }} spacing={1} direction="row" justifyContent="space-between" alignItems="center">
             <Typography level="body-md" startDecorator={<LengthIcon />}>
               {timetable.trainLength}m
             </Typography>
             <Typography level="body-md" startDecorator={<WeightIcon />}>
               {timetable.trainWeight}t
             </Typography>
+            <Tooltip
+              arrow
+              variant="outlined"
+              placement="right"
+              describeChild
+              title={
+                <Box
+                  sx={{
+                    maxHeight: "min(600px, 90vh)",
+                    overflowY: "auto",
+                    position: "relative",
+                  }}>
+                  <Box
+                    sx={{
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                      backgroundColor: theme.palette.background.surface,
+                      boxShadow: `0px 4px 10px ${theme.palette.background.surface}`,
+                    }}>
+                    <Typography level="body-lg" textAlign="center">
+                      {t("Schedule")}
+                    </Typography>
+                  </Box>
+                  <TrainScheduleDisplay
+                    timetable={timetable}
+                    delays={delays}
+                    trainTimetableIndex={trainTimetableIndex}
+                  />
+                </Box>
+              }>
+              <Stack alignItems="center" justifyContent="center">
+                <CalendarIcon />
+              </Stack>
+            </Tooltip>
           </Stack>
         )}
       </Stack>
 
-      <Stepper sx={{ width: "100%" }} orientation="vertical">
-        <Step
-          sx={{
-            "--Step-indicatorDotSize": "0.5rem",
-          }}
-          completed>
-          {firstStation ? (
-            <StationDisplay station={firstStation} pastStation mainStation />
-          ) : (
-            <Typography level="body-md">{train.StartStation}</Typography>
-          )}
-        </Step>
-        {currentStation && (
-          <>
-            {isTimeTableExpanded && prevStation && (
-              <Step completed>
-                <StationDisplay station={prevStation} pastStation />
-              </Step>
+      <Stack direction="column" sx={{ width: "100%" }}>
+        <Stepper sx={{ width: "100%" }} orientation="vertical">
+          <Step
+            sx={{
+              "--Step-indicatorDotSize": "0.5rem",
+            }}
+            completed>
+            {stationData.first ? (
+              <StationDisplay station={stationData.first} pastStation mainStation />
+            ) : (
+              <Typography level="body-md">{train.StartStation}</Typography>
             )}
-            <Step
-              sx={{
-                color: "primary.solid",
-              }}
-              active
-              indicator={
-                <StepIndicator
-                  sx={{
-                    color: "primary.solid",
-                    cursor: "pointer",
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsTimeTableExpanded((expanded) => !expanded);
-                  }}>
-                  {isTimeTableExpanded ? <CollapseIcon /> : <ExpandIcon />}
-                </StepIndicator>
-              }>
-              <StationDisplay station={currentStation} mainStation={isTimeTableExpanded} />
-            </Step>
-            {isTimeTableExpanded && nextStation && (
-              <Step>
-                <StationDisplay station={nextStation} />
+          </Step>
+          {stationData.current && (
+            <>
+              {isTimeTableExpanded && stationData.prev && (
+                <Step completed>
+                  <StationDisplay station={stationData.prev} pastStation delay={prevStationDelay} />
+                </Step>
+              )}
+              <Step
+                sx={{
+                  color: "primary.solid",
+                }}
+                active
+                indicator={
+                  <StepIndicator
+                    sx={{
+                      color: "primary.solid",
+                      cursor: "pointer",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsTimeTableExpanded((expanded) => !expanded);
+                    }}>
+                    {isTimeTableExpanded ? <CollapseIcon /> : <ExpandIcon />}
+                  </StepIndicator>
+                }>
+                <StationDisplay station={stationData.current} mainStation={isTimeTableExpanded} />
               </Step>
-            )}
-          </>
-        )}
-        <Step
-          sx={{
-            "--Step-indicatorDotSize": "0.5rem",
-          }}>
-          {lastStation ? (
-            <StationDisplay station={lastStation} mainStation />
-          ) : (
-            <Typography level="body-md">{train.EndStation}</Typography>
+              {isTimeTableExpanded && stationData.next && (
+                <Step>
+                  <StationDisplay station={stationData.next} />
+                </Step>
+              )}
+            </>
           )}
-        </Step>
-      </Stepper>
+          <Step
+            sx={{
+              "--Step-indicatorDotSize": "0.5rem",
+            }}>
+            {stationData.last ? (
+              <StationDisplay station={stationData.last} mainStation />
+            ) : (
+              <Typography level="body-md">{train.EndStation}</Typography>
+            )}
+          </Step>
+        </Stepper>
+
+        {delayInfo}
+      </Stack>
 
       {train.TrainData.InBorderStationArea && (
         <Typography level="body-lg" color="warning" variant="solid" noWrap>
@@ -354,28 +476,15 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                     fullWidth
                     variant="solid"
                     color={selectedTrain.paused ? "neutral" : "warning"}
-                    onClick={() => {
-                      setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: false, paused: false });
-                      setMapLines(null);
-                    }}>
+                    onClick={handleUnfollow}>
                     {t("Unfollow")}
                   </Button>
                 ) : (
-                  <Button
-                    fullWidth
-                    variant="solid"
-                    color="success"
-                    onClick={() => setSelectedTrain({ trainNo: selectedTrain.trainNo, follow: true, paused: false })}>
+                  <Button fullWidth variant="solid" color="success" onClick={handleFollow}>
                     {t("Follow")}
                   </Button>
                 )}
-                <Button
-                  variant="solid"
-                  color="danger"
-                  onClick={() => {
-                    setSelectedTrain(null);
-                    setMapLines(null);
-                  }}>
+                <Button variant="solid" color="danger" onClick={handleUnpin}>
                   {t("Unpin")}
                 </Button>
               </ButtonGroup>
@@ -383,17 +492,10 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
             </>
           ) : (
             <ButtonGroup size={isSmallScreen ? "sm" : "md"}>
-              <Button
-                fullWidth
-                variant="solid"
-                color="primary"
-                onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true, paused: false })}>
+              <Button fullWidth variant="solid" color="primary" onClick={handleFollow}>
                 {t("Follow")}
               </Button>
-              <Button
-                variant="solid"
-                color="neutral"
-                onClick={() => setSelectedTrain({ trainNo: train.TrainNoLocal, follow: false, paused: false })}>
+              <Button variant="solid" color="neutral" onClick={handlePin}>
                 {t("Pin")}
               </Button>
             </ButtonGroup>
@@ -408,7 +510,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                     BETA
                   </Chip>
                 }
-                onClick={() => setSelectedRoute(train.TrainNoLocal)}>
+                onClick={handleShowRoute}>
                 {t("ShowRoute")}
               </Button>
             ) : (
@@ -419,7 +521,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                     BETA
                   </Chip>
                 }
-                onClick={() => setSelectedRoute(null)}>
+                onClick={handleHideRoute}>
                 {t("HideRoute")}
               </Button>
             ))}

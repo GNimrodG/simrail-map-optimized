@@ -562,5 +562,17 @@
     "Latititude": 52.26321112394744,
     "Longitude": 21.056409543860823,
     "id": "WPT"
+  },
+  {
+    "Name": "Sędziszów Towarowy",
+    "Prefix": "SDT",
+    "DifficultyLevel": -1,
+    "MainImageURL": "",
+    "AdditionalImage1URL": "",
+    "AdditionalImage2URL": "",
+    "DispatchedBy": [],
+    "Latititude": 50.58175,
+    "Longitude": 20.111297,
+    "id": "SDT"
   }
 ]

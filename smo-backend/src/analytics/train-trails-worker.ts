@@ -2,8 +2,7 @@ import { parentPort } from "worker_threads";
 import { Train } from "../api-helper";
 import { prisma } from "../db";
 import { ModuleLogger } from "../logger";
-import { getTrainId } from "./signal-utils";
-
+import { getTrainId } from "../utils";
 const logger = new ModuleLogger("TRAIN-TRAILS-WORKER");
 
 async function analyzeTrains(trains: Train[]) {

@@ -8,9 +8,9 @@ import {
   BLOCK_SIGNAL_REVERSE_REGEX,
   getSignalRole,
   getSignalType,
-  getTrainId,
   tryLogError,
 } from "./signal-utils";
+import { getTrainId } from "../utils";
 
 const logger = new ModuleLogger("SIGNALS-PROC-WORKER");
 const MIN_DISTANCE_TO_SIGNAL =
@@ -409,7 +409,7 @@ async function analyzeTrains(trains: Train[]) {
           logger.warn(`Failed to get distance for train ${trainId}, ignoring current location!`);
           isValid = false;
         } else if (distance > maxDistancePossible) {
-          logger.warn(
+          logger.debug(
             `Train ${trainId} moved too far (${distance.toFixed(
               0
             )}m > ${maxDistancePossible.toFixed(

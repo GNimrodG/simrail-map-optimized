@@ -1,5 +1,5 @@
 import { LeafletEventHandlerFn, Map as LeafletMap } from "leaflet";
-import { type FunctionComponent, useEffect, useMemo, useState } from "react";
+import { type FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
 import { LayerGroup, useMap } from "react-leaflet";
 
 import { signalsData$, SignalWithTrain } from "../../utils/data-manager";
@@ -66,14 +66,17 @@ const PassiveSignalsLayer: FunctionComponent = () => {
     setVisibleSignals(getVisibleSignals(passiveSignals, map));
   }, [passiveSignals, map]);
 
-  const handleSignalSelect = (signalId: string) => {
-    const signal = signals.find((s) => s.name === signalId);
-    if (signal) {
-      goToSignal(signal, map);
-    } else {
-      console.error(`Signal ${signalId} not found`);
-    }
-  };
+  const handleSignalSelect = useCallback(
+    (signalId: string) => {
+      const signal = signals.find((s) => s.name === signalId);
+      if (signal) {
+        goToSignal(signal, map);
+      } else {
+        console.error(`Signal ${signalId} not found`);
+      }
+    },
+    [signals, map],
+  );
 
   return (
     <LayerGroup>

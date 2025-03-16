@@ -110,6 +110,7 @@ const Settings: FunctionComponent = () => {
             <SettingCheckbox settingKey="showSpeedInfoCollapsed" />
             <SettingCheckbox settingKey="showSignalInfoCollapsed" />
             <SettingCheckbox settingKey="showNextStationInfoCollapsed" />
+            <SettingCheckbox settingKey="showDelayInfoCollapsed" />
           </Stack>
         </Stack>
       </Stack>

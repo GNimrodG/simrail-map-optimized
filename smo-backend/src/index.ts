@@ -23,7 +23,6 @@ import {
   deleteSignal,
   getSignal,
   getSignalsForTrains,
-  getTrainPreviousSignal,
   removeSignalNextSignal,
   removeSignalPrevSignal,
   updateSignal,
@@ -39,6 +38,8 @@ import msgpackParser from "socket.io-msgpack-parser";
 import cors from "cors";
 import express from "express";
 import { analyzeTrainsForTrail } from "./analytics/train-trails";
+import { analyzeTrainsForDelays, getTrainDelays } from "./analytics/train-delay";
+import { addStatusEndpoints } from "./status-endpoints";
 
 function buildHttpsServer(
   app: http.RequestListener<typeof http.IncomingMessage, typeof http.ServerResponse> | undefined
@@ -75,14 +76,12 @@ serverFetcher.data$
     timetableFetcher.start();
   });
 
-let connectedClients = 0;
-
 io.on("connection", (socket) => {
   logger.info(
     `Client connected from ${
       socket.handshake.headers["x-forwarded-for"]?.toString().split(",")?.[0] ||
       socket.handshake.address
-    }, total clients: ${++connectedClients}`,
+    }, total clients: ${io.engine.clientsCount}`,
     {
       client: socket.id,
     }
@@ -146,7 +145,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", (r) => {
-    logger.info(`Client disconnected: ${r}, total: ${--connectedClients}`, { client: socket.id });
+    logger.info(`Client disconnected: ${r}, total: ${io.engine.clientsCount}`, {
+      client: socket.id,
+    });
   });
 });
 
@@ -162,6 +163,11 @@ trainFetcher.perServerData$.subscribe(async (data) => {
   io.to(data.server).emit("trains", data.data);
 
   io.to(data.server).emit("signals", await getSignalsForTrains(data.data));
+
+  io.to(data.server).emit(
+    "delays",
+    Object.fromEntries(data.data.map((train) => [train.id, getTrainDelays(train)]))
+  );
 });
 
 timeFetcher.perServerData$.subscribe((data) => {
@@ -185,6 +191,8 @@ trainFetcher.data$.subscribe((data) => {
   if (!process.env.DISABLE_ROUTE_ANALYSIS) {
     analyzeTrainsForRoutes(trains);
   }
+
+  analyzeTrainsForDelays(trains);
 });
 
 app.use(
@@ -193,16 +201,7 @@ app.use(
   })
 );
 
-app.get("/status", async (_req, res) => {
-  res.json({
-    connectedClients,
-    servers: serverFetcher.currentData?.reduce<Record<string, number>>((prev, curr) => {
-      prev[curr.ServerCode] = io.sockets.adapter.rooms.get(curr.ServerCode)?.size || 0;
-      return prev;
-    }, {}),
-    trainPreviousSignal: await getTrainPreviousSignal(),
-  });
-});
+addStatusEndpoints(app, io);
 
 // Prometheus metrics
 app.get("/metrics", (_req, res) => {
@@ -211,7 +210,7 @@ app.get("/metrics", (_req, res) => {
     `
 # HELP smo_connected_clients Number of connected clients
 # TYPE smo_connected_clients gauge
-smo_connected_clients ${connectedClients}
+smo_connected_clients ${io.engine.clientsCount}
 
 # HELP smo_server_clients Number of clients connected to each server
 # TYPE smo_server_clients gauge
@@ -472,5 +471,5 @@ Sentry.setupExpressErrorHandler(app);
 const PORT = process.env.PORT || 3000;
 
 webServer.listen(PORT, () => {
-  logger.info(`Server is running on port ${PORT}`);
+  logger.info(`Listening on http://localhost:${PORT}`);
 });

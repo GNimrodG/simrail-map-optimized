@@ -4,7 +4,8 @@ import Stack from "@mui/joy/Stack";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import { DivIcon, DivIconOptions, Icon, IconOptions } from "leaflet";
-import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
+import equals from "lodash/isEqual";
+import { type FunctionComponent, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Marker, Popup, useMap } from "react-leaflet";
 
@@ -135,7 +136,7 @@ function findStation(signalName: string) {
   const options: Station[] = [];
 
   for (const station of [...UnplayableStations, ...stationsData$.value]) {
-    if (RegExp(`^${station.Prefix}_|^\\d+_${station.Prefix}_`).exec(signalName)) {
+    if (RegExp(`^${station.Prefix}\\d?_|^\\d+_${station.Prefix}\\d?_`).exec(signalName)) {
       options.push(station as Station); // we can't return early here because there are some cases where the prefix overlaps (Skierniewice (3877_Sk) and Stawiska (Sk))
     }
   }
@@ -239,7 +240,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
     setIcon(SECONDARY_ICON);
   }, [signal.extra, signal.trainAhead, signal.name, signal.train, signal.type, signal.nextSignalWithTrainAhead]);
 
-  const showSignalLines = () => {
+  const showSignalLines = useCallback(() => {
     const lines: MapLineData["lines"] = [];
     let i = 0;
 
@@ -274,9 +275,9 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
     }
 
     setMapLines({ signal: signal.name, lines });
-  };
+  }, [signal.lat, signal.lon, signal.name, signal.nextSignals, signal.prevSignals, setMapLines]);
 
-  const showSignalLinesFurther = () => {
+  const showSignalLinesFurther = useCallback(() => {
     const MAX_LAYER = 20;
     const MAX_STACK_SIZE = 10;
     const lines: MapLineData["lines"] = [];
@@ -349,9 +350,62 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
     }
 
     setMapLines({ signal: signal.name, lines });
-  };
+  }, [setMapLines, signal]);
 
   const station = useMemo(() => findStation(signal.name), [signal.name]);
+
+  const handleTrainAheadSignalClick = useCallback(() => {
+    onSignalSelect?.(signal.trainAhead.TrainData.SignalInFront.split("@")[0]);
+  }, [onSignalSelect, signal.trainAhead.TrainData.SignalInFront]);
+
+  const handleNextSignalWithTrainAheadClick = useCallback(() => {
+    onSignalSelect?.(signal.nextSignalWithTrainAhead!);
+  }, [onSignalSelect, signal.nextSignalWithTrainAhead]);
+
+  const handleGoToStation = useCallback(() => {
+    goToStation(station!, map);
+  }, [station, map]);
+
+  const signalSelectHandlers = useMemo(
+    () => Object.fromEntries([...signal.prevSignals, ...signal.nextSignals].map((s) => [s, () => onSignalSelect?.(s)])),
+    [signal.prevSignals, signal.nextSignals, onSignalSelect],
+  );
+
+  const prevSignalDeleteHandlers = useMemo(
+    () => Object.fromEntries(signal.prevSignals.map((s) => [s, () => deletePrevSignal(signal.name, s)])),
+    [signal.prevSignals, signal.name],
+  );
+
+  const nextSignalDeleteHandlers = useMemo(
+    () => Object.fromEntries(signal.nextSignals.map((s) => [s, () => deleteNextSignal(signal.name, s)])),
+    [signal.nextSignals, signal.name],
+  );
+
+  const handleHideSignalLines = useCallback(() => setMapLines(null), [setMapLines]);
+
+  const handleUnFinalizePrev = useCallback(() => {
+    updateSignal(signal.name, signal.type || null, signal.role || null, false, signal.nextFinalized ?? false);
+
+    signal.prevFinalized = false;
+  }, [signal]);
+
+  const handleFinalizePrev = useCallback(() => {
+    updateSignal(signal.name, signal.type || null, signal.role || null, true, signal.nextFinalized ?? false);
+
+    signal.prevFinalized = true;
+  }, [signal]);
+
+  const handleUnFinalizeNext = useCallback(() => {
+    updateSignal(signal.name, signal.type || null, signal.role || null, signal.prevFinalized ?? false, false);
+
+    signal.nextFinalized = false;
+  }, [signal]);
+
+  const handleFinalizeNext = useCallback(() => {
+    updateSignal(signal.name, signal.type || null, signal.role || null, signal.prevFinalized ?? false, true);
+
+    signal.nextFinalized = true;
+  }, [signal]);
 
   return (
     <Marker opacity={opacity} key={signal.name} position={[signal.lat, signal.lon]} icon={icon}>
@@ -413,10 +467,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                     key="trainAhead-train-distance"
                     color={getDistanceColorForSignal(signal.trainAhead.TrainData.DistanceToSignalInFront)}
                   />,
-                  <Chip
-                    key="trainAhead-signal"
-                    onClick={() => onSignalSelect?.(signal.trainAhead.TrainData.SignalInFront.split("@")[0])}
-                  />,
+                  <Chip key="trainAhead-signal" onClick={handleTrainAheadSignalClick} />,
                 ]}
               />
             </Typography>
@@ -427,10 +478,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                 i18nKey="SignalMarker.NextSignalWithTrainAhead"
                 values={{ nextSignalWithTrainAhead: signal.nextSignalWithTrainAhead }}
                 components={[
-                  <Chip
-                    key="nextSignalWithTrainAhead-signal"
-                    onClick={() => onSignalSelect?.(signal.nextSignalWithTrainAhead!)}
-                  />,
+                  <Chip key="nextSignalWithTrainAhead-signal" onClick={handleNextSignalWithTrainAheadClick} />,
                   <Typography key="nextSignalWithTrainAhead-warning" color="warning" />,
                 ]}
               />
@@ -449,7 +497,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
               <Stack direction="row" alignItems="center" gap={1}>
                 <Typography level="body-xs">{t("Station")}</Typography>
                 {station ? (
-                  <Chip onClick={() => goToStation(station, map)}>{station.Name}</Chip>
+                  <Chip onClick={handleGoToStation}>{station.Name}</Chip>
                 ) : (
                   <Typography level="body-xs">{t("Unknown")}</Typography>
                 )}
@@ -481,11 +529,9 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
               {signal.prevSignals.map((s) => (
                 <Chip
                   key={`${signal.name}-prev-${s}`}
-                  onClick={() => onSignalSelect?.(s)}
+                  onClick={signalSelectHandlers[s]}
                   endDecorator={
-                    localStorage.getItem("adminPassword") && (
-                      <ChipDelete onDelete={() => deletePrevSignal(signal.name, s)} />
-                    )
+                    localStorage.getItem("adminPassword") && <ChipDelete onDelete={prevSignalDeleteHandlers[s]} />
                   }>
                   {s}
                 </Chip>
@@ -499,11 +545,9 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
               {signal.nextSignals.map((s) => (
                 <Chip
                   key={`${signal.name}-next-${s}`}
-                  onClick={() => onSignalSelect?.(s)}
+                  onClick={signalSelectHandlers[s]}
                   endDecorator={
-                    localStorage.getItem("adminPassword") && (
-                      <ChipDelete onDelete={() => deleteNextSignal(signal.name, s)} />
-                    )
+                    localStorage.getItem("adminPassword") && <ChipDelete onDelete={nextSignalDeleteHandlers[s]} />
                   }>
                   {s}
                 </Chip>
@@ -511,7 +555,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
             </Stack>
           </Stack>
           {mapLines?.signal === signal.name ? (
-            <Chip onClick={() => setMapLines(null)} color="warning">
+            <Chip onClick={handleHideSignalLines} color="warning">
               {t("HideSignalLines")}
             </Chip>
           ) : (
@@ -548,62 +592,22 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
                 {t("AdminActions.DeleteSignal")}
               </Chip>
               {signal.prevFinalized && (
-                <Chip
-                  onClick={() =>
-                    updateSignal(
-                      signal.name,
-                      signal.type || null,
-                      signal.role || null,
-                      false,
-                      signal.nextFinalized ?? false,
-                    )
-                  }
-                  color="warning">
+                <Chip onClick={handleUnFinalizePrev} color="warning">
                   {t("AdminActions.UnFinalizePrev")}
                 </Chip>
               )}
               {!signal.prevFinalized && (
-                <Chip
-                  onClick={() =>
-                    updateSignal(
-                      signal.name,
-                      signal.type || null,
-                      signal.role || null,
-                      true,
-                      signal.nextFinalized ?? false,
-                    )
-                  }
-                  color="success">
+                <Chip onClick={handleFinalizePrev} color="success">
                   {t("AdminActions.FinalizePrev")}
                 </Chip>
               )}
               {signal.nextFinalized && (
-                <Chip
-                  onClick={() =>
-                    updateSignal(
-                      signal.name,
-                      signal.type || null,
-                      signal.role || null,
-                      signal.prevFinalized ?? false,
-                      false,
-                    )
-                  }
-                  color="warning">
+                <Chip onClick={handleUnFinalizeNext} color="warning">
                   {t("AdminActions.UnFinalizeNext")}
                 </Chip>
               )}
               {!signal.nextFinalized && (
-                <Chip
-                  onClick={() =>
-                    updateSignal(
-                      signal.name,
-                      signal.type || null,
-                      signal.role || null,
-                      signal.prevFinalized ?? false,
-                      true,
-                    )
-                  }
-                  color="success">
+                <Chip onClick={handleFinalizeNext} color="success">
                   {t("AdminActions.FinalizeNext")}
                 </Chip>
               )}
@@ -622,4 +626,4 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
   );
 };
 
-export default SignalMarker;
+export default memo(SignalMarker, equals);

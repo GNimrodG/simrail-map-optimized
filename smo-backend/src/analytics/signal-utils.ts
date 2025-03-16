@@ -126,6 +126,7 @@ export function getSignalRole(signal: {
  * @param {string} prev - The previous signal in the connection.
  * @param {string} next - The next signal in the connection.
  * @param {string} error - The error message to be logged.
+ * @param {string} trainId - The ID of the train that encountered the error.
  *
  * The function first checks if the error already exists in the database by searching for a unique entry with the same 'prev', 'next', and 'error'.
  * If the error does not exist, it logs a warning with the error message and creates a new entry in the 'signal_connection_errors' table with the 'prev', 'next', and 'error'.
@@ -153,8 +154,4 @@ export function tryLogError(prev: string, next: string, error: string, trainId: 
     .catch((e) => {
       logger.error(`Failed to log error: ${e}`);
     });
-}
-
-export function getTrainId(train: Train) {
-  return `${train.TrainNoLocal}@${train.ServerCode}-${train.id}`;
 }

@@ -7,14 +7,25 @@ export interface TimeDiffDisplayProps {
 }
 
 const TimeDiffDisplay: FunctionComponent<TimeDiffDisplayProps> = ({ start, end }) => {
-  const timeDiff = useMemo(() => {
+  const timeDiffMins = useMemo(() => {
     const startDate = moment(start);
     const endDate = moment(end);
 
     return endDate.diff(startDate, "minutes");
   }, [start, end]);
 
-  return `${timeDiff}'`;
+  const timeDiffSecs = useMemo(() => {
+    if (timeDiffMins > 0) {
+      return null;
+    }
+
+    const startDate = moment(start);
+    const endDate = moment(end);
+
+    return endDate.diff(startDate, "seconds");
+  }, [timeDiffMins, start, end]);
+
+  return timeDiffMins ? `${timeDiffMins}'` : `${timeDiffSecs}"`;
 };
 
 export default TimeDiffDisplay;

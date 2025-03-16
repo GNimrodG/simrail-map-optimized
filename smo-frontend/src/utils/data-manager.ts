@@ -282,7 +282,7 @@ const timetablePromiseCache = new LRUCache<string, Promise<Timetable | null>>({
   ttl: 1000 * 60 * 60,
 });
 
-export async function fetchTimetable(train: string) {
+export async function fetchTimetable(train: string, signal?: AbortSignal) {
   const cached = timetableCache.get(train);
 
   if (cached) {
@@ -307,6 +307,12 @@ export async function fetchTimetable(train: string) {
     setTimeout(() => {
       resolve(null);
     }, 30000); // 30 seconds timeout
+
+    if (signal) {
+      signal.addEventListener("abort", () => {
+        resolve(null);
+      });
+    }
   });
 
   promise.finally(() => {
@@ -359,4 +365,20 @@ export interface TimetableEntry {
   mileage: number;
   maxSpeed: number;
   stationCategory: "A" | "B" | "C" | "D" | null;
+}
+
+const trainDelays$ = new BehaviorSubject<Map<string, Record<number, number>>>(new Map());
+
+socket.on("delays", (data: Record<string, Record<number, number>>) => {
+  const trainDelays = new Map<string, Record<number, number>>(Object.entries(data));
+
+  trainDelays$.next(trainDelays);
+});
+
+export function getDelaysForTrain$(train: Train) {
+  return getDelaysForTrainId$(train.id);
+}
+
+export function getDelaysForTrainId$(trainId: string) {
+  return trainDelays$.pipe(map((delays) => delays.get(trainId) || {}));
 }

@@ -12,6 +12,10 @@ const CORRECTION = new Date().getTimezoneOffset() * 60 * 1000;
 
 timeData$.subscribe((timeData) => {
   if (timeData?.time) {
-    timeSubj$.next(timeData.time + CORRECTION);
+    const parsed = new Date(timeData.time + CORRECTION);
+
+    parsed.setHours(new Date().getUTCHours() + timeData.timezone); // Manual timezone correction because the API is unreliable
+
+    timeSubj$.next(parsed.getTime());
   }
 });
