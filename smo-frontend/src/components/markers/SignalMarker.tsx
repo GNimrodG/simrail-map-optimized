@@ -356,7 +356,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
 
   const handleTrainAheadSignalClick = useCallback(() => {
     onSignalSelect?.(signal.trainAhead.TrainData.SignalInFront.split("@")[0]);
-  }, [onSignalSelect, signal.trainAhead.TrainData.SignalInFront]);
+  }, [onSignalSelect, signal?.trainAhead?.TrainData?.SignalInFront]);
 
   const handleNextSignalWithTrainAheadClick = useCallback(() => {
     onSignalSelect?.(signal.nextSignalWithTrainAhead!);
