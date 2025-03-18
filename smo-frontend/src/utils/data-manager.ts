@@ -282,7 +282,7 @@ const timetablePromiseCache = new LRUCache<string, Promise<Timetable | null>>({
   ttl: 1000 * 60 * 60,
 });
 
-export async function fetchTimetable(train: string, signal?: AbortSignal) {
+export async function fetchTimetable(train: string) {
   const cached = timetableCache.get(train);
 
   if (cached) {
@@ -307,12 +307,6 @@ export async function fetchTimetable(train: string, signal?: AbortSignal) {
     setTimeout(() => {
       resolve(null);
     }, 30000); // 30 seconds timeout
-
-    if (signal) {
-      signal.addEventListener("abort", () => {
-        resolve(null);
-      });
-    }
   });
 
   promise.finally(() => {

@@ -62,7 +62,7 @@ function useTrainTimetable(trainNo: string) {
   useEffect(() => {
     const abortController = new AbortController();
 
-    fetchTimetable(trainNo, abortController.signal)
+    fetchTimetable(trainNo)
       .then((data) => {
         if (!abortController.signal.aborted) setTimetable(data);
       })
@@ -188,7 +188,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
   }, [setSelectedTrain, train.TrainNoLocal]);
 
   const handleUnfollow = useCallback(() => {
-    setSelectedTrain({ trainNo: selectedTrain!.trainNo, follow: false, paused: false });
+    setSelectedTrain(selectedTrain?.trainNo ? { trainNo: selectedTrain.trainNo, follow: false, paused: false } : null);
     setMapLines(null);
   }, [selectedTrain, setSelectedTrain, setMapLines]);
 
