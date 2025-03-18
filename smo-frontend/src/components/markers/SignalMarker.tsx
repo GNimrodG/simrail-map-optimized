@@ -385,26 +385,18 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
 
   const handleUnFinalizePrev = useCallback(() => {
     updateSignal(signal.name, signal.type || null, signal.role || null, false, signal.nextFinalized ?? false);
-
-    signal.prevFinalized = false;
   }, [signal]);
 
   const handleFinalizePrev = useCallback(() => {
     updateSignal(signal.name, signal.type || null, signal.role || null, true, signal.nextFinalized ?? false);
-
-    signal.prevFinalized = true;
   }, [signal]);
 
   const handleUnFinalizeNext = useCallback(() => {
     updateSignal(signal.name, signal.type || null, signal.role || null, signal.prevFinalized ?? false, false);
-
-    signal.nextFinalized = false;
   }, [signal]);
 
   const handleFinalizeNext = useCallback(() => {
     updateSignal(signal.name, signal.type || null, signal.role || null, signal.prevFinalized ?? false, true);
-
-    signal.nextFinalized = true;
   }, [signal]);
 
   return (

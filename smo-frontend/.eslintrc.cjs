@@ -9,14 +9,12 @@ module.exports = {
   ],
   ignorePatterns: ["dist", ".eslintrc.cjs"],
   parser: "@typescript-eslint/parser",
-  plugins: ["react-refresh", "simple-import-sort"],
+  plugins: ["react-refresh", "simple-import-sort", "react-compiler"],
   rules: {
-    "react-refresh/only-export-components": [
-      "warn",
-      { allowConstantExport: true },
-    ],
+    "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
     "simple-import-sort/imports": "warn",
     "simple-import-sort/exports": "warn",
     "quote-props": ["warn", "consistent-as-needed"],
+    "react-compiler/react-compiler": "warn",
   },
 };

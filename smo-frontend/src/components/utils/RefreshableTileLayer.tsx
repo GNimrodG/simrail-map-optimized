@@ -36,6 +36,7 @@ const RefreshableTileLayer: FunctionComponent<RefreshableTileLayerProps> = ({
         map.removeLayer(layerRef.current);
       }
     };
+    // eslint-disable-next-line react-compiler/react-compiler
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [className, url, attribution, map]);
 
