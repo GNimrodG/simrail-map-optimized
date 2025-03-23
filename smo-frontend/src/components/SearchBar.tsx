@@ -1,16 +1,10 @@
 import Autocomplete, { createFilterOptions } from "@mui/joy/Autocomplete";
-import { Feature } from "ol";
-import VectorLayer from "ol/layer/Vector";
-import VectorSource from "ol/source/Vector";
-import Fill from "ol/style/Fill";
-import Stroke from "ol/style/Stroke";
-import Style from "ol/style/Style";
 import { type FunctionComponent, useContext } from "react";
 import { useTranslation } from "react-i18next";
 
 import UnplayableStations from "../assets/unplayable-stations.json";
 import { signalsData$, SignalWithTrain, Station, stationsData$, Train, trainsData$ } from "../utils/data-manager";
-import { getStationGeometry, goToSignal, goToStation, wgsToMercator } from "../utils/geom-utils";
+import { goToSignal, goToStation, wgsToMercator } from "../utils/geom-utils";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { getSpeedColorForSignal, normalizeString } from "../utils/ui";
 import useBehaviorSubj from "../utils/use-behaviorSubj";

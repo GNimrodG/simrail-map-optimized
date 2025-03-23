@@ -70,7 +70,7 @@ const PassiveSignalsLayer: FunctionComponent = () => {
     (signalId: string) => {
       const signal = signals.find((s) => s.name === signalId);
       if (signal) {
-      goToSignal(signal, map!);
+        goToSignal(signal, map!);
       } else {
         console.error(`Signal ${signalId} not found`);
       }

@@ -3,8 +3,8 @@ import ChipDelete from "@mui/joy/ChipDelete";
 import Stack from "@mui/joy/Stack";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
-import { Icon, Style } from "ol/style";
 import equals from "lodash/isEqual";
+import { Icon, Style } from "ol/style";
 import { type FunctionComponent, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -22,6 +22,7 @@ import {
 import { goToStation } from "../../utils/geom-utils.ts";
 import MapLinesContext, { MapLineData } from "../../utils/map-lines-context";
 import { getDistanceColorForSignal, getSpeedColorForSignal } from "../../utils/ui";
+import { useMap } from "../map/MapProvider.tsx";
 import Marker from "../map/Marker";
 import Popup from "../map/Popup";
 import { getCssVarValue } from "../utils/general-utils";

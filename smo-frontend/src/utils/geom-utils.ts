@@ -138,14 +138,23 @@ export function wgsToMercator([lat, lon]: [number, number] | Position): [number,
   ];
 }
 
-export function goToStation(station: Station, map: L.Map) {
-  map.flyTo([station.Latititude, station.Longitude], 16, { animate: true, duration: 1 });
+export function goToStation(station: Station, map: OlMap) {
+  map?.getView().animate({ center: wgsToMercator([station.Latititude, station.Longitude]), duration: 1000 });
 
   // add polygon around the station using the signals
-  const polygon = L.polygon(getStationGeometry(station), {
-    color: "red",
-    fillColor: "#f03",
-    fillOpacity: 0.5,
-  }).addTo(map);
-  setTimeout(() => map?.removeLayer(polygon), 3000);
+  const polygon = new OlFeature(getStationGeometry(station));
+
+  const layerSource = new VectorSource({ features: [polygon] });
+
+  const polygonLayer = new VectorLayer({
+    source: layerSource,
+    style: new Style({
+      fill: new Fill({ color: "#f03" }),
+      stroke: new Stroke({ color: "#f00", width: 2 }),
+    }),
+  });
+
+  map?.addLayer(polygonLayer);
+
+  setTimeout(() => map?.removeLayer(polygonLayer), 3000);
 }

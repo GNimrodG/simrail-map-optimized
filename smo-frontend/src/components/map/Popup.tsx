@@ -74,7 +74,7 @@ const Popup = forwardRef<PopupRef, PropsWithChildren<PopupProps>>(
     const [containerEl, setContainerEl] = useState(getContainerEl(className));
     const [overlay] = useState<Overlay>(
       new Overlay({
-        positioning: "bottom-center",
+        positioning: positioning || "bottom-center",
       }),
     );
     const [isOpen, setIsOpen] = useState(false);
@@ -82,8 +82,6 @@ const Popup = forwardRef<PopupRef, PropsWithChildren<PopupProps>>(
     // Update overlay positioning and offset
     useEffect(() => {
       if (!overlay) return;
-
-      overlay.setPosition(undefined);
 
       overlay.setPositioning(positioning || "bottom-center");
       overlay.setOffset(offset || [0, 0]);

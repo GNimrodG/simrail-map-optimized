@@ -160,14 +160,14 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
   }, [disableSlidingMarkers, map, shouldFollow, train.TrainData.Latititute, train.TrainData.Longitute]);
 
   const popup = !isSelected && (
-    <Popup className="train-popup" offset={[0, -30]}>
+    <Popup key={`${train.id}-popup`} className="train-popup" offset={[0, -30]}>
       <TrainMarkerPopup train={train} userData={userData} showTrainRouteButton />
     </Popup>
   );
 
   if (disableSlidingMarkers) {
     return (
-      <Marker position={[train.TrainData.Latititute, train.TrainData.Longitute]} icon={icon}>
+      <Marker key={train.id} position={[train.TrainData.Latititute, train.TrainData.Longitute]} icon={icon}>
         {popup}
       </Marker>
     );
