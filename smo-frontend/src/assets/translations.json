@@ -622,11 +622,11 @@
           "Description": "Haritada trenleri takip etmek için alternatif bir yöntem kullanın. Bu yöntem daha az pürüzsüz olabilir ancak daha az CPU kullanır."
         },
         "disableSlidingMarkers": {
-          "Label": "Kaydırma işaretlerini devre dışı bırak",
-          "Description": "Trenler için kaydırma işaretlerini devre dışı bırakın. Bu, bazı cihazlarda performansı artırabilir."
+          "Label": "Kayan işaretçileri devre dışı bırak",
+          "Description": "Trenler için kayan işaret animasyonlarını devre dışı bırakın. Bu, bazı cihazlarda performansı artırabilir."
         },
         "passiveSignalOpacity": {
-          "Label": "Pasif sinyal katmanı opaklığı"
+          "Label": "Pasif sinyal katman opaklığı"
         },
         "TrainWindow": "Tren Penceresi",
         "expandScheduleDefault": {
@@ -767,7 +767,7 @@
       "LowSpeedWarning": {
         "Title": "Düşük ortalama tren hızı",
         "Description": "Bu sunucudaki trenlerin ortalama hızı {{speed}} km/s.",
-        "Tooltip": "İpucu: Bu uyarıyı ayarlarda kapatabilirsiniz."
+        "Tooltip": "İpucu: Bu uyarıyı ayarlardan kapatabilirsiniz."
       }
     }
   },
