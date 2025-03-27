@@ -626,7 +626,7 @@
           "Description": "Trenler için kayan işaret animasyonlarını devre dışı bırakın. Bu, bazı cihazlarda performansı artırabilir."
         },
         "passiveSignalOpacity": {
-          "Label": "Pasif sinyal katman opaklığı"
+          "Label": "Pasif sinyal katmanı opaklığı"
         },
         "TrainWindow": "Tren Penceresi",
         "expandScheduleDefault": {
