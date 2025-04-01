@@ -18,7 +18,7 @@
     "@sentry/react": "^8.53.0",
     "@sentry/vite-plugin": "^3.2.4",
     "@turf/turf": "^7.1.0",
-    "core-js": "^3.39.0",
+    "core-js": "^3.41.0",
     "geojson": "^0.5.0",
     "i18next": "^24.2.2",
     "i18next-browser-languagedetector": "^8.0.0",
