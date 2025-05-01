@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@isaacs/ttlcache": "^1.4.1",
-    "@prisma/client": "^6.3.0",
+    "@prisma/client": "^6.7.0",
     "@sentry/cli": "^2.41.1",
     "@sentry/node": "^9.4.0",
     "@sentry/profiling-node": "^9.15.0",
