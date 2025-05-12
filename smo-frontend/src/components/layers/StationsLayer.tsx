@@ -1,60 +1,58 @@
-import { Map as LeafletMap } from "leaflet";
-import { type FunctionComponent, useEffect, useState } from "react";
+import type { LeafletEventHandlerFn } from "leaflet";
+import type { DebouncedFunc } from "lodash";
+import debounce from "lodash/debounce";
+import { type FunctionComponent, useEffect, useRef, useState } from "react";
 import { LayerGroup, useMap } from "react-leaflet";
 
-import { Station, stationsData$ } from "../../utils/data-manager";
-import { debounce } from "../../utils/debounce";
+import { dataProvider } from "../../utils/data-manager";
+import { getVisibleStations } from "../../utils/geom-utils";
+import { Station } from "../../utils/types";
 import useBehaviorSubj from "../../utils/use-behaviorSubj";
 import StationMarker from "../markers/StationMarker";
-
-function getVisibleStations(stations: Station[], map: LeafletMap | null) {
-  try {
-    const bounds = map?.getBounds();
-
-    if (!bounds) {
-      console.error("Map bounds not available for stations!");
-      return stations;
-    }
-
-    return stations.filter((station) => bounds?.contains([station.Latititude, station.Longitude]));
-  } catch (e) {
-    console.error("Failed to filter visible stations: ", e);
-    return stations; // Fallback to showing all stations
-  }
-}
 
 const StationsLayer: FunctionComponent = () => {
   const map = useMap();
 
-  const stations = useBehaviorSubj(stationsData$);
+  const stations = useBehaviorSubj(dataProvider.stationsData$);
 
   const [visibleStations, setVisibleStations] = useState<Station[]>([]);
 
+  // Store the handler in a ref to prevent recreating it on every render
+  const handlerRef = useRef<DebouncedFunc<LeafletEventHandlerFn>>();
+
   useEffect(() => {
-    const handler = debounce(() => {
-      setVisibleStations(getVisibleStations(stations, map));
-    }, 500);
+    if (!map) return; // Early return if map is not available
 
-    if (map) {
-      map.on("move", handler);
-      map.on("zoom", handler);
-      map.on("resize", handler);
-
-      return () => {
-        map.off("move", handler);
-        map.off("zoom", handler);
-        map.off("resize", handler);
-      };
+    // Create the debounced handler once
+    if (!handlerRef.current) {
+      handlerRef.current = debounce(function (this: L.Map) {
+        setVisibleStations(getVisibleStations(dataProvider.stationsData$.value, this));
+      }, 500);
     }
-  }, [map, stations]);
+
+    // Map event handling
+    const handler = handlerRef.current;
+    map.on("move", handler);
+    map.on("zoom", handler);
+    map.on("resize", handler);
+
+    return () => {
+      handler.cancel(); // Cancel any pending debounced calls
+      map.off("move", handler);
+      map.off("zoom", handler);
+      map.off("resize", handler);
+    };
+  }, [map]);
 
   useEffect(() => {
-    setVisibleStations(getVisibleStations(stations, map));
+    if (map) {
+      setVisibleStations(getVisibleStations(stations, map));
+    }
   }, [stations, map]);
 
   return (
     <LayerGroup>
-      {visibleStations?.map((stationIcon) => <StationMarker key={stationIcon.id} station={stationIcon} />)}
+      {visibleStations?.map((station) => <StationMarker key={"station_" + station.Id} station={station} />)}
     </LayerGroup>
   );
 };

@@ -13,7 +13,7 @@ import { MapContainer } from "react-leaflet";
 import Control from "react-leaflet-custom-control";
 
 import i18n from "../i18n";
-import { isConnected$ } from "../utils/data-manager";
+import { dataProvider } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import useBehaviorSubj from "../utils/use-behaviorSubj";
@@ -53,7 +53,7 @@ const MainMap: FunctionComponent = () => {
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
   const [alternativeTheme] = useSetting("alternativeTheme");
 
-  const isConnected = useBehaviorSubj(isConnected$);
+  const isConnected = useBehaviorSubj(dataProvider.isConnected$);
 
   const [visibleLayers, setVisibleLayers] = useSetting("visibleLayers");
   const [layerOpacities] = useSetting("layerOpacities");

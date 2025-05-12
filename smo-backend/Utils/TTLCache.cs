@@ -1,0 +1,153 @@
+﻿using System.Diagnostics.CodeAnalysis;
+using MessagePack;
+using Microsoft.Extensions.Caching.Memory;
+
+namespace SMOBackend.Utils;
+
+/// <summary>
+/// A simple in-memory cache with a time-to-live (TTL) for each entry.
+/// </summary>
+public class TtlCache<TKey, TValue>(TimeSpan ttl)
+    where TKey : notnull
+{
+    private readonly MemoryCache _cache = new(new MemoryCacheOptions());
+
+    /// <inheritdoc cref="Dictionary{TKey,TValue}.Keys"/>
+    public IEnumerable<TKey> Keys => _cache.Keys as IEnumerable<TKey> ?? [];
+
+    /// <inheritdoc cref="Dictionary{TKey,TValue}.Add"/>
+    public void Add(TKey key, TValue value)
+    {
+        _cache.Set(key, value, new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = ttl
+        });
+    }
+
+    /// <inheritdoc cref="Dictionary{TKey,TValue}.TryGetValue"/>
+    public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
+    {
+        if (_cache.TryGetValue(key, out var cachedValue) && cachedValue is TValue)
+        {
+            // Check if the cached value is of the expected type
+            if (cachedValue is not TValue result)
+            {
+                value = default!;
+                return false;
+            }
+
+            // Cast the cached value to the expected type
+            value = result;
+            return true;
+        }
+
+        value = default!;
+        return false;
+    }
+
+    /// <inheritdoc cref="Dictionary{TKey,TValue}.ContainsKey"/>
+    public bool ContainsKey(TKey key) => _cache.TryGetValue(key, out _);
+
+    /// <inheritdoc cref="Dictionary{TKey,TValue}.Clear"/>
+    public void Clear()
+    {
+        foreach (var key in _cache.Keys)
+        {
+            _cache.Remove(key);
+        }
+    }
+
+    /// <inheritdoc cref="Dictionary{TKey,TValue}.Count"/>
+    public int Count => _cache.Count;
+
+    /// <summary>
+    /// Gets the value for the specified key, or adds it if it doesn't exist.
+    /// </summary>
+    public TValue GetOrAdd(TKey key, Func<TValue> valueFactory)
+    {
+        if (TryGetValue(key, out var value) && value != null)
+            return value;
+
+        value = valueFactory();
+        Add(key, value);
+        return value;
+    }
+
+    /// <summary>
+    /// Sets the value for the specified key, adding it if it doesn't exist.
+    /// </summary>
+    public void Set(TKey key, TValue value)
+    {
+        if (ContainsKey(key))
+        {
+            _cache.Set(key, value, new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(1)
+            });
+        }
+        else
+        {
+            Add(key, value);
+        }
+    }
+
+    /// <summary>
+    /// Saves the cache to a file using MessagePack serialization.
+    /// </summary>
+    /// <param name="filePath">Path to the file to save to.</param>
+    public async Task SaveToFileAsync(string filePath)
+    {
+        var tempFilePath = filePath + ".tmp";
+
+        await using var stream = new FileStream(
+            tempFilePath,
+            FileMode.Create,
+            FileAccess.Write,
+            FileShare.None,
+            bufferSize: 4096,
+            useAsync: true);
+
+        var value = _cache.Keys.Where(key => _cache.Get(key) is TValue)
+            .ToDictionary(key => (TKey)key, key => _cache.Get(key));
+
+        await MessagePackSerializer.SerializeAsync(stream, value,
+            MessagePack.Resolvers.ContractlessStandardResolver.Options);
+
+        await stream.FlushAsync();
+
+        stream.Close();
+
+        // Rename the file to remove the .tmp extension
+        if (File.Exists(filePath)) File.Delete(filePath);
+        File.Move(tempFilePath, filePath);
+    }
+
+    /// <summary>
+    /// Loads the cache from a file using MessagePack serialization.
+    /// </summary>
+    /// <param name="filePath">Path to the file to load from.</param>
+    public void LoadFromFile(string filePath)
+    {
+        var tempFilePath = filePath + ".tmp";
+
+        // Delete leftover temp file if it exists
+        if (File.Exists(tempFilePath))
+            File.Delete(tempFilePath);
+
+        using var stream = new FileStream(
+            filePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            bufferSize: 4096,
+            useAsync: false);
+
+        var value = MessagePackSerializer.Deserialize<Dictionary<TKey, TValue>>(
+            stream,
+            MessagePack.Resolvers.ContractlessStandardResolver.Options);
+
+        Clear();
+
+        foreach (var kvp in value) Add(kvp.Key, kvp.Value);
+    }
+}

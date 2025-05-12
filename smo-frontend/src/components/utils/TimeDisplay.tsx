@@ -1,4 +1,4 @@
-import { type FunctionComponent, useMemo } from "react";
+import { type FunctionComponent, memo, useMemo } from "react";
 
 export interface TimeDisplayProps {
   time: string | number;
@@ -25,4 +25,4 @@ const TimeDisplay: FunctionComponent<TimeDisplayProps> = ({ time, noSeconds }) =
   return timeString;
 };
 
-export default TimeDisplay;
+export default memo(TimeDisplay);

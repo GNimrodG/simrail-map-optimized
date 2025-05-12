@@ -4,6 +4,7 @@ export type MapLineData = {
   signal: string;
   lines: {
     color: string;
+    color2?: string | null;
     label: string;
     coords: [number, number][];
     index: number;

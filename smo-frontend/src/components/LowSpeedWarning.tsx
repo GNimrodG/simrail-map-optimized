@@ -5,12 +5,19 @@ import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { map } from "rxjs";
 
-import { trainsAvgSpeed$ } from "../utils/data-manager";
+import { dataProvider } from "../utils/data-manager";
 import useObservable from "../utils/use-observable";
 import { useSetting } from "../utils/use-setting";
 import InfoIcon from "./icons/InfoIcon";
 import WarningIcon from "./icons/WarningIcon";
+
+const trainsAvgSpeed$ = dataProvider.trainsData$.pipe(
+  map((trains) =>
+    trains.length === 0 ? null : trains.reduce((acc, train) => acc + train.TrainData.Velocity, 0) / trains.length,
+  ),
+);
 
 const LOW_SPEED_THRESHOLD = 40;
 

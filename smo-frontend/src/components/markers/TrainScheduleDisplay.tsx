@@ -2,7 +2,7 @@ import Step, { stepClasses } from "@mui/joy/Step";
 import Stepper from "@mui/joy/Stepper";
 import { type FunctionComponent, useEffect, useRef } from "react";
 
-import { Timetable } from "../../utils/data-manager";
+import { Timetable } from "../../utils/types";
 import StationDisplay from "./StationDisplay";
 
 export interface TrainScheduleDisplayProps {
@@ -44,19 +44,19 @@ const TrainScheduleDisplay: FunctionComponent<TrainScheduleDisplayProps> = ({
         },
       }}
       orientation="vertical">
-      {timetable.timetable.map((x, i) => {
+      {timetable.TimetableEntries.map((x, i) => {
         const current = trainTimetableIndex === i;
 
         return (
           <Step
-            key={`${i}-${x.pointId}`}
+            key={`${i}-${x.PointId}`}
             completed={trainTimetableIndex > i}
             active={current}
             ref={current ? stepperRef : undefined}>
             <StationDisplay
               station={x}
               pastStation={trainTimetableIndex > i}
-              mainStation={x.supervisedBy === x.nameOfPoint}
+              mainStation={x.SupervisedBy === x.NameOfPoint}
               delay={delays[i]}
               current={current}
             />

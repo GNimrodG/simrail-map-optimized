@@ -2,7 +2,8 @@ import Box from "@mui/joy/Box";
 import { styled } from "@mui/joy/styles";
 import { type FunctionComponent, useMemo } from "react";
 
-import { Train, trainsData$ } from "../utils/data-manager";
+import { dataProvider } from "../utils/data-manager";
+import { Train } from "../utils/types";
 import useBehaviorSubj from "../utils/use-behaviorSubj";
 import StationLayoutBlock from "./StationLayoutBlock";
 import StationLayoutGraphic from "./StationLayoutGraphic";
@@ -41,7 +42,7 @@ const StationLayout: FunctionComponent<StationLayoutProps> = ({ layout: rawLayou
       ),
     [rawLayout],
   );
-  const trains = useBehaviorSubj(trainsData$);
+  const trains = useBehaviorSubj(dataProvider.trainsData$);
   const trainData = useMemo(
     () =>
       layout.map((row) =>

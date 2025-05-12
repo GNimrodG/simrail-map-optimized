@@ -1,15 +1,15 @@
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent } from "react";
 
-import { timeData$ } from "../utils/data-manager";
+import { dataProvider } from "../utils/data-manager";
 import { timeSubj$ } from "../utils/time";
 import useBehaviorSubj from "../utils/use-behaviorSubj";
 
 const MapTimeDisplay: FunctionComponent = () => {
   const currentTime = useBehaviorSubj(timeSubj$);
-  const timeData = useBehaviorSubj(timeData$);
+  const timeData = useBehaviorSubj(dataProvider.timeData$);
 
-  const timezone = timeData?.timezone ?? 0;
+  const timezone = timeData?.Timezone ?? 0;
 
   return (
     <Typography

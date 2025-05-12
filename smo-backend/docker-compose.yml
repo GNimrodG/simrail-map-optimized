@@ -4,13 +4,17 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgres://smo:smo@db:5432/smo?schema=public
-      - MIN_DISTANCE_TO_SIGNAL=200
+      - DATABASE_URL=Host=db;Port=5432;Database=smo;Username=smo;Password=smo
     depends_on:
       db:
         condition: service_healthy
     volumes:
-      - ./data:/app/data
+      - ./bin/docker-data:/app/data
+    healthcheck:
+      test: [ "CMD-SHELL", "/usr/bin/curl -f http://localhost:3000/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
   db:
     image: postgis/postgis:16-3.4
     environment:

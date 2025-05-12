@@ -1,9 +1,8 @@
 import { useContext, useEffect } from "react";
 import { useMap } from "react-leaflet";
 
-import { signalsData$, stationsData$, trainsData$ } from "../utils/data-manager";
+import { dataProvider } from "../utils/data-manager";
 import SelectedTrainContext from "../utils/selected-train-context";
-import useBehaviorSubj from "../utils/use-behaviorSubj";
 import { useSetting } from "../utils/use-setting";
 
 const AutoZoomHandler = () => {
@@ -11,10 +10,6 @@ const AutoZoomHandler = () => {
   const [autoZoom] = useSetting("autoZoom");
   const [autoZoomLimits, setAutoZoomLimits] = useSetting("autoZoomLimits");
   const { selectedTrain } = useContext(SelectedTrainContext);
-
-  const trains = useBehaviorSubj(trainsData$);
-  const signals = useBehaviorSubj(signalsData$);
-  const stations = useBehaviorSubj(stationsData$);
 
   useEffect(() => {
     if (!map || !autoZoom || !selectedTrain?.follow || selectedTrain.paused) return;
@@ -24,20 +19,24 @@ const AutoZoomHandler = () => {
 
       try {
         const bounds = map.getBounds();
-        const visibleTrains = trains.filter((train) =>
-          bounds.contains([train.TrainData.Latititute, train.TrainData.Longitute]),
+        const visibleTrains = dataProvider.trainsData$.value.filter((train) =>
+          bounds.contains([train.TrainData.Latitude, train.TrainData.Longitude]),
         );
-        const visibleSignals = signals.filter((signal) => bounds.contains([signal.lat, signal.lon]));
-        const visibleStations = stations.filter((station) => bounds.contains([station.Latititude, station.Longitude]));
+        const visibleSignals = dataProvider.signalsData$.value.filter((signal) =>
+          bounds.contains([signal.Location.Y, signal.Location.X]),
+        );
+        const visibleStations = [...dataProvider.stationsData$.value, ...dataProvider.unplayableStations$.value].filter(
+          (station) => bounds.contains([station.Latitude, station.Longitude]),
+        );
         const selectedTrainData = selectedTrain
-          ? trains.find((train) => train.TrainNoLocal === selectedTrain.trainNo)
+          ? dataProvider.trainsData$.value.find((train) => train.TrainNoLocal === selectedTrain.trainNo)
           : null;
 
         const selectedTrainSpeed = selectedTrainData ? selectedTrainData.TrainData.Velocity : 0;
 
         const totalVisibleObjects =
           visibleTrains.length * 4 + // trains are more important
-          visibleStations.length * 2 + // stations are more important
+          visibleStations.length * 4 + // stations are more important
           visibleSignals.length +
           (200 - selectedTrainSpeed); // the slower the more important, max speed is 200
 
@@ -72,7 +71,7 @@ const AutoZoomHandler = () => {
     return () => {
       map.off("moveend", handleZoom);
     };
-  }, [autoZoom, map, selectedTrain, signals, stations, trains, autoZoomLimits, setAutoZoomLimits]);
+  }, [autoZoom, map, selectedTrain, autoZoomLimits, setAutoZoomLimits]);
 
   return null;
 };

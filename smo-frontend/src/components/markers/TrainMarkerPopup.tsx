@@ -16,11 +16,12 @@ import moment from "moment";
 import { type FunctionComponent, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { fetchTimetable, getDelaysForTrainId$, Timetable, Train } from "../../utils/data-manager";
+import { dataProvider } from "../../utils/data-manager";
 import MapLinesContext from "../../utils/map-lines-context";
 import SelectedRouteContext from "../../utils/selected-route-context";
 import SelectedTrainContext from "../../utils/selected-train-context";
 import { ProfileResponse } from "../../utils/steam";
+import { Timetable, Train } from "../../utils/types";
 import { getColorTrainMarker, getDistanceColorForSignal } from "../../utils/ui";
 import { useSetting } from "../../utils/use-setting";
 import useSubject from "../../utils/use-subject";
@@ -31,6 +32,7 @@ import SettingCheckbox from "../settings/SettingCheckbox";
 import SteamProfileDisplay from "../SteamProfileDisplay";
 import { formatVehicleName, getThumbnailUrl } from "../utils/general-utils";
 import SignalSpeedDisplay from "../utils/SignalSpeedDisplay";
+import TrainTypeDisplay from "../utils/TrainTypeDisplay";
 import CalendarIcon from "./icons/calendar.svg?react";
 import LengthIcon from "./icons/LengthIcon";
 import SpeedIcon from "./icons/SpeedIcon";
@@ -62,7 +64,8 @@ function useTrainTimetable(trainNo: string) {
   useEffect(() => {
     const abortController = new AbortController();
 
-    fetchTimetable(trainNo)
+    dataProvider
+      .fetchTimetable(trainNo)
       .then((data) => {
         if (!abortController.signal.aborted) setTimetable(data);
       })
@@ -80,7 +83,7 @@ function useTrainTimetable(trainNo: string) {
 
 function useTrainDelays(trainId: string) {
   const delays = useSubject(
-    useMemo(() => getDelaysForTrainId$(trainId), [trainId]),
+    useMemo(() => dataProvider.getDelaysForTrainId$(trainId), [trainId]),
     {},
   );
 
@@ -125,7 +128,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
     [train.TrainData.VDDelayedTimetableIndex],
   );
 
-  const { delays, lastDelay } = useTrainDelays(train.id);
+  const { delays, lastDelay } = useTrainDelays(train.Id);
 
   const lastDelayColor = useMemo(
     () => (lastDelay ? (lastDelay <= 0 ? "success" : lastDelay < 6 ? "warning" : "danger") : "neutral"),
@@ -140,11 +143,11 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
   const stationData = useMemo(() => {
     if (!timetable) return { first: null, prev: null, current: null, next: null, last: null };
     return {
-      first: timetable.timetable[0],
-      prev: timetable.timetable[train.TrainData.VDDelayedTimetableIndex - 1],
-      current: timetable.timetable[train.TrainData.VDDelayedTimetableIndex],
-      next: timetable.timetable[train.TrainData.VDDelayedTimetableIndex + 1],
-      last: timetable.timetable[timetable.timetable.length - 1],
+      first: timetable.TimetableEntries[0],
+      prev: timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex - 1],
+      current: timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex],
+      next: timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex + 1],
+      last: timetable.TimetableEntries[timetable.TimetableEntries.length - 1],
     };
   }, [timetable, train.TrainData.VDDelayedTimetableIndex]);
 
@@ -290,8 +293,11 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           level="h3"
           sx={{
             gridArea: "1 / 2 / 2 / 3",
-          }}>
-          {train.TrainNoLocal} ({train.TrainName})
+            display: "flex",
+            alignItems: "center",
+          }}
+          component="div">
+          {train.TrainNoLocal} (<TrainTypeDisplay type={train.TrainName} />)
         </Typography>
 
         {onToggleCollapse && (
@@ -348,10 +354,10 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         {timetable && (
           <Stack sx={{ width: "55%" }} spacing={1} direction="row" justifyContent="space-between" alignItems="center">
             <Typography level="body-md" startDecorator={<LengthIcon />}>
-              {timetable.trainLength}m
+              {timetable.TrainLength}m
             </Typography>
             <Typography level="body-md" startDecorator={<WeightIcon />}>
-              {timetable.trainWeight}t
+              {timetable.TrainWeight}t
             </Typography>
             <Tooltip
               arrow
@@ -391,6 +397,12 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           </Stack>
         )}
       </Stack>
+
+      {train.TrainData.RequiredMapDLCs?.flatMap((x) => x.flatMap((y) => y)).includes(3583200) && (
+        <Typography level="body-lg" color="warning" variant="solid" noWrap>
+          Łódź - Warsaw
+        </Typography>
+      )}
 
       <Stack direction="column" sx={{ width: "100%" }}>
         <Stepper sx={{ width: "100%" }} orientation="vertical">

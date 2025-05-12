@@ -1,7 +1,7 @@
 import Typography from "@mui/joy/Typography";
-import { type FunctionComponent } from "react";
+import { type FunctionComponent, memo } from "react";
 
-import { BaseTrain } from "../../utils/data-manager";
+import { BaseTrain } from "../../utils/types";
 import { getColorTrainMarker } from "../../utils/ui";
 
 export interface SignalSpeedDisplayProps {
@@ -9,6 +9,14 @@ export interface SignalSpeedDisplayProps {
 }
 
 const SignalSpeedDisplay: FunctionComponent<SignalSpeedDisplayProps> = ({ train }) => {
+  if (typeof train?.TrainData?.SignalInFrontSpeed === "undefined" || train?.TrainData?.SignalInFrontSpeed === null) {
+    return (
+      <Typography component="span" color="warning" variant="outlined" textAlign="center">
+        N/A
+      </Typography>
+    );
+  }
+
   return train.TrainData.SignalInFrontSpeed > 200 ? (
     <Typography component="span" color="success" variant="outlined" textAlign="center">
       VMAX
@@ -24,4 +32,6 @@ const SignalSpeedDisplay: FunctionComponent<SignalSpeedDisplayProps> = ({ train 
   );
 };
 
-export default SignalSpeedDisplay;
+export default memo(SignalSpeedDisplay, (prevProps, nextProps) => {
+  return prevProps.train?.TrainData?.SignalInFrontSpeed === nextProps.train?.TrainData?.SignalInFrontSpeed;
+});
