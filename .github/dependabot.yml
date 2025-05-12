@@ -1,13 +1,13 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
+  - package-ecosystem: "nuget"
     directory: "/smo-backend"
     schedule:
       interval: "monthly"
     assignees:
       - "GNimrodG"
     commit-message:
-      prefix: "[backend]"
+      prefix: "[backend-nuget]"
   - package-ecosystem: "docker"
     directory: "/smo-backend"
     schedule:
@@ -15,15 +15,8 @@ updates:
     assignees:
       - "GNimrodG"
     commit-message:
-      prefix: "[backend]"
-  - package-ecosystem: "docker"
-    directory: "/smo-frontend"
-    schedule:
-      interval: "monthly"
-    assignees:
-      - "GNimrodG"
-    commit-message:
-      prefix: "[frontend]"
+      prefix: "[backend-docker]"
+
   - package-ecosystem: "npm"
     directory: "/smo-frontend"
     schedule:
@@ -31,4 +24,12 @@ updates:
     assignees:
       - "GNimrodG"
     commit-message:
-      prefix: "[frontend]"
+      prefix: "[frontend-npm]"
+  - package-ecosystem: "docker"
+    directory: "/smo-frontend"
+    schedule:
+      interval: "monthly"
+    assignees:
+      - "GNimrodG"
+    commit-message:
+      prefix: "[frontend-docker]"

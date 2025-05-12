@@ -1,8 +1,8 @@
 import L from "leaflet";
-import { type FunctionComponent, useMemo, useRef } from "react";
+import { type FunctionComponent, useMemo, useRef, useState } from "react";
 import { Marker, Popup } from "react-leaflet";
 
-import { Station } from "../../utils/data-manager";
+import { Station } from "../../utils/types";
 import { useSetting } from "../../utils/use-setting";
 import TrainIcon from "./icons/train.svg?raw";
 import StationMarkerPopup from "./StationMarkerPopup";
@@ -20,18 +20,26 @@ const UnplayableStation: FunctionComponent<UnplayableStationProps> = ({ station 
       html: `${TrainIcon}<span class="tooltip">${station.Name}</span>`,
       iconSize: [30, 30],
       popupAnchor: [0, -15],
-      className: `icon station bot non-playable`,
+      className: `icon station bot ${station.RemoteControlled ? "remote-controlled" : "non-playable"}`,
     });
-  }, [station.Name]);
+  }, [station.Name, station.RemoteControlled]);
+
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   return (
     <Marker
       ref={markerRef}
-      position={[station.Latititude, station.Longitude]}
+      position={[station.Latitude, station.Longitude]}
       icon={icon}
-      opacity={layerOpacities["unplayable-stations"]}>
+      opacity={layerOpacities["unplayable-stations"]}
+      eventHandlers={{
+        popupopen: () => setIsPopupOpen(true),
+        popupclose: () => setIsPopupOpen(false),
+      }}>
       <Popup autoPan={false}>
-        <StationMarkerPopup station={station} userData={null} onClosePopup={() => markerRef.current?.closePopup()} />
+        {isPopupOpen && (
+          <StationMarkerPopup station={station} userData={null} onClosePopup={() => markerRef.current?.closePopup()} />
+        )}
       </Popup>
     </Marker>
   );

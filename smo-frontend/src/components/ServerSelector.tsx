@@ -4,7 +4,7 @@ import Tooltip from "@mui/joy/Tooltip";
 import { type FunctionComponent, useCallback, useContext } from "react";
 import { useTranslation } from "react-i18next";
 
-import { selectServer, serverData$ } from "../utils/data-manager";
+import { dataProvider } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import useBehaviorSubj from "../utils/use-behaviorSubj";
@@ -22,12 +22,12 @@ const ServerSelector: FunctionComponent = () => {
       setSelectedTrain(null);
       setSelectedRoute(null);
       setSelectedServer(serverCode);
-      selectServer(serverCode);
+      dataProvider.selectServer(serverCode);
     },
     [setSelectedRoute, setSelectedServer, setSelectedTrain],
   );
 
-  const servers = useBehaviorSubj(serverData$);
+  const servers = useBehaviorSubj(dataProvider.serverData$);
 
   const activeServer = servers?.find((server) => server.ServerCode === selectedServer);
 

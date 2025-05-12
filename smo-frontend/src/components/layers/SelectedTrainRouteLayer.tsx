@@ -1,82 +1,59 @@
-import { DivIcon, LeafletEventHandlerFn, Map as LeafletMap } from "leaflet";
-import { type FunctionComponent, useContext, useEffect, useState } from "react";
-import { LayerGroup, Marker, useMap } from "react-leaflet";
+import { type FunctionComponent, useContext, useEffect, useRef, useState } from "react";
+import { LayerGroup, Polyline, useMap } from "react-leaflet";
+import { parse } from "wellknown";
 
-import { fetchRoutePoints } from "../../utils/data-manager";
-import { debounce } from "../../utils/debounce";
+import { dataProvider } from "../../utils/data-manager";
 import SelectedRouteContext from "../../utils/selected-route-context";
-import DotIcon from "../icons/dot.svg?raw";
 
-const SELECTED_ROUTE_ICON = new DivIcon({
-  html: DotIcon,
-  iconSize: [8, 8],
-  className: "icon selected-route",
-});
-
-function getVisibleTrainRoutePoints(route: [number, number][], map: LeafletMap | null): [number, number][] {
-  try {
-    const bounds = map?.getBounds();
-
-    if (!bounds) {
-      console.error("Map bounds not available for selected train route!");
-      return [];
-    }
-
-    return route.filter((point) => bounds?.contains(point));
-  } catch (e) {
-    console.error("Failed to filter visible train route points: ", e);
-    return []; // Fallback to not showing any points
-  }
-}
+const REFRESH_INTERVAL = 60_000; // 1 minute
 
 const SelectedTrainRouteLayer: FunctionComponent = () => {
   const map = useMap();
-  const { selectedRoute } = useContext(SelectedRouteContext);
-  const [routePoints, setRoutePoints] = useState<[number, number][]>([]);
-  const [visibleSelectedTrainRoutePoints, setVisibleSelectedTrainRoutePoints] = useState<[number, number][]>([]);
+  const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
+  const [routeLines, setRouteLines] = useState<GeoJSON.LineString[]>([]);
+  const intervalRef = useRef<number | null>(null);
 
   useEffect(() => {
+    const fetchRoute = () => {
+      if (selectedRoute) {
+        dataProvider.fetchRoutePoints(selectedRoute).then((points) => {
+          const lines = points?.map((x) => parse(x) as GeoJSON.LineString) || [];
+
+          lines.forEach((line) => {
+            line.coordinates = line.coordinates.map((coord) => coord.reverse()) as [number, number][];
+          });
+
+          setRouteLines(lines);
+
+          if (!points?.length) setSelectedRoute(null);
+        });
+      } else {
+        setRouteLines([]);
+      }
+    };
+
     let shouldCancel = false;
-    if (selectedRoute) {
-      fetchRoutePoints(selectedRoute).then((points) => {
-        if (shouldCancel) return;
-        setRoutePoints(points || []);
-      });
-    } else {
-      setRoutePoints([]);
-    }
+    fetchRoute();
+
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      if (!shouldCancel) fetchRoute();
+    }, REFRESH_INTERVAL);
 
     return () => {
       shouldCancel = true;
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [selectedRoute]);
-
-  useEffect(() => {
-    setVisibleSelectedTrainRoutePoints(getVisibleTrainRoutePoints(routePoints, map));
-  }, [routePoints, map]);
-
-  useEffect(() => {
-    const handler: LeafletEventHandlerFn = debounce(() => {
-      setVisibleSelectedTrainRoutePoints(getVisibleTrainRoutePoints(routePoints, map));
-    }, 1000);
-
-    if (map) {
-      map.on("move", handler);
-      map.on("zoom", handler);
-      map.on("resize", handler);
-
-      return () => {
-        map.off("move", handler);
-        map.off("zoom", handler);
-        map.off("resize", handler);
-      };
-    }
-  }, [map, routePoints]);
+  }, [map, selectedRoute, setSelectedRoute]);
 
   return (
     <LayerGroup>
-      {visibleSelectedTrainRoutePoints.map((point) => (
-        <Marker key={point[0] + "-" + point[1]} position={point} interactive={false} icon={SELECTED_ROUTE_ICON} />
+      {routeLines.map((x) => (
+        <Polyline
+          key={`selected-train-route-${x.coordinates[0][0]}-${x.coordinates[0][1]}-${x.coordinates[x.coordinates.length - 1][0]}-${x.coordinates[x.coordinates.length - 1][1]}`}
+          positions={x.coordinates as [number, number][]}
+          color="#00FFFF"
+          weight={3}></Polyline>
       ))}
     </LayerGroup>
   );

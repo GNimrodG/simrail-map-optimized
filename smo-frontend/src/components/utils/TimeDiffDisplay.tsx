@@ -1,5 +1,5 @@
 import moment from "moment";
-import { type FunctionComponent, useMemo } from "react";
+import { type FunctionComponent, memo, useMemo } from "react";
 
 export interface TimeDiffDisplayProps {
   start: string | number;
@@ -28,4 +28,4 @@ const TimeDiffDisplay: FunctionComponent<TimeDiffDisplayProps> = ({ start, end }
   return timeDiffMins ? `${timeDiffMins}'` : `${timeDiffSecs}"`;
 };
 
-export default TimeDiffDisplay;
+export default memo(TimeDiffDisplay);

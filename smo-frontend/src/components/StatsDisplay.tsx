@@ -3,12 +3,12 @@ import Typography from "@mui/joy/Typography";
 import { t } from "i18next";
 import { type FunctionComponent } from "react";
 
-import { stationsData$, trainsData$ } from "../utils/data-manager";
+import { dataProvider } from "../utils/data-manager";
 import useBehaviorSubj from "../utils/use-behaviorSubj";
 
 const StatsDisplay: FunctionComponent = () => {
-  const trains = useBehaviorSubj(trainsData$);
-  const stations = useBehaviorSubj(stationsData$);
+  const trains = useBehaviorSubj(dataProvider.trainsData$);
+  const stations = useBehaviorSubj(dataProvider.stationsData$);
 
   const driveableTrains = trains.filter((x) => !x.TrainData.InBorderStationArea).length;
   const playerTrains = trains.filter((x) => !!x.TrainData.ControlledBySteamID).length;

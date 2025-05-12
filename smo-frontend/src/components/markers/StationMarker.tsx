@@ -2,8 +2,8 @@ import L from "leaflet";
 import { type FunctionComponent, useEffect, useRef, useState } from "react";
 import { Marker, Popup } from "react-leaflet";
 
-import { Station } from "../../utils/data-manager";
 import { getSteamProfileInfo, ProfileResponse } from "../../utils/steam";
+import { Station } from "../../utils/types";
 import { useSetting } from "../../utils/use-setting";
 import BotIcon from "./icons/bot.svg?raw";
 import StationMarkerPopup from "./StationMarkerPopup";
@@ -55,19 +55,27 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
     });
   }, [station.DispatchedBy, station.Name]);
 
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+
   return (
     <Marker
       ref={markerRef}
-      key={station.id}
-      position={[station.Latititude, station.Longitude]}
+      key={station.Id}
+      position={[station.Latitude, station.Longitude]}
       icon={icon}
-      opacity={layerOpacities["stations"]}>
+      opacity={layerOpacities["stations"]}
+      eventHandlers={{
+        popupopen: () => setIsPopupOpen(true),
+        popupclose: () => setIsPopupOpen(false),
+      }}>
       <Popup autoPan={false}>
-        <StationMarkerPopup
-          station={station}
-          userData={userData}
-          onClosePopup={() => markerRef.current?.closePopup()}
-        />
+        {isPopupOpen && (
+          <StationMarkerPopup
+            station={station}
+            userData={userData}
+            onClosePopup={() => markerRef.current?.closePopup()}
+          />
+        )}
       </Popup>
     </Marker>
   );

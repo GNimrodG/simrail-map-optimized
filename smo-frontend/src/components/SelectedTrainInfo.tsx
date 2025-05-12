@@ -3,7 +3,7 @@ import { type FunctionComponent, lazy, Suspense, useContext, useEffect, useMemo,
 import { useMap } from "react-leaflet";
 import { debounceTime, fromEvent, throttleTime } from "rxjs";
 
-import { signalsData$, trainsData$ } from "../utils/data-manager";
+import { dataProvider } from "../utils/data-manager";
 import MapLinesContext from "../utils/map-lines-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { getSteamProfileInfo, ProfileResponse } from "../utils/steam";
@@ -20,7 +20,7 @@ const SelectedTrainInfo: FunctionComponent = () => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [useAltTracking] = useSetting("useAltTracking");
 
-  const trains = useBehaviorSubj(trainsData$);
+  const trains = useBehaviorSubj(dataProvider.trainsData$);
 
   const [showLineToNextSignal] = useSetting("showLineToNextSignal");
 
@@ -113,7 +113,7 @@ const SelectedTrainInfo: FunctionComponent = () => {
       const train = trains.find((train) => train.TrainNoLocal === selectedTrain.trainNo);
       if (train) {
         if (!useAltTracking && !selectedTrain.paused) {
-          map.panTo([train.TrainData.Latititute, train.TrainData.Longitute], {
+          map.panTo([train.TrainData.Latitude, train.TrainData.Longitude], {
             animate: true,
             duration: 1,
           });
@@ -121,7 +121,7 @@ const SelectedTrainInfo: FunctionComponent = () => {
 
         if (showLineToNextSignal && train.TrainData.SignalInFront) {
           const signalId = train.TrainData.SignalInFront.split("@")[0];
-          const signal = signalsData$.value.find((signal) => signal.name === signalId);
+          const signal = dataProvider.signalsData$.value.find((signal) => signal.Name === signalId);
 
           if (signal) {
             setMapLines({
@@ -130,10 +130,10 @@ const SelectedTrainInfo: FunctionComponent = () => {
                 {
                   index: 0,
                   color: "#0FF0F0",
-                  label: signal.name,
+                  label: signal.Name,
                   coords: [
-                    [train.TrainData.Latititute, train.TrainData.Longitute],
-                    [signal.lat, signal.lon],
+                    [train.TrainData.Latitude, train.TrainData.Longitude],
+                    [signal.Location.Y, signal.Location.X],
                   ],
                 },
               ],

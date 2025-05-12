@@ -1,17 +1,18 @@
 import { useMediaQuery } from "@mantine/hooks";
-import { ColorPaletteProp, useTheme } from "@mui/joy/styles";
+import { useTheme } from "@mui/joy/styles";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
-import { TFunction } from "i18next";
 import equals from "lodash/isEqual";
 import moment from "moment";
 import { type FunctionComponent, memo, ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { filter } from "rxjs";
 
-import { TimetableEntry } from "../../utils/data-manager";
 import { timeSubj$ } from "../../utils/time";
+import { TimetableEntry } from "../../utils/types";
 import useSubject from "../../utils/use-subject";
+import DelayDisplay from "../utils/DelayDisplay";
+import StopTypeDisplay from "../utils/StopTypeDisplay";
 import TimeDiffDisplay from "../utils/TimeDiffDisplay";
 import TimeDisplay from "../utils/TimeDisplay";
 
@@ -38,26 +39,6 @@ export interface StationDisplayProps {
   current?: boolean;
 }
 
-const STOP_TYPE_TECHNICAL: Partial<Record<TimetableEntry["stopType"], string>> = {
-  CommercialStop: "PH",
-  NoncommercialStop: "PT",
-};
-
-const STOP_TYPE_COLOR: Partial<Record<TimetableEntry["stopType"], ColorPaletteProp>> = {
-  CommercialStop: "primary",
-  NoncommercialStop: "neutral",
-};
-
-function getDelayedDeparture(station: TimetableEntry, delay: number) {
-  if (!station.departureTime || delay === null) {
-    return null;
-  }
-
-  const originalDeparture = new Date(station.departureTime);
-
-  return originalDeparture.getTime() + Math.round(delay / 60) * 60 * 1000;
-}
-
 const filteredTimeSubj$ = timeSubj$.pipe(filter((_, index) => index % 30 === 0));
 
 /**
@@ -75,7 +56,7 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
   const isSmallHeight = useMediaQuery(`(max-height: ${theme.breakpoints.values.md}px)`) || false;
   const timeUntil = useSubject(filteredTimeSubj$, null, (time) => {
     if (!pastStation) {
-      const arrivalTime = moment(station.arrivalTime);
+      const arrivalTime = moment(station.ArrivalTime);
       arrivalTime.set("year", moment(time).year());
       arrivalTime.set("month", moment(time).month());
       arrivalTime.set("date", moment(time).date());
@@ -87,9 +68,9 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
 
   const shouldCollapse =
     (isSmallHeight &&
-      !!station.arrivalTime &&
-      (!station.departureTime || station.departureTime === station.arrivalTime)) ||
-    (!!station.departureTime && (!station.arrivalTime || station.departureTime === station.arrivalTime));
+      !!station.ArrivalTime &&
+      (!station.DepartureTime || station.DepartureTime === station.ArrivalTime)) ||
+    (!!station.DepartureTime && (!station.ArrivalTime || station.DepartureTime === station.ArrivalTime));
 
   const timeColor = !timeUntil ? "neutral" : timeUntil < 0 ? "success" : timeUntil > 15 ? "danger" : "warning";
 
@@ -120,38 +101,10 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
     [timeUntil, timeColor, t],
   );
 
-  const delayedDeparture = useMemo(
-    () => (typeof delay === "number" && getDelayedDeparture(station, delay)) || null,
-    [station, delay],
-  );
-
-  const delayMinutes = typeof delay === "number" ? Math.round(delay / 60) : 0;
-  const delayColor = delayMinutes <= 0 ? "success" : delayMinutes < 6 ? "warning" : "danger";
-  const normalizedDelayMinutes = Math.abs(delayMinutes);
-
   const delayDisplay = useMemo(
     () =>
-      typeof delay === "number" && (
-        <>
-          {" "}
-          {normalizedDelayMinutes >= 1 && (
-            <Typography level="body-sm" color={delayColor}>
-              <TimeDisplay time={delayedDeparture!} noSeconds />
-            </Typography>
-          )}{" "}
-          <Tooltip
-            arrow
-            title={t(normalizedDelayMinutes === 0 ? "OnTime" : delayMinutes < 0 ? "Early" : "Delay", {
-              delay: moment.duration({ m: normalizedDelayMinutes }).humanize(),
-            })}>
-            <Typography variant="outlined" level="body-xs" color={delayColor}>
-              {delayMinutes > 0 ? "+" : ""}
-              {delayMinutes}'
-            </Typography>
-          </Tooltip>
-        </>
-      ),
-    [delay, delayedDeparture, delayMinutes, delayColor, t, normalizedDelayMinutes],
+      typeof delay === "number" ? <DelayDisplay delay={delay} scheduledDeparture={station.DepartureTime} /> : null,
+    [delay, station.DepartureTime],
   );
 
   return (
@@ -164,7 +117,6 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
         delayDisplay={delayDisplay}
         timeUntilDisplay={timeUntilDisplay}
         timeUntil={timeUntil}
-        t={t}
       />
       {!shouldCollapse && (
         <StationTimes
@@ -188,32 +140,28 @@ const StationHeader: FunctionComponent<{
   delayDisplay: ReactNode;
   timeUntilDisplay: ReactNode;
   timeUntil: number | null;
-  t: TFunction;
-}> = ({ station, mainStation, current, shouldCollapse, delayDisplay, timeUntilDisplay, timeUntil, t }) => (
+}> = ({ station, mainStation, current, shouldCollapse, delayDisplay, timeUntilDisplay, timeUntil }) => (
   <Typography level={mainStation ? "body-md" : "body-sm"} color={current ? "success" : undefined}>
-    {station.nameOfPoint}
-    {station.track && station.platform && (
+    {station.NameOfPoint}
+    {station.Track && station.Platform && (
       <Typography level={mainStation ? "body-sm" : "body-xs"}>
         {" "}
-        {station.track}/{station.platform}
+        {station.Track}/{station.Platform}
       </Typography>
     )}
-    {STOP_TYPE_TECHNICAL[station.stopType] && (
+    {!!station.StopType && (
       <>
         {" "}
-        <Tooltip arrow title={t(`StopType.${station.stopType}`)}>
-          <Typography variant="outlined" level="body-sm" color={STOP_TYPE_COLOR[station.stopType]}>
-            {STOP_TYPE_TECHNICAL[station.stopType]}
-          </Typography>
-        </Tooltip>
+        <StopTypeDisplay stopType={station.StopType} />
       </>
     )}
     {shouldCollapse && (
       <>
         {" "}
         <Typography level="body-sm">
-          {station.arrivalTime && <TimeDisplay time={station.arrivalTime} noSeconds />}
+          {station.ArrivalTime && <TimeDisplay time={station.ArrivalTime} noSeconds />}
         </Typography>
+        {delayDisplay && " "}
         {delayDisplay}
         {timeUntil !== null && timeUntilDisplay}
       </>
@@ -230,17 +178,18 @@ const StationTimes: FunctionComponent<{
   timeUntil: number | null;
 }> = ({ station, mainStation, isSmallHeight, delayDisplay, timeUntilDisplay, timeUntil }) => (
   <Typography level={mainStation ? "body-sm" : "body-xs"}>
-    {station.arrivalTime && <TimeDisplay time={station.arrivalTime} noSeconds={isSmallHeight} />}
-    {station.departureTime && station.departureTime !== station.arrivalTime && (
+    {station.ArrivalTime && <TimeDisplay time={station.ArrivalTime} noSeconds={isSmallHeight} />}
+    {station.DepartureTime && station.DepartureTime !== station.ArrivalTime && (
       <>
-        {station.arrivalTime && " - "}
-        <TimeDisplay time={station.departureTime} noSeconds={isSmallHeight} />
-        {station.arrivalTime && (
+        {station.ArrivalTime && " - "}
+        <TimeDisplay time={station.DepartureTime} noSeconds={isSmallHeight} />
+        {station.ArrivalTime && (
           <>
             {" "}
-            <TimeDiffDisplay start={station.arrivalTime} end={station.departureTime} />
+            <TimeDiffDisplay start={station.ArrivalTime} end={station.DepartureTime} />
           </>
         )}
+        {delayDisplay && " "}
         {delayDisplay}
       </>
     )}

@@ -1,88 +1,89 @@
-import { LeafletEventHandlerFn, Map as LeafletMap } from "leaflet";
-import { type FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
+import type { LeafletEventHandlerFn } from "leaflet";
+import type { DebouncedFunc } from "lodash";
+import debounce from "lodash/debounce";
+import isEqual from "lodash/isEqual";
+import { type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
 import { LayerGroup, useMap } from "react-leaflet";
+import { BehaviorSubject, distinctUntilChanged, map } from "rxjs";
 
-import { signalsData$, SignalWithTrain } from "../../utils/data-manager";
-import { debounce } from "../../utils/debounce";
-import { goToSignal } from "../../utils/geom-utils";
+import { dataProvider } from "../../utils/data-manager";
+import { getVisibleSignals, goToSignal } from "../../utils/geom-utils";
+import { SignalStatus } from "../../utils/types";
 import useBehaviorSubj from "../../utils/use-behaviorSubj";
 import { useSetting } from "../../utils/use-setting";
 import SignalMarker from "../markers/SignalMarker";
 
 const MIN_ZOOM = 11;
 
-function getVisibleSignals(signals: SignalWithTrain[], map: LeafletMap | null) {
-  try {
-    if ((map?.getZoom() || 0) < MIN_ZOOM) {
-      return [];
-    }
+const passiveSignals$ = new BehaviorSubject<SignalStatus[]>([]);
 
-    const mapBounds = map?.getBounds();
-
-    if (!mapBounds) {
-      console.error("Map bounds not available for passive signals!");
-      return [];
-    }
-
-    return signals.filter((signal) => mapBounds?.contains([signal.lat, signal.lon]));
-  } catch (e) {
-    console.error("Failed to filter visible passive signals: ", e);
-    return []; // Fallback to not showing any passive signals
-  }
-}
+dataProvider.signalsData$
+  .pipe(
+    map((signals) =>
+      signals.filter(
+        (signal) => !signal.Trains?.length && !signal.TrainsAhead?.length && !signal.NextSignalWithTrainAhead,
+      ),
+    ),
+    distinctUntilChanged(isEqual),
+  )
+  .subscribe((signals) => passiveSignals$.next(signals));
 
 const PassiveSignalsLayer: FunctionComponent = () => {
   const map = useMap();
   const [layerOpacities] = useSetting("layerOpacities");
+  const [visibleSignals, setVisibleSignals] = useState<SignalStatus[]>([]);
 
-  const signals = useBehaviorSubj(signalsData$);
+  const passiveSignals = useBehaviorSubj(passiveSignals$);
 
-  const passiveSignals = useMemo(
-    () => signals.filter((signal) => !signal.train && !signal.trainAhead && !signal.nextSignalWithTrainAhead),
-    [signals],
-  );
+  // Store the handler in a ref to prevent recreating it on every render
+  const handlerRef = useRef<DebouncedFunc<LeafletEventHandlerFn>>();
 
-  const [visibleSignals, setVisibleSignals] = useState<SignalWithTrain[]>([]);
-
+  // Combined effect for initial and map change updates
   useEffect(() => {
-    const handler: LeafletEventHandlerFn = debounce(() => {
-      setVisibleSignals(getVisibleSignals(passiveSignals, map));
-    }, 1000);
+    if (!map) return; // Early return if map is not available
 
-    if (map) {
-      map.on("move", handler);
-      map.on("zoom", handler);
-      map.on("resize", handler);
-
-      return () => {
-        map.off("move", handler);
-        map.off("zoom", handler);
-        map.off("resize", handler);
-      };
+    // Create the debounced handler once
+    if (!handlerRef.current) {
+      handlerRef.current = debounce(function (this: L.Map) {
+        setVisibleSignals(getVisibleSignals(passiveSignals$.value, this, MIN_ZOOM));
+      }, 500);
     }
-  }, [map, passiveSignals]);
+
+    // Map event handling
+    const handler = handlerRef.current;
+    map.on("move", handler);
+    map.on("zoom", handler);
+    map.on("resize", handler);
+
+    return () => {
+      handler.cancel(); // Cancel any pending debounced calls
+      map.off("move", handler);
+      map.off("zoom", handler);
+      map.off("resize", handler);
+    };
+  }, [map]);
 
   useEffect(() => {
-    setVisibleSignals(getVisibleSignals(passiveSignals, map));
+    setVisibleSignals(getVisibleSignals(passiveSignals, map, MIN_ZOOM));
   }, [passiveSignals, map]);
 
   const handleSignalSelect = useCallback(
     (signalId: string) => {
-      const signal = signals.find((s) => s.name === signalId);
+      const signal = dataProvider.signalsData$.value.find((s) => s.Name === signalId);
       if (signal) {
         goToSignal(signal, map);
       } else {
         console.error(`Signal ${signalId} not found`);
       }
     },
-    [signals, map],
+    [map],
   );
 
   return (
     <LayerGroup>
       {visibleSignals.map((signal) => (
         <SignalMarker
-          key={signal.name}
+          key={"signal_" + signal.Name}
           opacity={layerOpacities["passive-signals"]}
           signal={signal}
           onSignalSelect={handleSignalSelect}

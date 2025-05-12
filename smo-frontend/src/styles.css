@@ -138,6 +138,10 @@
   fill: var(--joy-palette-warning-400);
 }
 
+.icon.bot.remote-controlled svg {
+  fill: var(--joy-palette-primary-400);
+}
+
 .icon.train {
   border-radius: 50%;
 }
@@ -148,6 +152,10 @@
 
 .icon.station {
   border-color: var(--joy-palette-warning-600);
+}
+
+.icon.station.remote-controlled {
+  border-color: var(--joy-palette-primary-400);
 }
 
 .icon.signal.danger svg {

@@ -1,11 +1,2 @@
-dist
-node_modules
-logs
-data
-tmp
-.env
-stats.csv
-tsconfig.tsbuildinfo
-
-# Sentry Config File
-.sentryclirc
+/bin
+/obj

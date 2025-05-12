@@ -2,9 +2,9 @@ import { DivIcon, Icon, IconOptions } from "leaflet";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 import { Marker, Popup, useMap } from "react-leaflet";
 
-import { Train } from "../../utils/data-manager";
 import SelectedTrainContext from "../../utils/selected-train-context";
 import { getSteamProfileInfo, ProfileResponse } from "../../utils/steam";
+import { Train } from "../../utils/types";
 import { getColorTrainMarker } from "../../utils/ui";
 import { useSetting } from "../../utils/use-setting";
 import ReactLeafletDriftMarker from "../utils/ReactLeafletDriftMarker";
@@ -90,18 +90,26 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
       return;
     }
 
-    map.flyTo([train.TrainData.Latititute, train.TrainData.Longitute], map.getZoom(), { animate: true, duration: 0.5 });
-  }, [disableSlidingMarkers, map, shouldFollow, train.TrainData.Latititute, train.TrainData.Longitute]);
+    map.flyTo([train.TrainData.Latitude, train.TrainData.Longitude], map.getZoom(), { animate: true, duration: 0.5 });
+  }, [disableSlidingMarkers, map, shouldFollow, train.TrainData.Latitude, train.TrainData.Longitude]);
+
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const popup = !isSelected && (
     <Popup autoPan={false}>
-      <TrainMarkerPopup train={train} userData={userData} showTrainRouteButton />
+      {isPopupOpen && <TrainMarkerPopup train={train} userData={userData} showTrainRouteButton />}
     </Popup>
   );
 
   if (disableSlidingMarkers) {
     return (
-      <Marker position={[train.TrainData.Latititute, train.TrainData.Longitute]} icon={icon}>
+      <Marker
+        position={[train.TrainData.Latitude, train.TrainData.Longitude]}
+        icon={icon}
+        eventHandlers={{
+          popupopen: () => setIsPopupOpen(true),
+          popupclose: () => setIsPopupOpen(false),
+        }}>
         {popup}
       </Marker>
     );
@@ -109,12 +117,16 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
 
   return (
     <ReactLeafletDriftMarker
-      key={train.id}
+      key={train.Id}
       duration={1000}
-      position={[train.TrainData.Latititute, train.TrainData.Longitute]}
+      position={[train.TrainData.Latitude, train.TrainData.Longitude]}
       keepAtCenter={shouldFollow}
       icon={icon}
-      opacity={layerOpacities["trains"]}>
+      opacity={layerOpacities["trains"]}
+      eventHandlers={{
+        popupopen: () => setIsPopupOpen(true),
+        popupclose: () => setIsPopupOpen(false),
+      }}>
       {popup}
     </ReactLeafletDriftMarker>
   );

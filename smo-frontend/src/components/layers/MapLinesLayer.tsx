@@ -1,5 +1,5 @@
 import { useHotkeys } from "@mantine/hooks";
-import { type FunctionComponent, useContext } from "react";
+import { Fragment, type FunctionComponent, useContext } from "react";
 import { LayerGroup, Polyline, Tooltip } from "react-leaflet";
 
 import MapLinesContext from "../../utils/map-lines-context";
@@ -43,15 +43,25 @@ const MapLinesLayer: FunctionComponent = () => {
   return (
     <LayerGroup>
       {mapLines?.lines.map((line) => (
-        <Polyline
-          key={`selected-signal-line-${line.index}-${line.color}-${line.label}-${line.coords[0][0]}-${line.coords[0][1]}`}
-          positions={line.coords}
-          color={line.color}
-          weight={5}>
-          <Tooltip permanent direction="center">
-            {line.label}
-          </Tooltip>
-        </Polyline>
+        <Fragment
+          key={`selected-signal-line-${line.index}-${line.color}-${line.label}-${line.coords[0][0]}-${line.coords[0][1]}`}>
+          {line.color2 && (
+            // Background line with color2
+            <Polyline positions={line.coords} color={line.color} interactive={false} weight={5} />
+          )}
+          {/* Foreground line with color (dashed if color2 exists) */}
+          <Polyline
+            positions={line.coords}
+            color={line.color2 || line.color}
+            dashArray={line.color2 ? "10, 20" : undefined}
+            lineCap={line.color2 ? "butt" : undefined}
+            interactive={false}
+            weight={5}>
+            <Tooltip permanent direction="center">
+              {line.label}
+            </Tooltip>
+          </Polyline>
+        </Fragment>
       ))}
     </LayerGroup>
   );

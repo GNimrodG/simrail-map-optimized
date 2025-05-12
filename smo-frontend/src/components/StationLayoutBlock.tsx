@@ -10,7 +10,7 @@ import Typography from "@mui/joy/Typography";
 import { type FunctionComponent } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Train } from "../utils/data-manager";
+import { Train } from "../utils/types";
 import { getColorTrainMarker, getDistanceColorForSignal } from "../utils/ui";
 import { usePrevious } from "../utils/use-previous";
 import CargoIcon from "./icons/boxes-stacked.svg?react";
