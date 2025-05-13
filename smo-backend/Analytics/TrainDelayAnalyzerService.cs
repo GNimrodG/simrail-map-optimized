@@ -226,6 +226,7 @@ public class TrainDelayAnalyzerService(
             if (serverTrains == null || serverTrains.Length == 0)
             {
                 logger.LogWarning("No trains found for server {ServerCode}", serverCode);
+                ServerPunctualityGauge.RemoveLabelled(serverCode);
                 continue;
             }
 
@@ -235,7 +236,7 @@ public class TrainDelayAnalyzerService(
                     .Select(t =>
                         _trainDelays.TryGetValue(t.GetTrainId(), out var delays)
                             ? delays.Values.LastOrDefault()
-                            : (int?)null)
+                            : (ushort?)null)
                     .Where(x => x is not null).ToArray();
 
                 ServerPunctualityGauge.WithLabels(serverCode).Set(delayData.Length > 0
@@ -323,5 +324,5 @@ public class TrainDelayAnalyzerService(
     }
 
     private static readonly Gauge ServerPunctualityGauge = Metrics
-        .CreateGauge("smo_server_punctuality", "Punctuality of the server", "server");
+        .CreateGauge("smo_server_punctuality", "Punctuality of the server in seconds", "server");
 }
