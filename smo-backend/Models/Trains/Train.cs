@@ -29,11 +29,41 @@ public class Train
                                          (!string.IsNullOrEmpty(TrainData.SignalInFront)
                                              ? $" at {TrainData.SignalInFront}"
                                              : string.Empty);
-}
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum TrainType
-{
-    [JsonPropertyName("user")] User,
-    [JsonPropertyName("bot")] Bot
+    public class PartialTrainData
+    {
+        public string Id { get; set; }
+
+        public string Type { get; set; }
+        public double Velocity { get; set; }
+        public string? SignalInFront { get; set; }
+        public double DistanceToSignalInFront { get; set; }
+        public short SignalInFrontSpeed { get; set; }
+        public string? ControlledBySteamID { get; set; }
+        public bool InBorderStationArea { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+        public byte VDDelayedTimetableIndex { get; set; }
+        public uint[][]? RequiredMapDLCs { get; set; }
+        
+        public PartialTrainData()
+        {
+        }
+
+        public PartialTrainData(Train train)
+        {
+            Id = train.Id;
+            Type = train.Type;
+            Velocity = train.TrainData.Velocity;
+            SignalInFront = train.TrainData.GetSignal();
+            DistanceToSignalInFront = train.TrainData.DistanceToSignalInFront;
+            SignalInFrontSpeed = train.TrainData.SignalInFrontSpeed;
+            ControlledBySteamID = train.TrainData.ControlledBySteamID;
+            InBorderStationArea = train.TrainData.InBorderStationArea;
+            Latitude = train.TrainData.Latitude;
+            Longitude = train.TrainData.Longitude;
+            VDDelayedTimetableIndex = train.TrainData.VDDelayedTimetableIndex;
+            RequiredMapDLCs = train.TrainData.RequiredMapDLCs;
+        }
+    }
 }

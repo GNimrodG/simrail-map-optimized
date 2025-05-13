@@ -8,6 +8,7 @@ public class SimrailApiClient
 {
     private const string SERVERS_OPEN_URL = "https://panel.simrail.eu:8084/servers-open";
     private const string TRAINS_URL_PREFIX = "https://panel.simrail.eu:8084/trains-open?serverCode=";
+    private const string TRAIN_POSITIONS_URL_PREFIX = "https://panel.simrail.eu:8084/train-positions-open?serverCode=";
     private const string STATIONS_URL_PREFIX = "https://panel.simrail.eu:8084/stations-open?serverCode=";
     private const string TIMEZONE_URL_PREFIX = "https://api.simrail.eu:8082/api/getTimeZone?serverCode=";
     private const string TIME_URL_PREFIX = "https://api.simrail.eu:8082/api/getTime?serverCode=";
@@ -45,6 +46,12 @@ public class SimrailApiClient
     {
         var response = await _httpClient.GetAsync(TRAINS_URL_PREFIX + serverCode, stoppingToken);
         return HandleResponse<Train>(response, stoppingToken);
+    }
+    
+    public async Task<TrainPosition[]> GetTrainPositionsAsync(string serverCode, CancellationToken stoppingToken)
+    {
+        var response = await _httpClient.GetAsync(TRAIN_POSITIONS_URL_PREFIX + serverCode, stoppingToken);
+        return HandleResponse<TrainPosition>(response, stoppingToken);
     }
 
     public async Task<Station[]> GetStationsAsync(string serverCode, CancellationToken stoppingToken)

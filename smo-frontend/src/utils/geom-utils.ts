@@ -56,7 +56,12 @@ export function findStationForSignal(signalName: string) {
   }
 
   for (const station of options) {
-    if (signalName.startsWith(`${station.Prefix}_`)) {
+    if (STATION_PREFIX_OVERRIDES.has(station.Name)) {
+      const prefixes = STATION_PREFIX_OVERRIDES.get(station.Name)!;
+      if (prefixes.some((x) => signalName.startsWith(x))) {
+        return station;
+      }
+    } else if (signalName.startsWith(`${station.Prefix}_`)) {
       return station;
     }
   }

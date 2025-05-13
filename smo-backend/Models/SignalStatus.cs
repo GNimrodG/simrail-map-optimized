@@ -39,4 +39,24 @@ public class SignalStatus : Signal
         NextSignals = signal.NextSignalConnections.Select(c => new SignalConnection(c.Next, c.VMAX)).ToArray();
         PrevSignals = signal.PrevSignalConnections.Select(c => new SignalConnection(c.Prev, c.VMAX)).ToArray();
     }
+
+    public class PartialSignalStatus
+    {
+        public string Name { get; set; }
+        public string[]? Trains { get; set; }
+        public string[]? TrainsAhead { get; set; }
+        public string? NextSignalWithTrainAhead { get; set; }
+
+        public PartialSignalStatus()
+        {
+        }
+        
+        public PartialSignalStatus(SignalStatus signal)
+        {
+            Name = signal.Name;
+            Trains = signal.Trains;
+            TrainsAhead = signal.TrainsAhead;
+            NextSignalWithTrainAhead = signal.NextSignalWithTrainAhead;
+        }
+    }
 }

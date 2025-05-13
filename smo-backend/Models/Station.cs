@@ -23,4 +23,20 @@ public class Station
 
     [JsonPropertyName("DispatchedBy")] public required StationDispatcher[] DispatchedBy { get; set; }
     [JsonPropertyName("id")] public required string Id { get; set; }
+
+    public class PartialStation
+    {
+        public string Id { get; set; }
+        public StationDispatcher[] DispatchedBy { get; set; }
+        
+        public PartialStation()
+        {
+        }
+
+        public PartialStation(Station station)
+        {
+            Id = station.Id;
+            DispatchedBy = station.DispatchedBy;
+        }
+    }
 }

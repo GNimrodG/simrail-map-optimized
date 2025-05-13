@@ -6,20 +6,9 @@
   id: string;
 }
 
-export interface BaseTrain {
+export interface Train {
   TrainNoLocal: string;
   TrainName: string;
-  TrainData: BaseTrainData;
-}
-
-export interface BaseTrainData {
-  Velocity: number;
-  SignalInFront: string;
-  DistanceToSignalInFront: number;
-  SignalInFrontSpeed: number;
-}
-
-export interface Train extends BaseTrain {
   StartStation: string;
   EndStation: string;
   Vehicles: string[];
@@ -29,7 +18,28 @@ export interface Train extends BaseTrain {
   Type: "user" | "bot";
 }
 
-export interface TrainData extends BaseTrainData {
+export interface TrainData {
+  Velocity: number;
+  SignalInFront: string;
+  DistanceToSignalInFront: number;
+  SignalInFrontSpeed: number;
+
+  ControlledBySteamID: string;
+  InBorderStationArea: boolean;
+  Latitude: number;
+  Longitude: number;
+  VDDelayedTimetableIndex: number;
+  RequiredMapDLCs: number[][] | null;
+}
+
+export interface PartialTrainData {
+  Id: string;
+
+  Type: "user" | "bot";
+  Velocity: number;
+  SignalInFront: string;
+  DistanceToSignalInFront: number;
+  SignalInFrontSpeed: number;
   ControlledBySteamID: string;
   InBorderStationArea: boolean;
   Latitude: number;
@@ -59,6 +69,16 @@ export interface Station {
   RemoteControlled?: string;
 }
 
+export interface PartialStation {
+  Id: string;
+  DispatchedBy: [
+    {
+      ServerCode: string;
+      SteamId: string;
+    },
+  ];
+}
+
 export interface Signal {
   Name: string;
   Location: { X: number; Y: number };
@@ -72,11 +92,14 @@ export interface Signal {
   NextSignals: { Name: string; Vmax: number | null }[];
 }
 
-export interface SignalStatus extends Signal {
+export interface SignalStatusData {
+  Name: string;
   Trains: string[] | null;
   TrainsAhead: string[] | null;
   NextSignalWithTrainAhead: string | null;
 }
+
+export type SignalStatus = Signal & SignalStatusData;
 
 export interface TrainRoute {
   route: string;

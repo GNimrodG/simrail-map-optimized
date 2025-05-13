@@ -212,7 +212,7 @@ const SignalMarkerPopup: FunctionComponent<SignalMarkerPopupProps> = ({
   const signalSelectHandlers = useMemo(
     () =>
       Object.fromEntries(
-        [...signal.PrevSignals, ...signal.NextSignals].map((s) => [s, () => onSignalSelect?.(s.Name)]),
+        [...signal.PrevSignals, ...signal.NextSignals].map((s) => [s.Name, () => onSignalSelect?.(s.Name)]),
       ),
     [signal.PrevSignals, signal.NextSignals, onSignalSelect],
   );

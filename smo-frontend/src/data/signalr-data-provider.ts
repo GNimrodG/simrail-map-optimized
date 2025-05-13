@@ -2,13 +2,17 @@
 import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 import isEqual from "lodash/isEqual";
+import omit from "lodash/omit";
 import { LRUCache } from "lru-cache";
-import { BehaviorSubject, debounceTime, map, Observable, withLatestFrom } from "rxjs";
+import { BehaviorSubject, debounceTime, distinctUntilChanged, map, Observable, withLatestFrom } from "rxjs";
 
 import UnplayableStations from "../assets/unplayable-stations.json";
 import {
+  PartialStation,
+  PartialTrainData,
   ServerStatus,
   SignalStatus,
+  SignalStatusData,
   SimplifiedTimtableEntry,
   Station,
   TimeData,
@@ -92,25 +96,116 @@ export class SignalRDataProvider implements IDataProvider {
         );
       });
 
-    this.connection.on("StationsReceived", (stations: Station[]) => {
-      if (
-        !isEqual(
-          stations.map((s) => s.Name),
-          this.stationsData$.value.map((s) => s.Name),
-        )
-      ) {
+    this.stationsData$
+      .pipe(
+        distinctUntilChanged((prev, curr) =>
+          isEqual(
+            prev.map((s) => s.Name),
+            curr.map((s) => s.Name),
+          ),
+        ),
+      )
+      .subscribe((stations) => {
         this.unplayableStations$.next(
           UnplayableStations.filter((station) => !stations.some((s) => s.Name === station.Name)),
         );
+      });
+
+    this.connection.on("StationsReceived", (stations: Station[]) => this.stationsData$.next(stations));
+
+    this.connection.on("PartialStationsReceived", (partialStations: PartialStation[]) => {
+      const currentStations = this.stationsData$.value;
+
+      if (!currentStations.length) {
+        console.warn("No stations received yet, requesting full list");
+        this.connection.send("GetStations");
+        return;
       }
 
-      if (!isEqual(stations, this.stationsData$.value)) {
-        this.stationsData$.next(stations);
+      for (const partialStation of partialStations) {
+        const station = currentStations.find((s) => s.Id === partialStation.Id);
+        if (station) {
+          Object.assign(station, omit(partialStation, "Id"));
+        } else {
+          this.connection.send("GetStations");
+          return;
+        }
       }
+
+      this.stationsData$.next(currentStations);
     });
 
     this.connection.on("TrainsReceived", (trains: Train[]) => this.trainsData$.next(trains));
+    this.connection.on("PartialTrainsReceived", (partialTrains: PartialTrainData[]) => {
+      const currentTrains = this.trainsData$.value;
+
+      if (!currentTrains.length) {
+        console.warn("No trains received yet, requesting full list");
+        this.connection.send("GetTrains");
+        return;
+      }
+
+      const updatedTrains = currentTrains.map((train) => {
+        const partialTrain = partialTrains.find((t) => t.Id === train.Id);
+        if (partialTrain) {
+          train = {
+            ...train,
+            Type: partialTrain.Type,
+            TrainData: {
+              ...train.TrainData,
+              ...omit(partialTrain, "Id", "Type"),
+            },
+          };
+        }
+        return train;
+      });
+
+      this.trainsData$.next(updatedTrains);
+    });
+    this.connection.on(
+      "TrainPositionsReceived",
+      (trainPositions: { Id: string; Latitude: number; Longitude: number; Velocity: number }[]) => {
+        const currentTrains = this.trainsData$.value;
+
+        if (!currentTrains.length) {
+          return;
+        }
+
+        const updatedTrains = currentTrains.map((train) => {
+          const trainPosition = trainPositions.find((t) => t.Id === train.Id);
+          if (trainPosition) {
+            train.TrainData.Latitude = trainPosition.Latitude;
+            train.TrainData.Longitude = trainPosition.Longitude;
+            train.TrainData.Velocity = trainPosition.Velocity;
+          }
+          return train;
+        });
+
+        this.trainsData$.next(updatedTrains);
+      },
+    );
+
     this.connection.on("SignalsReceived", (signals: SignalStatus[]) => this.signalsData$.next(signals));
+    this.connection.on("PartialSignalsReceived", (partialSignals: SignalStatusData[]) => {
+      const currentSignals = this.signalsData$.value;
+
+      if (!currentSignals.length) {
+        console.warn("No signals received yet, requesting full list");
+        this.connection.send("GetSignals");
+        return;
+      }
+
+      const updatedSignals = currentSignals.map((signal) => {
+        const partialSignal = partialSignals.find((s) => s.Name === signal.Name);
+        if (partialSignal) {
+          return { ...signal, ...partialSignal };
+        }
+        return signal;
+      });
+
+      this.signalsData$.next(updatedSignals);
+    });
+
     this.connection.on("DelaysReceived", (data: Record<string, Record<number, number>>) => {
       const trainDelays = new Map<string, Record<number, number>>(Object.entries(data));
 
@@ -126,8 +221,10 @@ export class SignalRDataProvider implements IDataProvider {
 
   selectServer(serverCode: string): void {
     this.stationsData$.next([]);
+    this.unplayableStations$.next([]);
     this.trainsData$.next([]);
     this.signalsData$.next([]);
+    this.trainDelays$.next(new Map());
     this.timeData$.next(null);
     this.connection.send("SwitchServer", serverCode);
   }

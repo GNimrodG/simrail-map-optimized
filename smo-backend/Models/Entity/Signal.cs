@@ -61,7 +61,8 @@ public partial class Signal : BaseEntity
     [GeneratedRegex(@"^L\d+_\d+[A-Z]$")]
     public static partial Regex BLOCK_SIGNAL_REVERSE_REGEX();
 
-    [GeneratedRegex(@"^(\d+_)?([A-KM-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ][A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ]*|[A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ]{2,})\d*_[A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ0-9]+",
+    [GeneratedRegex(
+        @"^(\d+_)?([A-KM-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ][A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ]*|[A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ]{2,})\d*_[A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ0-9]+",
         RegexOptions.Compiled)]
     public static partial Regex MAIN_SIGNAL_REGEX();
 
@@ -93,57 +94,93 @@ public partial class Signal : BaseEntity
             throw new ArgumentException(
                 $"Cannot run {nameof(UpdateRole)} on a signal where {nameof(NextSignalConnections)} is null!");
         }
-    
+
         if (PrevSignalConnections == null)
         {
             throw new ArgumentException(
                 $"Cannot run {nameof(UpdateRole)} on a signal where {nameof(PrevSignalConnections)} is null!");
         }
-    
+
         // Store previous role to check if it changed
         var prevRole = Role;
-    
+
+        bool isEntry;
+        bool isExit;
+        bool isMiddle;
+
         // Process block signals (by explicit type or name pattern)
         if (Type == "block" || BLOCK_SIGNAL_REGEX().IsMatch(Name))
         {
-            // A signal is an entry if it has multiple next connections or connects to a non-block signal
-            var isEntry = PrevSignalConnections.Count > 1 ||
-                         PrevSignalConnections.Count == 1 &&
-                         !BLOCK_SIGNAL_REGEX().IsMatch(PrevSignalConnections.First().Prev);
-    
-            // A signal is an exit if it has multiple previous connections or connects to a non-block signal
-            var isExit = NextSignalConnections.Count > 1 ||
-                          NextSignalConnections.Count == 1 &&
-                          !BLOCK_SIGNAL_REGEX().IsMatch(NextSignalConnections.First().Next);
-    
-            // Determine role based on entry/exit status using pattern matching
-            Role = isEntry switch
-            {
-                true when isExit => "single-block",  // Both entry and exit
-                true => "block-entry",               // Entry only
-                _ => isExit ? "block-exit" : null    // Exit only or neither
-            };
-    
+            // Analyze connections to determine signal role
+            var hasMultiplePrevConnections = PrevSignalConnections.Count > 1;
+            var hasMultipleNextConnections = NextSignalConnections.Count > 1;
+
+            var connectsToPrevNonBlock = PrevSignalConnections.Count == 1 &&
+                                         !BLOCK_SIGNAL_REGEX().IsMatch(PrevSignalConnections.First().Prev);
+
+            var connectsToNextNonBlock = NextSignalConnections.Count == 1 &&
+                                         !BLOCK_SIGNAL_REGEX().IsMatch(NextSignalConnections.First().Next);
+
+            // Determine signal characteristics
+            isEntry = hasMultiplePrevConnections || connectsToPrevNonBlock;
+            isExit = hasMultipleNextConnections || connectsToNextNonBlock;
+            isMiddle = !isEntry && !isExit &&
+                       PrevSignalConnections.Count == 1 && NextSignalConnections.Count == 1;
+
+            // Set role based on characteristics
+            // ReSharper disable once ConvertIfStatementToSwitchStatement
+            if (isEntry && isExit)
+                Role = "single-block";
+            else if (isEntry)
+                Role = "block-entry";
+            else if (isExit)
+                Role = "block-exit";
+            else if (isMiddle)
+                Role = "middle-block";
+            else
+                Role = null;
+
             return prevRole != Role;
         }
-    
+
+        var stationPrefix = MAIN_SIGNAL_REGEX().Match(Name).Groups[1].Value;
+
         // Process non-block signals
-        // Check if all previous signals are block signals
-        var everyNextIsBlock = NextSignalConnections.Count > 0 &&
-                               NextSignalConnections.All(c => BLOCK_SIGNAL_REGEX().IsMatch(c.Next));
-        
-        // Check if all next signals are block signals
-        var everyPrevIsBlock = PrevSignalConnections.Count > 0 &&
-                               PrevSignalConnections.All(c => BLOCK_SIGNAL_REGEX().IsMatch(c.Prev));
-    
-        // Determine role based on block signal connections using pattern matching
-        Role = everyPrevIsBlock switch
-        {
-            true when everyNextIsBlock => "entry-exit",  // Both entry and exit conditions met
-            true => "entry",                             // Entry condition only
-            _ => everyNextIsBlock ? "exit" : null        // Exit condition only or neither
-        };
-    
+        var hasPrevConnections = PrevSignalConnections.Count > 0;
+        var hasNextConnections = NextSignalConnections.Count > 0;
+
+        // Determine signal connection characteristics
+        var allNextAreBlockSignals = hasNextConnections &&
+                                     NextSignalConnections.All(c => BLOCK_SIGNAL_REGEX().IsMatch(c.Next));
+
+        var allPrevAreBlockSignals = hasPrevConnections &&
+                                     PrevSignalConnections.All(c => BLOCK_SIGNAL_REGEX().IsMatch(c.Prev));
+
+        var allPrevFromDifferentStation = hasPrevConnections &&
+                                          PrevSignalConnections.All(c => !c.Prev.StartsWith(stationPrefix));
+
+        var allNextToDifferentStation = hasNextConnections &&
+                                        NextSignalConnections.All(c => !c.Next.StartsWith(stationPrefix));
+
+        // Determine entry/exit characteristics
+        isEntry = allPrevAreBlockSignals || allPrevFromDifferentStation;
+        isExit = allNextAreBlockSignals || allNextToDifferentStation;
+        isMiddle = !isEntry && !isExit &&
+                   hasPrevConnections && hasNextConnections;
+
+        // Set role based on characteristics
+        // ReSharper disable once ConvertIfStatementToSwitchStatement
+        if (isEntry && isExit)
+            Role = "entry-exit";
+        else if (isEntry)
+            Role = "entry";
+        else if (isExit)
+            Role = "exit";
+        else if (isMiddle)
+            Role = "intermediate";
+        else
+            Role = null;
+
         return prevRole != Role;
     }
 
@@ -169,10 +206,10 @@ public partial class Signal : BaseEntity
             !train.TrainData.SignalInFront.StartsWith(Name + "@"))
             throw new ArgumentException(
                 $"Cannot run {nameof(UpdateType)} on a signal where {nameof(train.TrainData.SignalInFront)} does not start with {Name}!");
-    
+
         // Store previous type to check if it changed
         var prevType = Type;
-    
+
         // Rule 1: Signal is a "main" type if:
         // - Train's signal in front has a speed of 60 or 100 km/h, or
         // - Signal name matches the main signal pattern
@@ -181,14 +218,14 @@ public partial class Signal : BaseEntity
             Type = "main";
             return prevType != Type;
         }
-    
+
         // Rule 2: Signal is a "block" type if its name matches the block signal pattern
         if (BLOCK_SIGNAL_REGEX().IsMatch(Name))
         {
             Type = "block";
             return prevType != Type;
         }
-    
+
         // Rule 3: Signal type is null if it doesn't match any known type
         Type = null;
         return prevType != Type;

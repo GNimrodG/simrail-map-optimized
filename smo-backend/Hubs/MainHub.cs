@@ -138,6 +138,66 @@ public class MainHub(
     public Task<string[]> GetTrainRoutePoints(string trainNoLocal) =>
         routePointAnalyzerService.GetTrainRoutePoints(trainNoLocal);
 
+    /// <summary>
+    /// Gets the stations for the currently selected server.
+    /// </summary>
+    public async void GetStations()
+    {
+        try
+        {
+            var serverCode = clientManagerService.SelectedServers[Context.ConnectionId];
+
+            var stations = stationDataService[serverCode];
+            if (stations != null)
+            {
+                await Clients.Caller.SendAsync("StationsReceived", stations);
+            }
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error sending stations to client");
+        }
+    }
+    
+    /// <summary>
+    /// Gets the trains for the currently selected server.
+    /// </summary>
+    public async void GetTrains() 
+    {
+        try
+        {
+            var serverCode = clientManagerService.SelectedServers[Context.ConnectionId];
+
+            var trains = trainDataService[serverCode];
+            if (trains != null)
+            {
+                await Clients.Caller.SendAsync("TrainsReceived", trains);
+            }
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error sending trains to client");
+        }
+    }
+    
+    public async void GetSignals() 
+    {
+        try
+        {
+            var serverCode = clientManagerService.SelectedServers[Context.ConnectionId];
+
+            var trains = trainDataService[serverCode];
+            if (trains == null) return;
+            
+            var signals = await signalAnalyzerService.GetSignalsForTrains(trains);
+            await Clients.Caller.SendAsync("SignalsReceived", signals);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error sending signals to client");
+        }
+    }
+
     private static readonly Gauge ServerClientsGauge = Metrics
         .CreateGauge("smo_server_clients", "Number of clients connected to each server", "server");
 }

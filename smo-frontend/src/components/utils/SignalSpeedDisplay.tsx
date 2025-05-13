@@ -1,11 +1,11 @@
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent, memo } from "react";
 
-import { BaseTrain } from "../../utils/types";
+import { Train } from "../../utils/types";
 import { getColorTrainMarker } from "../../utils/ui";
 
 export interface SignalSpeedDisplayProps {
-  train: BaseTrain;
+  train: Train;
 }
 
 const SignalSpeedDisplay: FunctionComponent<SignalSpeedDisplayProps> = ({ train }) => {

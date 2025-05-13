@@ -180,6 +180,7 @@ if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("STEAM_API_KEY
 // Data services
 builder.Services.AddHostedServiceSingleton<ServerDataService>();
 builder.Services.AddHostedServiceSingleton<TrainDataService>();
+builder.Services.AddHostedServiceSingleton<TrainPositionDataService>();
 builder.Services.AddHostedServiceSingleton<StationDataService>();
 builder.Services.AddHostedServiceSingleton<TimeDataService>();
 builder.Services.AddHostedServiceSingleton<TimetableDataService>();

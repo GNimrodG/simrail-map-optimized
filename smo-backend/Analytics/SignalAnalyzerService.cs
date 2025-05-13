@@ -266,20 +266,20 @@ public partial class SignalAnalyzerService : IHostedService
                 signal.Trains = train?.Select(t => t.TrainNoLocal).ToArray();
 
                 // Determine if this is a block signal with connections to another signal
-                var isBlockSignalWithBlockAhead = signal is { Type: "block", NextSignalConnections.Count: 1 };
+                var isBlockSignalWithBlockAhead = signal is { Type: "block", NextSignals.Length: 1 };
 
                 // Get the train at the next signal ahead (if this is a block signal)
                 if (!isBlockSignalWithBlockAhead) continue;
 
-                var nextSignalName = signal.NextSignalConnections.First().Next;
+                var nextSignalName = signal.NextSignals.First().Name;
                 signal.TrainsAhead = signalsIndex.GetValueOrDefault(nextSignalName)?.Select(t => t.TrainNoLocal)
                     .ToArray();
 
                 // Check for a train two signals ahead
                 if (!signalLookup.TryGetValue(nextSignalName, out var nextSignal) ||
-                    nextSignal.NextSignalConnections.Count != 1) continue;
+                    nextSignal.NextSignals.Length != 1) continue;
 
-                var nextNextSignalName = nextSignal.NextSignalConnections.First().Next;
+                var nextNextSignalName = nextSignal.NextSignals.First().Name;
 
                 if (signalsIndex.ContainsKey(
                         nextNextSignalName)) // check if there is a train before the next-next signal
