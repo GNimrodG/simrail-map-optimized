@@ -120,17 +120,16 @@ function getColor(option: ListItem) {
       return option.data.TrainData.ControlledBySteamID?.[0] ? "neutral" : "success";
     case "Stations":
       return option.data.DifficultyLevel === -1 || option.data.DispatchedBy?.[0] ? "neutral" : "success";
-    case "Signals":
-      return option.data.Trains
-        ? getSpeedColorForSignal(
-            dataProvider.trainsData$.value.find((t) => option.data.Trains?.includes(t.TrainNoLocal))!.TrainData
-              .SignalInFrontSpeed,
-          )
+    case "Signals": {
+      const train = dataProvider.trainsData$.value?.find((t) => option.data.Trains?.includes(t.TrainNoLocal));
+      return option.data.Trains && train
+        ? getSpeedColorForSignal(train.TrainData.SignalInFrontSpeed)
         : option.data.TrainsAhead
           ? "danger"
           : option.data.NextSignalWithTrainAhead
             ? "warning"
             : "neutral";
+    }
   }
 }
 
