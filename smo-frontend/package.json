@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@emotion/react": "^11.13.3",
+    "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.13.0",
     "@fontsource/inter": "^5.2.0",
     "@mantine/hooks": "^7.17.1",
