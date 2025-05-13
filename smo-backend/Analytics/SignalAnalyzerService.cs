@@ -28,17 +28,20 @@ public partial class SignalAnalyzerService : IHostedService
         DateTime TimeStamp,
         double Speed);
 
-    private readonly int MinDistanceToSignal = Environment.GetEnvironmentVariable("SIGNAL_MIN_DISTANCE") is { } minDistance
-        ? int.Parse(minDistance)
-        : 100;
-    
-    private readonly int MinDistanceBetweenSignals = Environment.GetEnvironmentVariable("SIGNAL_MIN_DISTANCE_BETWEEN") is { } minDistance
-        ? int.Parse(minDistance)
-        : 200;
-    
-    private readonly int BufferDistanceBetweenPositions = Environment.GetEnvironmentVariable("SIGNAL_BUFFER_DISTANCE_BETWEEN") is { } bufferDistance
-        ? int.Parse(bufferDistance)
-        : 50;
+    private readonly int _minDistanceToSignal =
+        Environment.GetEnvironmentVariable("SIGNAL_MIN_DISTANCE") is { } minDistance
+            ? int.Parse(minDistance)
+            : 100;
+
+    private readonly int _minDistanceBetweenSignals =
+        Environment.GetEnvironmentVariable("SIGNAL_MIN_DISTANCE_BETWEEN") is { } minDistance
+            ? int.Parse(minDistance)
+            : 200;
+
+    private readonly int BufferDistanceBetweenPositions =
+        Environment.GetEnvironmentVariable("SIGNAL_BUFFER_DISTANCE_BETWEEN") is { } bufferDistance
+            ? int.Parse(bufferDistance)
+            : 50;
 
     private readonly TtlCache<string, TrainPrevSignalData> _trainPrevSignalCache = new(TimeSpan.FromSeconds(30));
 
@@ -164,21 +167,21 @@ public partial class SignalAnalyzerService : IHostedService
         // optimized query to get all signals with their connections
         const string sql = """
                            SELECT signals.name,
-                               ST_X(signals.location) as longitude,
-                               ST_Y(signals.location) as latitude,
-                               extra,
-                               accuracy,
-                               type,
-                               role,
-                               prev_finalized,
-                               next_finalized,
-                               prev_regex,
-                               next_regex,
-                               ARRAY_TO_STRING(ARRAY_AGG(DISTINCT p.prev || ':' || p.vmax), ',') as prev_signals,
-                               ARRAY_TO_STRING(ARRAY_AGG(DISTINCT n.next || ':' || n.vmax), ',') as next_signals
+                                  ST_X(signals.location) as longitude,
+                                  ST_Y(signals.location) as latitude,
+                                  extra,
+                                  accuracy,
+                                  type,
+                                  role,
+                                  prev_finalized,
+                                  next_finalized,
+                                  prev_regex,
+                                  next_regex,
+                                  ARRAY_TO_STRING(ARRAY_AGG(DISTINCT (p.prev || ':' || COALESCE(p.vmax::varchar, ''))), ',') as prev_signals,
+                                  ARRAY_TO_STRING(ARRAY_AGG(DISTINCT (n.next || ':' || COALESCE(n.vmax::varchar, ''))), ',') as next_signals
                            FROM signals
-                           LEFT JOIN signal_connections p ON signals.name = p.next 
-                           LEFT JOIN signal_connections n ON signals.name = n.prev
+                                    LEFT JOIN signal_connections p ON signals.name = p.next
+                                    LEFT JOIN signal_connections n ON signals.name = n.prev
                            GROUP BY signals.name
                            """;
 
@@ -474,7 +477,7 @@ public partial class SignalAnalyzerService : IHostedService
             // Cache DateTime.Now to avoid multiple calls
             var currentTime = DateTime.Now;
 
-            if (train.TrainData.DistanceToSignalInFront < MinDistanceToSignal)
+            if (train.TrainData.DistanceToSignalInFront < _minDistanceToSignal)
             {
                 try
                 {
@@ -516,9 +519,9 @@ public partial class SignalAnalyzerService : IHostedService
 
         var elapsed = (int)stopwatch.ElapsedMilliseconds;
         stopwatch.Stop();
-        
+
         var invalidTrainsSum = invalidTrainsPerServer.Values.Sum();
-        
+
         _logger.LogInformation(
             "[{RunCount:000}] Signal analyzer finished in {Elapsed}ms with ({InvalidTrains}/{TrainCount}) invalid trains",
             runCount, elapsed, invalidTrainsSum, allTrains.Count);
@@ -849,10 +852,10 @@ public partial class SignalAnalyzerService : IHostedService
         var prevMatch = SIGNAL_BASE_NAME_REGEX().Match(prevSignal.Name);
         var currMatch = SIGNAL_BASE_NAME_REGEX().Match(signal.Name);
 
-        if (prevMatch.Success && currMatch.Success)
+        if (prevMatch.Success && currMatch.Success && prevMatch.Groups[1].Value == currMatch.Groups[1].Value)
         {
-            var prevLetter = prevMatch.Groups[1].Value;
-            var currLetter = currMatch.Groups[1].Value;
+            var prevLetter = prevMatch.Groups[2].Value;
+            var currLetter = currMatch.Groups[2].Value;
 
             if (Math.Abs(prevLetter[0] - currLetter[0]) == 1)
             {
@@ -889,11 +892,11 @@ public partial class SignalAnalyzerService : IHostedService
         }
 
         // check if distance between signals is less than MinDistanceBetweenSignals
-        if (dbPrevSignalLocation.HaversineDistance(signalLocation) < MinDistanceBetweenSignals)
+        if (dbPrevSignalLocation.HaversineDistance(signalLocation) < _minDistanceBetweenSignals)
         {
             TryLogError(
                 prevSignal.Name, signal.Name,
-                $"Distance between {prevSignal.Name} and {signal.Name} is less than {MinDistanceBetweenSignals}m!",
+                $"Distance between {prevSignal.Name} and {signal.Name} is less than {_minDistanceBetweenSignals}m!",
                 train.GetTrainId(), prevSignalData.SignalSpeed);
             return false;
         }
@@ -926,9 +929,12 @@ public partial class SignalAnalyzerService : IHostedService
         }
     }
 
-    [GeneratedRegex(@"(_[A-Z])\d+$")]
+    /// <summary>
+    /// Group[1] basically removed the numbers from the end
+    /// </summary>
+    [GeneratedRegex(@"^(.+_[A-Z])\d+$")]
     private static partial Regex SIDING_SIGNAL_BASE_NAME_REGEX();
 
-    [GeneratedRegex(@"_([A-Z])$")]
+    [GeneratedRegex(@"^(.+)_([A-Z])$")]
     private static partial Regex SIGNAL_BASE_NAME_REGEX();
 }
