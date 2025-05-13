@@ -19,6 +19,7 @@ public class MainHub(
     ClientManagerService clientManagerService)
     : Hub
 {
+    /// <inheritdoc />
     public override async Task OnConnectedAsync()
     {
         clientManagerService.OnClientConnected(Context.ConnectionId);
@@ -27,13 +28,24 @@ public class MainHub(
             await Clients.Caller.SendAsync("ServersReceived", serverDataService.Data);
     }
 
+    /// <inheritdoc />
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         clientManagerService.OnClientDisconnected(Context.ConnectionId);
 
+        if (clientManagerService.SelectedServers.Remove(Context.ConnectionId, out var serverCode))
+        {
+            ServerClientsGauge.WithLabels(serverCode)
+                .Set(clientManagerService.SelectedServers.Count(x => x.Value == serverCode));
+        }
+
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Switches the server for the client.
+    /// </summary>
+    /// <param name="serverCode">The server code to switch to.</param>
     public async Task SwitchServer(string serverCode)
     {
         if (clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out var currentServerCode))
@@ -76,15 +88,26 @@ public class MainHub(
         }
 
 
-        foreach (var keyValuePair in clientManagerService.SelectedServers)
+        // Remove the old values
+        foreach (var labelValue in ServerClientsGauge.GetAllLabelValues())
         {
-            // set each server as smo_server_clients{server="serverCode"} = number of clients
+            if (clientManagerService.SelectedServers.Values.All(x => x != labelValue[0]))
+                ServerClientsGauge.RemoveLabelled(labelValue);
+        }
+
+        foreach (var server in clientManagerService.SelectedServers.Values.Distinct())
+        {
             ServerClientsGauge
-                .WithLabels(keyValuePair.Value)
-                .Set(clientManagerService.SelectedServers.Count(x => x.Value == keyValuePair.Value));
+                .WithLabels(server)
+                .Set(clientManagerService.SelectedServers.Count(x => x.Value == server));
         }
     }
 
+    /// <summary>
+    /// Gets the timetable for a given train number.
+    /// </summary>
+    /// <param name="trainNoLocal">The local train number.</param>
+    /// <returns>The timetable for the train, or null if not found.</returns>
     public async Task<Timetable?> GetTimetable(string trainNoLocal)
     {
         var serverCode = clientManagerService.SelectedServers[Context.ConnectionId];
@@ -112,7 +135,8 @@ public class MainHub(
     /// </summary>
     /// <param name="trainNoLocal">The local train number.</param>
     /// <returns>An array of route points in WKT (Well-Known Text) format.</returns>
-    public Task<string[]> GetTrainRoutePoints(string trainNoLocal) => routePointAnalyzerService.GetTrainRoutePoints(trainNoLocal);
+    public Task<string[]> GetTrainRoutePoints(string trainNoLocal) =>
+        routePointAnalyzerService.GetTrainRoutePoints(trainNoLocal);
 
     private static readonly Gauge ServerClientsGauge = Metrics
         .CreateGauge("smo_server_clients", "Number of clients connected to each server", "server");
