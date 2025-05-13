@@ -336,6 +336,8 @@ export class SignalRDataProvider implements IDataProvider {
         } else {
           console.error(`Failed to delete signal connection ${prevSignal}->${signal}`, data.error);
         }
+
+        this.connection.send("GetSignals");
       })
       .catch((e) => {
         console.error(`Failed to delete signal connection ${prevSignal}->${signal}`, e);
@@ -373,6 +375,8 @@ export class SignalRDataProvider implements IDataProvider {
         } else {
           console.error(`Failed to delete signal connection ${signal}->${nextSignal}`, data.error);
         }
+
+        this.connection.send("GetSignals");
       })
       .catch((e) => {
         console.error(`Failed to delete signal connection ${signal}->${nextSignal}`, e);
@@ -391,9 +395,22 @@ export class SignalRDataProvider implements IDataProvider {
       .then((data) => {
         if (data.success) {
           console.log(`Marked signal ${signal} next finalized`);
+          this.signalsData$.next(
+            this.signalsData$.value.map((s) => {
+              if (s.Name === signal) {
+                return {
+                  ...s,
+                  NextFinalized: finalized,
+                };
+              }
+              return s;
+            }),
+          );
         } else {
           console.error(`Failed to mark signal ${signal} next finalized`, data.error);
         }
+
+        this.connection.send("GetSignals");
       })
       .catch((e) => {
         console.error(`Failed to mark signal ${signal} next finalized`, e);
@@ -412,9 +429,22 @@ export class SignalRDataProvider implements IDataProvider {
       .then((data) => {
         if (data.success) {
           console.log(`Marked signal ${signal} prev finalized`);
+          this.signalsData$.next(
+            this.signalsData$.value.map((s) => {
+              if (s.Name === signal) {
+                return {
+                  ...s,
+                  PrevFinalized: finalized,
+                };
+              }
+              return s;
+            }),
+          );
         } else {
           console.error(`Failed to mark signal ${signal} prev finalized`, data.error);
         }
+
+        this.connection.send("GetSignals");
       })
       .catch((e) => {
         console.error(`Failed to mark signal ${signal} prev finalized`, e);
@@ -437,6 +467,8 @@ export class SignalRDataProvider implements IDataProvider {
         } else {
           console.error(`Failed to delete signal ${signal}`, data.error);
         }
+
+        this.connection.send("GetSignals");
       })
       .catch((e) => {
         console.error(`Failed to delete signal ${signal}`, e);
