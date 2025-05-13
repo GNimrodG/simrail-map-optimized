@@ -82,7 +82,7 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl)
         {
             _cache.Set(key, value, new MemoryCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(1)
+                AbsoluteExpirationRelativeToNow = ttl
             });
         }
         else
