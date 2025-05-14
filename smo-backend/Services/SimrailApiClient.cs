@@ -19,6 +19,7 @@ public class SimrailApiClient
 
     private static T[] HandleResponse<T>(HttpResponseMessage response, CancellationToken stoppingToken) where T : class
     {
+        // TODO: return age from response headers
         response.EnsureSuccessStatusCode();
         var content = response.Content.ReadAsStringAsync(stoppingToken).Result;
         var result = JsonSerializer.Deserialize<BaseListResponse<T>>(content);

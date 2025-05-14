@@ -17,10 +17,12 @@ public class TimetableDataService(
     /// <inheritdoc cref="BaseServerDataService{Nullable{object}}.PerServerDataReceived"/>
     public new event DataReceivedEventHandler<PerServerData<Timetable[]>>? PerServerDataReceived;
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    /// <inheritdoc />
+    public override Task StartAsync(CancellationToken stoppingToken)
     {
+        logger.LogInformation("Starting TimetableDataService...");
         Directory.CreateDirectory(_dataDirectory);
-        
+
         // remove tmp files that may be left over from previous runs
         foreach (var file in Directory.GetFiles(_dataDirectory, "*.tmp", SearchOption.AllDirectories))
         {
@@ -33,8 +35,8 @@ public class TimetableDataService(
                 logger.LogError(ex, "Failed to delete temporary file {FilePath}", file);
             }
         }
-        
-        return base.ExecuteAsync(stoppingToken);
+
+        return base.StartAsync(stoppingToken);
     }
 
     private async Task WriteData(string serverCode, Timetable[] timetables)
@@ -107,7 +109,8 @@ public class TimetableDataService(
     /// <summary>
     /// Gets the timetable for a specific train, identified by its local number.
     /// </summary>
-    public async Task<Timetable?> GetTimetableForTrainAsync(string serverCode, string trainNoLocal, CancellationToken stoppingToken = default)
+    public async Task<Timetable?> GetTimetableForTrainAsync(string serverCode, string trainNoLocal,
+        CancellationToken stoppingToken = default)
     {
         var filePath = Path.Combine(_dataDirectory, serverCode, $"{serverCode}-{trainNoLocal}.bin");
 
@@ -127,7 +130,8 @@ public class TimetableDataService(
                 bufferSize: 4096,
                 useAsync: true);
 
-            return await MessagePackSerializer.DeserializeAsync<Timetable>(fileStream, cancellationToken: stoppingToken);
+            return await MessagePackSerializer.DeserializeAsync<Timetable>(fileStream,
+                cancellationToken: stoppingToken);
         }
         catch (IOException ex)
         {

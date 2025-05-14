@@ -1,6 +1,4 @@
-﻿using SMOBackend.Data;
-using SMOBackend.Models;
-using SMOBackend.Utils;
+﻿using SMOBackend.Utils;
 
 namespace SMOBackend.Services;
 
@@ -16,7 +14,7 @@ public abstract class BaseDataService<T>(
     string serviceId,
     ILogger<BaseDataService<T>> logger,
     IServiceScopeFactory scopeFactory)
-    : BackgroundService where T : class?
+    : IHostedService where T : class?
 {
     /// <summary>
     /// The interval at which the data is fetched.
@@ -60,34 +58,41 @@ public abstract class BaseDataService<T>(
         return FetchInterval;
     }
 
+    private CancellationTokenSource? _cancellationTokenSource;
+    private Task? _dataServiceTask;
+
     /// <inheritdoc />
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public virtual Task StartAsync(CancellationToken cancellationToken)
     {
+        logger.BeginScope("[{ServiceId}]", serviceId);
         logger.LogInformation("Starting {ServiceId} service with {FetchInterval}s interval", serviceId,
             GetFetchInterval().TotalSeconds);
 
-        try
-        {
-            await Task.Run(() => ExecuteService(stoppingToken), stoppingToken)
-                .ContinueWith(t =>
+        _cancellationTokenSource = new();
+
+        _dataServiceTask = Task.Run(() => ExecuteService(_cancellationTokenSource.Token), cancellationToken)
+            .ContinueWith(t =>
+            {
+                if (t.IsFaulted)
                 {
-                    if (t.IsFaulted)
-                    {
-                        logger.LogCritical(t.Exception, "Data service failed");
-                    }
-                }, TaskContinuationOptions.OnlyOnFaulted);
-        }
-        catch (OperationCanceledException)
-        {
-            logger.LogInformation("{ServiceId} service stopped", serviceId);
-        }
-        catch (Exception e)
-        {
-            logger.LogCritical(e, "{ServiceId} service failed", serviceId);
-        }
+                    logger.LogCritical(t.Exception, "Data service failed");
+                }
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+        return Task.CompletedTask;
     }
 
-    private protected async Task ExecuteService(CancellationToken stoppingToken)
+    /// <inheritdoc />
+    public virtual Task StopAsync(CancellationToken cancellationToken)
+    {
+        logger.LogWarning("Stopping {ServiceId} service", serviceId);
+
+        _cancellationTokenSource?.Cancel();
+
+        return _dataServiceTask ?? Task.CompletedTask;
+    }
+
+    private async Task ExecuteService(CancellationToken stoppingToken)
     {
         using var timer = new PeriodicTimer(GetFetchInterval());
 
@@ -140,7 +145,7 @@ public abstract class BaseDataService<T>(
     private protected virtual Task WriteStats(int time, CancellationToken stoppingToken) =>
         scopeFactory.LogStat(serviceId, time, ++RunCount, null, stoppingToken);
 
-    private protected virtual Task<T> FetchData(CancellationToken stoppingToken) => throw new NotImplementedException();
+    private protected abstract Task<T> FetchData(CancellationToken stoppingToken);
 
     protected virtual void OnDataReceived(T data)
     {
