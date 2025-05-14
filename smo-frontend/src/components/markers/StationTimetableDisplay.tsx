@@ -52,7 +52,19 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
 
   return (
     <Sheet sx={{ overflow: "auto", width: "100%" }}>
-      <Table size="sm" stickyHeader stickyFooter aria-label="sticky table" sx={{ minWidth: 500 }}>
+      <Table
+        size="sm"
+        stickyHeader
+        stickyFooter
+        aria-label="sticky table"
+        sx={{
+          "& th:nth-child(1), & td:nth-child(1)": { width: 100 },
+          "& th:nth-child(2), & td:nth-child(2)": { width: 60 },
+          "& th:nth-child(3), & td:nth-child(3)": { width: 100 },
+          "& th:nth-child(4), & td:nth-child(4)": { width: 180 },
+          "& th:nth-child(5), & td:nth-child(5)": { width: 40 },
+          "& th:nth-child(6), & td:nth-child(6)": { width: 130 },
+        }}>
         <thead>
           <tr>
             <th>Train No</th>

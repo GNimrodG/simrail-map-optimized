@@ -382,7 +382,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
       </Modal>
 
       <Modal open={timetableModalOpen} onClose={() => startTransition(() => setTimetableModalOpen(false))}>
-        <ModalDialog>
+        <ModalDialog sx={{ width: "min(1280px, 95vw)" }}>
           <ModalClose
             variant="plain"
             sx={{
@@ -393,7 +393,15 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
           />
 
           <DialogTitle
-            sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", alignItems: "center" }}
+            sx={(theme) => ({
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr",
+              alignItems: "center",
+              [theme.breakpoints.down("md")]: {
+                gridTemplateColumns: "1fr 1fr",
+                mr: 4,
+              },
+            })}
             component="div">
             {t("Timetable.Title", { stationName: station.Name })} <MapTimeDisplay />
           </DialogTitle>
