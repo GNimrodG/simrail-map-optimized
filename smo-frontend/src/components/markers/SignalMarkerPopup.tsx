@@ -219,13 +219,17 @@ const SignalMarkerPopup: FunctionComponent<SignalMarkerPopupProps> = ({
 
   const prevSignalDeleteHandlers = useMemo(
     () =>
-      Object.fromEntries(signal.PrevSignals.map((s) => [s, () => dataProvider.deletePrevSignal(signal.Name, s.Name)])),
+      Object.fromEntries(
+        signal.PrevSignals.map((s) => [s.Name, () => dataProvider.deletePrevSignal(signal.Name, s.Name)]),
+      ),
     [signal.PrevSignals, signal.Name],
   );
 
   const nextSignalDeleteHandlers = useMemo(
     () =>
-      Object.fromEntries(signal.NextSignals.map((s) => [s, () => dataProvider.deleteNextSignal(signal.Name, s.Name)])),
+      Object.fromEntries(
+        signal.NextSignals.map((s) => [s.Name, () => dataProvider.deleteNextSignal(signal.Name, s.Name)]),
+      ),
     [signal.NextSignals, signal.Name],
   );
 

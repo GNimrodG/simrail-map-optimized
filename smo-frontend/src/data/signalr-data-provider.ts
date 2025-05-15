@@ -122,11 +122,18 @@ export class SignalRDataProvider implements IDataProvider {
         return;
       }
 
+      if (currentStations.length !== partialStations.length) {
+        console.debug("Stations count mismatch", currentStations.length, partialStations.length);
+        this.connection.send("GetStations");
+        return;
+      }
+
       for (const partialStation of partialStations) {
         const station = currentStations.find((s) => s.Id === partialStation.Id);
         if (station) {
           Object.assign(station, omit(partialStation, "Id"));
         } else {
+          console.debug("Station not found in current stations", partialStation);
           this.connection.send("GetStations");
           return;
         }
@@ -161,6 +168,11 @@ export class SignalRDataProvider implements IDataProvider {
       });
 
       this.trainsData$.next(updatedTrains);
+
+      if (currentTrains.length !== partialTrains.length) {
+        console.debug("Train positions count mismatch", currentTrains.length, partialTrains.length);
+        this.connection.send("GetTrains");
+      }
     });
     this.connection.on(
       "TrainPositionsReceived",
@@ -171,7 +183,7 @@ export class SignalRDataProvider implements IDataProvider {
           return;
         }
 
-        const updatedTrains = currentTrains.map((train) => {
+        let updatedTrains = currentTrains.map((train) => {
           const trainPosition = trainPositions.find((t) => t.Id === train.Id);
           if (trainPosition) {
             train.TrainData.Latitude = trainPosition.Latitude;
@@ -180,6 +192,12 @@ export class SignalRDataProvider implements IDataProvider {
           }
           return train;
         });
+
+        if (currentTrains.length > trainPositions.length) {
+          console.debug(`${currentTrains.length - trainPositions.length} trains have despawned`);
+          // delete the extra trains that are not in the partialTrains list because they are not in the server anymore
+          updatedTrains = updatedTrains.filter((train) => trainPositions.some((t) => t.Id === train.Id));
+        }
 
         this.trainsData$.next(updatedTrains);
       },
@@ -191,6 +209,12 @@ export class SignalRDataProvider implements IDataProvider {
 
       if (!currentSignals.length) {
         console.warn("No signals received yet, requesting full list");
+        this.connection.send("GetSignals");
+        return;
+      }
+
+      if (currentSignals.length !== partialSignals.length) {
+        console.debug("Signals count mismatch", currentSignals.length, partialSignals.length);
         this.connection.send("GetSignals");
         return;
       }
@@ -315,7 +339,7 @@ export class SignalRDataProvider implements IDataProvider {
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
+        if (data?.Name === signal) {
           console.log(`Deleted signal connection ${prevSignal}->${signal}`);
           this.signalsData$.next(
             this.signalsData$.value.map((s) => {
@@ -354,7 +378,7 @@ export class SignalRDataProvider implements IDataProvider {
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
+        if (data?.Name === signal) {
           console.log(`Deleted signal connection ${signal}->${nextSignal}`);
           this.signalsData$.next(
             this.signalsData$.value.map((s) => {

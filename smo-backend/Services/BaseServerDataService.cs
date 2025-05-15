@@ -1,5 +1,4 @@
-﻿using SMOBackend.Data;
-using SMOBackend.Models;
+﻿using SMOBackend.Models;
 using SMOBackend.Utils;
 
 namespace SMOBackend.Services;
@@ -23,6 +22,61 @@ public abstract class BaseServerDataService<T>(
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
     private protected virtual TimeSpan DelayBetweenServers => TimeSpan.Zero;
+
+    /// <inheritdoc />
+    public override async Task StartAsync(CancellationToken cancellationToken)
+    {
+        await base.StartAsync(cancellationToken);
+
+        serverDataService.DataReceived += OnServerDataReceived;
+    }
+
+    private async void OnServerDataReceived(ServerStatus[] data)
+    {
+        try
+        {
+            if (data.Length == 0 || Data == null)
+                return;
+
+            foreach (var server in data)
+            {
+                if (Data.ContainsKey(server.ServerCode)) continue;
+
+                logger.LogInformation("Fetching data for new server: {ServerCode}", server.ServerCode);
+                var serverCode = server.ServerCode;
+                await FetchServerData(serverCode, CancellationToken.None)
+                    .ContinueWith(t =>
+                    {
+                        var serverData = t.Result;
+                        Data[serverCode] = serverData;
+                        OnPerServerDataReceived(new(serverCode, serverData));
+                    }, TaskContinuationOptions.OnlyOnRanToCompletion)
+                    .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted)
+                        {
+                            logger.LogError(t.Exception, "Error fetching data for server: {ServerCode}", serverCode);
+                        }
+                        else
+                        {
+                            logger.LogInformation("Data fetched for server: {ServerCode}", serverCode);
+                        }
+                    });
+            }
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error processing server data");
+        }
+    }
+
+    /// <inheritdoc />
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        serverDataService.DataReceived -= OnServerDataReceived;
+
+        await base.StopAsync(cancellationToken);
+    }
 
     /// <summary>
     /// The latest data received from the service for a specific server.

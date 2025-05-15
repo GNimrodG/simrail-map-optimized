@@ -14,8 +14,14 @@ public abstract class BaseDataService<T>(
     string serviceId,
     ILogger<BaseDataService<T>> logger,
     IServiceScopeFactory scopeFactory)
-    : IHostedService where T : class?
+    : IHostedService, IDataService where T : class?
 {
+    /// <inheritdoc />
+    public string ServiceId => serviceId;
+
+    /// <inheritdoc />
+    public DateTime LastFetch { get; private set; } = DateTime.MinValue;
+
     /// <summary>
     /// The interval at which the data is fetched.
     /// </summary>
@@ -40,22 +46,17 @@ public abstract class BaseDataService<T>(
 
     private protected int RunCount;
 
-    private TimeSpan GetFetchInterval()
+    /// <inheritdoc />
+    public TimeSpan GetFetchInterval()
     {
         var envSetting = Environment.GetEnvironmentVariable($"{serviceId}_REFRESH_INTERVAL");
         if (string.IsNullOrEmpty(envSetting)) return FetchInterval;
 
         if (int.TryParse(envSetting, out var intervalInSeconds))
-        {
             return TimeSpan.FromSeconds(intervalInSeconds);
-        }
 
-        if (TimeSpan.TryParse(envSetting, out var interval))
-        {
-            return interval;
-        }
 
-        return FetchInterval;
+        return TimeSpan.TryParse(envSetting, out var interval) ? interval : FetchInterval;
     }
 
     private CancellationTokenSource? _cancellationTokenSource;
@@ -132,6 +133,7 @@ public abstract class BaseDataService<T>(
                         _firstDataReceivedSource.SetResult();
 
                     await WriteStats(elapsed, stoppingToken);
+                    LastFetch = DateTime.UtcNow;
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {

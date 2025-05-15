@@ -31,7 +31,7 @@ const LowSpeedWarning: FunctionComponent = () => {
   if (disableLowSpeedWarning || trainsAvgSpeed === null || trainsAvgSpeed > LOW_SPEED_THRESHOLD) return null;
 
   return (
-    <Stack sx={{ position: "fixed", top: 0, left: 0, right: 0, pt: 1, mr: 8, zIndex: 1000 }} alignItems="end">
+    <Stack sx={{ position: "fixed", top: 0, right: 0, pt: 1, mr: 8, zIndex: 1000 }} alignItems="end">
       <Alert
         variant="soft"
         color="warning"

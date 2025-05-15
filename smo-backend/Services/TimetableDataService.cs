@@ -85,7 +85,7 @@ public class TimetableDataService(
     }
 
     /// <inheritdoc cref="BaseServerDataService{Nullable{object}}.FetchInterval"/>
-    protected override TimeSpan FetchInterval => TimeSpan.FromMinutes(30);
+    protected override TimeSpan FetchInterval => TimeSpan.FromHours(1);
 
     private protected override TimeSpan DelayBetweenServers => TimeSpan.FromSeconds(1);
 

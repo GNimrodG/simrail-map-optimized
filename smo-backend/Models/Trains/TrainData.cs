@@ -15,9 +15,15 @@ public class TrainData : BaseTrainData
     [JsonPropertyName("InBorderStationArea")]
     public bool InBorderStationArea { get; set; }
 
+    /// <summary>
+    /// The longitude of the train.
+    /// </summary>
     // ReSharper disable once StringLiteralTypo
     [JsonPropertyName("Latititute")] public double? Latitude { get; set; }
 
+    /// <summary>
+    /// The longitude of the train.
+    /// </summary>
     // ReSharper disable once StringLiteralTypo
     [JsonPropertyName("Longitute")] public double? Longitude { get; set; }
 

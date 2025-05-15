@@ -35,10 +35,11 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers()
-    .AddJsonOptions(options =>
+    .AddNewtonsoftJson(options =>
     {
-        options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+        options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+        options.SerializerSettings.Converters.Add(new PointJsonConverter());
     });
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -207,7 +208,7 @@ builder.Services.AddSystemMetrics(false);
 builder
     .Services.AddHealthChecks()
     .AddCheck<DatabaseHealthCheck>("Database")
-    .AddCheck<ServerDataServiceHealthCheck>("Server Data Service")
+    .AddCheck<DataServiceHealthCheck>("Data Services")
     .ForwardToPrometheus();
 
 var app = builder.Build();

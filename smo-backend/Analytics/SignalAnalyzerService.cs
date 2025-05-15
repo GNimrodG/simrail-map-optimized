@@ -459,7 +459,7 @@ public partial class SignalAnalyzerService : IHostedService
         {
             if (train.TrainData.Latitude is null || train.TrainData.Longitude is null)
             {
-                _logger.LogWarning("Train {TrainId} ({TrainType}) has no location data!", runCount,
+                _logger.LogWarning("Train {TrainId} ({TrainType}) has no location data!",
                     train,
                     train.Type);
                 UpdateTrainPrevSignalDataTtl(train.GetTrainId());
@@ -476,14 +476,14 @@ public partial class SignalAnalyzerService : IHostedService
             var signalId = train.TrainData.GetSignal()!;
             var signal = signalLookup.GetValueOrDefault(signalId);
 
-            // Cache DateTime.Now to avoid multiple calls
+            // Cache DateTime.Now to avoid multiple calls and be more precise
             var currentTime = DateTime.Now;
 
             if (train.TrainData.DistanceToSignalInFront < _minDistanceToSignal)
             {
                 try
                 {
-                    signal = await UpdateSignal(signal, runCount, train, signalId, context, signals, signalLookup);
+                    signal = await UpdateSignal(signal, train, signalId, context, signals, signalLookup);
                 }
                 catch (Exception e)
                 {
@@ -499,7 +499,7 @@ public partial class SignalAnalyzerService : IHostedService
                 if (prevSignalData != null)
                 {
                     var isValid =
-                        await ProcessPrevSignalData(context, runCount,
+                        await ProcessPrevSignalData(context,
                             signals, signalLookup, train, signal, prevSignalData, currentTime);
 
                     if (!isValid)
@@ -526,7 +526,7 @@ public partial class SignalAnalyzerService : IHostedService
 
         _logger.LogInformation(
             "Signal analyzer finished in {Elapsed}ms with ({InvalidTrains}/{TrainCount}) invalid trains",
-            runCount, elapsed, invalidTrainsSum, allTrains.Count);
+            elapsed, invalidTrainsSum, allTrains.Count);
 
         foreach (var (serverCode, count) in invalidTrainsPerServer)
 
@@ -537,7 +537,7 @@ public partial class SignalAnalyzerService : IHostedService
         await context.SaveChangesAsync();
     }
 
-    private async Task<MinimalSignalData> UpdateSignal(MinimalSignalData? signal, uint runCount, Train train,
+    private async Task<MinimalSignalData> UpdateSignal(MinimalSignalData? signal,  Train train,
         string signalId,
         SmoContext context,
         List<MinimalSignalData> signals, Dictionary<string, MinimalSignalData> signalLookup)
@@ -551,9 +551,7 @@ public partial class SignalAnalyzerService : IHostedService
 
             if (dbSignal == null)
             {
-                _logger.LogError(
-                    "Signal {SignalId} not found in the database, but exists in the lookup!",
-                    runCount, signalId);
+                _logger.LogError("Signal {SignalId} not found in the database, but exists in the lookup!", signalId);
                 return signal;
             }
 
@@ -564,7 +562,7 @@ public partial class SignalAnalyzerService : IHostedService
 
             _logger.LogInformation(
                 "Updated signal {SignalId} accuracy to {DistanceToSignalInFront}m at train {TrainId}",
-                runCount, signalId, train.TrainData.DistanceToSignalInFront, train.GetTrainId());
+                signalId, train.TrainData.DistanceToSignalInFront, train.GetTrainId());
 
             var entry = context.Entry(dbSignal);
             entry.Property(e => e.Location).IsModified = true;
@@ -596,7 +594,7 @@ public partial class SignalAnalyzerService : IHostedService
             {
                 _logger.LogInformation(
                     "New signal detected: {SignalId} at {Latitude}, {Longitude} ({Extra}) with accuracy {DistanceToSignalInFront}m at train {TrainId}",
-                    runCount, signalId, train.TrainData.Latitude, train.TrainData.Longitude, extra,
+                    signalId, train.TrainData.Latitude, train.TrainData.Longitude, extra,
                     train.TrainData.DistanceToSignalInFront, train.GetTrainId());
 
                 signals.Add(signal);
@@ -606,14 +604,14 @@ public partial class SignalAnalyzerService : IHostedService
             {
                 _logger.LogError(
                     "Signal {SignalId} already exists in the signal lookup, but not in the database! This should not happen!",
-                    runCount, signalId);
+                    signalId);
             }
         }
 
         return signal;
     }
 
-    private async Task<bool> ProcessPrevSignalData(SmoContext context, uint runCount,
+    private async Task<bool> ProcessPrevSignalData(SmoContext context,
         List<MinimalSignalData> signals,
         Dictionary<string, MinimalSignalData> signalLookup,
         Train train, MinimalSignalData signal, TrainPrevSignalData prevSignalData, DateTime currentTime)
@@ -635,7 +633,7 @@ public partial class SignalAnalyzerService : IHostedService
         {
             _logger.LogTrace(
                 "Train {TrainId} ({TrainType}) moved too far from the previous signal ({PrevSignalName})! Distance: {Distance}m, Max distance: {MaxDistance}m",
-                runCount, train.GetTrainId(), train.Type, prevSignalData.SignalName, distance, maxDistance);
+                train.GetTrainId(), train.Type, prevSignalData.SignalName, distance, maxDistance);
 
             return false;
         }
@@ -647,7 +645,7 @@ public partial class SignalAnalyzerService : IHostedService
         {
             _logger.LogWarning(
                 "Train {TrainId} ({TrainType}) has reached signal {SignalId} from an unknown signal {PrevSignalName}!",
-                runCount, train.GetTrainId(), train.Type, signal.Name, prevSignalId);
+                train.GetTrainId(), train.Type, signal.Name, prevSignalId);
         }
         else if (!prevSignal.NextFinalized)
         {
@@ -659,7 +657,7 @@ public partial class SignalAnalyzerService : IHostedService
             var dbConnection =
                 new SignalConnection(prevSignal.Name, signal.Name, prevSignalData.SignalSpeed, train.GetTrainId());
 
-            _logger.LogInformation("New signal connection: {Connection}", runCount, dbConnection);
+            _logger.LogInformation("New signal connection: {Connection}", dbConnection);
 
             context.SignalConnections.Add(dbConnection);
             signal.PrevSignalConnections.Add(new(dbConnection.Prev, dbConnection.VMAX));
@@ -745,7 +743,7 @@ public partial class SignalAnalyzerService : IHostedService
             {
                 _logger.LogCritical(
                     "Signal connection {PrevSignalName}->{SignalName} is null!",
-                    _runCount, prevSignal.Name, signal.Name);
+                    prevSignal.Name, signal.Name);
                 return false;
             }
 
@@ -758,7 +756,7 @@ public partial class SignalAnalyzerService : IHostedService
             {
                 _logger.LogError(
                     "Signal connection {PrevSignalName}->{SignalName} not found in the database!",
-                    _runCount, prevSignal.Name, signal.Name);
+                    prevSignal.Name, signal.Name);
                 return false;
             }
 
@@ -767,7 +765,7 @@ public partial class SignalAnalyzerService : IHostedService
 
             _logger.LogInformation(
                 "Updated signal connection {Connection} with VMAX of {Vmax} km/h",
-                _runCount, dbConnection, vmax);
+                dbConnection, vmax);
 
             return false;
         }

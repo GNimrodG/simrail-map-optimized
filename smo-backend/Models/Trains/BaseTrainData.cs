@@ -7,8 +7,11 @@ using MessagePack;
 namespace SMOBackend.Models.Trains;
 
 [MessagePackObject(keyAsPropertyName: true)]
-public partial class BaseTrainData
+public class BaseTrainData
 {
+    /// <summary>
+    /// The velocity of the train.
+    /// </summary>
     [JsonPropertyName("Velocity")] public required double Velocity { get; set; }
     [JsonPropertyName("SignalInFront")] public string? SignalInFront { get; set; }
 

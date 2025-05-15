@@ -1,19 +1,59 @@
-﻿using SMOBackend.Models.Entity;
-using SMOBackend.Models.Trains;
+﻿using Newtonsoft.Json;
+using SMOBackend.Models.Entity;
 
 namespace SMOBackend.Models;
 
+/// <summary>
+/// Represents the status of a signal.
+/// </summary>
 public class SignalStatus : Signal
 {
+    /// <summary>
+    /// Represents a connection to another signal.
+    /// </summary>
     public record SignalConnection(string Name, short? Vmax);
 
+    /// <summary>
+    /// The trains that are currently at this signal. (their TrainNoLocal)
+    /// </summary>
+    [JsonProperty(nameof(Trains))]
     public string[]? Trains { get; set; }
+
+    /// <summary>
+    /// The trains that are ahead of this signal. (their TrainNoLocal)
+    /// </summary>
+    [JsonProperty(nameof(TrainsAhead))]
     public string[]? TrainsAhead { get; set; }
+
+    /// <summary>
+    /// The next signal that has a train ahead of it. (Name of the signal)
+    /// </summary>
+    [JsonProperty(nameof(NextSignalWithTrainAhead))]
     public string? NextSignalWithTrainAhead { get; set; }
 
+    /// <summary>
+    /// The next signals that are connected to this signal.
+    /// </summary>
+    [JsonProperty(nameof(NextSignals))]
     public SignalConnection[] NextSignals { get; set; } = [];
 
+    /// <summary>
+    /// The previous signals that are connected to this signal.
+    /// </summary>
+    [JsonProperty(nameof(PrevSignals))]
     public SignalConnection[] PrevSignals { get; set; } = [];
+
+    /// <summary>
+    /// Obsolete: Use NextSignals instead.
+    /// </summary>
+    [JsonIgnore, Obsolete("Use NextSignals instead.")]
+    public new ICollection<SignalConnection> NextSignalConnections { get; } = [];
+
+    /// <summary>
+    /// Obsolete: Use PrevSignals instead.
+    /// </summary>
+    [JsonIgnore, Obsolete("Use PrevSignals instead.")]
+    public new ICollection<SignalConnection> PrevSignalConnections { get; } = [];
 
     public SignalStatus()
     {
@@ -50,7 +90,7 @@ public class SignalStatus : Signal
         public PartialSignalStatus()
         {
         }
-        
+
         public PartialSignalStatus(SignalStatus signal)
         {
             Name = signal.Name;

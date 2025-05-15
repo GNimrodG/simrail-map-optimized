@@ -17,6 +17,11 @@ public class SignalsController(SmoContext context) : Controller
         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ADMIN_PASSWORD")) &&
         Environment.GetEnvironmentVariable("ADMIN_PASSWORD") == password;
 
+    /// <summary>
+    /// Get all signals.
+    /// </summary>
+    /// <param name="password">The password for authentication.</param>
+    /// <returns>The list of signals.</returns>
     [HttpGet]
     public async Task<ActionResult> GetSignals([FromHeader] string password)
     {

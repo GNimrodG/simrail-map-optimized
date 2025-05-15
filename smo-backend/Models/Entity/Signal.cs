@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.RegularExpressions;
 using NetTopologySuite.Geometries;
+using Newtonsoft.Json;
 using SMOBackend.Models.Trains;
 
 namespace SMOBackend.Models.Entity;
@@ -13,38 +14,45 @@ namespace SMOBackend.Models.Entity;
 [Table("signals")]
 public partial class Signal : BaseEntity
 {
-    [Key, MaxLength(Utils.Utils.SignalNameLength)]
+    [JsonProperty(nameof(Name)), Key, MaxLength(Utils.Utils.SignalNameLength)]
     public string Name { get; set; }
 
-    [MaxLength(255)] public string Extra { get; set; }
+    [JsonProperty(nameof(Extra)), MaxLength(255)]
+    public string Extra { get; set; }
 
-    [Column(TypeName = "Geometry(Point, 4326)")]
+    [JsonProperty(nameof(Location)), Column(TypeName = "Geometry(Point, 4326)")]
     public Point Location { get; set; }
 
-    public double Accuracy { get; set; }
+    [JsonProperty(nameof(Accuracy))] public double Accuracy { get; set; }
 
-    [MaxLength(10)] public string? Type { get; set; }
+    [JsonProperty(nameof(Station)), MaxLength(10)]
+    public string? Type { get; set; }
 
-    [MaxLength(20)] public string? Role { get; set; }
+    [JsonProperty(nameof(Role)), MaxLength(20)]
+    public string? Role { get; set; }
 
-    [MaxLength(255)] public string? PrevRegex { get; set; }
+    [JsonProperty(nameof(PrevRegex)), MaxLength(255)]
+    public string? PrevRegex { get; set; }
 
-    [MaxLength(255)] public string? NextRegex { get; set; }
+    [JsonProperty(nameof(NextRegex)), MaxLength(255)]
+    public string? NextRegex { get; set; }
 
-    public bool PrevFinalized { get; set; } = false;
+    [JsonProperty(nameof(PrevFinalized))] public bool PrevFinalized { get; set; } = false;
 
-    public bool NextFinalized { get; set; } = false;
+    [JsonProperty(nameof(NextFinalized))] public bool NextFinalized { get; set; } = false;
 
     /// <summary>
     /// Connections where this signal is the previous one.
-    /// <remarks>NextSignalConnections *-1 SignalConnection.PrevSignal</remarks>
     /// </summary>
+    /// <remarks>NextSignalConnections *-1 SignalConnection.PrevSignal</remarks>
+    [JsonIgnore]
     public ICollection<SignalConnection> NextSignalConnections { get; set; }
 
     /// <summary>
     /// Connections where this signal is the next one.
-    /// <remarks>PrevSignalConnections *-1 SignalConnection.NextSignal</remarks>
     /// </summary>
+    /// <remarks>PrevSignalConnections *-1 SignalConnection.NextSignal</remarks>
+    [JsonIgnore]
     public ICollection<SignalConnection> PrevSignalConnections { get; set; }
 
     [GeneratedRegex(@"^L\d+_\d+[A-Z]*$", RegexOptions.Compiled)]

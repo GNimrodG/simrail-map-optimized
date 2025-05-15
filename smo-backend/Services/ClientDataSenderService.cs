@@ -145,8 +145,8 @@ internal class ClientDataSenderService(
                 logger.LogError(e, "Error sending delays to clients");
             }
 
-            // train data is received every 5 seconds, so we can send the full data every minute
-            if (++_trainCounter > 12)
+            // train data is received every 5 seconds, so we can send the full data every 5 minutes
+            if (++_trainCounter > 60)
                 _trainCounter = 0;
         }
         catch (Exception e)
