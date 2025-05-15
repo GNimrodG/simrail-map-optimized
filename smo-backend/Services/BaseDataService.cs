@@ -77,7 +77,14 @@ public abstract class BaseDataService<T>(
                 {
                     logger.LogCritical(t.Exception, "Data service failed");
                 }
-            }, TaskContinuationOptions.OnlyOnFaulted);
+            }, TaskContinuationOptions.OnlyOnFaulted)
+            .ContinueWith(t =>
+            {
+                if (t.IsCanceled)
+                {
+                    logger.LogWarning("Data service was canceled");
+                }
+            }, TaskContinuationOptions.OnlyOnCanceled);
 
         return Task.CompletedTask;
     }
@@ -126,9 +133,10 @@ public abstract class BaseDataService<T>(
 
                     await WriteStats(elapsed, stoppingToken);
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
-                    throw; // Rethrow the exception to stop the service
+                    logger.LogInformation("Data service stopped by cancellation token");
+                    return;
                 }
                 catch (Exception e)
                 {
@@ -136,9 +144,16 @@ public abstract class BaseDataService<T>(
                 }
             } while (await timer.WaitForNextTickAsync(stoppingToken));
         }
-        catch (OperationCanceledException)
+        catch (Exception e)
         {
-            logger.LogInformation("Data service stopped");
+            logger.LogCritical(e, "Data service failed!");
+        }
+
+        if (!stoppingToken.IsCancellationRequested)
+        {
+            logger.LogError("Data service was stopped unexpectedly, restarting...");
+            await Task.Delay(1000, stoppingToken);
+            await ExecuteService(stoppingToken);
         }
     }
 
