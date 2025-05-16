@@ -44,16 +44,38 @@ This is a project that aims to provide an optimalized and feature rich online ma
 To run the backend you need a PostGIS database running, you can use an external one or you can use the `docker-compose.yml` file to run one locally in Docker. (You need comment out the webserver part in the `docker-compose.yml` file to avoid port conflicts.)
 
 1. Navigate to the `smo-backend` directory
-2. Run `yarn install` to install the dependencies
-3. Copy .env.sample to .env and fill in the required environment variables
-4. Run `yarn dev` to start the development server
-5. The backend server will be running on `http://localhost:3000/`
+2. Make sure you have the .NET 9.0 SDK installed
+3. Configure your connection string and other settings either in:
+   - `appsettings.Development.json` for local development
+   - Environment variables (especially for production deployment)
+   - .NET User Secrets for local development (`dotnet user-secrets set "ConnectionStrings:DefaultConnection" "your-connection-string"`)
+4. Run `dotnet restore` to restore the required packages
+5. Run `dotnet run` to start the development server
+6. The backend server will be running on `http://localhost:3000/`
+
+You can also open the solution in Visual Studio 2022 or JetBrains Rider for a more integrated development experience.
+
+#### Required Environment Variables
+
+The application uses the following environment variables:
+
+- `DATABASE_URL` or `ConnectionStrings:DefaultConnection`: PostgreSQL connection string with PostGIS extension
+- `STEAM_API_KEY`: Optional Steam API key for player stats
+- `ADMIN_PASSWORD`: Password for administrative API endpoints
+- `FRONTEND_URL`: URL of the frontend for CORS configuration (defaults to https://smo.data-unknown.com and http://localhost:5173 for local development)
+
+#### Database Migrations
+
+The backend uses Entity Framework Core for database access. To apply migrations:
+
+1. Make sure your database connection string is correctly configured
+2. Run `dotnet ef database update` to apply all pending migrations
 
 ## Contributing
 
 1. Fork the repository
 2. Create a new branch
-3. Make your changes (please follow the formatting of the existing code, this project uses Prettier)
+3. Make your changes (please follow the formatting of the existing code, this project uses Prettier for frontend and standard C# formatting for backend)
 4. Create a pull request
 
 ## License

@@ -417,7 +417,7 @@ export class SignalRDataProvider implements IDataProvider {
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
+        if (data?.Name === signal) {
           console.log(`Marked signal ${signal} next finalized`);
           this.signalsData$.next(
             this.signalsData$.value.map((s) => {
@@ -451,7 +451,7 @@ export class SignalRDataProvider implements IDataProvider {
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
+        if (data?.Name === signal) {
           console.log(`Marked signal ${signal} prev finalized`);
           this.signalsData$.next(
             this.signalsData$.value.map((s) => {
@@ -485,7 +485,7 @@ export class SignalRDataProvider implements IDataProvider {
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
+        if (data?.Name === signal) {
           console.log(`Deleted signal ${signal}`);
           this.signalsData$.next(this.signalsData$.value.filter((s) => s.Name !== signal));
         } else {
