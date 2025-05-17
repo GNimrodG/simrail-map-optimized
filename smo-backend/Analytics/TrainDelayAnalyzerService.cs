@@ -22,7 +22,7 @@ public class TrainDelayAnalyzerService(
     private static readonly string TrainDelaysFile = Path.Combine(DataDirectory, "trainDelays.bin");
 
     private readonly TtlCache<string, short> _lastTimetableIndex = new(TimeSpan.FromMinutes(30));
-    private readonly TtlCache<string, Dictionary<short, ushort>> _trainDelays = new(TimeSpan.FromMinutes(30));
+    private readonly TtlCache<string, Dictionary<short, int>> _trainDelays = new(TimeSpan.FromMinutes(30));
 
     /// <inheritdoc />
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -111,9 +111,9 @@ public class TrainDelayAnalyzerService(
     /// <summary>
     /// Get the delays for the specified trains.
     /// </summary>
-    public Dictionary<string, Dictionary<short, ushort>> GetDelaysForTrains(Train[] trains)
+    public Dictionary<string, Dictionary<short, int>> GetDelaysForTrains(Train[] trains)
     {
-        var delays = new Dictionary<string, Dictionary<short, ushort>>();
+        var delays = new Dictionary<string, Dictionary<short, int>>();
 
         foreach (var train in trains)
         {
@@ -129,7 +129,7 @@ public class TrainDelayAnalyzerService(
     /// <summary>
     /// Get the delays for the specified train.
     /// </summary>
-    public Dictionary<short, ushort> GetDelaysForTrain(Train train) =>
+    public Dictionary<short, int> GetDelaysForTrain(Train train) =>
         _trainDelays.TryGetValue(train.GetTrainId(), out var trainDelays) ? trainDelays : new();
 
     private bool _isRunning;
@@ -236,7 +236,7 @@ public class TrainDelayAnalyzerService(
                     .Select(t =>
                         _trainDelays.TryGetValue(t.GetTrainId(), out var delays)
                             ? delays.Values.LastOrDefault()
-                            : (ushort?)null)
+                            : (int?)null)
                     .Where(x => x is not null).ToArray();
 
                 ServerPunctualityGauge.WithLabels(serverCode).Set(delayData.Length > 0
@@ -288,7 +288,10 @@ public class TrainDelayAnalyzerService(
         var scheduledTime = ParseScheduledTime(lastStation.DepartureTime, timeData.Timezone);
         var currentTime = serverTimes[train.ServerCode];
 
-        var delay = (ushort)((currentTime - scheduledTime) / 1000); // Convert to seconds
+        var delay = (int)((currentTime - scheduledTime) / 1000 - 30); // Delay in seconds
+        // minus 30 seconds because the next station is only set when the train leaves the exit signal of the station so in reality the train already departed ~30 seconds ago
+        if (delay > 18 * 3600) // If the delay is more than 18 hours, it means the scheduled time is on the next day
+            delay -= 86400; // 24 hours in seconds
 
         logger.LogDebug("Train {TrainId} is delayed by {DelayMins} mins at {NameOfPoint}",
             train.GetTrainId(), delay / 60, lastStation.NameOfPoint);

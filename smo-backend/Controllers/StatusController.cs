@@ -239,6 +239,25 @@ public class StatusController(
     }
 
     /// <summary>
+    /// Get the list of delays for a specific server
+    /// </summary>
+    /// <param name="serverCode">The server code</param>
+    /// <returns>Dictionary of train numbers and their latest delays</returns>
+    [HttpGet("{serverCode}/delays")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(NotFoundError))]
+    public ActionResult<Dictionary<string, int>> GetServerDelays(string serverCode)
+    {
+        if (!CheckServer(serverCode))
+            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+
+        var delays = delayAnalyzerService.GetDelaysForTrains(trainDataService[serverCode]!)
+            .ToDictionary(x => x.Key, x => x.Value.Values.LastOrDefault());
+
+        return Ok(delays);
+    }
+
+    /// <summary>
     /// Gets the routes with valid lines (more than 20 points).
     /// </summary>
     /// <returns>An array of route identifiers</returns>
