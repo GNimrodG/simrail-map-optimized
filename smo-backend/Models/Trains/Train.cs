@@ -1,5 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using MessagePack;
+﻿using MessagePack;
+using Newtonsoft.Json;
 using SMOBackend.Models.Entity;
 
 namespace SMOBackend.Models.Trains;
@@ -10,31 +10,31 @@ namespace SMOBackend.Models.Trains;
 [MessagePackObject(keyAsPropertyName: true)]
 public class Train : IEntityWithTimestamp
 {
-    [JsonPropertyName("TrainNoLocal")] public required string TrainNoLocal { get; set; }
-    [JsonPropertyName("TrainName")] public required string TrainName { get; set; }
-    [JsonPropertyName("StartStation")] public required string StartStation { get; set; }
-    [JsonPropertyName("EndStation")] public required string EndStation { get; set; }
-    [JsonPropertyName("Vehicles")] public required string[] Vehicles { get; set; }
-    [JsonPropertyName("ServerCode")] public required string ServerCode { get; set; }
+    [JsonProperty(nameof(TrainNoLocal))] public required string TrainNoLocal { get; set; }
+    [JsonProperty(nameof(TrainName))] public required string TrainName { get; set; }
+    [JsonProperty(nameof(StartStation))] public required string StartStation { get; set; }
+    [JsonProperty(nameof(EndStation))] public required string EndStation { get; set; }
+    [JsonProperty(nameof(Vehicles))] public required string[] Vehicles { get; set; }
+    [JsonProperty(nameof(ServerCode))] public required string ServerCode { get; set; }
 
-    [JsonPropertyName("TrainData")] public required TrainData TrainData { get; set; }
+    [JsonProperty(nameof(TrainData))] public required TrainData TrainData { get; set; }
 
     /// <summary>
     /// The id of the run.
     /// </summary>
-    [JsonPropertyName("RunId")]
+    [JsonProperty(nameof(RunId))]
     public required string RunId { get; set; }
 
     /// <summary>
     /// The id of the train.
     /// </summary>
-    [JsonPropertyName("id")]
+    [JsonProperty("id")]
     public required string Id { get; set; }
 
     /// <summary>
     /// The type of the train, either "bot" or "player".
     /// </summary>
-    [JsonPropertyName("Type")]
+    [JsonProperty(nameof(Type))]
     public required string Type { get; set; }
 
     /// <inheritdoc />
@@ -76,7 +76,7 @@ public class Train : IEntityWithTimestamp
         public short SignalInFrontSpeed { get; set; }
 
         /// <inheritdoc cref="TrainData.ControlledBySteamID"/>
-        [JsonPropertyName("ControlledBySteamID")]
+        [JsonProperty("ControlledBySteamID")]
         public string? ControlledBySteamId { get; set; }
 
         /// <inheritdoc cref="TrainData.InBorderStationArea"/>
@@ -89,11 +89,11 @@ public class Train : IEntityWithTimestamp
         public double? Longitude { get; set; }
 
         /// <inheritdoc cref="TrainData.VDDelayedTimetableIndex"/>
-        [JsonPropertyName("VDDelayedTimetableIndex")]
+        [JsonProperty("VDDelayedTimetableIndex")]
         public byte VdDelayedTimetableIndex { get; set; }
 
         /// <inheritdoc cref="TrainData.RequiredMapDLCs"/>
-        [JsonPropertyName("RequiredMapDLCs")]
+        [JsonProperty("RequiredMapDLCs")]
         public uint[][]? RequiredMapDlCs { get; set; }
 
         public PartialTrainData()

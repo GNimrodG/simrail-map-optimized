@@ -1,18 +1,18 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace SMOBackend.Models;
 
 public class BaseListResponse<T> where T : class
 {
-    [JsonPropertyName("result")]
+    [JsonProperty("result")]
     public required bool Result { get; set; }
     
-    [JsonPropertyName("data")]
+    [JsonProperty("data")]
     public required T[] Data { get; set; }
     
-    [JsonPropertyName("count")]
+    [JsonProperty("count")]
     public required int Count { get; set; }
     
-    [JsonPropertyName("description")]
+    [JsonProperty("description")]
     public required string Description { get; set; }
 }

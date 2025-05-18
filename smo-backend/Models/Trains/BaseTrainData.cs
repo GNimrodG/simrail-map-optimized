@@ -1,7 +1,6 @@
 ﻿// ReSharper disable InconsistentNaming
 
-using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 using MessagePack;
 
 namespace SMOBackend.Models.Trains;
@@ -12,13 +11,13 @@ public class BaseTrainData
     /// <summary>
     /// The velocity of the train.
     /// </summary>
-    [JsonPropertyName("Velocity")] public required double Velocity { get; set; }
-    [JsonPropertyName("SignalInFront")] public string? SignalInFront { get; set; }
+    [JsonProperty(nameof(Velocity))] public required double Velocity { get; set; }
+    [JsonProperty(nameof(SignalInFront))] public string? SignalInFront { get; set; }
 
-    [JsonPropertyName("DistanceToSignalInFront")]
+    [JsonProperty(nameof(DistanceToSignalInFront))]
     public required double DistanceToSignalInFront { get; set; }
 
-    [JsonPropertyName("SignalInFrontSpeed")]
+    [JsonProperty(nameof(SignalInFrontSpeed))]
     public required short SignalInFrontSpeed { get; set; }
 
     public string? GetSignalExtra()

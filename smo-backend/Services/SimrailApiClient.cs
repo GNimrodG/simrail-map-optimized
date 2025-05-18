@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using Newtonsoft.Json;
 using SMOBackend.Models;
 using SMOBackend.Models.Entity;
 using SMOBackend.Models.Trains;
@@ -25,7 +25,7 @@ public class SimrailApiClient
     {
         response.EnsureSuccessStatusCode();
         var content = response.Content.ReadAsStringAsync(stoppingToken).Result;
-        var result = JsonSerializer.Deserialize<BaseListResponse<T>>(content);
+        var result = JsonConvert.DeserializeObject<BaseListResponse<T>>(content);
 
         if (result == null)
         {
@@ -117,7 +117,7 @@ public class SimrailApiClient
         var response = await _httpClient.GetAsync(TimetableUrlPrefix + serverCode, stoppingToken);
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync(stoppingToken);
-        var result = JsonSerializer.Deserialize<Timetable[]>(content);
+        var result = JsonConvert.DeserializeObject<Timetable[]>(content);
 
         if (result == null)
         {
@@ -136,7 +136,7 @@ public class SimrailApiClient
         var response = await _httpClient.GetAsync(EdrTimetableUrlPrefix + serverCode, stoppingToken);
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync(stoppingToken);
-        var result = JsonSerializer.Deserialize<EdrTimetableTrainEntry[]>(content);
+        var result = JsonConvert.DeserializeObject<EdrTimetableTrainEntry[]>(content);
 
         if (result == null)
         {

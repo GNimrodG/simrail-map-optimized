@@ -1,6 +1,6 @@
 ﻿// ReSharper disable InconsistentNaming
 
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using MessagePack;
 using NetTopologySuite.Geometries;
 
@@ -9,28 +9,28 @@ namespace SMOBackend.Models.Trains;
 [MessagePackObject(keyAsPropertyName: true)]
 public class TrainData : BaseTrainData
 {
-    [JsonPropertyName("ControlledBySteamID")]
+    [JsonProperty(nameof(ControlledBySteamID))]
     public string? ControlledBySteamID { get; set; }
 
-    [JsonPropertyName("InBorderStationArea")]
+    [JsonProperty(nameof(InBorderStationArea))]
     public bool InBorderStationArea { get; set; }
 
     /// <summary>
     /// The longitude of the train.
     /// </summary>
     // ReSharper disable once StringLiteralTypo
-    [JsonPropertyName("Latititute")] public double? Latitude { get; set; }
+    [JsonProperty("Latititute")] public double? Latitude { get; set; }
 
     /// <summary>
     /// The longitude of the train.
     /// </summary>
     // ReSharper disable once StringLiteralTypo
-    [JsonPropertyName("Longitute")] public double? Longitude { get; set; }
+    [JsonProperty("Longitute")] public double? Longitude { get; set; }
 
-    [JsonPropertyName("VDDelayedTimetableIndex")]
+    [JsonProperty(nameof(VDDelayedTimetableIndex))]
     public byte VDDelayedTimetableIndex { get; set; }
 
-    [JsonPropertyName("RequiredMapDLCs")] public uint[][]? RequiredMapDLCs { get; set; }
+    [JsonProperty(nameof(RequiredMapDLCs))] public uint[][]? RequiredMapDLCs { get; set; }
 
     [JsonIgnore, IgnoreMember]
     public Point? Location

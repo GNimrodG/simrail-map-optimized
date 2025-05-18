@@ -1,6 +1,6 @@
 ﻿// ReSharper disable InconsistentNaming
 
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using MessagePack;
 
 namespace SMOBackend.Models.Trains;
@@ -19,7 +19,7 @@ public class BaseTrain
         TrainData = train.TrainData;
     }
 
-    [JsonPropertyName("TrainNoLocal")] public string TrainNoLocal { get; set; }
-    [JsonPropertyName("TrainName")] public string TrainName { get; set; }
-    [JsonPropertyName("TrainData")] public BaseTrainData TrainData { get; set; }
+    [JsonProperty(nameof(TrainNoLocal))] public string TrainNoLocal { get; set; }
+    [JsonProperty(nameof(TrainName))] public string TrainName { get; set; }
+    [JsonProperty(nameof(TrainData))] public BaseTrainData TrainData { get; set; }
 }

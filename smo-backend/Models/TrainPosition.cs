@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 using SMOBackend.Models.Entity;
 using SMOBackend.Models.Trains;
 
@@ -9,22 +9,22 @@ public class TrainPosition : IEntityWithTimestamp
     /// <summary>
     /// The id of the train.
     /// </summary>
-    [JsonPropertyName("id")] public required string Id { get; set; }
+    [JsonProperty("id")] public required string Id { get; set; }
 
     /// <summary>
     /// The latitude of the train.
     /// </summary>
-    [JsonPropertyName("Latitude")] public double? Latitude { get; set; }
+    [JsonProperty(nameof(Latitude))] public double? Latitude { get; set; }
 
     /// <summary>
     /// The longitude of the train.
     /// </summary>
-    [JsonPropertyName("Longitude")] public double? Longitude { get; set; }
+    [JsonProperty(nameof(Longitude))] public double? Longitude { get; set; }
 
     /// <summary>
     /// The velocity of the train.
     /// </summary>
-    [JsonPropertyName("Velocity")] public required double Velocity { get; set; }
+    [JsonProperty(nameof(Velocity))] public required double Velocity { get; set; }
 
     /// <inheritdoc />
     [JsonIgnore]

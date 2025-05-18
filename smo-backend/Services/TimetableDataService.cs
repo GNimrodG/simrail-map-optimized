@@ -93,15 +93,23 @@ public class TimetableDataService(
     protected override async Task<object?> FetchServerData(string serverCode,
         CancellationToken stoppingToken)
     {
-        var timetables = await apiClient.GetAllTimetablesAsync(serverCode, stoppingToken);
-
-        if (timetables == null)
+        try
         {
-            throw new("Failed to fetch timetable data");
-        }
+            var timetables = await apiClient.GetAllTimetablesAsync(serverCode, stoppingToken);
 
-        await WriteData(serverCode, timetables);
-        PerServerDataReceived?.Invoke(new(serverCode, timetables));
+            if (timetables == null)
+            {
+                throw new("Failed to fetch timetable data");
+            }
+
+            await WriteData(serverCode, timetables);
+            PerServerDataReceived?.Invoke(new(serverCode, timetables));
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to fetch timetable data for {ServerCode}", serverCode);
+            throw;
+        }
 
         return null;
     }
