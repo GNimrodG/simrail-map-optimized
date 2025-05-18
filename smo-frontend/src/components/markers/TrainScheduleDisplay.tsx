@@ -45,7 +45,7 @@ const TrainScheduleDisplay: FunctionComponent<TrainScheduleDisplayProps> = ({
       }}
       orientation="vertical">
       {timetable.TimetableEntries.map((x, i) => {
-        const current = trainTimetableIndex === i;
+        const current = (trainTimetableIndex === i && !delays[i]) || (!!delays[i - 1] && trainTimetableIndex === i - 1);
 
         return (
           <Step
@@ -55,7 +55,7 @@ const TrainScheduleDisplay: FunctionComponent<TrainScheduleDisplayProps> = ({
             ref={current ? stepperRef : undefined}>
             <StationDisplay
               station={x}
-              pastStation={trainTimetableIndex > i}
+              pastStation={trainTimetableIndex > i || !!delays[i]}
               mainStation={x.SupervisedBy === x.NameOfPoint}
               delay={delays[i]}
               current={current}

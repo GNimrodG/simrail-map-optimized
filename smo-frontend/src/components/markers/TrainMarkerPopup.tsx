@@ -145,11 +145,15 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
     return {
       first: timetable.TimetableEntries[0],
       prev: timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex - 1],
-      current: timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex],
-      next: timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex + 1],
+      current: !delays[train.TrainData.VDDelayedTimetableIndex]
+        ? timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex]
+        : timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex + 1],
+      next: !delays[train.TrainData.VDDelayedTimetableIndex]
+        ? timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex + 1]
+        : timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex + 2],
       last: timetable.TimetableEntries[timetable.TimetableEntries.length - 1],
     };
-  }, [timetable, train.TrainData.VDDelayedTimetableIndex]);
+  }, [delays, timetable, train.TrainData.VDDelayedTimetableIndex]);
 
   const trainSpeed = (
     <Typography level="body-lg" startDecorator={<SpeedIcon />}>

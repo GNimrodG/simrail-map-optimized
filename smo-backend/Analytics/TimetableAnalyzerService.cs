@@ -98,7 +98,7 @@ public class TimetableAnalyzerService(
             stopwatch.Start();
 
             var timetableEntriesPerStation = timetableData.Data
-                .SelectMany(x => x.TimetableEntries.Select(((entry, i) => new SimplifiedTimetableEntry(entry, i))))
+                .SelectMany(x => x.TimetableEntries.Select((_, i) => new SimplifiedTimetableEntry(x, i)))
                 .Where(x => x.SupervisedBy != null)
                 .GroupBy(x => x.StationName)
                 .ToDictionary(g => g.Key, g => g.ToArray());

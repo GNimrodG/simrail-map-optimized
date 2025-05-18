@@ -147,8 +147,8 @@
       },
       "StationDisplay": {
         "StopType": {
-          "CommercialStop": "Commercial stop",
-          "NoncommercialStop": "Non-commercial stop"
+          "CommercialStop": "Stop",
+          "NoncommercialStop": "Operational stop"
         },
         "ShouldArrive": {
           "Now": "This train should arrive at this station now.",
@@ -193,7 +193,8 @@
         },
         "Timetable": {
           "Button": "Show timetable",
-          "Title": "{{stationName}} - Timetable"
+          "Title": "{{stationName}} - Timetable",
+          "Unavailabe": "Timetable unavailable"
         },
         "WikiLink": "SimRail Wiki"
       },
@@ -301,6 +302,26 @@
         "ZUJ": "Other service train formed by electric multiple unit",
         "ZUS": "Other service train hauled by diesel locomotive",
         "ZUM": "Other service train formed by diesel multiple unit"
+      },
+      "TrainTimetable": {
+        "TrainNo": "Train No.",
+        "Type": "Type",
+        "From": "From",
+        "Arrival": "Arrival",
+        "Departure": "Departure",
+        "To": "To",
+        "Line": "Line",
+        "Stop": "Stop",
+        "PassedEarly": "(Left early)",
+        "Delayed": "(Delayed)",
+        "PrevStationIsNext": {
+          "Short": "PREV",
+          "Full": "The next station for this train is {{stationName}}."
+        },
+        "CurrentStationIsNext": {
+          "Short": "INCOMING",
+          "Full": "The next station for this train is {{stationName}}."
+        }
       }
     }
   },
@@ -452,8 +473,8 @@
       },
       "StationDisplay": {
         "StopType": {
-          "CommercialStop": "Kommmerzieller Halt",
-          "NoncommercialStop": "Nicht-kommerzieller Halt"
+          "CommercialStop": "Halt",
+          "NoncommercialStop": "Betriebshalt"
         },
         "ShouldArrive": {
           "Now": "Dieser Zug sollte jetzt an diesem Bahnhof ankommen.",
@@ -498,7 +519,8 @@
         },
         "Timetable": {
           "Button": "Fahrplan anzeigen",
-          "Title": "{{stationName}} - Fahrplan"
+          "Title": "{{stationName}} - Fahrplan",
+          "Unavailabe": "Fahrplan nicht verfügbar"
         },
         "WikiLink": "SimRail Wiki"
       },
@@ -606,6 +628,26 @@
         "ZUJ": "Sonstiger Wartungszug mit elektrischen Triebzügen",
         "ZUS": "Sonstiger Wartungszug mit Diesellokomotive",
         "ZUM": "Sonstiger Wartungszug mit Dieseltriebzügen"
+      },
+      "TrainTimetable": {
+        "TrainNo": "Zug-Nr.",
+        "Type": "Typ",
+        "From": "Von",
+        "Arrival": "Ankunft",
+        "Departure": "Abfahrt",
+        "To": "Nach",
+        "Line": "Linie",
+        "Stop": "Halt",
+        "PassedEarly": "(Zu früh)",
+        "Delayed": "(Spät)",
+        "PrevStationIsNext": {
+          "Short": "ZUV",
+          "Full": "Die nächste Station für diesen Zug ist {{stationName}}."
+        },
+        "CurrentStationIsNext": {
+          "Short": "NAH",
+          "Full": "Die nächste Station für diesen Zug ist {{stationName}}."
+        }
       }
     }
   },
@@ -757,8 +799,8 @@
       },
       "StationDisplay": {
         "StopType": {
-          "CommercialStop": "Kereskedelmi megálló",
-          "NoncommercialStop": "Nem kereskedelmi megálló"
+          "CommercialStop": "Megálló",
+          "NoncommercialStop": "Technikai megálló"
         },
         "ShouldArrive": {
           "Now": "Ez a vonat most kellene, hogy megérkezzen a megállóba.",
@@ -803,7 +845,8 @@
         },
         "Timetable": {
           "Button": "Menetrend megjelenítése",
-          "Title": "{{stationName}} - Menetrend"
+          "Title": "{{stationName}} - Menetrend",
+          "Unavailabe": "Menetrend nem elérhető"
         },
         "WikiLink": "SimRail Wiki"
       },
@@ -911,6 +954,26 @@
         "ZUJ": "Egyéb karbantartó vonat villamos motorvonattal",
         "ZUS": "Egyéb karbantartó vonat dízelmozdony vontatással",
         "ZUM": "Egyéb karbantartó vonat dízel motorvonattal"
+      },
+      "TrainTimetable": {
+        "TrainNo": "Vonatszám",
+        "Type": "Típus",
+        "From": "Honnan",
+        "Arrival": "Érkezés",
+        "Departure": "Indulás",
+        "To": "Hova",
+        "Line": "Vonal",
+        "Stop": "Várakozás",
+        "PassedEarly": "(Elhaladt)",
+        "Delayed": "(Késik)",
+        "PrevStationIsNext": {
+          "Short": "ELŐZŐ",
+          "Full": "A következő állomás: {{stationName}}."
+        },
+        "CurrentStationIsNext": {
+          "Short": "ÉRKEZIK",
+          "Full": "A következő állomás: {{stationName}}."
+        }
       }
     }
   },
@@ -1062,8 +1125,8 @@
       },
       "StationDisplay": {
         "StopType": {
-          "CommercialStop": "Yolcu istasyonu",
-          "NoncommercialStop": "Bekleme istasyonu"
+          "CommercialStop": "Durur",
+          "NoncommercialStop": "Teknik duruş"
         },
         "ShouldArrive": {
           "Now": "Bu tren şu anda bu istasyona varmalı.",
@@ -1108,7 +1171,8 @@
         },
         "Timetable": {
           "Button": "Zaman çizelgesini göster",
-          "Title": "{{stationName}} - Zaman Çizelgesi"
+          "Title": "{{stationName}} - Zaman Çizelgesi",
+          "Unavailabe": "Zaman çizelgesi mevcut değil"
         },
         "WikiLink": "SimRail Wiki"
       },
@@ -1216,6 +1280,26 @@
         "ZUJ": "Elektrikli çoklu birimlerden oluşan diğer bakım treni",
         "ZUS": "Dizel lokomotifli diğer bakım treni",
         "ZUM": "Dizel çoklu birimlerden oluşan diğer bakım treni"
+      },
+      "TrainTimetable": {
+        "TrainNo": "Tren No",
+        "Type": "Tip",
+        "From": "Nereden",
+        "Arrival": "Varış",
+        "Departure": "Kalkış",
+        "To": "Nereye",
+        "Line": "Hat",
+        "Stop": "Durur",
+        "PassedEarly": "(Erken)",
+        "Delayed": "(Gecikme)",
+        "PrevStationIsNext": {
+          "Short": "ÖNC",
+          "Full": "Bu trenin bir sonraki durağı {{stationName}}."
+        },
+        "CurrentStationIsNext": {
+          "Short": "YKLŞ",
+          "Full": "Bu trenin bir sonraki durağı {{stationName}}."
+        }
       }
     }
   },
@@ -1367,8 +1451,8 @@
       },
       "StationDisplay": {
         "StopType": {
-          "CommercialStop": "Postój komercyjny",
-          "NoncommercialStop": "Postój niekomercyjny"
+          "CommercialStop": "Postój",
+          "NoncommercialStop": "Postój techniczny"
         },
         "ShouldArrive": {
           "Now": "Ten pociąg powinien teraz dotrzeć do tej stacji.",
@@ -1413,7 +1497,8 @@
         },
         "Timetable": {
           "Button": "Pokaż rozkład jazdy",
-          "Title": "{{stationName}} - Rozkład jazdy"
+          "Title": "{{stationName}} - Rozkład jazdy",
+          "Unavailabe": "Rozkład jazdy niedostępny"
         },
         "WikiLink": "SimRail Wiki"
       },
@@ -1521,6 +1606,26 @@
         "ZUJ": "Inny pociąg roboczy jako EZT",
         "ZUS": "Inny pociąg roboczy z lokomotywą spalinową",
         "ZUM": "Inny pociąg roboczy jako SZT"
+      },
+      "TrainTimetable": {
+        "TrainNo": "Nr pociągu",
+        "Type": "Typ",
+        "From": "Z",
+        "Arrival": "Przyjazd",
+        "Departure": "Odjazd",
+        "To": "Do",
+        "Line": "Linia",
+        "Stop": "Postój",
+        "PassedEarly": "(Za wcześnie)",
+        "Delayed": "(Opóźniony)",
+        "PrevStationIsNext": {
+          "Short": "POP",
+          "Full": "Następna stacja to {{stationName}}."
+        },
+        "CurrentStationIsNext": {
+          "Short": "BLISKO",
+          "Full": "Następna stacja to {{stationName}}."
+        }
       }
     }
   }

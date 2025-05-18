@@ -10,6 +10,7 @@ export interface DelayDisplayProps {
   scheduledDeparture?: string | null;
   delay: number | null | undefined;
   translationKey?: string;
+  alwaysShowTime?: boolean;
 }
 
 function getDelayedDeparture(departureTime: string | null | undefined, delay: number) {
@@ -26,10 +27,11 @@ const DelayDisplay: FunctionComponent<DelayDisplayProps> = ({
   scheduledDeparture,
   delay,
   translationKey = "StationDisplay",
+  alwaysShowTime = false,
 }) => {
   const { t } = useTranslation("translation", { keyPrefix: translationKey });
 
-  const delayedDeparture = useMemo(
+  const actualDeparture = useMemo(
     () => (typeof delay === "number" && getDelayedDeparture(scheduledDeparture, delay)) || null,
     [scheduledDeparture, delay],
   );
@@ -41,9 +43,9 @@ const DelayDisplay: FunctionComponent<DelayDisplayProps> = ({
   return (
     typeof delay === "number" && (
       <>
-        {normalizedDelayMinutes >= 1 && !!delayedDeparture && (
+        {!!actualDeparture && (alwaysShowTime || normalizedDelayMinutes >= 1) && (
           <Typography level="body-sm" color={delayColor}>
-            <TimeDisplay time={delayedDeparture} noSeconds />
+            <TimeDisplay time={actualDeparture} noSeconds />
           </Typography>
         )}{" "}
         <Tooltip

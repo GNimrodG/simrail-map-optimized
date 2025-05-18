@@ -161,5 +161,8 @@ export interface SimplifiedTimtableEntry {
   platform: string | null;
   track: number | null;
 
+  previousStation: string | null;
+  nextStation: string | null;
+
   index: number;
 }

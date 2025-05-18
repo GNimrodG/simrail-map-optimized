@@ -146,7 +146,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
 
   return (
     <>
-      {(isPending || !stationTimetable) && <Loading color="warning" />}
+      {isPending && <Loading color="warning" />}
       <Stack alignItems="center" spacing={1}>
         {station.MainImageUrl && <img style={{ width: 300 }} src={station.MainImageUrl} alt={station.Name} />}
 
@@ -267,15 +267,15 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
             </Button>
           ))}
 
-        {!!stationTimetable?.length && (
-          <Button
-            fullWidth
-            variant="solid"
-            color="neutral"
-            onClick={() => startTransition(() => setTimetableModalOpen(true))}>
-            {t("Timetable.Button")}
-          </Button>
-        )}
+        <Button
+          fullWidth
+          loading={!stationTimetable}
+          disabled={!stationTimetable?.length}
+          variant="solid"
+          color="neutral"
+          onClick={() => startTransition(() => setTimetableModalOpen(true))}>
+          {t(stationTimetable && !stationTimetable.length ? "Timetable.Unavailabe" : "Timetable.Button")}
+        </Button>
 
         {WikiLinks[station.Name] && (
           <Button
@@ -381,6 +381,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
         </Sheet>
       </Modal>
 
+      {/* Timetable Modal */}
       <Modal open={timetableModalOpen} onClose={() => startTransition(() => setTimetableModalOpen(false))}>
         <ModalDialog sx={{ width: "min(1280px, 95vw)" }}>
           <ModalClose

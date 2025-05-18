@@ -12,6 +12,7 @@ export function formatVehicleName(vehicle: string, long = false): string {
       /(.+)_(\d{2})\s*(\d{2})\s*(\d{2})[\s-]*(\d{2})\s*(\d{3})[-_]?(\d)\s*(:(\w:\d+))?/,
       "$2 $3 $4-$5 $6-$7 ($1) [$9]",
     )
+    .replace("[]", "")
     .replace(/:([A-Z]):?$/, " [$1]")
     .replace(/:([A-Z]):(\d+)$/, " [$1:$2]")
     .replaceAll("_", " ")
