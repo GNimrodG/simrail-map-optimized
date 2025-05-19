@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using JetBrains.Annotations;
+using MessagePack;
 using Newtonsoft.Json;
 using SMOBackend.Models.Entity;
 
@@ -53,7 +54,7 @@ public class Train : IEntityWithTimestamp
                                              : string.Empty);
 
     /// <summary>
-    /// Partial train data, the date that changes frequently.
+    /// Partial train data, the data that changes frequently.
     /// </summary>
     public class PartialTrainData
     {

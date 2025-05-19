@@ -33,6 +33,7 @@ public class RoutePointAnalyzerService : IHostedService
         _logger = logger;
         _scopeFactory = scopeFactory;
         _trainDataService = trainDataService;
+        _cancellationTokenSource = new();
         _queueProcessor = new(logger,
             ProcessTrainData,
             RoutePointQueueGauge);

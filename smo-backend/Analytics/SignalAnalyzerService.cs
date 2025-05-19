@@ -460,7 +460,7 @@ public partial class SignalAnalyzerService : IHostedService
         // Important: as these are all the trains in every server, one signal can change multiple times
         foreach (var train in allTrains)
         {
-            if (train.TrainData.Latitude is null || train.TrainData.Longitude is null)
+            if (train.TrainData.Location is null)
             {
                 _logger.LogWarning("Train {TrainId} ({TrainType}) has no location data!",
                     train,
@@ -596,8 +596,8 @@ public partial class SignalAnalyzerService : IHostedService
             if (signalLookup.TryAdd(signal.Name, signal))
             {
                 _logger.LogInformation(
-                    "New signal detected: {SignalId} at {Latitude}, {Longitude} ({Extra}) with accuracy {DistanceToSignalInFront}m at train {TrainId}",
-                    signalId, train.TrainData.Latitude, train.TrainData.Longitude, extra,
+                    "New signal detected: {SignalId} at {Location} ({Extra}) with accuracy {DistanceToSignalInFront}m at train {TrainId}",
+                    signalId, train.TrainData.Location, extra,
                     train.TrainData.DistanceToSignalInFront, train.GetTrainId());
 
                 signals.Add(signal);
