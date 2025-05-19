@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { filter } from "rxjs";
 
 import { dataProvider } from "../../utils/data-manager";
+import { findStationForSignal } from "../../utils/geom-utils";
 import { timeSubj$ } from "../../utils/time";
 import { SimplifiedTimtableEntry } from "../../utils/types";
 import { getColorTrainMarker } from "../../utils/ui";
@@ -107,7 +108,6 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
               departureDelay !== null ||
               (train && train.TrainData.VDDelayedTimetableIndex > entry.index) ||
               (!train && passedBasedOnDepartureTime);
-            const delayed = !past && passedBasedOnDepartureTime && train;
             const passedEarly = train && !passedBasedOnDepartureTime && departureDelay && departureDelay <= -60;
 
             const isPrevStationTheNextStation =
@@ -115,6 +115,13 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
             const isCurrentStationTheNextStation =
               (train?.TrainData.VDDelayedTimetableIndex === entry.index && !trainDelays?.[entry.index]) ||
               (train?.TrainData.VDDelayedTimetableIndex === entry.index - 1 && !!trainDelays?.[entry.index - 1]);
+
+            const isInsideStation =
+              isCurrentStationTheNextStation &&
+              train.TrainData.SignalInFront &&
+              findStationForSignal(train.TrainData.SignalInFront.split("@")[0])?.Name === entry.stationName;
+
+            const delayed = !past && !isInsideStation && passedBasedOnDepartureTime && train;
 
             return (
               <Box
@@ -125,9 +132,11 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                     ? passedEarly
                       ? "success.solidBg"
                       : "neutral.plainDisabledColor"
-                    : delayed
-                      ? "warning.plainColor"
-                      : "",
+                    : isInsideStation
+                      ? "primary.solidHoverBg"
+                      : delayed
+                        ? "warning.plainColor"
+                        : "",
                 }}>
                 {/* Train No */}
                 <td>
@@ -224,12 +233,12 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                             </Typography>
                           </Stack>
                         }>
-                        <Typography fontFamily="monospace" level="body-sm" color="primary" variant="outlined">
+                        <Typography fontFamily="monospace" level="body-sm" color="neutral" variant="outlined">
                           {t("PrevStationIsNext.Short")}
                         </Typography>
                       </Tooltip>
                     )}
-                    {isCurrentStationTheNextStation && (
+                    {!isInsideStation && isCurrentStationTheNextStation && (
                       <Tooltip
                         arrow
                         variant="outlined"
@@ -243,6 +252,21 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                         }>
                         <Typography fontFamily="monospace" level="body-sm" color="success" variant="outlined">
                           {t("CurrentStationIsNext.Short")}
+                        </Typography>
+                      </Tooltip>
+                    )}
+                    {isInsideStation && (
+                      <Tooltip
+                        arrow
+                        variant="outlined"
+                        title={
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <InfoIcon />
+                            <Typography>{t("InsideStation.Full", { stationName: entry.stationName })}</Typography>
+                          </Stack>
+                        }>
+                        <Typography fontFamily="monospace" level="body-sm" color="primary" variant="outlined">
+                          {t("InsideStation.Short")}
                         </Typography>
                       </Tooltip>
                     )}

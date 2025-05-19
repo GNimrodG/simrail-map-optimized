@@ -321,6 +321,10 @@
         "CurrentStationIsNext": {
           "Short": "INCOMING",
           "Full": "The next station for this train is {{stationName}}."
+        },
+        "InsideStation": {
+          "Short": "HERE",
+          "Full": "This train is currently inside the station."
         }
       }
     }
@@ -647,6 +651,10 @@
         "CurrentStationIsNext": {
           "Short": "NAH",
           "Full": "Die nächste Station für diesen Zug ist {{stationName}}."
+        },
+        "InsideStation": {
+          "Short": "HIER",
+          "Full": "Dieser Zug befindet sich derzeit im Bahnhof."
         }
       }
     }
@@ -973,6 +981,10 @@
         "CurrentStationIsNext": {
           "Short": "ÉRKEZIK",
           "Full": "A következő állomás: {{stationName}}."
+        },
+        "InsideStation": {
+          "Short": "ITT",
+          "Full": "Ez a vonat jelenleg az állomáson tartózkodik."
         }
       }
     }
@@ -1299,6 +1311,10 @@
         "CurrentStationIsNext": {
           "Short": "YKLŞ",
           "Full": "Bu trenin bir sonraki durağı {{stationName}}."
+        },
+        "InsideStation": {
+          "Short": "İÇERİ",
+          "Full": "Bu tren şu anda istasyonda."
         }
       }
     }
@@ -1625,6 +1641,10 @@
         "CurrentStationIsNext": {
           "Short": "BLISKO",
           "Full": "Następna stacja to {{stationName}}."
+        },
+        "InsideStation": {
+          "Short": "W STACJI",
+          "Full": "Pociąg znajduje się w stacji."
         }
       }
     }

@@ -144,7 +144,9 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
     if (!timetable) return { first: null, prev: null, current: null, next: null, last: null };
     return {
       first: timetable.TimetableEntries[0],
-      prev: timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex - 1],
+      prev: !delays[train.TrainData.VDDelayedTimetableIndex]
+        ? timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex - 1]
+        : timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex],
       current: !delays[train.TrainData.VDDelayedTimetableIndex]
         ? timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex]
         : timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex + 1],
