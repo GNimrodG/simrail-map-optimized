@@ -166,14 +166,42 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
     }
 
     // it's only guaranteed to be red if it's a block signal
-    if (signal.TrainsAhead?.length && signal.Type === "block") {
-      setIcon(BLOCK_SIGNAL_RED_ICON);
-      return;
+    if (signal.TrainsAhead?.length) {
+      switch (signal.Type) {
+        case "block":
+          setIcon(BLOCK_SIGNAL_RED_ICON);
+          return;
+        case "main":
+          setIcon(MAIN_SIGNAL_RED_ICON);
+          return;
+        case "small":
+          setIcon(SMALL_SIGNAL_RED_ICON);
+          return;
+        default:
+          setIcon(
+            new DivIcon({
+              ...DEFAULT_ICON_OPTIONS,
+              className: `${DEFAULT_ICON_OPTIONS.className} danger`,
+            }),
+          );
+          return;
+      }
     }
 
     if (signal.NextSignalWithTrainAhead) {
-      setIcon(BLOCK_SIGNAL_YELLOW_ICON);
-      return;
+      switch (signal.Type) {
+        case "block":
+          setIcon(BLOCK_SIGNAL_YELLOW_ICON);
+          return;
+        default:
+          setIcon(
+            new DivIcon({
+              ...DEFAULT_ICON_OPTIONS,
+              className: `${DEFAULT_ICON_OPTIONS.className} warning`,
+            }),
+          );
+          return;
+      }
     }
 
     setIcon(SECONDARY_ICON);

@@ -265,21 +265,24 @@ public partial class SignalAnalyzerService : IHostedService
                 var train = signalsIndex.GetValueOrDefault(signal.Name);
                 signal.Trains = train?.Select(t => t.TrainNoLocal).ToArray();
 
-                // Determine if this is a block signal with connections to another signal
-                var isBlockSignalWithBlockAhead = signal is { Type: "block", NextSignals.Length: 1 };
+                var onlyHasOneNextSignal = signal is
+                    { Type: "block", NextSignals.Length: 1 } or
+                    { Type: "main", NextFinalized: true, NextSignals.Length: 1 };
 
-                // Get the train at the next signal ahead (if this is a block signal)
-                if (!isBlockSignalWithBlockAhead) continue;
+                // Get the train at the next signal ahead (if the signal only has one next signal)
+                if (!onlyHasOneNextSignal) continue;
 
-                var nextSignalName = signal.NextSignals.First().Name;
+                var nextSignalName = signal.NextSignals[0].Name;
                 signal.TrainsAhead = signalsIndex.GetValueOrDefault(nextSignalName)?.Select(t => t.TrainNoLocal)
                     .ToArray();
 
                 // Check for a train two signals ahead
                 if (!signalLookup.TryGetValue(nextSignalName, out var nextSignal) ||
-                    nextSignal.NextSignals.Length != 1) continue;
+                    nextSignal is not
+                        ({ Type: "block", NextSignals.Length: 1 } or
+                        { Type: "main", NextFinalized: true, NextSignals.Length: 1 })) continue;
 
-                var nextNextSignalName = nextSignal.NextSignals.First().Name;
+                var nextNextSignalName = nextSignal.NextSignals[0].Name;
 
                 if (signalsIndex.ContainsKey(
                         nextNextSignalName)) // check if there is a train before the next-next signal
@@ -537,7 +540,7 @@ public partial class SignalAnalyzerService : IHostedService
         await context.SaveChangesAsync();
     }
 
-    private async Task<MinimalSignalData> UpdateSignal(MinimalSignalData? signal,  Train train,
+    private async Task<MinimalSignalData> UpdateSignal(MinimalSignalData? signal, Train train,
         string signalId,
         SmoContext context,
         List<MinimalSignalData> signals, Dictionary<string, MinimalSignalData> signalLookup)
@@ -545,7 +548,7 @@ public partial class SignalAnalyzerService : IHostedService
         if (signal != null)
         {
             // signal already exists
-            if (!(signal.Accuracy > train.TrainData.DistanceToSignalInFront)) return signal;
+            if (signal.Accuracy <= train.TrainData.DistanceToSignalInFront) return signal;
 
             var dbSignal = await signal.GetDbSignal(context);
 
