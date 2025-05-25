@@ -270,7 +270,18 @@ public partial class SignalAnalyzerService : IHostedService
                     { Type: "main", NextFinalized: true, NextSignals.Length: 1 };
 
                 // Get the train at the next signal ahead (if the signal only has one next signal)
-                if (!onlyHasOneNextSignal) continue;
+                if (!onlyHasOneNextSignal)
+                {
+                    // if it has more than one next signal, but it's finalized and all the next signals have a train
+                    if (signal is { Type: "main", NextFinalized: true } && signal.NextSignals.All(s => signalsIndex.ContainsKey(s.Name)))
+                    {
+                        signal.TrainsAhead = signal.NextSignals.Select(s => signalsIndex[s.Name])
+                            .SelectMany(x => x.Select(y => y.TrainNoLocal))
+                            .ToArray();
+                    }
+                    
+                    continue;
+                }
 
                 var nextSignalName = signal.NextSignals[0].Name;
                 signal.TrainsAhead = signalsIndex.GetValueOrDefault(nextSignalName)?.Select(t => t.TrainNoLocal)

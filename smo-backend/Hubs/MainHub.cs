@@ -6,6 +6,9 @@ using SMOBackend.Services;
 
 namespace SMOBackend.Hubs;
 
+/// <summary>
+/// MainHub is the SignalR hub for real-time communication with clients.
+/// </summary>
 public class MainHub(
     ILogger<MainHub> logger,
     ServerDataService serverDataService,
@@ -180,6 +183,9 @@ public class MainHub(
         }
     }
     
+    /// <summary>
+    /// Gets the signals for the currently selected server.
+    /// </summary>
     public async void GetSignals() 
     {
         try
@@ -191,6 +197,10 @@ public class MainHub(
             
             var signals = await signalAnalyzerService.GetSignalsForTrains(trains);
             await Clients.Caller.SendAsync("SignalsReceived", signals);
+        }
+        catch (ObjectDisposedException) // Ignore if the client disconnected
+        {
+            logger.LogWarning("Client disconnected while getting signals");
         }
         catch (Exception e)
         {

@@ -43,7 +43,7 @@ public class SignalsController(SmoContext context) : Controller
     /// <param name="body">The request body containing the password.</param>
     /// <returns>The updated signal.</returns>
     [HttpPost("{signalName}/next/finalize")]
-    public async Task<ActionResult> GetNextFinalized(string signalName, [FromBody] PasswordRequest body)
+    public async Task<ActionResult> FinalizeNextSignals(string signalName, [FromBody] PasswordRequest body)
     {
         if (!ValidatePassword(body.Password))
             return Unauthorized("Invalid password.");
@@ -55,6 +55,9 @@ public class SignalsController(SmoContext context) : Controller
 
         if (signal == null)
             return NotFound($"Signal {signalName} not found.");
+        
+        if (signal.NextSignalConnections.Count == 0)
+            return BadRequest($"Signal {signalName} has no next signals to finalize.");
 
         signal.NextFinalized = true;
         signal.UpdatedAt = DateTime.UtcNow;
@@ -134,7 +137,7 @@ public class SignalsController(SmoContext context) : Controller
     /// <param name="body">The request body containing the password.</param>
     /// <returns>The updated signal.</returns>
     [HttpPost("{signalName}/prev/finalize")]
-    public async Task<ActionResult> GetPrevFinalized(string signalName, [FromBody] PasswordRequest body)
+    public async Task<ActionResult> FinalizePrevSignals(string signalName, [FromBody] PasswordRequest body)
     {
         if (!ValidatePassword(body.Password))
             return Unauthorized("Invalid password.");
@@ -146,6 +149,9 @@ public class SignalsController(SmoContext context) : Controller
 
         if (signal == null)
             return NotFound($"Signal {signalName} not found.");
+        
+        if (signal.PrevSignalConnections.Count == 0)
+            return BadRequest($"Signal {signalName} has no previous signals to finalize.");
 
         signal.PrevFinalized = true;
         signal.UpdatedAt = DateTime.UtcNow;
