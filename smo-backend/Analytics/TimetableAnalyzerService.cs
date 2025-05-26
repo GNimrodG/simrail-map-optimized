@@ -17,7 +17,7 @@ public class TimetableAnalyzerService(
     private static readonly string StationTimetableDataFile = Path.Combine(DataDirectory, "station-timetable-data.bin");
     
     private readonly TtlCache<string, Dictionary<string, SimplifiedTimetableEntry[]>> _timetableDataCache =
-        new(TimeSpan.FromHours(1));
+        new(timetableDataService.GetFetchInterval().Add(TimeSpan.FromMinutes(30)));
 
     public SimplifiedTimetableEntry[] GetTimetableEntries(string serverCode, string stationName)
     {
