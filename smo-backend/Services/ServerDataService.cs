@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Prometheus;
+using SMOBackend.Analytics;
 using SMOBackend.Data;
 using SMOBackend.Models;
 
@@ -46,6 +47,18 @@ public class ServerDataService(
         {
             ServerStatusGauge.WithLabels(server.ServerCode, server.ServerRegion, server.ServerName)
                 .Set(server.IsActive ? 1 : 0);
+        }
+        
+        foreach (var labels in SignalAnalyzerService.SignalsWithMultipleTrainsPerServer.GetAllLabelValues())
+        {
+            if (data.All(server => server.ServerCode != labels[0]))
+                SignalAnalyzerService.SignalsWithMultipleTrainsPerServer.RemoveLabelled(labels);
+        }
+
+        foreach (var labels in SignalAnalyzerService.SignalsWithMultipleTrains.GetAllLabelValues())
+        {
+            if (data.All(server => server.ServerCode != labels[0]))
+                SignalAnalyzerService.SignalsWithMultipleTrains.RemoveLabelled(labels);
         }
     }
 

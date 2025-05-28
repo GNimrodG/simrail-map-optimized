@@ -192,11 +192,11 @@ public partial class SignalAnalyzerService : IHostedService
             .ToArray();
     }
 
-    private static readonly Gauge SignalsWithMultipleTrainsPerServer = Metrics
+    internal static readonly Gauge SignalsWithMultipleTrainsPerServer = Metrics
         .CreateGauge("smo_signals_with_multiple_trains_per_server", "Number of signals with multiple trains per server",
             "server");
 
-    private static readonly Gauge SignalsWithMultipleTrains = Metrics
+    internal static readonly Gauge SignalsWithMultipleTrains = Metrics
         .CreateGauge("smo_signals_with_multiple_trains", "The count of trains pointing to the same signal", "server",
             "signal");
 
