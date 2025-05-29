@@ -166,3 +166,13 @@ export interface SimplifiedTimtableEntry {
 
   index: number;
 }
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type CommonOsmTags = "name" | "operator" | (string & {});
+
+export interface OsmNode {
+  id: number;
+  lat: number;
+  lon: number;
+  tags: Record<CommonOsmTags, string>;
+}

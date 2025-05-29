@@ -41,13 +41,13 @@ const MapLinesLayer: FunctionComponent = () => {
   ]);
 
   return (
-    <LayerGroup>
+    <LayerGroup pane="mapLinesPane">
       {mapLines?.lines.map((line) => (
         <Fragment
           key={`selected-signal-line-${line.index}-${line.color}-${line.label}-${line.coords[0][0]}-${line.coords[0][1]}`}>
           {line.color2 && (
             // Background line with color2
-            <Polyline positions={line.coords} color={line.color} interactive={false} weight={5} />
+            <Polyline positions={line.coords} color={line.color} interactive={false} weight={5} pane="mapLinesPane" />
           )}
           {/* Foreground line with color (dashed if color2 exists) */}
           <Polyline
@@ -56,7 +56,8 @@ const MapLinesLayer: FunctionComponent = () => {
             dashArray={line.color2 ? "10, 20" : undefined}
             lineCap={line.color2 ? "butt" : undefined}
             interactive={false}
-            weight={5}>
+            weight={5}
+            pane="mapLinesPane">
             <Tooltip permanent direction="center">
               {line.label}
             </Tooltip>

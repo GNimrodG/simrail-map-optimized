@@ -55,18 +55,18 @@ public class SimplifiedTimetableEntry
     /// <summary>
     /// The track number at the station.
     /// </summary>
-    public int? Track { get; set; }
+    public byte? Track { get; set; }
 
     /// <summary>
     /// The index of the timetable entry in the list.
     /// </summary>
-    public int Index { get; set; }
-    
+    public short Index { get; set; }
+
     /// <summary>
     /// The previous station in the timetable.
     /// </summary>
     public string? PreviousStation { get; set; }
-    
+
     /// <summary>
     /// The next station in the timetable.
     /// </summary>
@@ -81,7 +81,7 @@ public class SimplifiedTimetableEntry
     internal SimplifiedTimetableEntry(Timetable timetable, int index)
     {
         var timetableEntry = timetable.TimetableEntries[index];
-        
+
         StationName = timetableEntry.NameOfPoint;
         StationCategory = timetableEntry.StationCategory;
 
@@ -95,11 +95,11 @@ public class SimplifiedTimetableEntry
         Line = timetableEntry.Line;
         Platform = timetableEntry.Platform;
         Track = timetableEntry.Track;
-        
+
         PreviousStation = timetable.TimetableEntries.ElementAtOrDefault(index - 1)?.NameOfPoint;
         NextStation = timetable.TimetableEntries.ElementAtOrDefault(index + 1)?.NameOfPoint;
 
-        Index = index;
+        Index = (short)index;
         SupervisedBy = timetableEntry.SupervisedBy;
     }
 }

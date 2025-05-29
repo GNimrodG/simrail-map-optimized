@@ -1,4 +1,5 @@
-﻿import Stack from "@mui/joy/Stack";
+﻿import Box from "@mui/joy/Box";
+import Stack from "@mui/joy/Stack";
 import Tooltip from "@mui/joy/Tooltip";
 import { type FunctionComponent, memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,7 +17,9 @@ const TrainTypeDisplay: FunctionComponent<TrainTypeDisplayProps> = ({ type }) =>
 
   return (
     <Stack direction="row" spacing={1} alignItems="center">
-      <span>{type}</span>
+      <Box component="span" sx={{ textWrap: "nowrap" }}>
+        {type}
+      </Box>
       {i18n.exists(`TrainTypes.${actualType}`) && (
         <Tooltip arrow variant="outlined" placement="right" describeChild title={t(actualType)}>
           <Stack alignItems="center" justifyContent="center">

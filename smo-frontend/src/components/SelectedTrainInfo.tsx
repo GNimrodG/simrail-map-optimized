@@ -11,7 +11,7 @@ import useBehaviorSubj from "../utils/use-behaviorSubj";
 import { useSetting } from "../utils/use-setting";
 import Loading from "./Loading";
 
-const TrainMarkerPopup = lazy(() => import("./markers/TrainMarkerPopup"));
+const TrainMarkerPopup = lazy(() => import("./markers/train/TrainMarkerPopup"));
 
 const SelectedTrainInfo: FunctionComponent = () => {
   const map = useMap();

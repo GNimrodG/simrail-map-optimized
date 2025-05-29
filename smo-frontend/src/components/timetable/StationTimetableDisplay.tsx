@@ -15,12 +15,12 @@ import { SimplifiedTimtableEntry } from "../../utils/types";
 import { getColorTrainMarker } from "../../utils/ui";
 import useSubject from "../../utils/use-subject";
 import InfoIcon from "../icons/InfoIcon";
+import TrainMarkerPopup from "../markers/train/TrainMarkerPopup";
 import DelayDisplay from "../utils/DelayDisplay";
 import StopTypeDisplay from "../utils/StopTypeDisplay";
 import TimeDiffDisplay from "../utils/TimeDiffDisplay";
 import TimeDisplay from "../utils/TimeDisplay";
 import TrainTypeDisplay from "../utils/TrainTypeDisplay";
-import TrainMarkerPopup from "./TrainMarkerPopup";
 
 export interface StationTimetableDisplayProps {
   timetable: SimplifiedTimtableEntry[];

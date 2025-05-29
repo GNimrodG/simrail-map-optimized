@@ -2,10 +2,8 @@ import { useLocalStorage } from "@mantine/hooks";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Chip from "@mui/joy/Chip";
-import DialogTitle from "@mui/joy/DialogTitle";
 import Modal from "@mui/joy/Modal";
 import ModalClose from "@mui/joy/ModalClose";
-import ModalDialog from "@mui/joy/ModalDialog";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Switch from "@mui/joy/Switch";
@@ -16,34 +14,25 @@ import Tabs from "@mui/joy/Tabs";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import L from "leaflet";
-import {
-  type FunctionComponent,
-  lazy,
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useTransition,
-} from "react";
+import { type FunctionComponent, lazy, Suspense, useCallback, useMemo, useState, useTransition } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 
-import _stationLayouts from "../../assets/station-layouts.json";
-import _wikiLinks from "../../assets/wiki-links.json";
-import { dataProvider } from "../../utils/data-manager";
-import { getSignalsForStation, getStationGeometry, goToSignal } from "../../utils/geom-utils";
-import { ProfileResponse } from "../../utils/steam";
-import { SimplifiedTimtableEntry, Station } from "../../utils/types";
-import InfoIcon from "../icons/InfoIcon";
-import Loading from "../Loading";
-import MapTimeDisplay from "../MapTimeDisplay";
-import SteamProfileDisplay from "../SteamProfileDisplay";
-import SignalSpeedDisplay from "../utils/SignalSpeedDisplay";
+import _stationLayouts from "../../../assets/station-layouts.json";
+import _wikiLinks from "../../../assets/wiki-links.json";
+import { dataProvider } from "../../../utils/data-manager";
+import { getSignalsForStation, getStationGeometry, goToSignal } from "../../../utils/geom-utils";
+import { ProfileResponse } from "../../../utils/steam";
+import { OsmNode, Station } from "../../../utils/types";
+import useStationTimetableEntries from "../../../utils/use-station-timetable-entries";
+import InfoIcon from "../../icons/InfoIcon";
+import Loading from "../../Loading";
+import SteamProfileDisplay from "../../SteamProfileDisplay";
+import StationTimetableModal from "../../timetable/StationTimetableModal";
+import SignalSpeedDisplay from "../../utils/SignalSpeedDisplay";
 import RemoteControlStationDisplay from "./RemoteControlStationDisplay";
-import StationTimetableDisplay from "./StationTimetableDisplay";
 
-const StationLayout = lazy(() => import("../StationLayout"));
+const StationLayout = lazy(() => import("../../StationLayout"));
 
 type StationLayouts = Record<
   string,
@@ -57,32 +46,22 @@ type StationLayouts = Record<
 const StationLayouts = _stationLayouts as unknown as StationLayouts;
 const WikiLinks = _wikiLinks as Record<string, string>;
 
-const useStationTimetableEntries = (stationName: string) => {
-  const [stationTimetable, setStationTimetable] = useState<SimplifiedTimtableEntry[] | null>(null);
-
-  useEffect(() => {
-    dataProvider.getStationTimetable(stationName).then((entries) => {
-      setStationTimetable(entries);
-    });
-
-    return () => {
-      setStationTimetable(null);
-    };
-  }, [stationName]);
-
-  return stationTimetable;
-};
-
 export interface StationMarkerPopupProps {
   station: Station;
   userData: ProfileResponse | null;
   onClosePopup: () => void;
+  stationOsmData: OsmNode | null;
 }
 
 const STATION_AREA_MAP = new Map<string, L.Polygon>();
 
-const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ station, userData, onClosePopup }) => {
-  const { t } = useTranslation("translation", { keyPrefix: "StationMarkerPopup" });
+const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
+  station,
+  userData,
+  onClosePopup,
+  stationOsmData,
+}) => {
+  const { t, i18n } = useTranslation("translation", { keyPrefix: "StationMarkerPopup" });
   const [isPending, startTransition] = useTransition();
   const map = useMap();
   const [stationArea, setStationArea] = useState<L.Polygon | null>(STATION_AREA_MAP.get(station.Id) || null);
@@ -153,6 +132,18 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
         <Typography level="h4" endDecorator={station.Prefix && <Chip>{station.Prefix}</Chip>}>
           {station.Name}
         </Typography>
+        {stationOsmData?.tags[`name:${i18n.language}`] &&
+          stationOsmData.tags[`name:${i18n.language}`] !== station.Name && (
+            <Typography level="title-md" color="neutral">
+              {stationOsmData.tags[`name:${i18n.language}`]}
+            </Typography>
+          )}
+
+        {stationOsmData?.tags.operator && (
+          <Typography level="body-sm" color="neutral">
+            {stationOsmData.tags.operator}
+          </Typography>
+        )}
 
         {station.DifficultyLevel >= 0 ? (
           <Typography>{t("Difficulty", { difficulty: station.DifficultyLevel })}</Typography>
@@ -294,7 +285,6 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
           </Button>
         )}
       </Stack>
-
       {/* Station Layout Modal */}
       <Modal
         hideBackdrop
@@ -380,36 +370,13 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({ statio
           </Typography>
         </Sheet>
       </Modal>
-
       {/* Timetable Modal */}
-      <Modal open={timetableModalOpen} onClose={() => startTransition(() => setTimetableModalOpen(false))}>
-        <ModalDialog sx={{ width: "min(1280px, 95vw)" }}>
-          <ModalClose
-            variant="plain"
-            sx={{
-              position: "absolute",
-              top: (theme) => theme.spacing(1),
-              right: (theme) => theme.spacing(1),
-            }}
-          />
-
-          <DialogTitle
-            sx={(theme) => ({
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              alignItems: "center",
-              [theme.breakpoints.down("md")]: {
-                gridTemplateColumns: "1fr 1fr",
-                mr: 4,
-              },
-            })}
-            component="div">
-            {t("Timetable.Title", { stationName: station.Name })} <MapTimeDisplay />
-          </DialogTitle>
-
-          {timetableModalOpen && stationTimetable && <StationTimetableDisplay timetable={stationTimetable} />}
-        </ModalDialog>
-      </Modal>
+      <StationTimetableModal
+        open={timetableModalOpen}
+        onClose={() => startTransition(() => setTimetableModalOpen(false))}
+        stationName={station.Name}
+        stationTimetable={stationTimetable}
+      />
     </>
   );
 };

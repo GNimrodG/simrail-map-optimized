@@ -7,12 +7,12 @@ import { type FunctionComponent, useCallback, useContext, useMemo, useTransition
 import { Trans, useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 
-import { dataProvider } from "../../utils/data-manager.ts";
-import { findStationForSignal, goToStation } from "../../utils/geom-utils.ts";
-import MapLinesContext, { MapLineData } from "../../utils/map-lines-context";
-import { SignalStatus, Train } from "../../utils/types.ts";
-import { getDistanceColorForSignal, getSpeedColorForSignal } from "../../utils/ui";
-import Loading from "../Loading.tsx";
+import { dataProvider } from "../../../utils/data-manager.ts";
+import { findStationForSignal, goToStation } from "../../../utils/geom-utils.ts";
+import MapLinesContext, { MapLineData } from "../../../utils/map-lines-context.ts";
+import { SignalStatus, Train } from "../../../utils/types.ts";
+import { getDistanceColorForSignal, getSpeedColorForSignal } from "../../../utils/ui.ts";
+import Loading from "../../Loading.tsx";
 
 export interface SignalMarkerPopupProps {
   signal: SignalStatus;

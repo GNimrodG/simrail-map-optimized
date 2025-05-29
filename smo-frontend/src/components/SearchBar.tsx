@@ -1,5 +1,5 @@
 import Autocomplete, { createFilterOptions } from "@mui/joy/Autocomplete";
-import { type FunctionComponent, useContext } from "react";
+import { type FunctionComponent, useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 
@@ -27,23 +27,27 @@ const SearchBar: FunctionComponent = () => {
   const signals = useBehaviorSubj(dataProvider.signalsData$);
   const unplayableStations = useBehaviorSubj(dataProvider.unplayableStations$);
 
-  const options = [
-    ...(trains
-      ?.map((train) => ({ type: "Trains", data: train }))
-      .toSorted((a, b) => +a.data.TrainNoLocal - +b.data.TrainNoLocal) || []),
-    ...(stations
-      ?.map((station) => ({ type: "Stations", data: station }))
-      .toSorted((a, b) => a.data.Name.localeCompare(b.data.Name)) || []),
-    ...(unplayableStations
-      ?.map((station) => ({
-        type: "Stations",
-        data: station,
-      }))
-      .toSorted((a, b) => a.data.Name.localeCompare(b.data.Name)) || []),
-    ...(signals
-      ?.map((signal) => ({ type: "Signals", data: signal }))
-      .toSorted((a, b) => a.data.Name.localeCompare(b.data.Name)) || []),
-  ] as ListItem[];
+  const options = useMemo(
+    () =>
+      [
+        ...(trains
+          ?.map((train) => ({ type: "Trains", data: train }))
+          .toSorted((a, b) => +a.data.TrainNoLocal - +b.data.TrainNoLocal) || []),
+        ...(stations
+          ?.map((station) => ({ type: "Stations", data: station }))
+          .toSorted((a, b) => a.data.Name.localeCompare(b.data.Name)) || []),
+        ...(unplayableStations
+          ?.map((station) => ({
+            type: "Stations",
+            data: station,
+          }))
+          .toSorted((a, b) => a.data.Name.localeCompare(b.data.Name)) || []),
+        ...(signals
+          ?.map((signal) => ({ type: "Signals", data: signal }))
+          .toSorted((a, b) => a.data.Name.localeCompare(b.data.Name)) || []),
+      ] as ListItem[],
+    [trains, stations, signals, unplayableStations],
+  );
 
   const panToStation = (station: Station) => {
     setSelectedTrain(selectedTrain ? { ...selectedTrain, follow: false } : null);

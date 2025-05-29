@@ -30,7 +30,7 @@ public class TimetableEntry
 
     [JsonProperty("platform")] public required string? Platform { get; set; }
 
-    [JsonProperty("track")] public required int? Track { get; set; }
+    [JsonProperty("track")] public required byte? Track { get; set; }
 
     [JsonProperty("trainType")] public required string TrainType { get; set; }
 

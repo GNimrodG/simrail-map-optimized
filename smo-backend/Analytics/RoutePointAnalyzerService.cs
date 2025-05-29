@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Numerics;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using Npgsql;
@@ -95,7 +96,7 @@ public class RoutePointAnalyzerService : IHostedService
                     await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
                     await CleanRouteLineGaps(context, cancellationToken);
-                    
+
                     await CleanTooManyLines(context, cancellationToken);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
@@ -189,7 +190,7 @@ public class RoutePointAnalyzerService : IHostedService
                         rp.TrainId == routePoint.TrainId)
                     .ExecuteDeleteAsync(cancellationToken);
             }
-            
+
             _logger.LogInformation("Removed {Count} route lines that were too old",
                 routeGroups.Count);
         }
@@ -438,7 +439,7 @@ public class RoutePointAnalyzerService : IHostedService
             var lines = points
                 .GroupBy(p => new { p.RouteId, p.TrainId, p.RunId })
                 .Where(g => g.Count() > 20)
-                .Select(g => new LineString(g.Select(x => x.Coordinate).ToArray()))
+                .Select(g => GeoUtils.CatmullRomSplineToLineString(g.Select(x => x.Coordinate).ToList(), 3))
                 .ToArray();
 
             // convert each linestring to wkt

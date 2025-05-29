@@ -7,7 +7,7 @@ import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import L from "leaflet";
-import { type FunctionComponent, lazy, Suspense, useContext, useState } from "react";
+import { type FunctionComponent, lazy, Suspense, useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MapContainer } from "react-leaflet";
 import Control from "react-leaflet-custom-control";
@@ -39,6 +39,7 @@ const SelectedTrainRouteLayer = lazy(() => import("./layers/SelectedTrainRouteLa
 const StationsLayer = lazy(() => import("./layers/StationsLayer"));
 const TrainsLayer = lazy(() => import("./layers/TrainsLayer"));
 const UnplayableStationsLayer = lazy(() => import("./layers/UnplayableStationsLayer"));
+const StoppingPointsLayer = lazy(() => import("./layers/StoppingPointsLayer"));
 
 const MAIN_ATTRIBUTIONS = [
   '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
@@ -59,6 +60,22 @@ const MainMap: FunctionComponent = () => {
   const [layerOpacities] = useSetting("layerOpacities");
 
   const [renderer] = useState(() => new L.Canvas());
+  const [map, setMap] = useState<L.Map | null>(null);
+
+  useEffect(() => {
+    if (!map) return;
+
+    // Create custom panes with specific z-indices
+    // Default Leaflet panes are between 200-700, so we'll use 400-500 range
+    map.createPane("passiveSignalsPane").style.zIndex = "401";
+    map.createPane("unplayableStationsPane").style.zIndex = "402";
+    map.createPane("stoppingPointsPane").style.zIndex = "403";
+    map.createPane("stationsPane").style.zIndex = "404";
+    map.createPane("trainsPane").style.zIndex = "405";
+    map.createPane("activeSignalsPane").style.zIndex = "406";
+    map.createPane("selectedRoutePane").style.zIndex = "407";
+    map.createPane("mapLinesPane").style.zIndex = "408";
+  }, [map]);
 
   useHotkeys([
     [
@@ -74,6 +91,7 @@ const MainMap: FunctionComponent = () => {
     <>
       {!isConnected && <Loading />}
       <MapContainer
+        ref={setMap}
         center={[51.015482, 19.572143]}
         zoom={8}
         zoomSnap={0.1}
@@ -208,7 +226,22 @@ const MainMap: FunctionComponent = () => {
         )}
 
         <Suspense fallback={<Loading color="success" />}>
-          {/* Stations, Trains, Signals, Active route, Unplayable stations*/}
+          {/* Stopping points, Stations, Trains, Signals, Active route, Unplayable stations*/}
+          {visibleLayers.includes("unplayable-stations") && (
+            <ErrorBoundary location="MainMap - UnplayableStationsLayer">
+              <UnplayableStationsLayer />
+            </ErrorBoundary>
+          )}
+          {visibleLayers.includes("stoppingpoints") && (
+            <ErrorBoundary location="MainMap - StoppingPointsLayer">
+              <StoppingPointsLayer />
+            </ErrorBoundary>
+          )}
+          {visibleLayers.includes("passive-signals") && (
+            <ErrorBoundary location="MainMap - PassiveSignalsLayer">
+              <PassiveSignalsLayer />
+            </ErrorBoundary>
+          )}
           {visibleLayers.includes("stations") && (
             <ErrorBoundary location="MainMap - StationsLayer">
               <StationsLayer />
@@ -219,11 +252,6 @@ const MainMap: FunctionComponent = () => {
               <TrainsLayer />
             </ErrorBoundary>
           )}
-          {visibleLayers.includes("passive-signals") && (
-            <ErrorBoundary location="MainMap - PassiveSignalsLayer">
-              <PassiveSignalsLayer />
-            </ErrorBoundary>
-          )}
           {visibleLayers.includes("active-signals") && (
             <ErrorBoundary location="MainMap - ActiveSignalsLayer">
               <ActiveSignalsLayer />
@@ -232,11 +260,6 @@ const MainMap: FunctionComponent = () => {
           {visibleLayers.includes("selected-route") && (
             <ErrorBoundary location="MainMap - SelectedTrainRouteLayer">
               <SelectedTrainRouteLayer />
-            </ErrorBoundary>
-          )}
-          {visibleLayers.includes("unplayable-stations") && (
-            <ErrorBoundary location="MainMap - UnplayableStationsLayer">
-              <UnplayableStationsLayer />
             </ErrorBoundary>
           )}
 

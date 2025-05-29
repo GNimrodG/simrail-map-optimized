@@ -7,9 +7,9 @@ import { useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 import { withLatestFrom } from "rxjs";
 
-import { dataProvider } from "../../utils/data-manager";
-import { goToStation } from "../../utils/geom-utils";
-import { Station } from "../../utils/types";
+import { dataProvider } from "../../../utils/data-manager";
+import { goToStation } from "../../../utils/geom-utils";
+import { Station } from "../../../utils/types";
 
 export interface RemoteControlStationDisplayProps {
   station: Station;

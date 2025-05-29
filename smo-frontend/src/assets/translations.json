@@ -21,7 +21,8 @@
           "signals": "Signals",
           "selected-route": "Selected Route",
           "unplayable-stations": "Unplayable Stations",
-          "stats": "Stats"
+          "stats": "Stats",
+          "stoppingpoints": "Stopping Points"
         }
       },
       "Stats": {
@@ -86,6 +87,10 @@
         "autoZoomLimits": {
           "Label": "Auto-Zoom Limits",
           "Description": "Controls how many objects are needed to trigger auto-zoom. If the two values are too close, the map will start zooming in and out frequently."
+        },
+        "translateStationNames": {
+          "Label": "Translate station names",
+          "Description": "Translate station names to the selected language. This may not work for all stations."
         }
       },
       "TrainMakerPopup": {
@@ -325,7 +330,8 @@
         "InsideStation": {
           "Short": "HERE",
           "Full": "This train is currently inside the station."
-        }
+        },
+        "N/A": "N/A"
       }
     }
   },
@@ -351,7 +357,8 @@
           "signals": "Signale",
           "selected-route": "Ausgewählte Route",
           "unplayable-stations": "Nicht spielbare Bahnhöfe",
-          "stats": "Statistiken"
+          "stats": "Statistiken",
+          "stoppingpoints": "Haltepunkte"
         }
       },
       "Stats": {
@@ -416,6 +423,10 @@
         "autoZoomLimits": {
           "Label": "Auto-Zoom-Grenzen",
           "Description": "Steuerung, wie viele Objekte benötigt werden, um den Auto-Zoom auszulösen. Wenn die beiden Werte zu nah beieinander liegen, wird die Karte häufig ein- und auszoomen."
+        },
+        "translateStationNames": {
+          "Label": "Bahnhofsnamen übersetzen",
+          "Description": "Bahnhofsnamen in die ausgewählte Sprache übersetzen. Dies funktioniert möglicherweise nicht für alle Bahnhöfe."
         }
       },
       "TrainMakerPopup": {
@@ -655,7 +666,8 @@
         "InsideStation": {
           "Short": "HIER",
           "Full": "Dieser Zug befindet sich derzeit im Bahnhof."
-        }
+        },
+        "N/A": "k.A."
       }
     }
   },
@@ -681,7 +693,8 @@
           "signals": "Jelzők",
           "selected-route": "Kiválasztott útvonal",
           "unplayable-stations": "Nem játszható állomások",
-          "stats": "Statisztikák"
+          "stats": "Statisztikák",
+          "stoppingpoints": "Megállóhelyek"
         }
       },
       "Stats": {
@@ -746,6 +759,10 @@
         "autoZoomLimits": {
           "Label": "Automatikus nagyítás korlátai",
           "Description": "Szabályozza, hogy hány objektum szükséges az automatikus nagyításhoz. Ha a két érték túl közel van egymáshoz, a térkép gyakran nagyít és kicsinyít."
+        },
+        "translateStationNames": {
+          "Label": "Állomás nevek fordítása",
+          "Description": "Állomás nevek fordítása a kiválasztott nyelvre. Ez nem minden állomásnál működik."
         }
       },
       "TrainMakerPopup": {
@@ -985,7 +1002,8 @@
         "InsideStation": {
           "Short": "ITT",
           "Full": "Ez a vonat jelenleg az állomáson tartózkodik."
-        }
+        },
+        "N/A": "n/a"
       }
     }
   },
@@ -1011,7 +1029,8 @@
           "signals": "Sinyaller",
           "selected-route": "Seçili Rota",
           "unplayable-stations": "Oynanamaz İstasyonlar",
-          "stats": "İstatistikler"
+          "stats": "İstatistikler",
+          "stoppingpoints": "Duraklar"
         }
       },
       "Stats": {
@@ -1076,6 +1095,10 @@
         "autoZoomLimits": {
           "Label": "Otomatik Yakınlaştırma Sınırları",
           "Description": "Otomatik yakınlaştırmanın tetiklenmesi için kaç nesne gerektiğini kontrol eder. İki değer birbirine çok yakınsa, harita sık sık yakınlaşıp uzaklaşmaya başlar."
+        },
+        "translateStationNames": {
+          "Label": "İstasyon adlarını çevir",
+          "Description": "İstasyon adlarını seçilen dile çevirir. Bu her istasyon için çalışmayabilir."
         }
       },
       "TrainMakerPopup": {
@@ -1315,7 +1338,8 @@
         "InsideStation": {
           "Short": "İÇERİ",
           "Full": "Bu tren şu anda istasyonda."
-        }
+        },
+        "N/A": "n/a"
       }
     }
   },
@@ -1341,7 +1365,8 @@
           "signals": "Sygnały",
           "selected-route": "Wybrana Trasa",
           "unplayable-stations": "Niegrywalne Stacje",
-          "stats": "Statystyki"
+          "stats": "Statystyki",
+          "stoppingpoints": "Punkty Postojowe"
         }
       },
       "Stats": {
@@ -1406,6 +1431,10 @@
         "autoZoomLimits": {
           "Label": "Limity automatycznego przybliżania",
           "Description": "Kontroluje, ile obiektów jest wymaganych do automatycznego przybliżenia. Jeśli oba wartości są zbyt blisko siebie, mapa często przybliża i oddala."
+        },
+        "translateStationNames": {
+          "Label": "Tłumacz nazwy stacji",
+          "Description": "Tłumaczy nazwy stacji na wybrany język. Może to nie działać dla każdej stacji."
         }
       },
       "TrainMakerPopup": {
@@ -1645,7 +1674,8 @@
         "InsideStation": {
           "Short": "W STACJI",
           "Full": "Pociąg znajduje się w stacji."
-        }
+        },
+        "N/A": "n/d"
       }
     }
   }

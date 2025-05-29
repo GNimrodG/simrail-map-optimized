@@ -18,7 +18,7 @@ import InfoIcon from "./icons/InfoIcon";
 import PersonIcon from "./icons/person.svg?react";
 import SidingIcon from "./icons/siding.svg?react";
 import SignalIcon from "./markers/icons/signal.svg?react";
-import TrainMarkerPopup from "./markers/TrainMarkerPopup";
+import TrainMarkerPopup from "./markers/train/TrainMarkerPopup";
 import SignalSpeedDisplay from "./utils/SignalSpeedDisplay";
 
 export interface StationLayoutBlockProps {

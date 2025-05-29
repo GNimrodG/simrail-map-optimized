@@ -3,7 +3,7 @@ import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent } from "react";
 
-import { formatVehicleName, getThumbnailUrl } from "../utils/general-utils";
+import { formatVehicleName, getThumbnailUrl } from "../../utils/general-utils";
 
 export interface TrainConsistPartDisplayProps {
   vehicles: string[];

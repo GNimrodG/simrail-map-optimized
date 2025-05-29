@@ -8,7 +8,7 @@ import { dataProvider } from "../../utils/data-manager";
 import { getVisibleStations } from "../../utils/geom-utils";
 import { Station } from "../../utils/types";
 import useBehaviorSubj from "../../utils/use-behaviorSubj";
-import UnplayableStation from "../markers/UnplayableStation";
+import UnplayableStation from "../markers/station/UnplayableStation";
 
 const UnplayableStationsLayer: FunctionComponent = () => {
   const map = useMap();
@@ -52,7 +52,7 @@ const UnplayableStationsLayer: FunctionComponent = () => {
   }, [unplayableStations, map]);
 
   return (
-    <LayerGroup>
+    <LayerGroup pane="unplayableStationsPane">
       {visibleStations.map((station) => (
         <UnplayableStation key={station.Name} station={station} />
       ))}

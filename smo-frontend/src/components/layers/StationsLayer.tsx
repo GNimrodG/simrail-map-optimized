@@ -8,7 +8,7 @@ import { dataProvider } from "../../utils/data-manager";
 import { getVisibleStations } from "../../utils/geom-utils";
 import { Station } from "../../utils/types";
 import useBehaviorSubj from "../../utils/use-behaviorSubj";
-import StationMarker from "../markers/StationMarker";
+import StationMarker from "../markers/station/StationMarker";
 
 const StationsLayer: FunctionComponent = () => {
   const map = useMap();
@@ -51,7 +51,7 @@ const StationsLayer: FunctionComponent = () => {
   }, [stations, map]);
 
   return (
-    <LayerGroup>
+    <LayerGroup pane="stationsPane">
       {visibleStations?.map((station) => <StationMarker key={"station_" + station.Id} station={station} />)}
     </LayerGroup>
   );

@@ -7,7 +7,7 @@ import { dataProvider } from "../../utils/data-manager";
 import SelectedTrainContext from "../../utils/selected-train-context";
 import { Train } from "../../utils/types";
 import useBehaviorSubj from "../../utils/use-behaviorSubj";
-import TrainMarker from "../markers/TrainMarker";
+import TrainMarker from "../markers/train/TrainMarker";
 
 function getVisibleTrains(trains: Train[], map: LeafletMap | null, selectedTrainNo?: string) {
   try {
@@ -81,7 +81,7 @@ const TrainsLayer: FunctionComponent = () => {
   }, [trains, map, selectedTrain?.trainNo]);
 
   return (
-    <LayerGroup>
+    <LayerGroup pane="trainsPane">
       {visibleTrains.map((train) => (
         <TrainMarker key={"train_" + train.Id} train={train} />
       ))}

@@ -8,8 +8,7 @@
       "applicationUrl": "http://localhost:3000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ADMIN_PASSWORD": "admin",
-        "DATABASE_URL": "Host=localhost;Port=5432;Database=smo;Username=smo;Password=smo;Include Error Detail=True"
+        "ADMIN_PASSWORD": "admin"
       }
     },
     "https": {

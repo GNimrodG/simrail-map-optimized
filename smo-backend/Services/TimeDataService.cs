@@ -21,6 +21,7 @@ public class TimeDataService(
     // Just to be safe, we'll limit it to ~4 requests/second.
     private protected override TimeSpan DelayBetweenServers => TimeSpan.FromMilliseconds(250);
 
+    /// <inheritdoc />
     protected override async Task<TimeData> FetchServerData(string serverCode, CancellationToken stoppingToken)
     {
         var timezone = await apiClient.GetTimezoneAsync(serverCode, stoppingToken);
@@ -40,6 +41,7 @@ public class TimeDataService(
         return new(time.Value.time, timezone.Value, time.Value.date);
     }
 
+    /// <inheritdoc />
     protected override void OnPerServerDataReceived(PerServerData<TimeData> data)
     {
         base.OnPerServerDataReceived(data);

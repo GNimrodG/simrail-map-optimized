@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg viewBox="0 0 5 17" version="1.1" id="svg1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"
+  xmlns:svg="http://www.w3.org/2000/svg">
+  <defs id="defs1" />
+  <g id="g6" transform="matrix(0.9439528,0,0,0.94959635,1.2499909e-8,6.2077023)">
+    <path id="path3" style="stroke-width:0.0989387"
+      d="M 5.296875,7.46875 H 0 V 9.3867188 C -2.3283298e-7,10.093915 0.41918118,10.719815 1.0644531,11.113281 H 4.2304688 C 4.8757407,10.719815 5.2968754,10.093915 5.296875,9.3867188 Z" />
+    <ellipse style="fill:#333333;fill-opacity:1;stroke-width:0.0561425" id="path4-9" cx="2.6479688" cy="9.1668005"
+      rx="1.0196847" ry="0.9813441" />
+  </g>
+  <g id="g7-0-1" transform="matrix(0.9439528,0,0,0.94959635,1.2499909e-8,6.3780056)">
+    <path id="path5-9-9" style="stroke-width:0.0989387" d="M 5.296875,4.0742188 H 0 V 7.46875 h 5.296875 z" />
+    <ellipse style="fill:#333333;fill-opacity:1;stroke-width:0.0561425" id="path4-36-0" cx="2.6479688" cy="5.7717595"
+      rx="1.0196847" ry="0.9813441" />
+  </g>
+  <g id="g7-0" transform="matrix(0.9439528,0,0,0.94959635,1.2499909e-8,3.154571)">
+    <path id="path5-9" style="stroke-width:0.0989387" d="M 5.296875,4.0742188 H 0 V 7.46875 h 5.296875 z" />
+    <ellipse style="fill:#333333;fill-opacity:1;stroke-width:0.0561425" id="path4-36" cx="2.6479688" cy="5.7717595"
+      rx="1.0196847" ry="0.9813441" />
+  </g>
+  <g id="g7" transform="matrix(0.9439528,0,0,0.94959635,1.2499909e-8,-0.068863)">
+    <path id="path5" style="stroke-width:0.0989387" d="M 5.296875,4.0742188 H 0 V 7.46875 h 5.296875 z" />
+    <ellipse style="fill:#ffd715;fill-opacity:1;stroke-width:0.0561425" id="path4" cx="2.6479688" cy="5.7717595"
+      rx="1.0196847" ry="0.9813441" />
+  </g>
+  <g id="g5" transform="scale(0.9439528,0.93269414)">
+    <path id="path2" style="stroke-width:0.0989387"
+      d="M 2.6484375,0 C 1.1860077,0 0,1.0760072 0,2.4023438 v 1.671875 H 5.296875 V 2.4023438 C 5.296875,1.0760072 4.1108673,0 2.6484375,0 Z" />
+    <ellipse style="fill:#333333;fill-opacity:1;stroke-width:0.0561425" id="path4-3" cx="2.6479688" cy="2.376719"
+      rx="1.0196847" ry="0.9813441" />
+  </g>
+</svg>

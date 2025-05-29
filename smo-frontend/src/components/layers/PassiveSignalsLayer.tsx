@@ -11,7 +11,7 @@ import { getVisibleSignals, goToSignal } from "../../utils/geom-utils";
 import { SignalStatus } from "../../utils/types";
 import useBehaviorSubj from "../../utils/use-behaviorSubj";
 import { useSetting } from "../../utils/use-setting";
-import SignalMarker from "../markers/SignalMarker";
+import SignalMarker from "../markers/signal/SignalMarker";
 
 const MIN_ZOOM = 11;
 
@@ -80,13 +80,14 @@ const PassiveSignalsLayer: FunctionComponent = () => {
   );
 
   return (
-    <LayerGroup>
+    <LayerGroup pane="passiveSignalsPane">
       {visibleSignals.map((signal) => (
         <SignalMarker
           key={"signal_" + signal.Name}
           opacity={layerOpacities["passive-signals"]}
           signal={signal}
           onSignalSelect={handleSignalSelect}
+          pane="passiveSignalsPane"
         />
       ))}
     </LayerGroup>

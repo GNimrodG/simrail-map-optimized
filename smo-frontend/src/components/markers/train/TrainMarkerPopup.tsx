@@ -6,7 +6,7 @@ import Chip from "@mui/joy/Chip";
 import IconButton from "@mui/joy/IconButton";
 import LinearProgress from "@mui/joy/LinearProgress";
 import Stack from "@mui/joy/Stack";
-import Step from "@mui/joy/Step";
+import Step, { stepClasses } from "@mui/joy/Step";
 import StepIndicator from "@mui/joy/StepIndicator";
 import Stepper from "@mui/joy/Stepper";
 import { styled, useTheme } from "@mui/joy/styles";
@@ -16,28 +16,28 @@ import moment from "moment";
 import { type FunctionComponent, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { dataProvider } from "../../utils/data-manager";
-import MapLinesContext from "../../utils/map-lines-context";
-import SelectedRouteContext from "../../utils/selected-route-context";
-import SelectedTrainContext from "../../utils/selected-train-context";
-import { ProfileResponse } from "../../utils/steam";
-import { Timetable, Train } from "../../utils/types";
-import { getColorTrainMarker, getDistanceColorForSignal } from "../../utils/ui";
-import { useSetting } from "../../utils/use-setting";
-import useSubject from "../../utils/use-subject";
-import CollapseIcon from "../icons/CollapseIcon";
-import ExpandIcon from "../icons/ExpandIcon";
-import InfoIcon from "../icons/InfoIcon";
-import SettingCheckbox from "../settings/SettingCheckbox";
-import SteamProfileDisplay from "../SteamProfileDisplay";
-import { formatVehicleName, getThumbnailUrl } from "../utils/general-utils";
-import SignalSpeedDisplay from "../utils/SignalSpeedDisplay";
-import TrainTypeDisplay from "../utils/TrainTypeDisplay";
-import CalendarIcon from "./icons/calendar.svg?react";
-import LengthIcon from "./icons/LengthIcon";
-import SpeedIcon from "./icons/SpeedIcon";
-import WeightIcon from "./icons/WeightIcon";
-import StationDisplay from "./StationDisplay";
+import { dataProvider } from "../../../utils/data-manager";
+import MapLinesContext from "../../../utils/map-lines-context";
+import SelectedRouteContext from "../../../utils/selected-route-context";
+import SelectedTrainContext from "../../../utils/selected-train-context";
+import { ProfileResponse } from "../../../utils/steam";
+import { Timetable, Train } from "../../../utils/types";
+import { getColorTrainMarker, getDistanceColorForSignal } from "../../../utils/ui";
+import { useSetting } from "../../../utils/use-setting";
+import useSubject from "../../../utils/use-subject";
+import CollapseIcon from "../../icons/CollapseIcon";
+import ExpandIcon from "../../icons/ExpandIcon";
+import InfoIcon from "../../icons/InfoIcon";
+import SettingCheckbox from "../../settings/SettingCheckbox";
+import SteamProfileDisplay from "../../SteamProfileDisplay";
+import { formatVehicleName, getThumbnailUrl } from "../../utils/general-utils";
+import SignalSpeedDisplay from "../../utils/SignalSpeedDisplay";
+import TrainTypeDisplay from "../../utils/TrainTypeDisplay";
+import CalendarIcon from "../icons/calendar.svg?react";
+import LengthIcon from "../icons/LengthIcon";
+import SpeedIcon from "../icons/SpeedIcon";
+import WeightIcon from "../icons/WeightIcon";
+import StationDisplay from "../station/StationDisplay";
 import TrainConsistDisplay from "./TrainConsistDisplay";
 import TrainScheduleDisplay from "./TrainScheduleDisplay";
 
@@ -130,11 +130,6 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
 
   const { delays, lastDelay } = useTrainDelays(train.Id);
 
-  const lastDelayColor = useMemo(
-    () => (lastDelay ? (lastDelay <= 0 ? "success" : lastDelay < 6 ? "warning" : "danger") : "neutral"),
-    [lastDelay],
-  );
-
   const prevStationDelay = useMemo(
     () => delays[train.TrainData.VDDelayedTimetableIndex - 1],
     [delays, train.TrainData.VDDelayedTimetableIndex],
@@ -142,17 +137,24 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
 
   const stationData = useMemo(() => {
     if (!timetable) return { first: null, prev: null, current: null, next: null, last: null };
+
+    const hasNotPassedCurrent = !delays[train.TrainData.VDDelayedTimetableIndex];
+
+    const currentIndex = hasNotPassedCurrent
+      ? train.TrainData.VDDelayedTimetableIndex
+      : train.TrainData.VDDelayedTimetableIndex + 1;
+    const prevIndex = hasNotPassedCurrent
+      ? train.TrainData.VDDelayedTimetableIndex - 1
+      : train.TrainData.VDDelayedTimetableIndex;
+    const nextIndex = hasNotPassedCurrent
+      ? train.TrainData.VDDelayedTimetableIndex + 1
+      : train.TrainData.VDDelayedTimetableIndex + 2;
+
     return {
       first: timetable.TimetableEntries[0],
-      prev: !delays[train.TrainData.VDDelayedTimetableIndex]
-        ? timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex - 1]
-        : timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex],
-      current: !delays[train.TrainData.VDDelayedTimetableIndex]
-        ? timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex]
-        : timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex + 1],
-      next: !delays[train.TrainData.VDDelayedTimetableIndex]
-        ? timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex + 1]
-        : timetable.TimetableEntries[train.TrainData.VDDelayedTimetableIndex + 2],
+      prev: prevIndex !== 0 ? timetable.TimetableEntries[prevIndex] : null,
+      current: currentIndex !== timetable.TimetableEntries.length - 1 ? timetable.TimetableEntries[currentIndex] : null,
+      next: nextIndex < timetable.TimetableEntries.length - 1 ? timetable.TimetableEntries[nextIndex] : null,
       last: timetable.TimetableEntries[timetable.TimetableEntries.length - 1],
     };
   }, [delays, timetable, train.TrainData.VDDelayedTimetableIndex]);
@@ -182,15 +184,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
     </Stack>
   );
 
-  const delayInfo = lastDelay !== null && (
-    <Stack justifyContent="center" direction="row">
-      <Typography level="body-md" color={lastDelayColor} variant="outlined" noWrap textAlign="center">
-        {t(lastDelay === 0 ? "OnTime" : lastDelay < 0 ? "Early" : "Delay", {
-          delay: moment.duration({ m: lastDelay }).humanize(),
-        })}
-      </Typography>
-    </Stack>
-  );
+  const delayInfo = useMemo(() => lastDelay !== null && <LastDelayInfo lastDelay={lastDelay} />, [lastDelay]);
 
   const handleFollow = useCallback(() => {
     setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true, paused: false });
@@ -301,9 +295,15 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
             gridArea: "1 / 2 / 2 / 3",
             display: "flex",
             alignItems: "center",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            maxWidth: "100%",
           }}
           component="div">
-          {train.TrainNoLocal} (<TrainTypeDisplay type={train.TrainName} />)
+          {train.TrainNoLocal}{" "}
+          <Box component="span" sx={{ display: "inline-flex", alignItems: "center", ml: 1 }}>
+            (<TrainTypeDisplay type={train.TrainName} />)
+          </Box>
         </Typography>
 
         {onToggleCollapse && (
@@ -411,7 +411,17 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
       )}
 
       <Stack direction="column" sx={{ width: "100%" }}>
-        <Stepper sx={{ width: "100%" }} orientation="vertical">
+        <Stepper
+          sx={{
+            width: "100%",
+            [`& .${stepClasses.active}`]: {
+              "--Step-indicatorDotSize": "0.6rem",
+              [`& .${stepClasses.indicator}`]: {
+                color: "var(--joy-palette-success-solidBg)",
+              },
+            },
+          }}
+          orientation="vertical">
           <Step
             sx={{
               "--Step-indicatorDotSize": "0.5rem",
@@ -423,13 +433,13 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
               <Typography level="body-md">{train.StartStation}</Typography>
             )}
           </Step>
+          {isTimeTableExpanded && stationData.prev && (
+            <Step completed>
+              <StationDisplay station={stationData.prev} pastStation delay={prevStationDelay} />
+            </Step>
+          )}
           {stationData.current && (
             <>
-              {isTimeTableExpanded && stationData.prev && (
-                <Step completed>
-                  <StationDisplay station={stationData.prev} pastStation delay={prevStationDelay} />
-                </Step>
-              )}
               <Step
                 sx={{
                   color: "primary.solid",
@@ -448,7 +458,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                     {isTimeTableExpanded ? <CollapseIcon /> : <ExpandIcon />}
                   </StepIndicator>
                 }>
-                <StationDisplay station={stationData.current} mainStation={isTimeTableExpanded} />
+                <StationDisplay station={stationData.current} mainStation={isTimeTableExpanded} current />
               </Step>
               {isTimeTableExpanded && stationData.next && (
                 <Step>
@@ -458,11 +468,23 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
             </>
           )}
           <Step
-            sx={{
-              "--Step-indicatorDotSize": "0.5rem",
-            }}>
+            sx={
+              stationData.last && stationData.prev && !stationData.current
+                ? {
+                    "color": "primary.solid",
+                    "--Step-indicatorDotSize": "0.5rem",
+                  }
+                : {
+                    "--Step-indicatorDotSize": "0.5rem",
+                  }
+            }
+            active={!!stationData.last && !!stationData.prev && !stationData.current}>
             {stationData.last ? (
-              <StationDisplay station={stationData.last} mainStation />
+              <StationDisplay
+                station={stationData.last}
+                mainStation
+                current={!!stationData.last && !!stationData.prev && !stationData.current}
+              />
             ) : (
               <Typography level="body-md">{train.EndStation}</Typography>
             )}
@@ -545,6 +567,24 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
             ))}
         </Stack>
       )}
+    </Stack>
+  );
+};
+
+const LastDelayInfo = ({ lastDelay }: { lastDelay: number }) => {
+  const { t } = useTranslation("translation", { keyPrefix: "TrainMakerPopup" });
+  const lastDelayColor = useMemo(
+    () => (lastDelay ? (lastDelay <= 0 ? "success" : lastDelay < 6 ? "warning" : "danger") : "neutral"),
+    [lastDelay],
+  );
+
+  return (
+    <Stack justifyContent="center" direction="row">
+      <Typography level="body-md" color={lastDelayColor} variant="outlined" noWrap textAlign="center">
+        {t(lastDelay === 0 ? "OnTime" : lastDelay < 0 ? "Early" : "Delay", {
+          delay: moment.duration({ m: lastDelay }).humanize(),
+        })}
+      </Typography>
     </Stack>
   );
 };

@@ -73,6 +73,7 @@ const Settings: FunctionComponent = () => {
           <SettingCheckbox settingKey="disableSlidingMarkers" />
           <SettingCheckbox settingKey="disableLowSpeedWarning" />
           <SettingSlider settingKey="autoZoomLimits" min={100} max={300} step={1} minDistance={20} />
+          <SettingCheckbox settingKey="translateStationNames" />
         </Stack>
       </Stack>
 
@@ -91,6 +92,7 @@ const Settings: FunctionComponent = () => {
           <LayerOpacitySlider layerId="passive-signals" layerType="Overlay" />
           <LayerOpacitySlider layerId="selected-route" layerType="Overlay" />
           <LayerOpacitySlider layerId="unplayable-stations" layerType="Overlay" />
+          <LayerOpacitySlider layerId="stoppingpoints" layerType="Overlay" />
         </Stack>
       </Stack>
 

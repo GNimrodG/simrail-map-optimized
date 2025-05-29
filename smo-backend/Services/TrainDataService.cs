@@ -12,11 +12,14 @@ public class TrainDataService(
     ServerDataService serverDataService,
     SimrailApiClient apiClient) : BaseServerDataService<Train[]>("TRAIN", logger, scopeFactory, serverDataService)
 {
+    /// <inheritdoc />
     protected override TimeSpan FetchInterval => TimeSpan.FromSeconds(5);
 
+    /// <inheritdoc />
     protected override Task<Train[]> FetchServerData(string serverCode, CancellationToken stoppingToken) =>
         apiClient.GetTrainsAsync(serverCode, stoppingToken);
 
+    /// <inheritdoc />
     protected override void OnPerServerDataReceived(PerServerData<Train[]> data)
     {
         base.OnPerServerDataReceived(data);

@@ -47,13 +47,14 @@ const SelectedTrainRouteLayer: FunctionComponent = () => {
   }, [map, selectedRoute, setSelectedRoute]);
 
   return (
-    <LayerGroup>
+    <LayerGroup pane="selectedRoutePane">
       {routeLines.map((x) => (
         <Polyline
           key={`selected-train-route-${x.coordinates[0][0]}-${x.coordinates[0][1]}-${x.coordinates[x.coordinates.length - 1][0]}-${x.coordinates[x.coordinates.length - 1][1]}`}
           positions={x.coordinates as [number, number][]}
           color="#00FFFF"
-          weight={3}></Polyline>
+          weight={3}
+          pane="selectedRoutePane"></Polyline>
       ))}
     </LayerGroup>
   );

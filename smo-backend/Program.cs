@@ -60,6 +60,10 @@ builder.Services.AddOpenApi(options =>
                 Name = "AGPL-3.0",
                 Url = new("https://github.com/GNimrodG/simrail-map-optimized/blob/master/LICENSE"),
             };
+
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
+                doc.Servers = new List<OpenApiServer>();
+
             doc.Servers.Add(
                 new()
                 {

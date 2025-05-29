@@ -29,3 +29,4 @@ services:
       test: "PGPASSWORD=smo pg_isready -h 127.0.0.1 -U smo -d smo"
       interval: 5s
       start_interval: 10s
+      start_period: 5s

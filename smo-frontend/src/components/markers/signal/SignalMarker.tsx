@@ -3,16 +3,17 @@ import equals from "lodash/isEqual";
 import { type FunctionComponent, memo, useEffect, useMemo, useState } from "react";
 import { Marker, Popup } from "react-leaflet";
 
-import { dataProvider } from "../../utils/data-manager.ts";
-import { SignalStatus } from "../../utils/types.ts";
-import { getSpeedColorForSignal } from "../../utils/ui";
-import SignalIcon from "./icons/signal.svg?raw";
+import { dataProvider } from "../../../utils/data-manager.ts";
+import { SignalStatus } from "../../../utils/types.ts";
+import { getSpeedColorForSignal } from "../../../utils/ui.ts";
+import SignalIcon from "../icons/signal.svg?raw";
 import SignalMarkerPopup from "./SignalMarkerPopup.tsx";
 
 export interface SignalMarkerProps {
   signal: SignalStatus;
   onSignalSelect?: (signalId: string) => void;
   opacity?: number;
+  pane?: string;
 }
 
 const className = "icon signal";
@@ -58,10 +59,34 @@ const MAIN_SIGNAL_40_ICON = new Icon({
   iconSize: [15, 39.3], // base size 5x13.1 x3
 });
 
+const MAIN_SIGNAL_40_ORANGE_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-40-orange.svg",
+  iconSize: [15, 60], // base size 5x20 x3
+});
+
 const MAIN_SIGNAL_60_ICON = new Icon({
   className,
   iconUrl: "/assets/signals/signal-main-60.svg",
   iconSize: [15, 39.3], // base size 5x13.1 x3
+});
+
+const MAIN_SIGNAL_60_ORANGE_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-60-orange.svg",
+  iconSize: [15, 60], // base size 5x20 x3
+});
+
+const MAIN_SIGNAL_80_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-80.svg",
+  iconSize: [15, 39.3], // base size 5x13.1 x3
+});
+
+const MAIN_SIGNAL_80_ORANGE_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-80-orange.svg",
+  iconSize: [15, 60], // base size 5x20 x3
 });
 
 const MAIN_SIGNAL_100_ICON = new Icon({
@@ -70,9 +95,33 @@ const MAIN_SIGNAL_100_ICON = new Icon({
   iconSize: [15, 39.3], // base size 5x13.1 x3
 });
 
-const MAIN_SIGNAL_GREEN_ICON = new Icon({
+const MAIN_SIGNAL_100_ORANGE_ICON = new Icon({
   className,
-  iconUrl: "/assets/signals/signal-main-green.svg",
+  iconUrl: "/assets/signals/signal-main-100-orange.svg",
+  iconSize: [15, 60], // base size 5x20 x3
+});
+
+const MAIN_SIGNAL_130_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-130.svg",
+  iconSize: [15, 39.3], // base size 5x13.1 x3
+});
+
+const MAIN_SIGNAL_130_ORANGE_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-130-orange.svg",
+  iconSize: [15, 60], // base size 5x20 x3
+});
+
+const MAIN_SIGNAL_VMAX_ORANGE_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-vmax-orange.svg",
+  iconSize: [15, 51], // base size 5x17 x2
+});
+
+const MAIN_SIGNAL_VMAX_GREEN_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-vmax-green.svg",
   iconSize: [15, 51], // base size 5x17 x2
 });
 
@@ -88,7 +137,7 @@ const SMALL_SIGNAL_WHITE_ICON = new Icon({
   iconSize: [15, 21.99], // base size 5x7.33 x3
 });
 
-const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSelect, opacity = 1 }) => {
+const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSelect, opacity = 1, pane }) => {
   const [icon, setIcon] = useState<Icon<DivIconOptions | IconOptions>>(new DivIcon(DEFAULT_ICON_OPTIONS));
 
   const trains = useMemo(
@@ -120,7 +169,13 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
 
       if (signal.Type === "main") {
         if (train.TrainData.SignalInFrontSpeed > 200) {
-          setIcon(MAIN_SIGNAL_GREEN_ICON);
+          if (signal.NextSignalWithTrainAhead) {
+            console.log(signal.Name, "has a train ahead but speed is > 200");
+            setIcon(MAIN_SIGNAL_VMAX_ORANGE_ICON);
+            return;
+          }
+
+          setIcon(MAIN_SIGNAL_VMAX_GREEN_ICON);
           return;
         }
 
@@ -130,17 +185,57 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
         }
 
         if (train.TrainData.SignalInFrontSpeed === 40) {
+          if (signal.NextSignalWithTrainAhead) {
+            console.log(signal.Name, "has a train ahead but speed is 40");
+            setIcon(MAIN_SIGNAL_40_ORANGE_ICON);
+            return;
+          }
+
           setIcon(MAIN_SIGNAL_40_ICON);
           return;
         }
 
         if (train.TrainData.SignalInFrontSpeed === 60) {
+          if (signal.NextSignalWithTrainAhead) {
+            console.log(signal.Name, "has a train ahead but speed is 60");
+            setIcon(MAIN_SIGNAL_60_ORANGE_ICON);
+            return;
+          }
+
           setIcon(MAIN_SIGNAL_60_ICON);
           return;
         }
 
+        if (train.TrainData.SignalInFrontSpeed === 80) {
+          if (signal.NextSignalWithTrainAhead) {
+            console.log(signal.Name, "has a train ahead but speed is 80");
+            setIcon(MAIN_SIGNAL_80_ORANGE_ICON);
+            return;
+          }
+
+          setIcon(MAIN_SIGNAL_80_ICON);
+          return;
+        }
+
         if (train.TrainData.SignalInFrontSpeed === 100) {
+          if (signal.NextSignalWithTrainAhead) {
+            console.log(signal.Name, "has a train ahead but speed is 100");
+            setIcon(MAIN_SIGNAL_100_ORANGE_ICON);
+            return;
+          }
+
           setIcon(MAIN_SIGNAL_100_ICON);
+          return;
+        }
+
+        if (train.TrainData.SignalInFrontSpeed === 130) {
+          if (signal.NextSignalWithTrainAhead) {
+            console.log(signal.Name, "has a train ahead but speed is 130");
+            setIcon(MAIN_SIGNAL_130_ORANGE_ICON);
+            return;
+          }
+
+          setIcon(MAIN_SIGNAL_130_ICON);
           return;
         }
       }
@@ -218,7 +313,8 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
       eventHandlers={{
         popupopen: () => setIsPopupOpen(true),
         popupclose: () => setIsPopupOpen(false),
-      }}>
+      }}
+      pane={pane}>
       <Popup autoPan={false}>
         {isPopupOpen && <SignalMarkerPopup signal={signal} onSignalSelect={onSignalSelect} trains={trains} />}
       </Popup>

@@ -45,6 +45,9 @@ public partial class SignalAnalyzerService : IHostedService
 
     private readonly TtlCache<string, TrainPrevSignalData> _trainPrevSignalCache = new(TimeSpan.FromSeconds(30));
 
+    private readonly TtlCache<string, string> _trainLastSignalCache =
+        new(TimeSpan.FromSeconds(30));
+
     private static readonly Gauge SignalAnalyzerQueueGauge = Metrics
         .CreateGauge("smo_signal_analyzer_queue", "Number of items in the signal analyzer queue");
 
@@ -256,6 +259,18 @@ public partial class SignalAnalyzerService : IHostedService
                 .GroupBy(train => train.TrainData.GetSignal()!)
                 .ToDictionary(g => g.Key, g => g.OrderBy(x => x.TrainData.DistanceToSignalInFront).ToArray());
 
+            var earlierSignalIndex = trains
+                .Where(train => _trainLastSignalCache.ContainsKey(train.GetTrainId()))
+                .Select(train => new
+                {
+                    data = _trainLastSignalCache.TryGetValue(train.GetTrainId(), out var value) ? value : null,
+                    train
+                })
+                // filter for the last 30 seconds
+                .Where(x => x.data != null)
+                .GroupBy(train => train.data!)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.train).ToArray());
+
             var signals = await GetSignals();
             var signalLookup = signals.ToDictionary(s => s.Name);
 
@@ -265,6 +280,14 @@ public partial class SignalAnalyzerService : IHostedService
                 var train = signalsIndex.GetValueOrDefault(signal.Name);
                 signal.Trains = train?.Select(t => t.TrainNoLocal).ToArray();
 
+                var earlierTrain = earlierSignalIndex.GetValueOrDefault(signal.Name);
+
+                if (earlierTrain is { Length: > 0 })
+                {
+                    signal.TrainsAhead = earlierTrain.Select(x => x.TrainNoLocal).ToArray();
+                    continue;
+                }
+
                 var onlyHasOneNextSignal = signal is
                     { Type: "block", NextSignals.Length: 1 } or
                     { Type: "main", NextFinalized: true, NextSignals.Length: 1 };
@@ -273,19 +296,24 @@ public partial class SignalAnalyzerService : IHostedService
                 if (!onlyHasOneNextSignal)
                 {
                     // if it has more than one next signal, but it's finalized and all the next signals have a train
-                    if (signal is { Type: "main", NextFinalized: true } && signal.NextSignals.All(s => signalsIndex.ContainsKey(s.Name)))
+                    if (signal is { Type: "main", NextFinalized: true } &&
+                        signal.NextSignals.All(s => signalsIndex.ContainsKey(s.Name)))
                     {
                         signal.TrainsAhead = signal.NextSignals.Select(s => signalsIndex[s.Name])
                             .SelectMany(x => x.Select(y => y.TrainNoLocal))
                             .ToArray();
                     }
-                    
+
                     continue;
                 }
 
                 var nextSignalName = signal.NextSignals[0].Name;
-                signal.TrainsAhead = signalsIndex.GetValueOrDefault(nextSignalName)?.Select(t => t.TrainNoLocal)
-                    .ToArray();
+                signal.TrainsAhead = signalsIndex
+                                         .GetValueOrDefault(nextSignalName)?.Select(t => t.TrainNoLocal)
+                                         .ToArray() ??
+                                     (earlierSignalIndex.TryGetValue(nextSignalName, out var earlierTrains)
+                                         ? earlierTrains.Select(x => x.TrainNoLocal).ToArray()
+                                         : null);
 
                 // Check for a train two signals ahead
                 if (!signalLookup.TryGetValue(nextSignalName, out var nextSignal) ||
@@ -512,6 +540,11 @@ public partial class SignalAnalyzerService : IHostedService
 
                 if (prevSignalData != null)
                 {
+                    if (prevSignalData.SignalName != signal.Name)
+                    {
+                        _trainLastSignalCache.Set(train.GetTrainId(), signal.Name);
+                    }
+
                     var isValid =
                         await ProcessPrevSignalData(context,
                             signals, signalLookup, train, signal, prevSignalData, currentTime);

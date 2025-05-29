@@ -25,10 +25,12 @@ const SETTINGS = {
     "active-signals": 1,
     "selected-route": 1,
     "unplayable-stations": 1,
+    "stoppingpoints": 1,
   } as Record<string, number>,
   disableLowSpeedWarning: false,
   autoZoom: false,
   autoZoomLimits: [200, 250] as [number, number],
+  translateStationNames: false,
 } as const;
 
 export type TSettings = typeof SETTINGS;

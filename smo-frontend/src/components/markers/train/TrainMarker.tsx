@@ -2,13 +2,13 @@ import { DivIcon, Icon, IconOptions } from "leaflet";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 import { Marker, Popup, useMap } from "react-leaflet";
 
-import SelectedTrainContext from "../../utils/selected-train-context";
-import { getSteamProfileInfo, ProfileResponse } from "../../utils/steam";
-import { Train } from "../../utils/types";
-import { getColorTrainMarker } from "../../utils/ui";
-import { useSetting } from "../../utils/use-setting";
-import ReactLeafletDriftMarker from "../utils/ReactLeafletDriftMarker";
-import BotIcon from "./icons/bot.svg?raw";
+import SelectedTrainContext from "../../../utils/selected-train-context";
+import { getSteamProfileInfo, ProfileResponse } from "../../../utils/steam";
+import { Train } from "../../../utils/types";
+import { getColorTrainMarker } from "../../../utils/ui";
+import { useSetting } from "../../../utils/use-setting";
+import ReactLeafletDriftMarker from "../../utils/ReactLeafletDriftMarker";
+import BotIcon from "../icons/bot.svg?raw";
 import TrainMarkerPopup from "./TrainMarkerPopup";
 
 export interface TrainMarkerProps {
@@ -126,7 +126,8 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
       eventHandlers={{
         popupopen: () => setIsPopupOpen(true),
         popupclose: () => setIsPopupOpen(false),
-      }}>
+      }}
+      pane="trainsPane">
       {popup}
     </ReactLeafletDriftMarker>
   );

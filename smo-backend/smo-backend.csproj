@@ -7,6 +7,7 @@
     <RootNamespace>SMOBackend</RootNamespace>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <UserSecretsId>1227ac2c-1deb-424f-80be-09d853c84ece</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

@@ -100,6 +100,11 @@
   font-size: var(--joy-fontSize-sm);
 }
 
+.icon.station.stopping-point .tooltip {
+  color: var(--joy-palette-text-secondary);
+  font-size: var(--joy-fontSize-xs);
+}
+
 .icon img {
   width: 100%;
   height: 100%;
@@ -142,6 +147,10 @@
   fill: var(--joy-palette-primary-400);
 }
 
+.icon.bot.stopping-point svg {
+  fill: var(--joy-palette-success-400);
+}
+
 .icon.train {
   border-radius: 50%;
 }
@@ -156,6 +165,11 @@
 
 .icon.station.remote-controlled {
   border-color: var(--joy-palette-primary-400);
+}
+
+.icon.station.stopping-point {
+  border-color: var(--joy-palette-success-400);
+  border-width: 1px;
 }
 
 .icon.signal.danger svg {

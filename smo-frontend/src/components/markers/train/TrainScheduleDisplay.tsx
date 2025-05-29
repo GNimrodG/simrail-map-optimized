@@ -2,8 +2,8 @@ import Step, { stepClasses } from "@mui/joy/Step";
 import Stepper from "@mui/joy/Stepper";
 import { type FunctionComponent, useEffect, useRef } from "react";
 
-import { Timetable } from "../../utils/types";
-import StationDisplay from "./StationDisplay";
+import { Timetable } from "../../../utils/types";
+import StationDisplay from "../station/StationDisplay";
 
 export interface TrainScheduleDisplayProps {
   timetable: Timetable;
