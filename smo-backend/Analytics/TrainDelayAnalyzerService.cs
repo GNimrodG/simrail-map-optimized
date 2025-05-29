@@ -236,11 +236,11 @@ public class TrainDelayAnalyzerService(
                     .Select(t =>
                         _trainDelays.TryGetValue(t.GetTrainId(), out var delays)
                             ? delays.Values.LastOrDefault()
-                            : (int?)null)
-                    .Where(x => x is not null).ToArray();
+                            : 0)
+                    .ToArray();
 
                 ServerPunctualityGauge.WithLabels(serverCode).Set(delayData.Length > 0
-                    ? delayData.Average(x => x!.Value)
+                    ? delayData.Average()
                     : 0);
             }
             else
