@@ -3,9 +3,9 @@ import { type FunctionComponent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Marker, Popup } from "react-leaflet";
 
+import { dataProvider } from "../../../utils/data-manager";
 import { getOsmNodeName } from "../../../utils/osm-utils";
-import { getSteamProfileInfo, ProfileResponse } from "../../../utils/steam";
-import { OsmNode, Station } from "../../../utils/types";
+import { OsmNode, Station, SteamProfileResponse } from "../../../utils/types";
 import { useOsmData } from "../../../utils/use-osm-data";
 import { useSetting } from "../../../utils/use-setting";
 import BotIcon from "../icons/bot.svg?raw";
@@ -42,7 +42,7 @@ function getIcon(stationName: string, avatar?: string, osmData?: OsmNode | null,
 const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
   const { i18n } = useTranslation();
   const markerRef = useRef<L.Marker>(null);
-  const [userData, setUserData] = useState<ProfileResponse | null>(null);
+  const [userData, setUserData] = useState<SteamProfileResponse | null>(null);
   const [icon, setIcon] = useState<L.Icon<Partial<L.IconOptions>>>(DEFAULT_ICON);
   const [layerOpacities] = useSetting("layerOpacities");
   const osmData = useOsmData(station.Name, station.Prefix);
@@ -55,9 +55,15 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
       return;
     }
 
-    getSteamProfileInfo(station.DispatchedBy[0].SteamId).then((profile) => {
+    dataProvider.getSteamProfileData(station.DispatchedBy[0].SteamId).then((profile) => {
+      if (!profile) {
+        setIcon(getIcon(station.Name, undefined, translateStationNames ? osmData : undefined, i18n.language));
+        setUserData(null);
+        return;
+      }
+
       setUserData(profile);
-      setIcon(getIcon(station.Name, profile.avatar, translateStationNames ? osmData : undefined, i18n.language));
+      setIcon(getIcon(station.Name, profile.Avatar, translateStationNames ? osmData : undefined, i18n.language));
     });
   }, [i18n.language, osmData, station.DispatchedBy, station.Name, translateStationNames]);
 

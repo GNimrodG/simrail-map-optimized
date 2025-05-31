@@ -7,20 +7,29 @@ import "moment/dist/locale/hu";
 import "moment/dist/locale/tr";
 import "moment/dist/locale/pl";
 
-import { captureEvent } from "@sentry/react";
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import moment from "moment";
 import { initReactI18next } from "react-i18next";
 
+import { isSentryLoaded$ } from "./utils/data-manager";
+
 // check if all the language have their moment locale imported
 SUPPORTED_LANGUAGES.forEach((lng) => {
   if (!moment.locales().includes(lng)) {
     console.warn("Moment locale is missing for", lng);
-    captureEvent({
-      message: "Moment locale is missing",
-      extra: { lng },
-    });
+    if (isSentryLoaded$.getValue()) {
+      import("@sentry/react")
+        .then((Sentry) => {
+          Sentry.captureEvent({
+            message: "Moment locale is missing",
+            extra: { lng },
+          });
+        })
+        .catch((error) => {
+          console.error("Failed to capture event in Sentry", error);
+        });
+    }
   }
 });
 
@@ -52,10 +61,19 @@ i18n.on("languageChanged", (lng) => {
 
 i18n.on("missingKey", (lngs, namespace, key) => {
   console.warn("Missing translation key", lngs, namespace, key);
-  captureEvent({
-    message: "Missing translation key",
-    extra: { lngs, namespace, key },
-  });
+
+  if (isSentryLoaded$.getValue()) {
+    import("@sentry/react")
+      .then((Sentry) => {
+        Sentry.captureEvent({
+          message: "Missing translation key",
+          extra: { lngs, namespace, key },
+        });
+      })
+      .catch((error) => {
+        console.error("Failed to capture event in Sentry", error);
+      });
+  }
 });
 
 console.log("i18n initialized with language:", i18n.language);

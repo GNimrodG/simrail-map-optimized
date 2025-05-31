@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Numerics;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using Npgsql;
@@ -19,13 +18,22 @@ namespace SMOBackend.Analytics;
 /// </summary>
 public class RoutePointAnalyzerService : IHostedService
 {
-    private readonly QueueProcessor<Dictionary<string, Train[]>> _queueProcessor;
+    private const int CleanupIntervalHours = 48; // in hours
+
+    private const double MinDistance = 200; // in meters
+
+    private static readonly Gauge RoutePointQueueGauge = Metrics
+        .CreateGauge("smo_route_point_queue", "Number of items in the route point queue");
 
     private readonly ILogger<RoutePointAnalyzerService> _logger;
+    private readonly QueueProcessor<Dictionary<string, Train[]>> _queueProcessor;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly TrainDataService _trainDataService;
 
     private CancellationTokenSource _cancellationTokenSource;
+    private Task? _cleanOldLines;
+
+    private Task? _cleanRouteLinesTask;
 
     public RoutePointAnalyzerService(ILogger<RoutePointAnalyzerService> logger,
         IServiceScopeFactory scopeFactory,
@@ -39,9 +47,6 @@ public class RoutePointAnalyzerService : IHostedService
             ProcessTrainData,
             RoutePointQueueGauge);
     }
-
-    private Task? _cleanRouteLinesTask;
-    private Task? _cleanOldLines;
 
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
@@ -200,8 +205,6 @@ public class RoutePointAnalyzerService : IHostedService
         }
     }
 
-    const int CleanupIntervalHours = 48; // in hours
-
     /// <summary>
     /// Cleans up line routes older than <see cref="CleanupIntervalHours"/> hours.
     /// </summary>
@@ -225,10 +228,28 @@ public class RoutePointAnalyzerService : IHostedService
                         CleanupIntervalHours);
 
                     var cutoffTime = DateTime.UtcNow.AddHours(-CleanupIntervalHours);
-                    var pointsToRemove = await context.RoutePoints
-                        .Where(rp => rp.CreatedAt < cutoffTime)
+
+                    var routeLines = await context.RoutePoints
+                        .GroupBy(rp => new { rp.RouteId, rp.RunId, rp.TrainId })
+                        .Select(g => new
+                            { g.Key.RouteId, g.Key.RunId, g.Key.TrainId, Latest = g.Max(x => x.CreatedAt) })
+                        .OrderByDescending(g => g.Latest)
                         .ToListAsync(cancellationToken);
 
+                    var pointsToRemove = routeLines
+                        .Where(g => g.Latest < cutoffTime)
+                        .SelectMany(g => context.RoutePoints
+                            .Where(rp => rp.RouteId == g.RouteId && rp.RunId == g.RunId && rp.TrainId == g.TrainId))
+                        .ToList();
+
+                    if (pointsToRemove.Count == 0)
+                    {
+                        _logger.LogInformation("No route lines older than {CleanupIntervalHours} hours found",
+                            CleanupIntervalHours);
+                        continue;
+                    }
+
+                    // Remove the points
                     context.RoutePoints.RemoveRange(pointsToRemove);
                     await context.SaveChangesAsync(cancellationToken);
 
@@ -251,11 +272,6 @@ public class RoutePointAnalyzerService : IHostedService
             _logger.LogCritical(ex, "Error in route point analyzer service");
         }
     }
-
-    private const double MinDistance = 200; // in meters
-
-    private static readonly Gauge RoutePointQueueGauge = Metrics
-        .CreateGauge("smo_route_point_queue", "Number of items in the route point queue");
 
     private void OnTrainDataReceived(Dictionary<string, Train[]> data)
     {

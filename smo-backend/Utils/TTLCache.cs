@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using MessagePack;
+using MessagePack.Resolvers;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace SMOBackend.Utils;
@@ -15,6 +16,11 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl)
     /// <inheritdoc cref="Dictionary{TKey,TValue}.Keys"/>
     public IEnumerable<TKey> Keys => _cache.Keys as IEnumerable<TKey> ?? [];
 
+    /// <inheritdoc cref="Dictionary{TKey,TValue}.Count" />
+    public int Count => _cache.Count;
+
+    public event EventHandler<TKey>? KeyAdded;
+
     /// <inheritdoc cref="Dictionary{TKey,TValue}.Add"/>
     public void Add(TKey key, TValue value)
     {
@@ -22,6 +28,7 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl)
         {
             AbsoluteExpirationRelativeToNow = ttl
         });
+        KeyAdded?.Invoke(this, key);
     }
 
     /// <inheritdoc cref="Dictionary{TKey,TValue}.TryGetValue"/>
@@ -57,9 +64,6 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl)
         }
     }
 
-    /// <inheritdoc cref="Dictionary{TKey,TValue}.Count"/>
-    public int Count => _cache.Count;
-
     /// <summary>
     /// Gets the value for the specified key, or adds it if it doesn't exist.
     /// </summary>
@@ -70,6 +74,7 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl)
 
         value = valueFactory();
         Add(key, value);
+        KeyAdded?.Invoke(this, key);
         return value;
     }
 
@@ -89,6 +94,8 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl)
         {
             Add(key, value);
         }
+
+        KeyAdded?.Invoke(this, key);
     }
 
     /// <summary>
@@ -111,7 +118,7 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl)
             .ToDictionary(key => (TKey)key, key => _cache.Get(key));
 
         await MessagePackSerializer.SerializeAsync(stream, value,
-            MessagePack.Resolvers.ContractlessStandardResolver.Options);
+            ContractlessStandardResolver.Options);
 
         await stream.FlushAsync();
 
@@ -144,7 +151,7 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl)
 
         var value = MessagePackSerializer.Deserialize<Dictionary<TKey, TValue>>(
             stream,
-            MessagePack.Resolvers.ContractlessStandardResolver.Options);
+            ContractlessStandardResolver.Options);
 
         Clear();
 

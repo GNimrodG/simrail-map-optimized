@@ -176,3 +176,13 @@ export interface OsmNode {
   lon: number;
   tags: Record<CommonOsmTags, string>;
 }
+
+export interface SteamProfileResponse {
+  Avatar: string;
+  PersonaName: string;
+}
+
+export interface SteamProfileStats {
+  Achievements: { Name: string; Achieved: number }[];
+  Stats: { Name: string; Value: number }[];
+}

@@ -50,7 +50,6 @@ export async function fetchOsmDataForStation(name: string, prefix?: string): Pro
     if (!response && prefix) {
       const fallbackResponse = await fetchOsmDataByRailwayRef(prefix);
       if (!fallbackResponse) {
-        console.warn(`No OSM data found for station: ${name}`);
         return null; // Return null if no data found
       }
 
@@ -59,7 +58,7 @@ export async function fetchOsmDataForStation(name: string, prefix?: string): Pro
 
     return response || null;
   } catch (error) {
-    console.error("Error fetching OSM data for station:", error);
+    console.debug("Error fetching OSM data for station:", error);
     return null; // Return null on error
   }
 }
@@ -81,8 +80,6 @@ const fetchOsmDataByStationName = getDebouncedFetcher<OsmNode | null>(async (key
     response.elements.forEach((element: OsmNode) => {
       elementsMap.set(element.tags.name, element);
     });
-
-    console.log("Fetched OSM data for stations:", elementsMap);
 
     return elementsMap;
   });

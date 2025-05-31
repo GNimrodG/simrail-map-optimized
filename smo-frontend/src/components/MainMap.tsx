@@ -7,12 +7,11 @@ import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import L from "leaflet";
-import { type FunctionComponent, lazy, Suspense, useContext, useEffect, useState } from "react";
+import { type FunctionComponent, lazy, Suspense, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MapContainer } from "react-leaflet";
 import Control from "react-leaflet-custom-control";
 
-import i18n from "../i18n";
 import { dataProvider } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
@@ -40,13 +39,6 @@ const StationsLayer = lazy(() => import("./layers/StationsLayer"));
 const TrainsLayer = lazy(() => import("./layers/TrainsLayer"));
 const UnplayableStationsLayer = lazy(() => import("./layers/UnplayableStationsLayer"));
 const StoppingPointsLayer = lazy(() => import("./layers/StoppingPointsLayer"));
-
-const MAIN_ATTRIBUTIONS = [
-  '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-  '<a href="https://github.com/GNimrodG/simrail-map-optimized" target="_blank">GitHub</a>',
-  `<a onclick="window.feedback()" href="#">${i18n.t("BugReport")}</a>`,
-  'This website is not affiliated with the <a href="https://simrail.eu" target="_blank">SimRail</a> team.',
-].join(" | ");
 
 const MainMap: FunctionComponent = () => {
   const { t } = useTranslation();
@@ -87,6 +79,21 @@ const MainMap: FunctionComponent = () => {
     ],
   ]);
 
+  const attributions = useMemo(
+    () =>
+      [
+        '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+        '<a href="https://github.com/GNimrodG/simrail-map-optimized" target="_blank">GitHub</a>',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).feedback && `<a onclick="window.feedback()" href="#">${t("BugReport")}</a>`,
+        `<a href="/privacy-policy.html" target="_blank">${t("PrivacyPolicy.Title")}</a>`,
+        'This website is not affiliated with the <a href="https://simrail.eu" target="_blank">SimRail</a> team.',
+      ]
+        .filter(Boolean)
+        .join(" | "),
+    [t],
+  );
+
   return (
     <>
       {!isConnected && <Loading />}
@@ -102,7 +109,7 @@ const MainMap: FunctionComponent = () => {
         <RefreshableTileLayer
           className={alternativeTheme ? "alternativemap" : "defaultmap"}
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution={MAIN_ATTRIBUTIONS}
+          attribution={attributions}
         />
 
         {/* placeholder control */}

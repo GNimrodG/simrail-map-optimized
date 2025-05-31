@@ -332,6 +332,12 @@
           "Full": "This train is currently inside the station."
         },
         "N/A": "N/A"
+      },
+      "PrivacyPolicy": {
+        "Title": "Privacy Policy",
+        "Description": "This website uses cookies and third-party services to ensure the best user experience and for analytics. See our <0>privacy policy</0> for more information.",
+        "AcceptButton": "Accept",
+        "DeclineButton": "Decline"
       }
     }
   },
@@ -341,7 +347,7 @@
       "SelectServer": "Server auswählen",
       "ServerInactive": "Der ausgewählte Server ist offline!",
       "Search": "Suche",
-      "ToggleTheme": "Thema wechseln",
+      "ToggleTheme": "Farbschema",
       "Layers": {
         "Background": {
           "orm-infra": "OpenRailwayMap - Infrastruktur",
@@ -543,7 +549,7 @@
       "LowSpeedWarning": {
         "Title": "Niedrige durchschnittliche Zugsgeschwindigkeit",
         "Description": "Die durchschnittliche Geschwindigkeit der Züge auf diesem Server beträgt {{speed}} km/h.",
-        "Tooltip": "Tipp: Sie können diese Warnung in den Einstellungen ausschalten."
+        "Tooltip": "Tipp: Diese Warnung kann in den Einstellungen ausgeschaltet werden."
       },
       "TrainTypes": {
         "ECE": "EuroCity-Zug mit Elektrolokomotive",
@@ -654,13 +660,13 @@
         "Line": "Linie",
         "Stop": "Halt",
         "PassedEarly": "(Zu früh)",
-        "Delayed": "(Spät)",
+        "Delayed": "(Verspätet)",
         "PrevStationIsNext": {
           "Short": "ZUV",
           "Full": "Die nächste Station für diesen Zug ist {{stationName}}."
         },
         "CurrentStationIsNext": {
-          "Short": "NAH",
+          "Short": "ANKOMMEND",
           "Full": "Die nächste Station für diesen Zug ist {{stationName}}."
         },
         "InsideStation": {
@@ -668,6 +674,12 @@
           "Full": "Dieser Zug befindet sich derzeit im Bahnhof."
         },
         "N/A": "k.A."
+      },
+      "PrivacyPolicy": {
+        "Title": "Datenschutzrichtlinie",
+        "Description": "Diese Website verwendet Cookies und Drittanbieterdienste, um die beste Benutzererfahrung zu gewährleisten und für Analysen. Weitere Informationen finden Sie in unserer <0>Datenschutzrichtlinie</0>.",
+        "AcceptButton": "Akzeptieren",
+        "DeclineButton": "Ablehnen"
       }
     }
   },
@@ -1004,6 +1016,12 @@
           "Full": "Ez a vonat jelenleg az állomáson tartózkodik."
         },
         "N/A": "n/a"
+      },
+      "PrivacyPolicy": {
+        "Title": "Adatvédelmi irányelvek",
+        "Description": "Ez a weboldal sütiket és harmadik fél szolgáltatásokat használ a legjobb felhasználói élmény biztosítása és elemzés céljából. További információkért olvassa el <0>adatvédelmi irányelveinket</0>.",
+        "AcceptButton": "Elfogadom",
+        "DeclineButton": "Elutasítom"
       }
     }
   },
@@ -1340,6 +1358,12 @@
           "Full": "Bu tren şu anda istasyonda."
         },
         "N/A": "n/a"
+      },
+      "PrivacyPolicy": {
+        "Title": "Gizlilik Politikası",
+        "Description": "Bu web sitesi, en iyi kullanıcı deneyimini sağlamak ve analiz yapmak için çerezler ve üçüncü taraf hizmetleri kullanır. Daha fazla bilgi için <0>gizlilik politikamızı</0> okuyun.",
+        "AcceptButton": "Kabul Et",
+        "DeclineButton": "Reddet"
       }
     }
   },
@@ -1676,6 +1700,12 @@
           "Full": "Pociąg znajduje się w stacji."
         },
         "N/A": "n/d"
+      },
+      "PrivacyPolicy": {
+        "Title": "Polityka Prywatności",
+        "Description": "Ta strona internetowa używa plików cookie i usług stron trzecich, aby zapewnić najlepsze wrażenia użytkownika i analizować ruch. Przeczytaj naszą <0>politykę prywatności</0>, aby uzyskać więcej informacji.",
+        "AcceptButton": "Akceptuję",
+        "DeclineButton": "Odrzucam"
       }
     }
   }

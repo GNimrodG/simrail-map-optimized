@@ -20,8 +20,7 @@ import { dataProvider } from "../../../utils/data-manager";
 import MapLinesContext from "../../../utils/map-lines-context";
 import SelectedRouteContext from "../../../utils/selected-route-context";
 import SelectedTrainContext from "../../../utils/selected-train-context";
-import { ProfileResponse } from "../../../utils/steam";
-import { Timetable, Train } from "../../../utils/types";
+import { SteamProfileResponse, Timetable, Train } from "../../../utils/types";
 import { getColorTrainMarker, getDistanceColorForSignal } from "../../../utils/ui";
 import { useSetting } from "../../../utils/use-setting";
 import useSubject from "../../../utils/use-subject";
@@ -43,7 +42,7 @@ import TrainScheduleDisplay from "./TrainScheduleDisplay";
 
 export interface TrainMarkerPopupProps {
   train: Train;
-  userData?: ProfileResponse | null;
+  userData?: SteamProfileResponse | null;
   showTrainRouteButton?: boolean;
   onToggleCollapse?: () => void;
   isCollapsed?: boolean;

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Prometheus;
 using Prometheus.SystemMetrics;
 using Scalar.AspNetCore;
@@ -36,8 +37,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>
     {
-        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-        options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+        options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+        options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
         options.SerializerSettings.Converters.Add(new PointJsonConverter());
     });
 
@@ -182,10 +183,11 @@ builder.Services.AddDbContextPool<SmoContext>(options =>
 
 builder.Services.AddSingleton<SimrailApiClient>();
 
-if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("STEAM_API_KEY")))
-    builder.Services.AddSingleton(
-        new SteamApiClient(Environment.GetEnvironmentVariable("STEAM_API_KEY")!)
-    );
+var steamApiKey = Environment.GetEnvironmentVariable("STEAM_API_KEY")
+                  ?? builder.Configuration.GetValue<string>("SteamApiKey")
+                  ?? "";
+
+builder.Services.AddSingleton(new SteamApiClient(steamApiKey));
 
 // Data services
 builder.Services.AddHostedServiceSingleton<ServerDataService>();

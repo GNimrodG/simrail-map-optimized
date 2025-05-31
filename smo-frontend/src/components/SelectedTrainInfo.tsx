@@ -6,7 +6,7 @@ import { debounceTime, fromEvent, throttleTime } from "rxjs";
 import { dataProvider } from "../utils/data-manager";
 import MapLinesContext from "../utils/map-lines-context";
 import SelectedTrainContext from "../utils/selected-train-context";
-import { getSteamProfileInfo, ProfileResponse } from "../utils/steam";
+import { SteamProfileResponse } from "../utils/types";
 import useBehaviorSubj from "../utils/use-behaviorSubj";
 import { useSetting } from "../utils/use-setting";
 import Loading from "./Loading";
@@ -24,7 +24,7 @@ const SelectedTrainInfo: FunctionComponent = () => {
 
   const [showLineToNextSignal] = useSetting("showLineToNextSignal");
 
-  const [selectedTrainUserData, setSelectedTrainUserData] = useState<ProfileResponse | null>(null);
+  const [selectedTrainUserData, setSelectedTrainUserData] = useState<SteamProfileResponse | null>(null);
 
   const selectedTrainData = useMemo(() => {
     if (!selectedTrain) return null;
@@ -37,8 +37,8 @@ const SelectedTrainInfo: FunctionComponent = () => {
       return train;
     }
 
-    getSteamProfileInfo(train.TrainData.ControlledBySteamID).then((profile) => {
-      setSelectedTrainUserData(profile);
+    dataProvider.getSteamProfileData(train.TrainData.ControlledBySteamID).then((profile) => {
+      setSelectedTrainUserData(profile ?? { PersonaName: train.TrainData.ControlledBySteamID, Avatar: "" });
     });
 
     return train;

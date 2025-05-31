@@ -5,6 +5,8 @@ import {
   SignalStatus,
   SimplifiedTimtableEntry,
   Station,
+  SteamProfileResponse,
+  SteamProfileStats,
   TimeData,
   Timetable,
   Train,
@@ -42,4 +44,7 @@ export interface IDataProvider {
   markSignalPrevFinalized(signal: string, finalized: boolean): void;
 
   deleteSignal(signal: string): void;
+
+  getSteamProfileData(steamId: string): Promise<SteamProfileResponse | null>;
+  getSteamProfileStats(steamId: string): Promise<SteamProfileStats | null>;
 }

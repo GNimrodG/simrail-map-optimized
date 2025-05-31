@@ -22,8 +22,7 @@ import _stationLayouts from "../../../assets/station-layouts.json";
 import _wikiLinks from "../../../assets/wiki-links.json";
 import { dataProvider } from "../../../utils/data-manager";
 import { getSignalsForStation, getStationGeometry, goToSignal } from "../../../utils/geom-utils";
-import { ProfileResponse } from "../../../utils/steam";
-import { OsmNode, Station } from "../../../utils/types";
+import { OsmNode, Station, SteamProfileResponse } from "../../../utils/types";
 import useStationTimetableEntries from "../../../utils/use-station-timetable-entries";
 import InfoIcon from "../../icons/InfoIcon";
 import Loading from "../../Loading";
@@ -48,7 +47,7 @@ const WikiLinks = _wikiLinks as Record<string, string>;
 
 export interface StationMarkerPopupProps {
   station: Station;
-  userData: ProfileResponse | null;
+  userData: SteamProfileResponse | null;
   onClosePopup: () => void;
   stationOsmData: OsmNode | null;
 }

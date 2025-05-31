@@ -2,9 +2,9 @@ import { DivIcon, Icon, IconOptions } from "leaflet";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 import { Marker, Popup, useMap } from "react-leaflet";
 
+import { dataProvider } from "../../../utils/data-manager";
 import SelectedTrainContext from "../../../utils/selected-train-context";
-import { getSteamProfileInfo, ProfileResponse } from "../../../utils/steam";
-import { Train } from "../../../utils/types";
+import { SteamProfileResponse, Train } from "../../../utils/types";
 import { getColorTrainMarker } from "../../../utils/ui";
 import { useSetting } from "../../../utils/use-setting";
 import ReactLeafletDriftMarker from "../../utils/ReactLeafletDriftMarker";
@@ -50,7 +50,7 @@ function getIcon(
 const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
   const map = useMap();
   const { selectedTrain } = useContext(SelectedTrainContext);
-  const [userData, setUserData] = useState<ProfileResponse | null>(null);
+  const [userData, setUserData] = useState<SteamProfileResponse | null>(null);
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(DEFAULT_ICON);
   const [useAltTracking] = useSetting("useAltTracking");
   const [disableSlidingMarkers] = useSetting("disableSlidingMarkers");
@@ -62,8 +62,8 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
       return;
     }
 
-    getSteamProfileInfo(train.TrainData.ControlledBySteamID).then((profile) => {
-      setUserData(profile);
+    dataProvider.getSteamProfileData(train.TrainData.ControlledBySteamID).then((profile) => {
+      setUserData(profile ?? { PersonaName: train.TrainData.ControlledBySteamID, Avatar: "" });
     });
   }, [train.TrainData.ControlledBySteamID]);
 
@@ -81,9 +81,9 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
 
   useEffect(() => {
     setIcon(
-      getIcon(train.TrainNoLocal, trainMarkerColor, train.TrainData.InBorderStationArea, isSelected, userData?.avatar),
+      getIcon(train.TrainNoLocal, trainMarkerColor, train.TrainData.InBorderStationArea, isSelected, userData?.Avatar),
     );
-  }, [isSelected, train.TrainData.InBorderStationArea, train.TrainNoLocal, trainMarkerColor, userData?.avatar]);
+  }, [isSelected, train.TrainData.InBorderStationArea, train.TrainNoLocal, trainMarkerColor, userData?.Avatar]);
 
   useEffect(() => {
     if (!shouldFollow || !disableSlidingMarkers) {

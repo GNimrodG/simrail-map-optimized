@@ -15,6 +15,8 @@ import {
   SignalStatusData,
   SimplifiedTimtableEntry,
   Station,
+  SteamProfileResponse,
+  SteamProfileStats,
   TimeData,
   Timetable,
   Train,
@@ -238,7 +240,114 @@ export class SignalRDataProvider implements IDataProvider {
 
     this.connection.on("TimeReceived", (timeData: TimeData) => this.timeData$.next(timeData));
 
+    this.connection.on("SteamProfileDataUnavailable", () => {
+      if (this.steamDataUnavailable) return;
+      console.warn("Steam profile data is unavailable");
+      this.profileDataCache.clear();
+      this.steamDataUnavailable = true;
+    });
+
+    this.connection.on("SteamProfileDataError", ({ steamId, error }: { steamId: string; error: string }) => {
+      console.error(`Failed to fetch steam profile data for ${steamId}:`, error);
+      this.profileDataCache.delete(steamId);
+    });
+
+    this.connection.on("SteamStatsError", ({ steamId, error }: { steamId: string; error: string }) => {
+      console.error(`Failed to fetch steam profile stats for ${steamId}:`, error);
+      this.profileStatsCache.delete(steamId);
+    });
+
     this.connectToSignalR();
+  }
+
+  private steamDataUnavailable = false;
+
+  private readonly profileDataCache = new LRUCache<string, Promise<SteamProfileResponse | null>>({
+    max: 100,
+    ttl: 1000 * 60 * 60 * 3, // 3 hours
+  });
+
+  getSteamProfileData(steamId: string): Promise<SteamProfileResponse | null> {
+    if (!steamId) {
+      return Promise.resolve(null);
+    }
+
+    if (this.steamDataUnavailable) {
+      return Promise.resolve({ PersonaName: steamId, Avatar: "" });
+    }
+
+    const cached = this.profileDataCache.get(steamId);
+
+    if (cached) {
+      console.debug("Got cached steam profile data for", steamId, cached);
+      return cached;
+    }
+
+    const promise = new Promise<SteamProfileResponse | null>((resolve) => {
+      this.connection.invoke("GetSteamProfileData", steamId).then((data: SteamProfileResponse | null) => {
+        if (data) {
+          console.debug("Got steam profile data for", steamId, data);
+          this.profileDataCache.set(steamId, Promise.resolve(data));
+          resolve(data);
+        } else {
+          console.warn("Failed to fetch steam profile data for", steamId);
+          resolve(null);
+          this.profileDataCache.delete(steamId);
+        }
+      });
+
+      setTimeout(() => {
+        console.warn("Steam profile data fetch timed out for", steamId);
+        resolve(null);
+        this.profileDataCache.delete(steamId);
+      }, 30000); // 30 seconds timeout
+    });
+
+    this.profileDataCache.set(steamId, promise);
+
+    return promise;
+  }
+
+  private readonly profileStatsCache = new LRUCache<string, Promise<SteamProfileStats | null>>({
+    max: 100,
+    ttl: 1000 * 60 * 10, // 10 minutes
+  });
+
+  getSteamProfileStats(steamId: string): Promise<SteamProfileStats | null> {
+    if (!steamId || this.steamDataUnavailable) {
+      return Promise.resolve(null);
+    }
+
+    const cached = this.profileStatsCache.get(steamId);
+
+    if (cached) {
+      console.log("Got cached steam profile stats for", steamId);
+      return cached;
+    }
+
+    const promise = new Promise<SteamProfileStats | null>((resolve) => {
+      this.connection.invoke("GetSteamProfileStats", steamId).then((data: SteamProfileStats | null) => {
+        if (data) {
+          console.log("Got steam profile stats for", steamId);
+          this.profileStatsCache.set(steamId, Promise.resolve(data));
+          resolve(data);
+        } else {
+          console.warn("Failed to fetch steam profile stats for", steamId);
+          resolve(null);
+          this.profileStatsCache.delete(steamId);
+        }
+      });
+
+      setTimeout(() => {
+        console.warn("Steam profile stats fetch timed out for", steamId);
+        resolve(null);
+        this.profileStatsCache.delete(steamId);
+      }, 30000); // 30 seconds timeout
+    });
+
+    this.profileStatsCache.set(steamId, promise);
+
+    return promise;
   }
 
   isConnected$ = new BehaviorSubject(false);

@@ -4,10 +4,10 @@ import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent } from "react";
 
-import { ProfileResponse } from "../utils/steam";
+import { SteamProfileResponse } from "../utils/types";
 
 export interface SteamProfileDisplayProps {
-  profile: ProfileResponse;
+  profile: SteamProfileResponse;
   steamId: string;
 }
 
@@ -22,8 +22,8 @@ const SteamProfileDisplay: FunctionComponent<SteamProfileDisplayProps> = ({ prof
         direction="row"
         spacing={1}
         alignItems="center">
-        <Avatar src={profile.avatar} alt={profile.personaname} />
-        <Typography level="h3">{profile.personaname}</Typography>
+        <Avatar src={profile.Avatar} alt={profile.PersonaName} />
+        <Typography level="h3">{profile.PersonaName}</Typography>
       </Stack>
     </Sheet>
   );

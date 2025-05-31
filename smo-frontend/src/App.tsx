@@ -5,6 +5,7 @@ import CssBaseline from "@mui/joy/CssBaseline";
 import { CssVarsProvider } from "@mui/joy/styles";
 import { lazy, Suspense, useMemo, useState } from "react";
 
+import CookieConsent from "./components/CookieConsent";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Loading from "./components/Loading";
 import SelectedTrainProvider from "./components/SelectedTrainProvider";
@@ -32,6 +33,7 @@ function App() {
           <MapLinesContext.Provider value={mapLinesContextValue}>
             <Suspense fallback={<Loading color="success" />}>
               <ErrorBoundary location="App">
+                <CookieConsent />
                 <MainMap />
               </ErrorBoundary>
             </Suspense>

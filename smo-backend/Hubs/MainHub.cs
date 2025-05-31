@@ -2,6 +2,7 @@
 using Prometheus;
 using SMOBackend.Analytics;
 using SMOBackend.Models;
+using SMOBackend.Models.Steam;
 using SMOBackend.Services;
 
 namespace SMOBackend.Hubs;
@@ -19,9 +20,13 @@ public class MainHub(
     SignalAnalyzerService signalAnalyzerService,
     TrainDelayAnalyzerService trainDelayAnalyzerService,
     RoutePointAnalyzerService routePointAnalyzerService,
-    ClientManagerService clientManagerService)
+    ClientManagerService clientManagerService,
+    SteamApiClient steamApiClient)
     : Hub
 {
+    private static readonly Gauge ServerClientsGauge = Metrics
+        .CreateGauge("smo_server_clients", "Number of clients connected to each server", "server");
+
     /// <inheritdoc />
     public override async Task OnConnectedAsync()
     {
@@ -144,7 +149,7 @@ public class MainHub(
     /// <summary>
     /// Gets the stations for the currently selected server.
     /// </summary>
-    public async void GetStations()
+    public async Task GetStations()
     {
         try
         {
@@ -161,11 +166,11 @@ public class MainHub(
             logger.LogError(e, "Error sending stations to client");
         }
     }
-    
+
     /// <summary>
     /// Gets the trains for the currently selected server.
     /// </summary>
-    public async void GetTrains() 
+    public async Task GetTrains()
     {
         try
         {
@@ -182,11 +187,11 @@ public class MainHub(
             logger.LogError(e, "Error sending trains to client");
         }
     }
-    
+
     /// <summary>
     /// Gets the signals for the currently selected server.
     /// </summary>
-    public async void GetSignals() 
+    public async Task GetSignals()
     {
         try
         {
@@ -194,7 +199,7 @@ public class MainHub(
 
             var trains = trainDataService[serverCode];
             if (trains == null) return;
-            
+
             var signals = await signalAnalyzerService.GetSignalsForTrains(trains);
             await Clients.Caller.SendAsync("SignalsReceived", signals);
         }
@@ -208,6 +213,81 @@ public class MainHub(
         }
     }
 
-    private static readonly Gauge ServerClientsGauge = Metrics
-        .CreateGauge("smo_server_clients", "Number of clients connected to each server", "server");
+    /// <summary>
+    ///     Gets the steam profile data for a given Steam ID.
+    /// </summary>
+    /// <param name="steamId">The Steam ID to fetch profile data for.</param>
+    public async Task<PlayerSummary?> GetSteamProfileData(string steamId)
+    {
+        try
+        {
+            if (!steamApiClient.IsAvailable)
+            {
+                logger.LogWarning("Steam API client is not configured, cannot fetch profile data");
+                await Clients.Caller.SendAsync("SteamProfileDataUnavailable");
+                return null;
+            }
+
+            try
+            {
+                var profileData = await steamApiClient.GetPlayerSummaries(steamId);
+
+                if (profileData != null && profileData.Response.Players.Length != 0)
+                    return profileData.Response.Players[0];
+
+                logger.LogWarning("No profile data found for Steam ID {SteamId}", steamId);
+                return null;
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error fetching Steam profile data for {SteamId}", steamId);
+                await Clients.Caller.SendAsync("SteamProfileDataError", new { steamId, error = e.Message });
+                return null;
+            }
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error sending Steam profile data to client");
+            await Clients.Caller.SendAsync("SteamProfileDataError", new { steamId, error = e.Message });
+            return null;
+        }
+    }
+
+    /// <summary>
+    ///     Gets the Steam stats for a given Steam ID.
+    /// </summary>
+    /// <param name="steamId">The Steam ID to fetch stats for.</param>
+    public async Task<PlayerStats?> GetSteamStats(string steamId)
+    {
+        try
+        {
+            if (!steamApiClient.IsAvailable)
+            {
+                logger.LogWarning("Steam API client is not configured, cannot fetch stats");
+                await Clients.Caller.SendAsync("SteamProfileDataUnavailable");
+                return null;
+            }
+
+            try
+            {
+                var statsData = await steamApiClient.GetPlayerStats(steamId);
+                if (statsData != null && statsData.PlayerStats.Stats.Count != 0) return statsData.PlayerStats;
+
+                logger.LogWarning("No stats found for Steam ID {SteamId}", steamId);
+                return null;
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error fetching Steam stats for {SteamId}", steamId);
+                await Clients.Caller.SendAsync("SteamStatsError", new { steamId, error = e.Message });
+                return null;
+            }
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error sending Steam stats to client");
+            await Clients.Caller.SendAsync("SteamStatsError", new { steamId, error = e.Message });
+            return null;
+        }
+    }
 }
