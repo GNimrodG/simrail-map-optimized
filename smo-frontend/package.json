@@ -49,7 +49,7 @@
     "@types/wellknown": "^0.5.8",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^4.5.0",
     "babel-plugin-react-compiler": "^19.0.0-beta-ebf51a3-20250411",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^10.1.2",
