@@ -17,7 +17,7 @@
     "@microsoft/signalr": "^8.0.7",
     "@microsoft/signalr-protocol-msgpack": "^8.0.7",
     "@mui/joy": "^5.0.0-beta.51",
-    "@sentry/react": "^9.15.0",
+    "@sentry/react": "^9.24.0",
     "@sentry/vite-plugin": "^3.4.0",
     "@turf/turf": "^7.2.0",
     "core-js": "^3.41.0",
