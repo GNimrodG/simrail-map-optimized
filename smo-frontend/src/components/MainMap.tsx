@@ -54,6 +54,8 @@ const MainMap: FunctionComponent = () => {
   const [renderer] = useState(() => new L.Canvas());
   const [map, setMap] = useState<L.Map | null>(null);
 
+  const [panesCreated, setPanesCreated] = useState(false);
+
   useEffect(() => {
     if (!map) return;
 
@@ -67,6 +69,12 @@ const MainMap: FunctionComponent = () => {
     map.createPane("activeSignalsPane").style.zIndex = "406";
     map.createPane("selectedRoutePane").style.zIndex = "407";
     map.createPane("mapLinesPane").style.zIndex = "408";
+
+    setPanesCreated(true);
+
+    return () => {
+      setPanesCreated(false);
+    };
   }, [map]);
 
   useHotkeys([
@@ -232,48 +240,50 @@ const MainMap: FunctionComponent = () => {
           />
         )}
 
-        <Suspense fallback={<Loading color="success" />}>
-          {/* Stopping points, Stations, Trains, Signals, Active route, Unplayable stations*/}
-          {visibleLayers.includes("unplayable-stations") && (
-            <ErrorBoundary location="MainMap - UnplayableStationsLayer">
-              <UnplayableStationsLayer />
-            </ErrorBoundary>
-          )}
-          {visibleLayers.includes("stoppingpoints") && (
-            <ErrorBoundary location="MainMap - StoppingPointsLayer">
-              <StoppingPointsLayer />
-            </ErrorBoundary>
-          )}
-          {visibleLayers.includes("passive-signals") && (
-            <ErrorBoundary location="MainMap - PassiveSignalsLayer">
-              <PassiveSignalsLayer />
-            </ErrorBoundary>
-          )}
-          {visibleLayers.includes("stations") && (
-            <ErrorBoundary location="MainMap - StationsLayer">
-              <StationsLayer />
-            </ErrorBoundary>
-          )}
-          {visibleLayers.includes("trains") && (
-            <ErrorBoundary location="MainMap - TrainsLayer">
-              <TrainsLayer />
-            </ErrorBoundary>
-          )}
-          {visibleLayers.includes("active-signals") && (
-            <ErrorBoundary location="MainMap - ActiveSignalsLayer">
-              <ActiveSignalsLayer />
-            </ErrorBoundary>
-          )}
-          {visibleLayers.includes("selected-route") && (
-            <ErrorBoundary location="MainMap - SelectedTrainRouteLayer">
-              <SelectedTrainRouteLayer />
-            </ErrorBoundary>
-          )}
+        {panesCreated && (
+          <Suspense fallback={<Loading color="success" />}>
+            {/* Stopping points, Stations, Trains, Signals, Active route, Unplayable stations*/}
+            {visibleLayers.includes("unplayable-stations") && (
+              <ErrorBoundary location="MainMap - UnplayableStationsLayer">
+                <UnplayableStationsLayer />
+              </ErrorBoundary>
+            )}
+            {visibleLayers.includes("stoppingpoints") && (
+              <ErrorBoundary location="MainMap - StoppingPointsLayer">
+                <StoppingPointsLayer />
+              </ErrorBoundary>
+            )}
+            {visibleLayers.includes("passive-signals") && (
+              <ErrorBoundary location="MainMap - PassiveSignalsLayer">
+                <PassiveSignalsLayer />
+              </ErrorBoundary>
+            )}
+            {visibleLayers.includes("stations") && (
+              <ErrorBoundary location="MainMap - StationsLayer">
+                <StationsLayer />
+              </ErrorBoundary>
+            )}
+            {visibleLayers.includes("trains") && (
+              <ErrorBoundary location="MainMap - TrainsLayer">
+                <TrainsLayer />
+              </ErrorBoundary>
+            )}
+            {visibleLayers.includes("active-signals") && (
+              <ErrorBoundary location="MainMap - ActiveSignalsLayer">
+                <ActiveSignalsLayer />
+              </ErrorBoundary>
+            )}
+            {visibleLayers.includes("selected-route") && (
+              <ErrorBoundary location="MainMap - SelectedTrainRouteLayer">
+                <SelectedTrainRouteLayer />
+              </ErrorBoundary>
+            )}
 
-          <ErrorBoundary location="MainMap - MapLinesLayer">
-            <MapLinesLayer />
-          </ErrorBoundary>
-        </Suspense>
+            <ErrorBoundary location="MainMap - MapLinesLayer">
+              <MapLinesLayer />
+            </ErrorBoundary>
+          </Suspense>
+        )}
 
         <LowSpeedWarning />
         <AutoZoomHandler />
