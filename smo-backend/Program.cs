@@ -216,6 +216,8 @@ builder
     .AddCheck<DataServiceHealthCheck>("Data Services")
     .ForwardToPrometheus();
 
+builder.WebHost.UseSentry();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
