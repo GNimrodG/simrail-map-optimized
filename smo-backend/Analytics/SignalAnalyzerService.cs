@@ -19,42 +19,47 @@ namespace SMOBackend.Analytics;
 /// </summary>
 public partial class SignalAnalyzerService : IHostedService
 {
-    private readonly QueueProcessor<Dictionary<string, Train[]>> _queueProcessor;
+    private static readonly Gauge SignalAnalyzerQueueGauge = Metrics
+        .CreateGauge("smo_signal_analyzer_queue", "Number of items in the signal analyzer queue");
 
-    private record TrainPrevSignalData(
-        string SignalName,
-        short SignalSpeed,
-        Point Location,
-        DateTime TimeStamp,
-        double Speed);
+    private static readonly Gauge InvalidTrainsGauge = Metrics
+        .CreateGauge("smo_invalid_trains", "Number of invalid trains", "server");
 
-    private readonly int _minDistanceToSignal =
-        Environment.GetEnvironmentVariable("SIGNAL_MIN_DISTANCE") is { } minDistance
-            ? int.Parse(minDistance)
-            : 100;
+    internal static readonly Gauge SignalsWithMultipleTrainsPerServer = Metrics
+        .CreateGauge("smo_signals_with_multiple_trains_per_server", "Number of signals with multiple trains per server",
+            "server");
 
-    private readonly int _minDistanceBetweenSignals =
-        Environment.GetEnvironmentVariable("SIGNAL_MIN_DISTANCE_BETWEEN") is { } minDistance
-            ? int.Parse(minDistance)
-            : 200;
+    internal static readonly Gauge SignalsWithMultipleTrains = Metrics
+        .CreateGauge("smo_signals_with_multiple_trains", "The count of trains pointing to the same signal", "server",
+            "signal");
 
     private readonly int _bufferDistanceBetweenPositions =
         Environment.GetEnvironmentVariable("SIGNAL_BUFFER_DISTANCE_BETWEEN") is { } bufferDistance
             ? int.Parse(bufferDistance)
             : 50;
 
-    private readonly TtlCache<string, TrainPrevSignalData> _trainPrevSignalCache = new(TimeSpan.FromSeconds(30));
+    private readonly ILogger<SignalAnalyzerService> _logger;
+
+    private readonly int _minDistanceBetweenSignals =
+        Environment.GetEnvironmentVariable("SIGNAL_MIN_DISTANCE_BETWEEN") is { } minDistance
+            ? int.Parse(minDistance)
+            : 200;
+
+    private readonly int _minDistanceToSignal =
+        Environment.GetEnvironmentVariable("SIGNAL_MIN_DISTANCE") is { } minDistance
+            ? int.Parse(minDistance)
+            : 100;
+
+    private readonly QueueProcessor<Dictionary<string, Train[]>> _queueProcessor;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly TrainDataService _trainDataService;
 
     private readonly TtlCache<string, string> _trainLastSignalCache =
         new(TimeSpan.FromSeconds(30));
 
-    private static readonly Gauge SignalAnalyzerQueueGauge = Metrics
-        .CreateGauge("smo_signal_analyzer_queue", "Number of items in the signal analyzer queue");
+    private readonly TtlCache<string, TrainPrevSignalData> _trainPrevSignalCache = new(TimeSpan.FromSeconds(30));
 
     private byte _runCount;
-    private readonly ILogger<SignalAnalyzerService> _logger;
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly TrainDataService _trainDataService;
 
     /// <summary>
     /// Service to analyze signals and their connections.
@@ -69,18 +74,6 @@ public partial class SignalAnalyzerService : IHostedService
 
         _queueProcessor =
             new(logger, ProcessTrainData, SignalAnalyzerQueueGauge);
-    }
-
-    private void AddTrainPrevSignalData(string trainId, TrainPrevSignalData data) =>
-        _trainPrevSignalCache.Set(trainId, data);
-
-    private TrainPrevSignalData? GetTrainPrevSignalData(string trainId) =>
-        _trainPrevSignalCache.TryGetValue(trainId, out var data) ? data : null;
-
-    private void UpdateTrainPrevSignalDataTtl(string trainId)
-    {
-        if (!_trainPrevSignalCache.TryGetValue(trainId, out var data)) return;
-        _trainPrevSignalCache.Set(trainId, data);
     }
 
     /// <inheritdoc />
@@ -104,6 +97,18 @@ public partial class SignalAnalyzerService : IHostedService
         return Task.CompletedTask;
     }
 
+    private void AddTrainPrevSignalData(string trainId, TrainPrevSignalData data) =>
+        _trainPrevSignalCache.Set(trainId, data);
+
+    private TrainPrevSignalData? GetTrainPrevSignalData(string trainId) =>
+        _trainPrevSignalCache.TryGetValue(trainId, out var data) ? data : null;
+
+    private void UpdateTrainPrevSignalDataTtl(string trainId)
+    {
+        if (!_trainPrevSignalCache.TryGetValue(trainId, out var data)) return;
+        _trainPrevSignalCache.Set(trainId, data);
+    }
+
     private void OnTrainDataReceived(Dictionary<string, Train[]> data)
     {
         try
@@ -116,50 +121,6 @@ public partial class SignalAnalyzerService : IHostedService
         {
             _logger.LogCritical(ex, "Error processing train data");
         }
-    }
-
-    private static readonly Gauge InvalidTrainsGauge = Metrics
-        .CreateGauge("smo_invalid_trains", "Number of invalid trains", "server");
-
-    public class SignalProjection
-    {
-        public string Name { get; set; } = string.Empty;
-        public double Longitude { get; set; }
-        public double Latitude { get; set; }
-        public string Extra { get; set; } = string.Empty;
-        public double Accuracy { get; set; }
-        public string? Type { get; set; }
-        public string? Role { get; set; }
-        public bool PrevFinalized { get; set; }
-        public bool NextFinalized { get; set; }
-        public string? PrevRegex { get; set; }
-        public string? NextRegex { get; set; }
-        public string PrevSignals { get; set; } = string.Empty;
-        public string NextSignals { get; set; } = string.Empty;
-
-        public SignalStatus ToSignalStatus() => new()
-        {
-            Name = Name,
-            Extra = Extra,
-            Accuracy = Accuracy,
-            Type = Type,
-            Role = Role,
-            PrevFinalized = PrevFinalized,
-            NextFinalized = NextFinalized,
-            PrevRegex = PrevRegex,
-            NextRegex = NextRegex,
-            Location = new(Longitude, Latitude) { SRID = 4326 },
-            PrevSignals = PrevSignals
-                .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => new SignalStatus.SignalConnection(s.Split(':')[0],
-                    short.TryParse(s.Split(':')[1], out var vmax) ? vmax : null))
-                .ToArray(),
-            NextSignals = NextSignals
-                .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => new SignalStatus.SignalConnection(s.Split(':')[0],
-                    short.TryParse(s.Split(':')[1], out var vmax) ? vmax : null))
-                .ToArray()
-        };
     }
 
     private async Task<SignalStatus[]> GetSignals()
@@ -194,14 +155,6 @@ public partial class SignalAnalyzerService : IHostedService
             .Select(s => s.ToSignalStatus()) // Convert to SignalStatus locally
             .ToArray();
     }
-
-    internal static readonly Gauge SignalsWithMultipleTrainsPerServer = Metrics
-        .CreateGauge("smo_signals_with_multiple_trains_per_server", "Number of signals with multiple trains per server",
-            "server");
-
-    internal static readonly Gauge SignalsWithMultipleTrains = Metrics
-        .CreateGauge("smo_signals_with_multiple_trains", "The count of trains pointing to the same signal", "server",
-            "signal");
 
 
     /// <summary>
@@ -380,62 +333,6 @@ public partial class SignalAnalyzerService : IHostedService
             context.ChangeTracker.Entries().Count(x => x.State == EntityState.Modified));
         await context.SaveChangesAsync(cancellationToken);
         _logger.LogInformation("Signals updated successfully");
-    }
-
-    private class MinimalSignalData(
-        string name,
-        double accuracy,
-        string? type,
-        bool prevFinalized,
-        bool nextFinalized,
-        string? prevRegex,
-        string? nextRegex,
-        List<MinimalSignalData.SignalConnection> prevSignalConnections,
-        List<MinimalSignalData.SignalConnection> nextSignalConnections)
-    {
-        public record SignalConnection(string Signal, short? Vmax);
-
-
-        public string Name { get; } = name;
-        public double Accuracy { get; set; } = accuracy;
-        public string? Type { get; } = type;
-        public bool PrevFinalized { get; } = prevFinalized;
-        public bool NextFinalized { get; } = nextFinalized;
-        public string? PrevRegex { get; } = prevRegex;
-        public string? NextRegex { get; } = nextRegex;
-        public List<SignalConnection> PrevSignalConnections { get; } = prevSignalConnections;
-        public List<SignalConnection> NextSignalConnections { get; } = nextSignalConnections;
-
-        private Signal? DbSignal { get; set; }
-
-        public MinimalSignalData(Signal signal) : this(
-            signal.Name,
-            signal.Accuracy,
-            signal.Type,
-            signal.PrevFinalized,
-            signal.NextFinalized,
-            signal.PrevRegex,
-            signal.NextRegex,
-            signal.PrevSignalConnections.Select(c => new SignalConnection(c.Prev, c.VMAX)).ToList(),
-            signal.NextSignalConnections.Select(c => new SignalConnection(c.Next, c.VMAX)).ToList())
-        {
-            DbSignal = signal;
-        }
-
-        public async Task<Signal?> GetDbSignal(SmoContext context)
-        {
-            if (DbSignal != null) return DbSignal;
-
-            var dbSignal = await context.Signals
-                .Include(s => s.PrevSignalConnections)
-                .Include(s => s.NextSignalConnections)
-                .FirstOrDefaultAsync(s => s.Name == Name);
-
-            if (dbSignal != null)
-                DbSignal = dbSignal;
-
-            return dbSignal;
-        }
     }
 
     private async Task ProcessTrainData(Dictionary<string, Train[]> trains)
@@ -768,15 +665,6 @@ public partial class SignalAnalyzerService : IHostedService
         Train train,
         TrainPrevSignalData prevSignalData, short vmax)
     {
-        // check if train was stopped at the previous signal
-        if (prevSignalData.SignalSpeed == 0)
-        {
-            _logger.LogWarning(
-                "Train {TrainId} ({TrainType}) reached signal {SignalId} from stop signal {PrevSignalId}, ignoring connection!",
-                train.GetTrainId(), train.Type, signal.Name, prevSignalData.SignalName);
-            return false;
-        }
-
         // if signal is known and prevSignal is also known and not finalized
         // check if connection already exists
         if (prevSignal.NextSignalConnections.Any(c => c.Signal == signal.Name) ||
@@ -984,4 +872,111 @@ public partial class SignalAnalyzerService : IHostedService
 
     [GeneratedRegex(@"^(.+)_([A-Z])$")]
     private static partial Regex SIGNAL_BASE_NAME_REGEX();
+
+    private record TrainPrevSignalData(
+        string SignalName,
+        short SignalSpeed,
+        Point Location,
+        DateTime TimeStamp,
+        double Speed);
+
+    public class SignalProjection
+    {
+        public string Name { get; set; } = string.Empty;
+        public double Longitude { get; set; }
+        public double Latitude { get; set; }
+        public string Extra { get; set; } = string.Empty;
+        public double Accuracy { get; set; }
+        public string? Type { get; set; }
+        public string? Role { get; set; }
+        public bool PrevFinalized { get; set; }
+        public bool NextFinalized { get; set; }
+        public string? PrevRegex { get; set; }
+        public string? NextRegex { get; set; }
+        public string PrevSignals { get; set; } = string.Empty;
+        public string NextSignals { get; set; } = string.Empty;
+
+        public SignalStatus ToSignalStatus()
+        {
+            return new()
+            {
+                Name = Name,
+                Extra = Extra,
+                Accuracy = Accuracy,
+                Type = Type,
+                Role = Role,
+                PrevFinalized = PrevFinalized,
+                NextFinalized = NextFinalized,
+                PrevRegex = PrevRegex,
+                NextRegex = NextRegex,
+                Location = new(Longitude, Latitude) { SRID = 4326 },
+                PrevSignals = PrevSignals
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => new SignalStatus.SignalConnection(s.Split(':')[0],
+                        short.TryParse(s.Split(':')[1], out var vmax) ? vmax : null))
+                    .ToArray(),
+                NextSignals = NextSignals
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => new SignalStatus.SignalConnection(s.Split(':')[0],
+                        short.TryParse(s.Split(':')[1], out var vmax) ? vmax : null))
+                    .ToArray()
+            };
+        }
+    }
+
+    private class MinimalSignalData(
+        string name,
+        double accuracy,
+        string? type,
+        bool prevFinalized,
+        bool nextFinalized,
+        string? prevRegex,
+        string? nextRegex,
+        List<MinimalSignalData.SignalConnection> prevSignalConnections,
+        List<MinimalSignalData.SignalConnection> nextSignalConnections)
+    {
+        public MinimalSignalData(Signal signal) : this(
+            signal.Name,
+            signal.Accuracy,
+            signal.Type,
+            signal.PrevFinalized,
+            signal.NextFinalized,
+            signal.PrevRegex,
+            signal.NextRegex,
+            signal.PrevSignalConnections.Select(c => new SignalConnection(c.Prev, c.VMAX)).ToList(),
+            signal.NextSignalConnections.Select(c => new SignalConnection(c.Next, c.VMAX)).ToList())
+        {
+            DbSignal = signal;
+        }
+
+
+        public string Name { get; } = name;
+        public double Accuracy { get; set; } = accuracy;
+        public string? Type { get; } = type;
+        public bool PrevFinalized { get; } = prevFinalized;
+        public bool NextFinalized { get; } = nextFinalized;
+        public string? PrevRegex { get; } = prevRegex;
+        public string? NextRegex { get; } = nextRegex;
+        public List<SignalConnection> PrevSignalConnections { get; } = prevSignalConnections;
+        public List<SignalConnection> NextSignalConnections { get; } = nextSignalConnections;
+
+        private Signal? DbSignal { get; set; }
+
+        public async Task<Signal?> GetDbSignal(SmoContext context)
+        {
+            if (DbSignal != null) return DbSignal;
+
+            var dbSignal = await context.Signals
+                .Include(s => s.PrevSignalConnections)
+                .Include(s => s.NextSignalConnections)
+                .FirstOrDefaultAsync(s => s.Name == Name);
+
+            if (dbSignal != null)
+                DbSignal = dbSignal;
+
+            return dbSignal;
+        }
+
+        public record SignalConnection(string Signal, short? Vmax);
+    }
 }
