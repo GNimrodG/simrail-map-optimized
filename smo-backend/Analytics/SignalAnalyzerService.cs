@@ -22,8 +22,8 @@ public partial class SignalAnalyzerService : IHostedService
     private static readonly Gauge SignalAnalyzerQueueGauge = Metrics
         .CreateGauge("smo_signal_analyzer_queue", "Number of items in the signal analyzer queue");
 
-    private static readonly Gauge InvalidTrainsGauge = Metrics
-        .CreateGauge("smo_invalid_trains", "Number of invalid trains", "server");
+    private static readonly Histogram InvalidTrainsHistogram = Metrics
+        .CreateHistogram("smo_invalid_trains", "Number of invalid trains", "server");
 
     internal static readonly Gauge SignalsWithMultipleTrainsPerServer = Metrics
         .CreateGauge("smo_signals_with_multiple_trains_per_server", "Number of signals with multiple trains per server",
@@ -473,9 +473,7 @@ public partial class SignalAnalyzerService : IHostedService
             elapsed, invalidTrainsSum, allTrains.Count);
 
         foreach (var (serverCode, count) in invalidTrainsPerServer)
-
-            InvalidTrainsGauge.WithLabels(serverCode).Set(count);
-
+            InvalidTrainsHistogram.WithLabels(serverCode).Observe(count);
 
         context.Stats.Add(new("SIGNALS-PROC", elapsed, allTrains.Count, invalidTrainsSum));
         await context.SaveChangesAsync();

@@ -3,6 +3,7 @@ using Prometheus;
 using SMOBackend.Analytics;
 using SMOBackend.Data;
 using SMOBackend.Models;
+using SMOBackend.Utils;
 
 namespace SMOBackend.Services;
 
@@ -15,6 +16,9 @@ public class ServerDataService(
     SimrailApiClient apiClient)
     : BaseDataService<ServerStatus[]>("SERVER", logger, scopeFactory)
 {
+    private static readonly Gauge ServerStatusGauge = Metrics
+        .CreateGauge("smo_server_status", "Status of the server", "server", "region", "name");
+
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
     /// <inheritdoc />
@@ -43,12 +47,14 @@ public class ServerDataService(
     {
         base.OnDataReceived(data);
 
+        ServerStatusGauge.Clear();
+
         foreach (var server in data)
         {
             ServerStatusGauge.WithLabels(server.ServerCode, server.ServerRegion, server.ServerName)
                 .Set(server.IsActive ? 1 : 0);
         }
-        
+
         foreach (var labels in SignalAnalyzerService.SignalsWithMultipleTrainsPerServer.GetAllLabelValues())
         {
             if (data.All(server => server.ServerCode != labels[0]))
@@ -61,7 +67,4 @@ public class ServerDataService(
                 SignalAnalyzerService.SignalsWithMultipleTrains.RemoveLabelled(labels);
         }
     }
-
-    private static readonly Gauge ServerStatusGauge = Metrics
-        .CreateGauge("smo_server_status", "Status of the server", "server", "region", "name");
 }

@@ -5,101 +5,158 @@ namespace SMOBackend.Models;
 /// <summary>
 /// Represents a simplified timetable entry.
 /// </summary>
-public class SimplifiedTimetableEntry
+public readonly struct SimplifiedTimetableEntry
 {
     /// <summary>
     /// The name of the station.
     /// </summary>
-    public string StationName { get; set; }
+    public string StationName { get; }
 
     /// <summary>
     /// The category of the station.
     /// </summary>
-    public EStationCategory? StationCategory { get; set; }
+    public EStationCategory? StationCategory { get; }
 
     /// <summary>
     /// The local train number.
     /// </summary>
-    public string TrainNoLocal { get; set; }
+    public string TrainNoLocal { get; }
 
     /// <summary>
     /// The type of the train. E.g. "MOJ", "MPE", etc.
     /// </summary>
-    public string TrainType { get; set; }
+    public TrainTypeCode TrainType { get; }
 
     /// <summary>
     /// The time of arrival at the station.
     /// </summary>
-    public string? ArrivalTime { get; set; }
+    public string? ArrivalTime { get; }
 
     /// <summary>
     /// The time of departure from the station.
     /// </summary>
-    public string? DepartureTime { get; set; }
+    public string? DepartureTime { get; }
 
     /// <summary>
     /// The type of stop at the station.
     /// </summary>
-    public EStopType StopType { get; set; }
+    public EStopType StopType { get; }
 
     /// <summary>
     /// The line number of the train.
     /// </summary>
-    public int Line { get; set; }
+    public ushort Line { get; }
 
     /// <summary>
     /// The platform number at the station.
     /// </summary>
-    public string? Platform { get; set; }
+    public string? Platform { get; }
 
     /// <summary>
     /// The track number at the station.
     /// </summary>
-    public byte? Track { get; set; }
+    public byte? Track { get; }
 
     /// <summary>
     /// The index of the timetable entry in the list.
     /// </summary>
-    public short Index { get; set; }
+    public short Index { get; }
 
     /// <summary>
     /// The previous station in the timetable.
     /// </summary>
-    public string? PreviousStation { get; set; }
+    public string? PreviousStation { get; }
 
     /// <summary>
     /// The next station in the timetable.
     /// </summary>
-    public string? NextStation { get; set; }
+    public string? NextStation { get; }
 
-    [JsonIgnore] public string? SupervisedBy { get; set; }
-
-    public SimplifiedTimetableEntry()
-    {
-    }
+    [JsonIgnore] public string? SupervisedBy { get; }
 
     internal SimplifiedTimetableEntry(Timetable timetable, int index)
     {
         var timetableEntry = timetable.TimetableEntries[index];
 
-        StationName = timetableEntry.NameOfPoint;
+        StationName = string.Intern(timetableEntry.NameOfPoint);
         StationCategory = timetableEntry.StationCategory;
 
-        TrainNoLocal = timetableEntry.DisplayedTrainNumber;
-        TrainType = timetableEntry.TrainType;
+        TrainNoLocal = string.Intern(timetableEntry.DisplayedTrainNumber);
+        TrainType = new(timetableEntry.TrainType);
 
         ArrivalTime = timetableEntry.ArrivalTime == timetableEntry.DepartureTime ? null : timetableEntry.ArrivalTime;
         DepartureTime = timetableEntry.DepartureTime;
         StopType = timetableEntry.StopType;
 
         Line = timetableEntry.Line;
-        Platform = timetableEntry.Platform;
+        Platform = timetableEntry.Platform != null ? string.Intern(timetableEntry.Platform) : null;
         Track = timetableEntry.Track;
 
-        PreviousStation = timetable.TimetableEntries.ElementAtOrDefault(index - 1)?.NameOfPoint;
-        NextStation = timetable.TimetableEntries.ElementAtOrDefault(index + 1)?.NameOfPoint;
+        var prevStation = timetable.TimetableEntries.ElementAtOrDefault(index - 1);
+        PreviousStation = prevStation != null ? string.Intern(prevStation.NameOfPoint) : null;
+
+        var nextStation = timetable.TimetableEntries.ElementAtOrDefault(index + 1);
+        NextStation = nextStation != null ? string.Intern(nextStation.NameOfPoint) : null;
 
         Index = (short)index;
-        SupervisedBy = timetableEntry.SupervisedBy;
+        SupervisedBy = timetableEntry.SupervisedBy != null ? string.Intern(timetableEntry.SupervisedBy) : null;
+    }
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return $"{TrainNoLocal} ({TrainType}) at {StationName} " +
+               $"({ArrivalTime ?? "N/A"} - {DepartureTime ?? "N/A"}) " +
+               $"[Line: {Line}, Platform: {Platform ?? "N/A"}, Track: {Track?.ToString() ?? "N/A"}] " +
+               $"[Stop Type: {StopType}, Category: {StationCategory?.ToString() ?? "N/A"}] " +
+               $"[Index: {Index}, Previous: {PreviousStation ?? "N/A"}, Next: {NextStation ?? "N/A"}]";
+    }
+
+    [JsonConverter(typeof(Utils.Utils.TrainTypeCodeConverter))]
+    public readonly struct TrainTypeCode
+    {
+        private readonly char _c1;
+        private readonly char _c2;
+        private readonly char _c3;
+
+        public TrainTypeCode(string code)
+        {
+            if (code is not { Length: 3 })
+                throw new ArgumentException("Code must be 3 characters long.", nameof(code));
+
+            _c1 = code[0];
+            _c2 = code[1];
+            _c3 = code[2];
+        }
+
+        public override string ToString()
+        {
+            return $"{_c1}{_c2}{_c3}";
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is TrainTypeCode other && Equals(other);
+        }
+
+        public bool Equals(TrainTypeCode other)
+        {
+            return _c1 == other._c1 && _c2 == other._c2 && _c3 == other._c3;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_c1, _c2, _c3);
+        }
+
+        public static bool operator ==(TrainTypeCode left, TrainTypeCode right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(TrainTypeCode left, TrainTypeCode right)
+        {
+            return !(left == right);
+        }
     }
 }

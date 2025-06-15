@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using MessagePack;
+﻿using MessagePack;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace SMOBackend.Models;
@@ -18,15 +18,14 @@ public class TimetableEntry
     // ReSharper disable once StringLiteralTypo
     [JsonProperty("radioChanels")] public required string RadioChannels { get; set; }
 
-    [JsonProperty("displayedTrainNumber")]
-    public required string DisplayedTrainNumber { get; set; }
+    [JsonProperty("displayedTrainNumber")] public required string DisplayedTrainNumber { get; set; }
 
     [JsonProperty("arrivalTime")] public required string? ArrivalTime { get; set; }
 
     [JsonProperty("departureTime")] public required string? DepartureTime { get; set; }
 
     [JsonProperty("stopType")] public required EStopType StopType { get; set; }
-    [JsonProperty("line")] public required int Line { get; set; }
+    [JsonProperty("line")] public required ushort Line { get; set; }
 
     [JsonProperty("platform")] public required string? Platform { get; set; }
 

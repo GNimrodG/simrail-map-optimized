@@ -1,6 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Newtonsoft.Json;
+using Prometheus;
 using SMOBackend.Data;
+using SMOBackend.Models;
 
 namespace SMOBackend.Utils;
 
@@ -43,5 +46,31 @@ internal static class Utils
             await context.SaveChangesAsync(stoppingToken.Value);
         else
             await context.SaveChangesAsync();
+    }
+
+    internal static void Clear(this Gauge gauge)
+    {
+        foreach (var labelValues in gauge.GetAllLabelValues()) gauge.RemoveLabelled(labelValues);
+    }
+
+    public class TrainTypeCodeConverter : JsonConverter<SimplifiedTimetableEntry.TrainTypeCode>
+    {
+        public override void WriteJson(JsonWriter writer, SimplifiedTimetableEntry.TrainTypeCode value,
+            JsonSerializer serializer)
+        {
+            writer.WriteValue(value.ToString());
+        }
+
+        public override SimplifiedTimetableEntry.TrainTypeCode ReadJson(JsonReader reader, Type objectType,
+            SimplifiedTimetableEntry.TrainTypeCode existingValue, bool hasExistingValue, JsonSerializer serializer)
+        {
+            if (reader.TokenType == JsonToken.String)
+            {
+                var code = (string)reader.Value!;
+                return new(code);
+            }
+
+            throw new JsonSerializationException($"Unexpected token {reader.TokenType} when parsing TrainTypeCode.");
+        }
     }
 }
