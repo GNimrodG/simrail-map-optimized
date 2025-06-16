@@ -23,7 +23,10 @@ public partial class SignalAnalyzerService : IHostedService
         .CreateGauge("smo_signal_analyzer_queue", "Number of items in the signal analyzer queue");
 
     private static readonly Histogram InvalidTrainsHistogram = Metrics
-        .CreateHistogram("smo_invalid_trains", "Number of invalid trains", "server");
+        .CreateHistogram("smo_invalid_trains", "Number of invalid trains", ["server"], new()
+        {
+            Buckets = Histogram.LinearBuckets(0, 1, 30) // 0 to 30 invalid trains
+        });
 
     internal static readonly Gauge SignalsWithMultipleTrainsPerServer = Metrics
         .CreateGauge("smo_signals_with_multiple_trains_per_server", "Number of signals with multiple trains per server",
