@@ -351,7 +351,10 @@ public partial class SignalAnalyzerService : IHostedService
 
         var stopwatch = new Stopwatch();
         stopwatch.Start();
-        var invalidTrainsPerServer = new Dictionary<string, int>();
+        var invalidTrainsPerServer = trains.Values.SelectMany(t => t)
+            .GroupBy(t => t.ServerCode)
+            .ToDictionary(g => g.Key, g => 0);
+
         var allTrains = trains.Values.SelectMany(t => t).ToList();
 
         var relevantSignals = allTrains.Select(t => t.TrainData.GetSignal())
