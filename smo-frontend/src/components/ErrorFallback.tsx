@@ -17,9 +17,20 @@ export interface ErrorFallbackProps {
   resetErrorBoundary: () => void;
 }
 
+const prevErrors: string[] = [];
+
 const ErrorFallbackRender: FunctionComponent<ErrorFallbackProps> = ({ error, resetErrorBoundary }) => {
   console.error("Error boundary has been triggered: ", error);
   const [hide, setHide] = useState(false);
+
+  if (error instanceof Error && !prevErrors.includes(error.message)) {
+    // Log the error only once
+    prevErrors.push(error.message);
+    // Try to reset the error boundary when an error occurs first time
+    resetErrorBoundary?.();
+
+    return <Loading color="danger" />;
+  }
 
   if (hide) {
     // show an error indicator circle in the bottom right corner of the screen, when clicked it will show the error again

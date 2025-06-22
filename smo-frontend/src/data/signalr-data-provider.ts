@@ -284,22 +284,31 @@ export class SignalRDataProvider implements IDataProvider {
     }
 
     const promise = new Promise<SteamProfileResponse | null>((resolve) => {
-      this.connection.invoke("GetSteamProfileData", steamId).then((data: SteamProfileResponse | null) => {
-        if (data) {
-          console.debug("Got steam profile data for", steamId, data);
-          this.profileDataCache.set(steamId, Promise.resolve(data));
-          resolve(data);
-        } else {
-          console.warn("Failed to fetch steam profile data for", steamId);
+      this.connection
+        .invoke("GetSteamProfileData", steamId)
+        .then((data: SteamProfileResponse | null) => {
+          if (data) {
+            console.debug("Got steam profile data for", steamId, data);
+            this.profileDataCache.set(steamId, Promise.resolve(data));
+            resolve(data);
+          } else {
+            console.warn("Failed to fetch steam profile data for", steamId);
+            resolve(null);
+            this.profileDataCache.delete(steamId);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching steam profile data for", steamId, error);
           resolve(null);
           this.profileDataCache.delete(steamId);
-        }
-      });
+        });
 
       setTimeout(() => {
         console.warn("Steam profile data fetch timed out for", steamId);
-        resolve(null);
-        this.profileDataCache.delete(steamId);
+        if (this.profileDataCache.has(steamId)) {
+          resolve(null);
+          this.profileDataCache.delete(steamId);
+        }
       }, 30000); // 30 seconds timeout
     });
 
@@ -326,22 +335,31 @@ export class SignalRDataProvider implements IDataProvider {
     }
 
     const promise = new Promise<SteamProfileStats | null>((resolve) => {
-      this.connection.invoke("GetSteamProfileStats", steamId).then((data: SteamProfileStats | null) => {
-        if (data) {
-          console.log("Got steam profile stats for", steamId);
-          this.profileStatsCache.set(steamId, Promise.resolve(data));
-          resolve(data);
-        } else {
-          console.warn("Failed to fetch steam profile stats for", steamId);
+      this.connection
+        .invoke("GetSteamProfileStats", steamId)
+        .then((data: SteamProfileStats | null) => {
+          if (data) {
+            console.log("Got steam profile stats for", steamId);
+            this.profileStatsCache.set(steamId, Promise.resolve(data));
+            resolve(data);
+          } else {
+            console.warn("Failed to fetch steam profile stats for", steamId);
+            resolve(null);
+            this.profileStatsCache.delete(steamId);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching steam profile stats for", steamId, error);
           resolve(null);
           this.profileStatsCache.delete(steamId);
-        }
-      });
+        });
 
       setTimeout(() => {
         console.warn("Steam profile stats fetch timed out for", steamId);
-        resolve(null);
-        this.profileStatsCache.delete(steamId);
+        if (this.profileStatsCache.has(steamId)) {
+          resolve(null);
+          this.profileStatsCache.delete(steamId);
+        }
       }, 30000); // 30 seconds timeout
     });
 
@@ -359,7 +377,11 @@ export class SignalRDataProvider implements IDataProvider {
     this.signalsData$.next([]);
     this.trainDelays$.next(new Map());
     this.timeData$.next(null);
-    this.connection.send("SwitchServer", serverCode);
+    this.connection.send("SwitchServer", serverCode).catch((e) => {
+      console.error("Failed to switch server", e);
+      this.isConnected$.next(false);
+      this.connectToSignalR();
+    });
   }
 
   serverData$ = new BehaviorSubject<ServerStatus[]>([]);
@@ -403,20 +425,28 @@ export class SignalRDataProvider implements IDataProvider {
     }
 
     const promise = new Promise<Timetable | null>((resolve) => {
-      this.connection.invoke("GetTimetable", trainNoLocal).then((timetable) => {
-        if (timetable) {
-          console.log("Got timetable for train", trainNoLocal);
-          this.timetableCache.set(trainNoLocal, timetable);
-          resolve(timetable);
-        } else {
-          console.warn("Failed to fetch timetable for train", trainNoLocal);
+      this.connection
+        .invoke("GetTimetable", trainNoLocal)
+        .then((timetable) => {
+          if (timetable) {
+            console.log("Got timetable for train", trainNoLocal);
+            this.timetableCache.set(trainNoLocal, timetable);
+            resolve(timetable);
+          } else {
+            console.warn("Failed to fetch timetable for train", trainNoLocal);
+            resolve(null);
+          }
+        })
+        .catch((e) => {
+          console.error("Error fetching timetable for train", trainNoLocal, e);
           resolve(null);
-        }
-      });
+        });
 
       setTimeout(() => {
         console.warn("Timetable fetch timed out for train", trainNoLocal);
-        resolve(null);
+        if (this.timetablePromiseCache.has(trainNoLocal)) {
+          resolve(null);
+        }
       }, 30000); // 30 seconds timeout
     });
 
@@ -431,10 +461,16 @@ export class SignalRDataProvider implements IDataProvider {
 
   async fetchRoutePoints(trainNoLocal: string): Promise<string[] | null> {
     return new Promise<string[] | null>((resolve) => {
-      this.connection.invoke("GetTrainRoutePoints", trainNoLocal).then((route: string[]) => {
-        console.log("Got route lines", trainNoLocal, route.length);
-        resolve(route);
-      });
+      this.connection
+        .invoke<string[]>("GetTrainRoutePoints", trainNoLocal)
+        .then((route) => {
+          console.log("Got route lines", trainNoLocal, route.length);
+          resolve(route);
+        })
+        .catch((e) => {
+          console.error("Failed to fetch route points for train", trainNoLocal, e);
+          resolve(null);
+        });
     });
   }
 

@@ -109,7 +109,8 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
         eventHandlers={{
           popupopen: () => setIsPopupOpen(true),
           popupclose: () => setIsPopupOpen(false),
-        }}>
+        }}
+        pane="trainsPane">
         {popup}
       </Marker>
     );
