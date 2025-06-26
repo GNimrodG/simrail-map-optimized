@@ -58,9 +58,10 @@ public partial class SignalAnalyzerService : IHostedService
     private readonly TrainDataService _trainDataService;
 
     private readonly TtlCache<string, string> _trainLastSignalCache =
-        new(TimeSpan.FromSeconds(30));
+        new(TimeSpan.FromSeconds(30), "TrainLastSignalCache");
 
-    private readonly TtlCache<string, TrainPrevSignalData> _trainPrevSignalCache = new(TimeSpan.FromSeconds(30));
+    private readonly TtlCache<string, TrainPrevSignalData> _trainPrevSignalCache = new(TimeSpan.FromSeconds(30),
+        "TrainPrevSignalCache");
 
     private byte _runCount;
 

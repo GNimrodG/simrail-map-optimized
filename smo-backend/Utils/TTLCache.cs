@@ -2,16 +2,20 @@
 using MessagePack;
 using MessagePack.Resolvers;
 using Microsoft.Extensions.Caching.Memory;
+using Prometheus;
 
 namespace SMOBackend.Utils;
 
 /// <summary>
 /// A simple in-memory cache with a time-to-live (TTL) for each entry.
 /// </summary>
-public class TtlCache<TKey, TValue>(TimeSpan ttl)
+public class TtlCache<TKey, TValue>(TimeSpan ttl, string? name = null) : IDisposable
     where TKey : notnull
 {
     private readonly MemoryCache _cache = new(new MemoryCacheOptions());
+
+    private readonly string _instanceName = name ?? $"{typeof(TKey).Name}_{typeof(TValue).Name}";
+    private bool _disposed;
 
     /// <inheritdoc cref="Dictionary{TKey,TValue}.Keys"/>
     public IEnumerable<TKey> Keys => _cache.Keys as IEnumerable<TKey> ?? [];
@@ -19,21 +23,51 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl)
     /// <inheritdoc cref="Dictionary{TKey,TValue}.Count" />
     public int Count => _cache.Count;
 
+    // ReSharper disable once StaticMemberInGenericType
+    private static Gauge CacheSizeGauge { get; } = Metrics.CreateGauge(
+        "smo_cache_size",
+        "Size of the keys in the TTL cache",
+        new GaugeConfiguration
+        {
+            LabelNames = ["cache_name"]
+        });
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _cache.Dispose();
+        KeyAdded = null; // Unsubscribe from events to prevent memory leaks
+        CacheSizeGauge.RemoveLabelled(_instanceName);
+        _disposed = true;
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    ///     Event that is triggered when a new key is added to the cache.
+    /// </summary>
     public event EventHandler<TKey>? KeyAdded;
 
-    /// <inheritdoc cref="Dictionary{TKey,TValue}.Add"/>
-    public void Add(TKey key, TValue value)
+    private void _add(TKey key, TValue value)
     {
         _cache.Set(key, value, new MemoryCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = ttl
         });
+    }
+
+    /// <inheritdoc cref="Dictionary{TKey,TValue}.Add"/>
+    public void Add(TKey key, TValue value)
+    {
+        _add(key, value);
+        CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
         KeyAdded?.Invoke(this, key);
     }
 
     /// <inheritdoc cref="Dictionary{TKey,TValue}.TryGetValue"/>
     public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
     {
+        CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
+
         if (_cache.TryGetValue(key, out var cachedValue) && cachedValue is TValue)
         {
             // Check if the cached value is of the expected type
@@ -62,6 +96,8 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl)
         {
             _cache.Remove(key);
         }
+
+        CacheSizeGauge.WithLabels(_instanceName).Set(0);
     }
 
     /// <summary>
@@ -69,11 +105,14 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl)
     /// </summary>
     public TValue GetOrAdd(TKey key, Func<TValue> valueFactory)
     {
+        CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
+
         if (TryGetValue(key, out var value) && value != null)
             return value;
 
         value = valueFactory();
         Add(key, value);
+        CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
         KeyAdded?.Invoke(this, key);
         return value;
     }
@@ -83,18 +122,8 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl)
     /// </summary>
     public void Set(TKey key, TValue value)
     {
-        if (ContainsKey(key))
-        {
-            _cache.Set(key, value, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = ttl
-            });
-        }
-        else
-        {
-            Add(key, value);
-        }
-
+        _add(key, value);
+        CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
         KeyAdded?.Invoke(this, key);
     }
 
@@ -155,6 +184,13 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl)
 
         Clear();
 
-        foreach (var kvp in value) Add(kvp.Key, kvp.Value);
+        foreach (var kvp in value) _add(kvp.Key, kvp.Value);
+
+        CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
+    }
+
+    ~TtlCache()
+    {
+        Dispose();
     }
 }

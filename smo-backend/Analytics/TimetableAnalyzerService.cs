@@ -15,21 +15,14 @@ public class TimetableAnalyzerService(
 {
     private static readonly string DataDirectory = Path.Combine(AppContext.BaseDirectory, "data", "timetables");
     private static readonly string StationTimetableDataFile = Path.Combine(DataDirectory, "station-timetable-data.bin");
-    
+
     private readonly TtlCache<string, Dictionary<string, SimplifiedTimetableEntry[]>> _timetableDataCache =
-        new(timetableDataService.GetFetchInterval().Add(TimeSpan.FromMinutes(30)));
-
-    public SimplifiedTimetableEntry[] GetTimetableEntries(string serverCode, string stationName)
-    {
-        if (!_timetableDataCache.TryGetValue(serverCode, out var timetableEntriesPerStation)) return [];
-
-        return timetableEntriesPerStation.TryGetValue(stationName, out var timetableEntries) ? timetableEntries : [];
-    }
+        new(timetableDataService.GetFetchInterval().Add(TimeSpan.FromMinutes(30)), "TimetableDataCache");
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
         logger.LogInformation("Starting timetable data service...");
-        
+
         try
         {
             Directory.CreateDirectory(DataDirectory);
@@ -40,7 +33,7 @@ public class TimetableAnalyzerService(
         {
             logger.LogError(e, "Failed to load last timetable index from file");
         }
-        
+
         timetableDataService.PerServerDataReceived += ProcessTimetableData;
 
         // Save the cache to file every 5 minutes in the background
@@ -55,7 +48,7 @@ public class TimetableAnalyzerService(
                     await _timetableDataCache.SaveToFileAsync(StationTimetableDataFile);
                     logger.LogInformation("Saved timetable data to file");
                 }
-                
+
                 await _timetableDataCache.SaveToFileAsync(StationTimetableDataFile);
                 logger.LogInformation("Saved timetable data to file");
             }
@@ -67,7 +60,7 @@ public class TimetableAnalyzerService(
         });
 
         thread.Start();
-        
+
         return Task.CompletedTask;
     }
 
@@ -86,6 +79,13 @@ public class TimetableAnalyzerService(
         {
             logger.LogError(e, "Error saving timetable data to file");
         }
+    }
+
+    public SimplifiedTimetableEntry[] GetTimetableEntries(string serverCode, string stationName)
+    {
+        if (!_timetableDataCache.TryGetValue(serverCode, out var timetableEntriesPerStation)) return [];
+
+        return timetableEntriesPerStation.TryGetValue(stationName, out var timetableEntries) ? timetableEntries : [];
     }
 
     private async void ProcessTimetableData(PerServerData<Timetable[]> timetableData)

@@ -43,10 +43,10 @@ public class SteamApiClient
     private readonly HttpClient _httpClient = new();
 
     private readonly TtlCache<string, PlayerStatsResponse> _playerStatsCache =
-        new(TimeSpan.FromMinutes(10));
+        new(TimeSpan.FromMinutes(10), "PlayerStatsCache");
 
     private readonly TtlCache<string, PlayerSummariesResponse> _playerSummariesCache =
-        new(TimeSpan.FromHours(3));
+        new(TimeSpan.FromHours(3), "PlayerSummariesCache");
 
     /// <summary>
     ///     A client for interacting with the Steam API to retrieve player summaries and statistics.

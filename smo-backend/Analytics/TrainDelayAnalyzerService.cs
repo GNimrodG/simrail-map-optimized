@@ -21,8 +21,16 @@ public class TrainDelayAnalyzerService(
     private static readonly string LastTimetableIndexFile = Path.Combine(DataDirectory, "lastTimetableIndex.bin");
     private static readonly string TrainDelaysFile = Path.Combine(DataDirectory, "trainDelays.bin");
 
-    private readonly TtlCache<string, short> _lastTimetableIndex = new(TimeSpan.FromMinutes(30));
-    private readonly TtlCache<string, Dictionary<short, int>> _trainDelays = new(TimeSpan.FromMinutes(30));
+    private static readonly Gauge ServerPunctualityGauge = Metrics
+        .CreateGauge("smo_server_punctuality", "Punctuality of the server in seconds", "server");
+
+    private readonly TtlCache<string, short> _lastTimetableIndex = new(TimeSpan.FromMinutes(30), "LastTimetableIndex");
+
+    private readonly TtlCache<string, Dictionary<short, int>> _trainDelays = new(TimeSpan.FromMinutes(30),
+        "TrainDelays");
+
+    private bool _isRunning;
+    private CancellationTokenSource? _lastCancellationTokenSource;
 
     /// <inheritdoc />
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -131,9 +139,6 @@ public class TrainDelayAnalyzerService(
     /// </summary>
     public Dictionary<short, int> GetDelaysForTrain(Train train) =>
         _trainDelays.TryGetValue(train.GetTrainId(), out var trainDelays) ? trainDelays : new();
-
-    private bool _isRunning;
-    private CancellationTokenSource? _lastCancellationTokenSource;
 
     private async void AnalyzeTrains(Dictionary<string, Train[]> trains)
     {
@@ -325,7 +330,4 @@ public class TrainDelayAnalyzerService(
         var unixTime = (long)(dateTime - DateTime.UnixEpoch).TotalMilliseconds;
         return unixTime;
     }
-
-    private static readonly Gauge ServerPunctualityGauge = Metrics
-        .CreateGauge("smo_server_punctuality", "Punctuality of the server in seconds", "server");
 }
