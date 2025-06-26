@@ -16,18 +16,17 @@ public abstract class BaseDataService<T>(
     IServiceScopeFactory scopeFactory)
     : IHostedService, IDataService where T : class?
 {
-    /// <inheritdoc />
-    public string ServiceId => serviceId;
+    private readonly TaskCompletionSource _firstDataReceivedSource = new();
 
-    /// <inheritdoc />
-    public DateTime LastFetch { get; private set; } = DateTime.MinValue;
+    private CancellationTokenSource? _cancellationTokenSource;
+    private Task? _dataServiceTask;
+
+    private protected int RunCount;
 
     /// <summary>
-    /// The interval at which the data is fetched.
+    ///     The interval at which the data is fetched.
     /// </summary>
     protected abstract TimeSpan FetchInterval { get; }
-
-    private readonly TaskCompletionSource _firstDataReceivedSource = new();
 
     /// <summary>
     /// The latest data received from the service.
@@ -35,16 +34,15 @@ public abstract class BaseDataService<T>(
     public T? Data { get; private set; }
 
     /// <summary>
-    /// Event that is triggered when new data is received.
-    /// </summary>
-    public event DataReceivedEventHandler<T>? DataReceived;
-
-    /// <summary>
     /// Task that is completed when the first data is received.
     /// </summary>
     public Task FirstDataReceived => _firstDataReceivedSource.Task;
 
-    private protected int RunCount;
+    /// <inheritdoc />
+    public string ServiceId => serviceId;
+
+    /// <inheritdoc />
+    public DateTime LastFetch { get; private set; } = DateTime.MinValue;
 
     /// <inheritdoc />
     public TimeSpan GetFetchInterval()
@@ -58,9 +56,6 @@ public abstract class BaseDataService<T>(
 
         return TimeSpan.TryParse(envSetting, out var interval) ? interval : FetchInterval;
     }
-
-    private CancellationTokenSource? _cancellationTokenSource;
-    private Task? _dataServiceTask;
 
     /// <inheritdoc />
     public virtual Task StartAsync(CancellationToken cancellationToken)
@@ -99,6 +94,11 @@ public abstract class BaseDataService<T>(
 
         return _dataServiceTask ?? Task.CompletedTask;
     }
+
+    /// <summary>
+    ///     Event that is triggered when new data is received.
+    /// </summary>
+    public event DataReceivedEventHandler<T>? DataReceived;
 
     private async Task ExecuteService(CancellationToken stoppingToken)
     {
@@ -139,6 +139,18 @@ public abstract class BaseDataService<T>(
                 {
                     logger.LogInformation("Data service stopped by cancellation token");
                     return;
+                }
+                catch (HttpRequestException e)
+                {
+                    logger.LogWarning("Failed to fetch data due to HTTP error: {Message}", e.Message);
+                }
+                catch (TaskCanceledException e) when (e.InnerException is TimeoutException)
+                {
+                    logger.LogWarning("Data fetch timed out: {Message}", e.Message);
+                }
+                catch (TaskCanceledException e)
+                {
+                    logger.LogWarning(e, "Data fetch was canceled");
                 }
                 catch (Exception e)
                 {
