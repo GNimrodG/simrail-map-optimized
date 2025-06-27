@@ -3,19 +3,35 @@ using MessagePack;
 using MessagePack.Resolvers;
 using Microsoft.Extensions.Caching.Memory;
 using Prometheus;
+using Timer = System.Timers.Timer;
 
 namespace SMOBackend.Utils;
 
 /// <summary>
 /// A simple in-memory cache with a time-to-live (TTL) for each entry.
 /// </summary>
-public class TtlCache<TKey, TValue>(TimeSpan ttl, string? name = null) : IDisposable
+public class TtlCache<TKey, TValue> : IDisposable
     where TKey : notnull
 {
     private readonly MemoryCache _cache = new(new MemoryCacheOptions());
+    private readonly Timer _gaugeUpdateTimer;
 
-    private readonly string _instanceName = name ?? $"{typeof(TKey).Name}_{typeof(TValue).Name}";
+    private readonly string _instanceName;
+    private readonly TimeSpan _ttl;
     private bool _disposed;
+
+    /// <summary>
+    ///     A simple in-memory cache with a time-to-live (TTL) for each entry.
+    /// </summary>
+    public TtlCache(TimeSpan ttl, string? name = null)
+    {
+        _ttl = ttl;
+        _instanceName = name ?? $"{typeof(TKey).Name}_{typeof(TValue).Name}";
+        _gaugeUpdateTimer = new(_ttl.TotalMilliseconds);
+        _gaugeUpdateTimer.Elapsed += (_, _) => CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
+        _gaugeUpdateTimer.AutoReset = true;
+        _gaugeUpdateTimer.Start();
+    }
 
     /// <inheritdoc cref="Dictionary{TKey,TValue}.Keys"/>
     public IEnumerable<TKey> Keys => _cache.Keys as IEnumerable<TKey> ?? [];
@@ -32,11 +48,14 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl, string? name = null) : IDispos
             LabelNames = ["cache_name"]
         });
 
+    /// <inheritdoc cref="IDisposable.Dispose" />
     public void Dispose()
     {
         if (_disposed) return;
+        _gaugeUpdateTimer?.Stop();
+        _gaugeUpdateTimer?.Dispose();
         _cache.Dispose();
-        KeyAdded = null; // Unsubscribe from events to prevent memory leaks
+        KeyAdded = null;
         CacheSizeGauge.RemoveLabelled(_instanceName);
         _disposed = true;
         GC.SuppressFinalize(this);
@@ -51,7 +70,7 @@ public class TtlCache<TKey, TValue>(TimeSpan ttl, string? name = null) : IDispos
     {
         _cache.Set(key, value, new MemoryCacheEntryOptions
         {
-            AbsoluteExpirationRelativeToNow = ttl
+            AbsoluteExpirationRelativeToNow = _ttl
         });
     }
 
