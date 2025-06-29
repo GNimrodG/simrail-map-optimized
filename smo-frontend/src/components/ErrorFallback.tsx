@@ -3,14 +3,12 @@ import Button from "@mui/joy/Button";
 import IconButton from "@mui/joy/IconButton";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
-import { type FunctionComponent, useState } from "react";
+import { type FunctionComponent, useEffect, useRef, useState } from "react";
 
 import Loading from "./Loading";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const feedbackFn = (window as any).feedback || (() => console.error("Feedback function not found"));
-
-let lastAutoReset = 0;
 
 export interface ErrorFallbackProps {
   error: unknown;
@@ -21,7 +19,24 @@ const prevErrors: string[] = [];
 
 const ErrorFallbackRender: FunctionComponent<ErrorFallbackProps> = ({ error, resetErrorBoundary }) => {
   console.error("Error boundary has been triggered: ", error);
+  const headerRef = useRef<HTMLElement>(null);
   const [hide, setHide] = useState(false);
+  const [detectedTranslation, setDetectedTranslation] = useState(false);
+
+  useEffect(() => {
+    // Check if the header text has been changed by browser translation after 2 seconds
+    const timer = setTimeout(() => {
+      if (headerRef.current) {
+        const currentText = headerRef.current.textContent;
+        if (currentText && currentText !== "Something went wrong!") {
+          console.warn("Header text changed by browser translation detected");
+          setDetectedTranslation(true);
+        }
+      }
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   if (error instanceof Error && !prevErrors.includes(error.message)) {
     // Log the error only once
@@ -49,24 +64,17 @@ const ErrorFallbackRender: FunctionComponent<ErrorFallbackProps> = ({ error, res
     );
   }
 
-  const isProbablyTranslationError = error instanceof Error && error.message.includes("removeChild");
+  const isProbablyTranslationError =
+    (error instanceof Error && error.message.includes("removeChild")) || detectedTranslation;
 
   if (isProbablyTranslationError) {
     console.warn("This error is probably caused by the browser's built-in translation feature.");
   }
 
-  if (isProbablyTranslationError && resetErrorBoundary && Date.now() - lastAutoReset > 10000) {
-    // Automatically reset the error boundary after 10 seconds if it's a translation error
-    // eslint-disable-next-line react-compiler/react-compiler
-    lastAutoReset = Date.now();
-    resetErrorBoundary();
-  }
+  const isDynamicallyImportedModuleError =
+    error instanceof Error && error.message.includes("error loading dynamically imported module") && navigator.onLine;
 
-  if (
-    error instanceof Error &&
-    error.message.includes("error loading dynamically imported module") &&
-    navigator.onLine
-  ) {
+  if (isDynamicallyImportedModuleError) {
     console.warn("This error is probably caused by a dynamically imported module that failed to load.");
     // show a dialog to reload the page because it's probably because the app was updated and the module is no longer available
     return (
@@ -151,7 +159,7 @@ const ErrorFallbackRender: FunctionComponent<ErrorFallbackProps> = ({ error, res
             maxHeight: "90vh",
             overflow: "auto",
           }}>
-          <Typography level="h1" color="danger">
+          <Typography level="h1" color="danger" ref={headerRef}>
             Something went wrong!
           </Typography>
           <Typography fontFamily="monospace" sx={{ whiteSpace: "pre", marginBottom: 1 }}>
@@ -160,11 +168,12 @@ const ErrorFallbackRender: FunctionComponent<ErrorFallbackProps> = ({ error, res
           <Typography level="body-md">Please try again or if the issue persists, hide this message.</Typography>
           {isProbablyTranslationError && (
             <>
-              <Typography level="title-lg" color="warning">
+              <Typography level="title-lg" color="danger">
                 If you have translated the page using the browser's built-in translation, please try disabling it.
               </Typography>
-              <Typography level="body-sm" color="warning">
-                There are already built-in translations for German, Hungarian, Turkish and Polish in the Settings.
+              <Typography level="body-md" color="warning">
+                There are already built-in translations for German, Hungarian, Turkish and Polish in the{" "}
+                <strong>Settings</strong>.
               </Typography>
             </>
           )}

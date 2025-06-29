@@ -10,14 +10,12 @@ using SMOBackend.Models.Trains;
 using SMOBackend.Services;
 using SMOBackend.Utils;
 
-// ReSharper disable FormatStringProblem
-
 namespace SMOBackend.Analytics;
 
 /// <summary>
 /// Service to analyze signals and their connections.
 /// </summary>
-public partial class SignalAnalyzerService : IHostedService
+public partial class SignalAnalyzerService : IHostedService, IServerMetricsCleaner
 {
     private static readonly Gauge SignalAnalyzerQueueGauge = Metrics
         .CreateGauge("smo_signal_analyzer_queue", "Number of items in the signal analyzer queue");
@@ -28,11 +26,11 @@ public partial class SignalAnalyzerService : IHostedService
             Buckets = Histogram.LinearBuckets(0, 1, 30) // 0 to 30 invalid trains
         });
 
-    internal static readonly Gauge SignalsWithMultipleTrainsPerServer = Metrics
+    private static readonly Gauge SignalsWithMultipleTrainsPerServer = Metrics
         .CreateGauge("smo_signals_with_multiple_trains_per_server", "Number of signals with multiple trains per server",
             "server");
 
-    internal static readonly Gauge SignalsWithMultipleTrains = Metrics
+    private static readonly Gauge SignalsWithMultipleTrains = Metrics
         .CreateGauge("smo_signals_with_multiple_trains", "The count of trains pointing to the same signal", "server",
             "signal");
 
@@ -354,7 +352,7 @@ public partial class SignalAnalyzerService : IHostedService
         stopwatch.Start();
         var invalidTrainsPerServer = trains.Values.SelectMany(t => t)
             .GroupBy(t => t.ServerCode)
-            .ToDictionary(g => g.Key, g => 0);
+            .ToDictionary(g => g.Key, _ => 0);
 
         var allTrains = trains.Values.SelectMany(t => t).ToList();
 
@@ -983,5 +981,55 @@ public partial class SignalAnalyzerService : IHostedService
         }
 
         public record SignalConnection(string Signal, short? Vmax);
+    }
+
+    /// <inheritdoc />
+    public void ClearServerMetrics(string serverCode)
+    {
+        // Clear invalid trains histogram metrics for the offline server
+        var invalidTrainsLabels = InvalidTrainsHistogram.GetAllLabelValues()
+            .Where(labels => labels.Length > 0 && labels[0] == serverCode)
+            .ToList();
+        foreach (var labels in invalidTrainsLabels)
+        {
+            InvalidTrainsHistogram.RemoveLabelled(labels);
+        }
+
+        // Clear signals with multiple trains per server metrics
+        var signalsMultipleTrainsPerServerLabels = SignalsWithMultipleTrainsPerServer.GetAllLabelValues()
+            .Where(labels => labels.Length > 0 && labels[0] == serverCode)
+            .ToList();
+        foreach (var labels in signalsMultipleTrainsPerServerLabels)
+        {
+            SignalsWithMultipleTrainsPerServer.RemoveLabelled(labels);
+        }
+
+        // Clear signals with multiple trains metrics
+        var signalsMultipleTrainsLabels = SignalsWithMultipleTrains.GetAllLabelValues()
+            .Where(labels => labels.Length > 0 && labels[0] == serverCode)
+            .ToList();
+        foreach (var labels in signalsMultipleTrainsLabels)
+        {
+            SignalsWithMultipleTrains.RemoveLabelled(labels);
+        }
+
+        // Clear train signal cache data for all trains from the offline server
+        // Find all train IDs that belong to the offline server
+        var trainIdsToRemove =
+            _trainLastSignalCache.Keys.Where(trainId => trainId.Contains($"@{serverCode}-")).ToList();
+
+        // Also check the previous signal cache for the same train IDs
+        trainIdsToRemove.AddRange(_trainPrevSignalCache.Keys
+            .Where(trainId => trainId.Contains($"@{serverCode}-") && !trainIdsToRemove.Contains(trainId)));
+
+        // Remove train signal cache entries for offline server's trains
+        foreach (var trainId in trainIdsToRemove)
+        {
+            _trainLastSignalCache.Remove(trainId);
+            _trainPrevSignalCache.Remove(trainId);
+        }
+
+        _logger.LogInformation("Cleared {TrainCount} train signal cache records for offline server {ServerCode}",
+            trainIdsToRemove.Count, serverCode);
     }
 }

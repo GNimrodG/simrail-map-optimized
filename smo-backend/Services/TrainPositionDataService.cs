@@ -13,7 +13,8 @@ public class TrainPositionDataService(
     IServiceScopeFactory scopeFactory,
     ServerDataService serverDataService,
     SimrailApiClient apiClient)
-    : BaseServerDataService<TrainPosition[]>("TRAIN-POS", logger, scopeFactory, serverDataService)
+    : BaseServerDataService<TrainPosition[]>("TRAIN-POS", logger, scopeFactory, serverDataService),
+        IServerMetricsCleaner
 {
     private static readonly Gauge TrainCountGauge = Metrics
         .CreateGauge("smo_train_count", "Number of trains on the server", "server");
@@ -58,5 +59,15 @@ public class TrainPositionDataService(
             TrainAvgSpeedGauge.WithLabels(server)
                 .Set(trains.Length > 0 ? trains.Average(train => train.Velocity) : 0);
         }
+    }
+
+    /// <inheritdoc />
+    public void ClearServerMetrics(string serverCode)
+    {
+        // Clear train count metrics for the offline server
+        TrainCountGauge.RemoveLabelledByPredicate(labels => labels.Length > 0 && labels[0] == serverCode);
+
+        // Clear train average speed metrics for the offline server
+        TrainAvgSpeedGauge.RemoveLabelledByPredicate(labels => labels.Length > 0 && labels[0] == serverCode);
     }
 }

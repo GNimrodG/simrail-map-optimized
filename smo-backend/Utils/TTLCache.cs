@@ -147,6 +147,20 @@ public class TtlCache<TKey, TValue> : IDisposable
     }
 
     /// <summary>
+    /// Removes the specified key from the cache.
+    /// </summary>
+    /// <param name="key">The key to remove.</param>
+    /// <returns>True if the key was found and removed; otherwise, false.</returns>
+    public bool Remove(TKey key)
+    {
+        if (!_cache.TryGetValue(key, out _)) return false;
+
+        _cache.Remove(key);
+        CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
+        return true;
+    }
+
+    /// <summary>
     /// Saves the cache to a file using MessagePack serialization.
     /// </summary>
     /// <param name="filePath">Path to the file to save to.</param>
@@ -208,8 +222,5 @@ public class TtlCache<TKey, TValue> : IDisposable
         CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
     }
 
-    ~TtlCache()
-    {
-        Dispose();
-    }
+    ~TtlCache() => Dispose();
 }

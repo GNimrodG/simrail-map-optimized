@@ -19,6 +19,7 @@ internal static class Utils
     {
         services.AddSingleton<TService>();
         services.AddHostedService(provider => provider.GetRequiredService<TService>());
+
         return services;
     }
 
@@ -51,6 +52,11 @@ internal static class Utils
     internal static void Clear(this Gauge gauge)
     {
         foreach (var labelValues in gauge.GetAllLabelValues()) gauge.RemoveLabelled(labelValues);
+    }
+
+    internal static void RemoveLabelledByPredicate(this Gauge gauge, Func<string[], bool> predicate)
+    {
+        foreach (var labelValues in gauge.GetAllLabelValues().Where(predicate)) gauge.RemoveLabelled(labelValues);
     }
 
     public class TrainTypeCodeConverter : JsonConverter<SimplifiedTimetableEntry.TrainTypeCode>
