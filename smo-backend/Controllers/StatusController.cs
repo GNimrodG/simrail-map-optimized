@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SMOBackend.Analytics;
 using SMOBackend.Models;
@@ -22,7 +21,8 @@ public class StatusController(
     TimeDataService timeDataService,
     TrainDelayAnalyzerService delayAnalyzerService,
     TimetableAnalyzerService timetableAnalyzerService,
-    RoutePointAnalyzerService routePointAnalyzerService) : ControllerBase
+    RoutePointAnalyzerService routePointAnalyzerService,
+    ServerRestartAnalyzerService serverRestartAnalyzerService) : ControllerBase
 {
     /// <summary>
     /// Get the status of the server
@@ -255,6 +255,19 @@ public class StatusController(
             .ToDictionary(x => x.Key, x => x.Value.Values.LastOrDefault());
 
         return Ok(delays);
+    }
+
+    [HttpGet("{serverCode}/restarts")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(NotFoundError))]
+    public ActionResult<ServerRestartStatusData> GetServerRestarts(string serverCode)
+    {
+        if (!CheckServer(serverCode))
+            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+
+        var restartData = serverRestartAnalyzerService.GetRestartData(serverCode);
+
+        return Ok(restartData);
     }
 
     /// <summary>

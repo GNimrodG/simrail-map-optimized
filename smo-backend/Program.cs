@@ -202,6 +202,7 @@ builder.Services.AddHostedServiceSingleton<SignalAnalyzerService>();
 builder.Services.AddHostedServiceSingleton<TrainDelayAnalyzerService>();
 builder.Services.AddHostedServiceSingleton<TimetableAnalyzerService>();
 builder.Services.AddHostedServiceSingleton<RoutePointAnalyzerService>();
+builder.Services.AddHostedServiceSingleton<ServerRestartAnalyzerService>();
 
 // Client services
 builder.Services.AddSingleton<ClientManagerService>();

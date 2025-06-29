@@ -1302,5 +1302,17 @@
     "Latitude": 52.257685,
     "Longitude": 21.075677,
     "Id": "WPS"
+  },
+  {
+    "Name": "Rokiciny",
+    "Prefix": "3594_Ro",
+    "DifficultyLevel": -1,
+    "MainImageUrl": "",
+    "AdditionalImage1Url": "",
+    "AdditionalImage2Url": "",
+    "DispatchedBy": [],
+    "Latitude": 51.6675458,
+    "Longitude": 19.780676,
+    "Id": "3594_Ro"
   }
 ]

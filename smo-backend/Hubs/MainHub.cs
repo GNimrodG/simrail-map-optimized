@@ -20,6 +20,7 @@ public class MainHub(
     SignalAnalyzerService signalAnalyzerService,
     TrainDelayAnalyzerService trainDelayAnalyzerService,
     RoutePointAnalyzerService routePointAnalyzerService,
+    ServerRestartAnalyzerService serverRestartAnalyzerService,
     ClientManagerService clientManagerService,
     SteamApiClient steamApiClient)
     : Hub
@@ -289,5 +290,24 @@ public class MainHub(
             await Clients.Caller.SendAsync("SteamStatsError", new { steamId, error = e.Message });
             return null;
         }
+    }
+
+    /// <summary>
+    ///     Gets the next server restart prediction for the currently selected server.
+    /// </summary>
+    public DateTime? GetNextServerRestart()
+    {
+        try
+        {
+            var serverCode = clientManagerService.SelectedServers[Context.ConnectionId];
+            var nextRestart = serverRestartAnalyzerService.PredictNextRestart(serverCode);
+            if (nextRestart != null) return nextRestart;
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error getting next server restart");
+        }
+
+        return null;
     }
 }
