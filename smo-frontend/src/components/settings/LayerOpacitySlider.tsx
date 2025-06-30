@@ -5,7 +5,7 @@ import Slider, { sliderClasses } from "@mui/joy/Slider";
 import { type FunctionComponent } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useSetting } from "../../utils/use-setting";
+import { useSetting } from "../../hooks/useSetting";
 
 export interface LayerOpacitySliderProps {
   layerId: string;

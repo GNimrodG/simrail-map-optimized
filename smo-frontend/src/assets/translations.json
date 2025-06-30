@@ -331,7 +331,8 @@
           "Short": "HERE",
           "Full": "This train is currently inside the station."
         },
-        "N/A": "N/A"
+        "N/A": "N/A",
+        "PanToTrain": "Go to train"
       },
       "PrivacyPolicy": {
         "Title": "Privacy Policy",
@@ -673,7 +674,8 @@
           "Short": "HIER",
           "Full": "Dieser Zug befindet sich derzeit im Bahnhof."
         },
-        "N/A": "k.A."
+        "N/A": "k.A.",
+        "PanToTrain": "Zum Zug gehen"
       },
       "PrivacyPolicy": {
         "Title": "Datenschutzrichtlinie",
@@ -1015,7 +1017,8 @@
           "Short": "ITT",
           "Full": "Ez a vonat jelenleg az állomáson tartózkodik."
         },
-        "N/A": "n/a"
+        "N/A": "n/a",
+        "PanToTrain": "Vonathoz navigálás"
       },
       "PrivacyPolicy": {
         "Title": "Adatvédelmi irányelvek",
@@ -1357,7 +1360,8 @@
           "Short": "İÇERİ",
           "Full": "Bu tren şu anda istasyonda."
         },
-        "N/A": "n/a"
+        "N/A": "n/a",
+        "PanToTrain": "Trene git"
       },
       "PrivacyPolicy": {
         "Title": "Gizlilik Politikası",
@@ -1699,7 +1703,8 @@
           "Short": "W STACJI",
           "Full": "Pociąg znajduje się w stacji."
         },
-        "N/A": "n/d"
+        "N/A": "n/d",
+        "PanToTrain": "Przejdź do pociągu"
       },
       "PrivacyPolicy": {
         "Title": "Polityka Prywatności",

@@ -8,9 +8,9 @@ import { type FunctionComponent, memo, ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { filter } from "rxjs";
 
+import useSubject from "../../../hooks/useSubject";
 import { timeSubj$ } from "../../../utils/time";
 import { TimetableEntry } from "../../../utils/types";
-import useSubject from "../../../utils/use-subject";
 import DelayDisplay from "../../utils/DelayDisplay";
 import StopTypeDisplay from "../../utils/StopTypeDisplay";
 import TimeDiffDisplay from "../../utils/TimeDiffDisplay";

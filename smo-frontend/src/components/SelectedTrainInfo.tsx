@@ -3,12 +3,12 @@ import { type FunctionComponent, lazy, Suspense, useContext, useEffect, useMemo,
 import { useMap } from "react-leaflet";
 import { debounceTime, fromEvent, throttleTime } from "rxjs";
 
+import useBehaviorSubj from "../hooks/useBehaviorSubj";
+import { useSetting } from "../hooks/useSetting";
+import { useSteamProfileData } from "../hooks/useSteamProfileData";
 import { dataProvider } from "../utils/data-manager";
 import MapLinesContext from "../utils/map-lines-context";
 import SelectedTrainContext from "../utils/selected-train-context";
-import { SteamProfileResponse } from "../utils/types";
-import useBehaviorSubj from "../utils/use-behaviorSubj";
-import { useSetting } from "../utils/use-setting";
 import Loading from "./Loading";
 
 const TrainMarkerPopup = lazy(() => import("./markers/train/TrainMarkerPopup"));
@@ -24,25 +24,16 @@ const SelectedTrainInfo: FunctionComponent = () => {
 
   const [showLineToNextSignal] = useSetting("showLineToNextSignal");
 
-  const [selectedTrainUserData, setSelectedTrainUserData] = useState<SteamProfileResponse | null>(null);
-
   const selectedTrainData = useMemo(() => {
     if (!selectedTrain) return null;
 
     const train = trains.find((train) => train.TrainNoLocal === selectedTrain.trainNo);
     if (!train) return null;
 
-    if (!train.TrainData.ControlledBySteamID) {
-      setSelectedTrainUserData(null);
-      return train;
-    }
-
-    dataProvider.getSteamProfileData(train.TrainData.ControlledBySteamID).then((profile) => {
-      setSelectedTrainUserData(profile ?? { PersonaName: train.TrainData.ControlledBySteamID, Avatar: "" });
-    });
-
     return train;
   }, [selectedTrain, trains]);
+
+  const { userData: selectedTrainUserData } = useSteamProfileData(selectedTrainData?.TrainData.ControlledBySteamID);
 
   // Pause following when dragging the map and resume after a delay
   useEffect(() => {

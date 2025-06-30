@@ -4,7 +4,7 @@ import FormHelperText from "@mui/joy/FormHelperText";
 import { type FunctionComponent } from "react";
 import { useTranslation } from "react-i18next";
 
-import { TSettings, useSetting } from "../../utils/use-setting";
+import { TSettings, useSetting } from "../../hooks/useSetting";
 import { FilterFlags } from "../utils/general-utils";
 
 export interface SettingCheckboxProps {

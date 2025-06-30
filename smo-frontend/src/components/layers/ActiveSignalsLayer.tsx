@@ -6,11 +6,11 @@ import { type FunctionComponent, useCallback, useEffect, useRef, useState } from
 import { LayerGroup, useMap } from "react-leaflet";
 import { BehaviorSubject, distinctUntilChanged, map } from "rxjs";
 
+import useBehaviorSubj from "../../hooks/useBehaviorSubj";
+import { useSetting } from "../../hooks/useSetting";
 import { dataProvider } from "../../utils/data-manager";
 import { getVisibleSignals, goToSignal } from "../../utils/geom-utils";
 import { SignalStatus } from "../../utils/types";
-import useBehaviorSubj from "../../utils/use-behaviorSubj";
-import { useSetting } from "../../utils/use-setting";
 import SignalMarker from "../markers/signal/SignalMarker";
 
 const MIN_ZOOM = 8;

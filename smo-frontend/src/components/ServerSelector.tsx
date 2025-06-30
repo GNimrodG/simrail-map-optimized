@@ -4,11 +4,11 @@ import Tooltip from "@mui/joy/Tooltip";
 import { type FunctionComponent, useCallback, useContext } from "react";
 import { useTranslation } from "react-i18next";
 
+import useBehaviorSubj from "../hooks/useBehaviorSubj";
+import { useSetting } from "../hooks/useSetting";
 import { dataProvider } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
-import useBehaviorSubj from "../utils/use-behaviorSubj";
-import { useSetting } from "../utils/use-setting";
 
 const ServerSelector: FunctionComponent = () => {
   const { t } = useTranslation();

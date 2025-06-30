@@ -9,6 +9,7 @@ const SelectedTrainProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     (value: SelectedTrainData | null) => {
       setSelectedTrain(value);
       if (value) {
+        // eslint-disable-next-line react-compiler/react-compiler
         window.location.hash = `#${value.trainNo}`;
       } else {
         window.location.hash = "";

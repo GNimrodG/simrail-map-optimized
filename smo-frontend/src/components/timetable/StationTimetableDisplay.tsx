@@ -4,17 +4,20 @@ import Stack from "@mui/joy/Stack";
 import Table from "@mui/joy/Table";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
-import { type FunctionComponent } from "react";
+import { type FunctionComponent, useContext } from "react";
 import { useTranslation } from "react-i18next";
+import { useMap } from "react-leaflet";
 import { filter } from "rxjs";
 
+import useSubject from "../../hooks/useSubject";
 import { dataProvider } from "../../utils/data-manager";
 import { findStationForSignal } from "../../utils/geom-utils";
+import SelectedTrainContext from "../../utils/selected-train-context";
 import { timeSubj$ } from "../../utils/time";
-import { SimplifiedTimtableEntry } from "../../utils/types";
+import { SimplifiedTimtableEntry, Train } from "../../utils/types";
 import { getColorTrainMarker } from "../../utils/ui";
-import useSubject from "../../utils/use-subject";
 import InfoIcon from "../icons/InfoIcon";
+import MapMarkerIcon from "../icons/map-location-dot-solid.svg?react";
 import TrainMarkerPopup from "../markers/train/TrainMarkerPopup";
 import DelayDisplay from "../utils/DelayDisplay";
 import StopTypeDisplay from "../utils/StopTypeDisplay";
@@ -24,6 +27,7 @@ import TrainTypeDisplay from "../utils/TrainTypeDisplay";
 
 export interface StationTimetableDisplayProps {
   timetable: SimplifiedTimtableEntry[];
+  onClose?: () => void;
 }
 
 const BUFFER_TIME = 30 * 60 * 1000; // 30 minutes in milliseconds
@@ -37,7 +41,9 @@ function isPastStation(entry: SimplifiedTimtableEntry, currentTime: Date): boole
 
 const timeSubjEvery10s$ = timeSubj$.pipe(filter((_, index) => index % 10 === 0));
 
-const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> = ({ timetable }) => {
+const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> = ({ timetable, onClose }) => {
+  const map = useMap();
+  const { setSelectedTrain } = useContext(SelectedTrainContext);
   const { t } = useTranslation("translation", { keyPrefix: "TrainTimetable" });
   const currentTimeEpoch = useSubject(timeSubjEvery10s$, timeSubj$.value);
   const currentTimeBuffered = new Date(currentTimeEpoch - BUFFER_TIME);
@@ -67,6 +73,15 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
       return aTime - bTime;
     })
     .slice(0, 100); // Limit to 100 entries
+
+  const panToTrain = (train: Train) => {
+    onClose?.();
+    map?.panTo([train.TrainData.Latitude, train.TrainData.Longitude], {
+      animate: true,
+      duration: 1,
+    });
+    setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true, paused: false });
+  };
 
   return (
     <Sheet sx={{ overflow: "auto", width: "100%" }}>
@@ -149,16 +164,33 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                       {entry.trainNoLocal}
                     </Typography>
                     {train && (
-                      <Tooltip
-                        variant="outlined"
-                        describeChild
-                        enterDelay={500}
-                        title={<TrainMarkerPopup train={train} hideButtons />}
-                        arrow>
-                        <Stack alignItems="center" justifyContent="center">
-                          <InfoIcon />
-                        </Stack>
-                      </Tooltip>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Tooltip
+                          variant="outlined"
+                          describeChild
+                          enterDelay={300}
+                          title={<TrainMarkerPopup train={train} hideButtons />}
+                          arrow>
+                          <Stack
+                            alignItems="center"
+                            justifyContent="center"
+                            sx={{
+                              color: train.TrainData.ControlledBySteamID ? "success.plainColor" : "neutral.500",
+                              cursor: "pointer",
+                            }}>
+                            <InfoIcon />
+                          </Stack>
+                        </Tooltip>
+                        <Tooltip variant="outlined" describeChild title={t("PanToTrain")} arrow>
+                          <Stack
+                            alignItems="center"
+                            justifyContent="center"
+                            sx={{ cursor: "pointer" }}
+                            onClick={() => panToTrain(train)}>
+                            <MapMarkerIcon />
+                          </Stack>
+                        </Tooltip>
+                      </Stack>
                     )}
                     {passedEarly && (
                       <Typography level="body-sm" color="success">

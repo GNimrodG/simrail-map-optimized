@@ -1,8 +1,8 @@
 import { LRUCache } from "lru-cache";
 import { useEffect, useState } from "react";
 
-import { fetchOsmDataForStation } from "./osm-utils";
-import { OsmNode } from "./types";
+import { fetchOsmDataForStation } from "../utils/osm-utils";
+import { OsmNode } from "../utils/types";
 
 const cache = new LRUCache<string, OsmNode>({ max: 100 }); // Cache with a max size of 100 entries
 

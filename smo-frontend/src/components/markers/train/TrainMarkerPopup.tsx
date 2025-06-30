@@ -16,14 +16,15 @@ import moment from "moment";
 import { type FunctionComponent, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useSetting } from "../../../hooks/useSetting";
+import { useSteamProfileData } from "../../../hooks/useSteamProfileData";
+import useSubject from "../../../hooks/useSubject";
 import { dataProvider } from "../../../utils/data-manager";
 import MapLinesContext from "../../../utils/map-lines-context";
 import SelectedRouteContext from "../../../utils/selected-route-context";
 import SelectedTrainContext from "../../../utils/selected-train-context";
 import { SteamProfileResponse, Timetable, Train } from "../../../utils/types";
 import { getColorTrainMarker, getDistanceColorForSignal } from "../../../utils/ui";
-import { useSetting } from "../../../utils/use-setting";
-import useSubject from "../../../utils/use-subject";
 import CollapseIcon from "../../icons/CollapseIcon";
 import ExpandIcon from "../../icons/ExpandIcon";
 import InfoIcon from "../../icons/InfoIcon";
@@ -96,7 +97,7 @@ function useTrainDelays(trainId: string) {
 
 const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
   train,
-  userData,
+  userData: _userData,
   showTrainRouteButton,
   onToggleCollapse,
   isCollapsed,
@@ -133,6 +134,8 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
     () => delays[train.TrainData.VDDelayedTimetableIndex - 1],
     [delays, train.TrainData.VDDelayedTimetableIndex],
   );
+
+  const { userData } = useSteamProfileData(train.TrainData.ControlledBySteamID, _userData);
 
   const stationData = useMemo(() => {
     if (!timetable) return { first: null, prev: null, current: null, next: null, last: null };

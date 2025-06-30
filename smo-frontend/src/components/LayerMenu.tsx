@@ -5,8 +5,8 @@ import Tooltip from "@mui/joy/Tooltip";
 import { type FunctionComponent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import useBehaviorSubj from "../hooks/useBehaviorSubj";
 import { isOsmAvailable$ } from "../utils/osm-utils";
-import useBehaviorSubj from "../utils/use-behaviorSubj";
 import LayersIcon from "./icons/LayersIcon";
 
 const BACKGROUND_LAYERS = ["orm-infra", "orm-maxspeed", "orm-signals", "orm-electrification"];

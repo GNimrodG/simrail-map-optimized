@@ -1,9 +1,9 @@
 import { useContext, useEffect } from "react";
 import { useMap } from "react-leaflet";
 
+import { useSetting } from "../hooks/useSetting";
 import { dataProvider } from "../utils/data-manager";
 import SelectedTrainContext from "../utils/selected-train-context";
-import { useSetting } from "../utils/use-setting";
 
 const AutoZoomHandler = () => {
   const map = useMap();

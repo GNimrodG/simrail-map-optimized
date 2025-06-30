@@ -2,11 +2,11 @@ import { DivIcon, Icon, IconOptions } from "leaflet";
 import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 import { Marker, Popup, useMap } from "react-leaflet";
 
-import { dataProvider } from "../../../utils/data-manager";
+import { useSetting } from "../../../hooks/useSetting";
+import { useSteamProfileData } from "../../../hooks/useSteamProfileData";
 import SelectedTrainContext from "../../../utils/selected-train-context";
-import { SteamProfileResponse, Train } from "../../../utils/types";
+import { Train } from "../../../utils/types";
 import { getColorTrainMarker } from "../../../utils/ui";
-import { useSetting } from "../../../utils/use-setting";
 import ReactLeafletDriftMarker from "../../utils/ReactLeafletDriftMarker";
 import BotIcon from "../icons/bot.svg?raw";
 import TrainMarkerPopup from "./TrainMarkerPopup";
@@ -50,22 +50,11 @@ function getIcon(
 const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
   const map = useMap();
   const { selectedTrain } = useContext(SelectedTrainContext);
-  const [userData, setUserData] = useState<SteamProfileResponse | null>(null);
+  const { userData } = useSteamProfileData(train.TrainData.ControlledBySteamID);
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(DEFAULT_ICON);
   const [useAltTracking] = useSetting("useAltTracking");
   const [disableSlidingMarkers] = useSetting("disableSlidingMarkers");
   const [layerOpacities] = useSetting("layerOpacities");
-
-  useEffect(() => {
-    if (!train.TrainData.ControlledBySteamID) {
-      setUserData(null);
-      return;
-    }
-
-    dataProvider.getSteamProfileData(train.TrainData.ControlledBySteamID).then((profile) => {
-      setUserData(profile ?? { PersonaName: train.TrainData.ControlledBySteamID, Avatar: "" });
-    });
-  }, [train.TrainData.ControlledBySteamID]);
 
   const trainMarkerColor = useMemo(() => getColorTrainMarker(train.TrainData.Velocity), [train.TrainData.Velocity]);
 

@@ -7,9 +7,9 @@ import { type FunctionComponent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { map } from "rxjs";
 
+import useObservable from "../hooks/useObservable";
+import { useSetting } from "../hooks/useSetting";
 import { dataProvider } from "../utils/data-manager";
-import useObservable from "../utils/use-observable";
-import { useSetting } from "../utils/use-setting";
 import InfoIcon from "./icons/InfoIcon";
 import WarningIcon from "./icons/WarningIcon";
 

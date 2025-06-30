@@ -50,7 +50,7 @@ const StationTimetableModal: FunctionComponent<StationTimetableModalProps> = ({
           {t("Timetable.Title", { stationName })} <MapTimeDisplay />
         </DialogTitle>
 
-        {open && stationTimetable && <StationTimetableDisplay timetable={stationTimetable} />}
+        {open && stationTimetable && <StationTimetableDisplay timetable={stationTimetable} onClose={onClose} />}
       </ModalDialog>
     </Modal>
   );

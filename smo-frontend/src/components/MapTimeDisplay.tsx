@@ -1,9 +1,9 @@
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent } from "react";
 
+import useBehaviorSubj from "../hooks/useBehaviorSubj";
 import { dataProvider } from "../utils/data-manager";
 import { timeSubj$ } from "../utils/time";
-import useBehaviorSubj from "../utils/use-behaviorSubj";
 
 const MapTimeDisplay: FunctionComponent = () => {
   const currentTime = useBehaviorSubj(timeSubj$);

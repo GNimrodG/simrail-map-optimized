@@ -194,8 +194,8 @@ public class StationAnalyzerService : IHostedService
             case { PointId: null }:
                 // Update existing station with PointId if it was null
                 existingStation.PointId = station.PointId;
-                _logger.LogInformation("Updated station {StationName} with ID {StationId}",
-                    existingStation.Name, existingStation.Id);
+                _logger.LogInformation("Set point id {PointId} for station {StationName} with ID {StationId}",
+                    station.PointId, existingStation.Name, existingStation.Id);
                 break;
             case null:
                 try
@@ -226,7 +226,8 @@ public class StationAnalyzerService : IHostedService
                             var prefix = $"{station.PointId}_{railwayRef}";
                             var mainImageUrl = string.Empty;
 
-                            if (osmData.Tags.TryGetValue("wikimedia_commons", out var tagValue) && tagValue.StartsWith("File:"))
+                            if (osmData.Tags.TryGetValue("wikimedia_commons", out var tagValue) &&
+                                tagValue.StartsWith("File:"))
                             {
                                 mainImageUrl =
                                     $"https://commons.wikimedia.org/wiki/Special:Redirect/file/{osmData.Tags["wikimedia_commons"]}";
@@ -326,7 +327,7 @@ public class StationAnalyzerService : IHostedService
             return _stations.ToArray();
         }
     }
-    
+
     /// <summary>
     /// Sets the known stations, replacing any existing stations.
     /// </summary>

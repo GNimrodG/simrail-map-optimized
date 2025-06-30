@@ -4,8 +4,8 @@ import Typography from "@mui/joy/Typography";
 import { type FunctionComponent, useState, useTransition } from "react";
 import { useTranslation } from "react-i18next";
 
+import useStationTimetableEntries from "../../../hooks/useStationTimetableEntries";
 import { OsmNode } from "../../../utils/types";
-import useStationTimetableEntries from "../../../utils/use-station-timetable-entries";
 import Loading from "../../Loading";
 import StationTimetableModal from "../../timetable/StationTimetableModal";
 

@@ -20,10 +20,10 @@ import { useMap } from "react-leaflet";
 
 import _stationLayouts from "../../../assets/station-layouts.json";
 import _wikiLinks from "../../../assets/wiki-links.json";
+import useStationTimetableEntries from "../../../hooks/useStationTimetableEntries";
 import { dataProvider } from "../../../utils/data-manager";
 import { getSignalsForStation, getStationGeometry, goToSignal } from "../../../utils/geom-utils";
 import { OsmNode, Station, SteamProfileResponse } from "../../../utils/types";
-import useStationTimetableEntries from "../../../utils/use-station-timetable-entries";
 import InfoIcon from "../../icons/InfoIcon";
 import Loading from "../../Loading";
 import SteamProfileDisplay from "../../SteamProfileDisplay";

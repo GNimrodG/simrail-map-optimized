@@ -3,10 +3,10 @@ import { type FunctionComponent, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Marker, Popup } from "react-leaflet";
 
+import { useOsmData } from "../../../hooks/useOsmData";
+import { useSetting } from "../../../hooks/useSetting";
 import { getOsmNodeName } from "../../../utils/osm-utils";
 import { Station } from "../../../utils/types";
-import { useOsmData } from "../../../utils/use-osm-data";
-import { useSetting } from "../../../utils/use-setting";
 import TrainIcon from "../icons/train.svg?raw";
 import StationMarkerPopup from "./StationMarkerPopup";
 

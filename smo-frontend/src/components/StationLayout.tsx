@@ -2,9 +2,9 @@ import Box from "@mui/joy/Box";
 import { styled } from "@mui/joy/styles";
 import { type FunctionComponent, useMemo } from "react";
 
+import useBehaviorSubj from "../hooks/useBehaviorSubj";
 import { dataProvider } from "../utils/data-manager";
 import { Train } from "../utils/types";
-import useBehaviorSubj from "../utils/use-behaviorSubj";
 import StationLayoutBlock from "./StationLayoutBlock";
 import StationLayoutGraphic from "./StationLayoutGraphic";
 

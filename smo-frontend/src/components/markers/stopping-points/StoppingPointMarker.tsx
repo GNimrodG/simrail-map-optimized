@@ -3,9 +3,9 @@ import { type FunctionComponent, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Marker, Popup } from "react-leaflet";
 
+import { useSetting } from "../../../hooks/useSetting";
 import { getOsmNodeName } from "../../../utils/osm-utils";
 import { OsmNode } from "../../../utils/types";
-import { useSetting } from "../../../utils/use-setting";
 import TrainIcon from "../icons/train.svg?raw";
 import StoppingPointPopup from "./StoppingPointPopup";
 

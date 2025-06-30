@@ -3,12 +3,12 @@ import { type FunctionComponent, useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 
+import useBehaviorSubj from "../hooks/useBehaviorSubj";
 import { dataProvider } from "../utils/data-manager";
 import { goToSignal, goToStation } from "../utils/geom-utils";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { SignalStatus, Station, Train } from "../utils/types";
 import { getSpeedColorForSignal, normalizeString } from "../utils/ui";
-import useBehaviorSubj from "../utils/use-behaviorSubj";
 import ListboxComponent from "./utils/ListBoxComponent";
 
 const filterOptions = createFilterOptions<ListItem>({

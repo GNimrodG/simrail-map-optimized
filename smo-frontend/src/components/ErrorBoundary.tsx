@@ -1,7 +1,7 @@
 import { type FunctionComponent, lazy, PropsWithChildren } from "react";
 
+import useBehaviorSubj from "../hooks/useBehaviorSubj";
 import { isSentryLoaded$ } from "../utils/data-manager";
-import useBehaviorSubj from "../utils/use-behaviorSubj";
 import ErrorFallback from "./ErrorFallback";
 
 const SentryErrorBoundary = lazy(() => import("@sentry/react").then((mod) => ({ default: mod.ErrorBoundary })));

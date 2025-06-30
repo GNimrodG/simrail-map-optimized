@@ -3,8 +3,8 @@ import Typography from "@mui/joy/Typography";
 import { t } from "i18next";
 import { type FunctionComponent } from "react";
 
+import useBehaviorSubj from "../hooks/useBehaviorSubj";
 import { dataProvider } from "../utils/data-manager";
-import useBehaviorSubj from "../utils/use-behaviorSubj";
 
 const StatsDisplay: FunctionComponent = () => {
   const trains = useBehaviorSubj(dataProvider.trainsData$);

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { dataProvider } from "./data-manager";
-import { SimplifiedTimtableEntry } from "./types";
+import { dataProvider } from "../utils/data-manager";
+import { SimplifiedTimtableEntry } from "../utils/types";
 
 const useStationTimetableEntries = (stationName: string) => {
   const [stationTimetable, setStationTimetable] = useState<SimplifiedTimtableEntry[] | null>(null);

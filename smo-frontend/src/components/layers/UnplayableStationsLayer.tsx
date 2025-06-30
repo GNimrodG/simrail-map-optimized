@@ -4,10 +4,10 @@ import debounce from "lodash/debounce";
 import { type FunctionComponent, useEffect, useRef, useState } from "react";
 import { LayerGroup, useMap } from "react-leaflet";
 
+import useBehaviorSubj from "../../hooks/useBehaviorSubj";
 import { dataProvider } from "../../utils/data-manager";
 import { getVisibleStations } from "../../utils/geom-utils";
 import { Station } from "../../utils/types";
-import useBehaviorSubj from "../../utils/use-behaviorSubj";
 import UnplayableStation from "../markers/station/UnplayableStation";
 
 const UnplayableStationsLayer: FunctionComponent = () => {

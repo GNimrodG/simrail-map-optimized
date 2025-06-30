@@ -3,10 +3,10 @@ import debounce from "lodash/debounce";
 import { type FunctionComponent, useContext, useEffect, useState } from "react";
 import { LayerGroup, useMap } from "react-leaflet";
 
+import useBehaviorSubj from "../../hooks/useBehaviorSubj";
 import { dataProvider } from "../../utils/data-manager";
 import SelectedTrainContext from "../../utils/selected-train-context";
 import { Train } from "../../utils/types";
-import useBehaviorSubj from "../../utils/use-behaviorSubj";
 import TrainMarker from "../markers/train/TrainMarker";
 
 function getVisibleTrains(trains: Train[], map: LeafletMap | null, selectedTrainNo?: string) {
