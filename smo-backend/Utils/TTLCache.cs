@@ -14,20 +14,23 @@ public class TtlCache<TKey, TValue> : IDisposable
     where TKey : notnull
 {
     private readonly MemoryCache _cache = new(new MemoryCacheOptions());
-    private readonly Timer _gaugeUpdateTimer;
+    private readonly Timer? _gaugeUpdateTimer;
 
     private readonly string _instanceName;
-    private readonly TimeSpan _ttl;
+    private readonly TimeSpan? _ttl;
     private bool _disposed;
 
     /// <summary>
     ///     A simple in-memory cache with a time-to-live (TTL) for each entry.
     /// </summary>
-    public TtlCache(TimeSpan ttl, string? name = null)
+    public TtlCache(TimeSpan? ttl, string? name = null)
     {
         _ttl = ttl;
         _instanceName = name ?? $"{typeof(TKey).Name}_{typeof(TValue).Name}";
-        _gaugeUpdateTimer = new(_ttl.TotalMilliseconds);
+        
+        if (_ttl == null) return;
+        
+        _gaugeUpdateTimer = new(_ttl.Value.TotalMilliseconds);
         _gaugeUpdateTimer.Elapsed += (_, _) => CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
         _gaugeUpdateTimer.AutoReset = true;
         _gaugeUpdateTimer.Start();
@@ -70,12 +73,12 @@ public class TtlCache<TKey, TValue> : IDisposable
     public void Dispose()
     {
         if (_disposed) return;
+        _disposed = true;
         _gaugeUpdateTimer?.Stop();
         _gaugeUpdateTimer?.Dispose();
         _cache.Dispose();
         KeyAdded = null;
         CacheSizeGauge.RemoveLabelled(_instanceName);
-        _disposed = true;
         GC.SuppressFinalize(this);
     }
 

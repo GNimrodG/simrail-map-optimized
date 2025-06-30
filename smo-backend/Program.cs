@@ -182,6 +182,7 @@ builder.Services.AddDbContextPool<SmoContext>(options =>
 );
 
 builder.Services.AddSingleton<SimrailApiClient>();
+builder.Services.AddSingleton<OsmApiClient>();
 
 var steamApiKey = Environment.GetEnvironmentVariable("STEAM_API_KEY")
                   ?? builder.Configuration.GetValue<string>("SteamApiKey")
@@ -203,6 +204,7 @@ builder.Services.AddHostedServiceSingleton<TrainDelayAnalyzerService>();
 builder.Services.AddHostedServiceSingleton<TimetableAnalyzerService>();
 builder.Services.AddHostedServiceSingleton<RoutePointAnalyzerService>();
 builder.Services.AddHostedServiceSingleton<ServerRestartAnalyzerService>();
+builder.Services.AddHostedServiceSingleton<StationAnalyzerService>();
 
 // Client services
 builder.Services.AddSingleton<ClientManagerService>();

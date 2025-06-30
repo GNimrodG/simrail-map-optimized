@@ -21,11 +21,17 @@ public class SimrailApiClient
 
     private readonly HttpClient _httpClient = new();
 
-    private static T[] HandleResponse<T>(HttpResponseMessage response, CancellationToken stoppingToken) where T : class
+    private static async Task<T[]> HandleResponse<T>(HttpResponseMessage response, CancellationToken stoppingToken)
+        where T : class
     {
         response.EnsureSuccessStatusCode();
-        var content = response.Content.ReadAsStringAsync(stoppingToken).Result;
-        var result = JsonConvert.DeserializeObject<BaseListResponse<T>>(content);
+
+        await using var stream = await response.Content.ReadAsStreamAsync(stoppingToken);
+        using var reader = new StreamReader(stream);
+        await using var jsonReader = new JsonTextReader(reader);
+
+        var serializer = new JsonSerializer();
+        var result = serializer.Deserialize<BaseListResponse<T>>(jsonReader);
 
         if (result == null)
         {
@@ -55,7 +61,7 @@ public class SimrailApiClient
     public async Task<ServerStatus[]> GetServersAsync(CancellationToken stoppingToken)
     {
         var response = await _httpClient.GetAsync(ServersOpenUrl, stoppingToken);
-        return HandleResponse<ServerStatus>(response, stoppingToken);
+        return await HandleResponse<ServerStatus>(response, stoppingToken);
     }
 
     /// <summary>
@@ -64,7 +70,7 @@ public class SimrailApiClient
     public async Task<Train[]> GetTrainsAsync(string serverCode, CancellationToken stoppingToken)
     {
         var response = await _httpClient.GetAsync(TrainsUrlPrefix + serverCode, stoppingToken);
-        return HandleResponse<Train>(response, stoppingToken);
+        return await HandleResponse<Train>(response, stoppingToken);
     }
 
     /// <summary>
@@ -73,7 +79,7 @@ public class SimrailApiClient
     public async Task<TrainPosition[]> GetTrainPositionsAsync(string serverCode, CancellationToken stoppingToken)
     {
         var response = await _httpClient.GetAsync(TrainPositionsUrlPrefix + serverCode, stoppingToken);
-        return HandleResponse<TrainPosition>(response, stoppingToken);
+        return await HandleResponse<TrainPosition>(response, stoppingToken);
     }
 
     /// <summary>
@@ -82,7 +88,7 @@ public class SimrailApiClient
     public async Task<Station[]> GetStationsAsync(string serverCode, CancellationToken stoppingToken)
     {
         var response = await _httpClient.GetAsync(StationsUrlPrefix + serverCode, stoppingToken);
-        return HandleResponse<Station>(response, stoppingToken);
+        return await HandleResponse<Station>(response, stoppingToken);
     }
 
     /// <summary>
@@ -116,8 +122,13 @@ public class SimrailApiClient
     {
         var response = await _httpClient.GetAsync(TimetableUrlPrefix + serverCode, stoppingToken);
         response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync(stoppingToken);
-        var result = JsonConvert.DeserializeObject<Timetable[]>(content);
+
+        await using var stream = await response.Content.ReadAsStreamAsync(stoppingToken);
+        using var reader = new StreamReader(stream);
+        await using var jsonReader = new JsonTextReader(reader);
+
+        var serializer = new JsonSerializer();
+        var result = serializer.Deserialize<Timetable[]>(jsonReader);
 
         if (result == null)
         {
@@ -135,8 +146,12 @@ public class SimrailApiClient
     {
         var response = await _httpClient.GetAsync(EdrTimetableUrlPrefix + serverCode, stoppingToken);
         response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync(stoppingToken);
-        var result = JsonConvert.DeserializeObject<EdrTimetableTrainEntry[]>(content);
+        await using var stream = await response.Content.ReadAsStreamAsync(stoppingToken);
+        using var reader = new StreamReader(stream);
+        await using var jsonReader = new JsonTextReader(reader);
+
+        var serializer = new JsonSerializer();
+        var result = serializer.Deserialize<EdrTimetableTrainEntry[]>(jsonReader);
 
         if (result == null)
         {

@@ -121,35 +121,35 @@ public class ServerRestartAnalyzerService(ILogger<ServerDataService> logger, Ser
     private void OnServerDataReceived(ServerStatus[] data)
     {
         foreach (var serverStatus in data)
-            if (_prevServerStatus.TryGetValue(serverStatus.ServerName, out var prevStatus))
+            if (_prevServerStatus.TryGetValue(serverStatus.ServerCode, out var prevStatus))
             {
                 switch (prevStatus)
                 {
                     case true when !serverStatus.IsActive &&
-                                   !_lastShutdownTime.TryGetValue(serverStatus.ServerName, out _):
+                                   !_lastShutdownTime.TryGetValue(serverStatus.ServerCode, out _):
                         // Server was online and is now offline, record the shutdown time
-                        _lastShutdownTime[serverStatus.ServerName] = DateTime.UtcNow;
+                        _lastShutdownTime[serverStatus.ServerCode] = DateTime.UtcNow;
                         break;
                     case false when serverStatus.IsActive:
                     {
                         // Server was offline and is now online, record the restart time
                         var restartTime = DateTime.UtcNow;
-                        if (_lastShutdownTime.TryGetValue(serverStatus.ServerName, out var lastShutdown))
+                        if (_lastShutdownTime.TryGetValue(serverStatus.ServerCode, out var lastShutdown))
                         {
                             var restartData = new ServerRestartData(lastShutdown, restartTime);
-                            if (_serverRestartTimes.TryGetValue(serverStatus.ServerName, out var restarts))
+                            if (_serverRestartTimes.TryGetValue(serverStatus.ServerCode, out var restarts))
                             {
                                 restarts = restarts.Append(restartData).ToArray();
-                                _serverRestartTimes[serverStatus.ServerName] = restarts;
+                                _serverRestartTimes[serverStatus.ServerCode] = restarts;
                             }
                             else
                             {
-                                _serverRestartTimes[serverStatus.ServerName] = [restartData];
+                                _serverRestartTimes[serverStatus.ServerCode] = [restartData];
                             }
 
                             logger.LogInformation(
-                                "Server {ServerName} restarted at {RestartTime} after shutdown at {ShutdownTime:o}",
-                                serverStatus.ServerName, restartTime, lastShutdown);
+                                "Server {ServerCode} restarted at {RestartTime} after shutdown at {ShutdownTime:o}",
+                                serverStatus.ServerCode, restartTime, lastShutdown);
                         }
 
                         break;
@@ -159,14 +159,14 @@ public class ServerRestartAnalyzerService(ILogger<ServerDataService> logger, Ser
             else
             {
                 // First time seeing this server, just record its status
-                _prevServerStatus[serverStatus.ServerName] = serverStatus.IsActive;
+                _prevServerStatus[serverStatus.ServerCode] = serverStatus.IsActive;
 
                 if (serverStatus.IsActive)
                     // If the server is active, we don't have a shutdown time yet
-                    _lastShutdownTime.Remove(serverStatus.ServerName);
+                    _lastShutdownTime.Remove(serverStatus.ServerCode);
                 else
                     // If the server is not active, record the current time as the last shutdown time
-                    _lastShutdownTime[serverStatus.ServerName] = DateTime.UtcNow;
+                    _lastShutdownTime[serverStatus.ServerCode] = DateTime.UtcNow;
             }
     }
 
@@ -175,10 +175,8 @@ public class ServerRestartAnalyzerService(ILogger<ServerDataService> logger, Ser
     /// </summary>
     /// <param name="serverName">The name of the server to get restart data for.</param>
     /// <returns>An array of <see cref="ServerRestartData" /> containing all recorded restarts for the server.</returns>
-    public ServerRestartData[] GetServerRestarts(string serverName)
-    {
-        return _serverRestartTimes.TryGetValue(serverName, out var restarts) ? restarts : [];
-    }
+    public ServerRestartData[] GetServerRestarts(string serverName) =>
+        _serverRestartTimes.TryGetValue(serverName, out var restarts) ? restarts : [];
 
     /// <summary>
     ///     Predicts the next restart time for a server based on historical restart patterns.
@@ -258,9 +256,7 @@ public class ServerRestartAnalyzerService(ILogger<ServerDataService> logger, Ser
         ///     Returns a string representation of the restart data.
         /// </summary>
         /// <returns>A formatted string showing shutdown time, restart time, and duration.</returns>
-        public override string ToString()
-        {
-            return $"{ShutdownTime?.ToString("o") ?? "N/A"} - {RestartTime:o} ({GetDuration()})";
-        }
+        public override string ToString() =>
+            $"{ShutdownTime?.ToString("o") ?? "N/A"} - {RestartTime:o} ({GetDuration()})";
     }
 }

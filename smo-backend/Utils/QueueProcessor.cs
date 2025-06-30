@@ -9,7 +9,7 @@ namespace SMOBackend.Utils;
 /// <param name="processItem">The function to process each item.</param>
 /// <param name="gauge">The Prometheus gauge to track the queue size.</param>
 /// <param name="maxDegreeOfParallelism"> The maximum number of items to process in parallel.</param>
-/// <param name="maxQueueSize"> The maximum size of the queue.</param>
+/// <param name="maxQueueSize"> The maximum size of the queue. If set to -1, the queue size is unlimited.</param>
 /// <typeparam name="T">The type of items to be processed.</typeparam>
 public class QueueProcessor<T>(
     ILogger logger,
@@ -33,16 +33,17 @@ public class QueueProcessor<T>(
             lock (_dataQueue)
             {
                 // If queue is at maximum capacity, remove the oldest item
-                if (_dataQueue.Count >= maxQueueSize)
+                if (maxQueueSize != -1 && _dataQueue.Count >= maxQueueSize)
                 {
                     _dataQueue.Dequeue(); // Remove the oldest item to make space for newest data
                     logger.LogWarning("Queue full, removed the oldest item to make room for newest data");
                 }
 
                 _dataQueue.Enqueue(data);
-                logger.LogInformation(
-                    "Data queued for processing. Queue length: {QueueLength}/{MaxQueueSize}",
-                    _dataQueue.Count, maxQueueSize);
+                if (_dataQueue.Count < 10)
+                    logger.LogInformation(
+                        "Data queued for processing. Queue length: {QueueLength}/{MaxQueueSize}",
+                        _dataQueue.Count, maxQueueSize == -1 ? "unlimited" : maxQueueSize);
                 gauge.Set(_dataQueue.Count);
             }
 
@@ -82,7 +83,7 @@ public class QueueProcessor<T>(
 
                 nextData = _dataQueue.Dequeue();
                 logger.LogInformation("Processing queued data. Remaining queue length: {QueueLength}/{MaxQueueSize}",
-                    _dataQueue.Count, maxQueueSize);
+                    _dataQueue.Count, maxQueueSize == -1 ? "unlimited" : maxQueueSize);
                 gauge.Set(_dataQueue.Count);
             }
 

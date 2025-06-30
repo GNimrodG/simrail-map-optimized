@@ -22,8 +22,14 @@ public class StatusController(
     TrainDelayAnalyzerService delayAnalyzerService,
     TimetableAnalyzerService timetableAnalyzerService,
     RoutePointAnalyzerService routePointAnalyzerService,
-    ServerRestartAnalyzerService serverRestartAnalyzerService) : ControllerBase
+    ServerRestartAnalyzerService serverRestartAnalyzerService,
+    StationAnalyzerService stationAnalyzerService
+) : ControllerBase
 {
+    private static bool ValidatePassword(string? password) =>
+        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ADMIN_PASSWORD")) &&
+        Environment.GetEnvironmentVariable("ADMIN_PASSWORD") == password;
+    
     /// <summary>
     /// Get the status of the server
     /// </summary>
@@ -278,4 +284,33 @@ public class StatusController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<string[]>> GetRouteLines() =>
         Ok(await routePointAnalyzerService.GetRoutesWithValidLines());
+
+    /// <summary>
+    /// Gets the list of known stations.
+    /// </summary>
+    /// <returns>An array of known stations</returns>
+    [HttpGet("known-stations")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<Station[]> GetKnownStations() =>
+        Ok(stationAnalyzerService.GetStations());
+
+    /// <summary>
+    /// Sets the known stations.
+    /// </summary>
+    [HttpPost("known-stations")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(NotFoundError))]
+    public ActionResult<Station[]> PostKnownStations(
+        [FromHeader] string password,
+        Station[]? stations)
+    {
+        if (!ValidatePassword(password))
+            return Unauthorized(new NotFoundError("Invalid password", "invalid_password"));
+        
+        if (stations == null || stations.Length == 0)
+            return BadRequest(new NotFoundError("No stations provided", "no_stations_provided"));
+
+        stationAnalyzerService.SetStations(stations);
+        return Ok(stationAnalyzerService.GetStations());
+    }
 }

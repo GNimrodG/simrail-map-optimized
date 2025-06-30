@@ -19,6 +19,7 @@ public class TimetableAnalyzerService(
     private readonly TtlCache<string, Dictionary<string, SimplifiedTimetableEntry[]>> _timetableDataCache =
         new(timetableDataService.GetFetchInterval().Add(TimeSpan.FromMinutes(30)), "TimetableDataCache");
 
+    /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
         logger.LogInformation("Starting timetable data service...");
@@ -64,6 +65,7 @@ public class TimetableAnalyzerService(
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public async Task StopAsync(CancellationToken cancellationToken)
     {
         logger.LogInformation("Stopping timetable data service...");
@@ -81,6 +83,12 @@ public class TimetableAnalyzerService(
         }
     }
 
+    /// <summary>
+    /// Gets the timetable entries for a specific server and station name.
+    /// </summary>
+    /// <param name="serverCode">The server code to fetch timetable entries for.</param>
+    /// <param name="stationName">The name of the station to fetch timetable entries for.</param>
+    /// <returns>An array of simplified timetable entries for the specified station.</returns>
     public SimplifiedTimetableEntry[] GetTimetableEntries(string serverCode, string stationName)
     {
         if (!_timetableDataCache.TryGetValue(serverCode, out var timetableEntriesPerStation)) return [];

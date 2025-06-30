@@ -106,8 +106,12 @@ public class SteamApiClient
         }
 
         response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        var data = JsonConvert.DeserializeObject<PlayerSummariesResponse>(content);
+        await using var stream = await response.Content.ReadAsStreamAsync();
+        using var reader = new StreamReader(stream);
+        await using var jsonReader = new JsonTextReader(reader);
+
+        var serializer = new JsonSerializer();
+        var data = serializer.Deserialize<PlayerSummariesResponse>(jsonReader);
 
         if (data?.Response.Players == null || data.Response.Players.Length == 0)
             return null;
@@ -144,8 +148,12 @@ public class SteamApiClient
         }
 
         response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        var data = JsonConvert.DeserializeObject<PlayerStatsResponse>(content);
+        await using var stream = await response.Content.ReadAsStreamAsync();
+        using var reader = new StreamReader(stream);
+        await using var jsonReader = new JsonTextReader(reader);
+
+        var serializer = new JsonSerializer();
+        var data = serializer.Deserialize<PlayerStatsResponse>(jsonReader);
 
         if (data?.PlayerStats == null)
             return null;
