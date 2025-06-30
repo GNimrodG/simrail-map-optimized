@@ -9,23 +9,31 @@ export interface TrainScheduleDisplayProps {
   timetable: Timetable;
   delays: Record<number, number>;
   trainTimetableIndex: number;
+
+  highlightedStationIndex?: number;
+  /**
+   * Whether to hide the time until arrival.
+   */
+  hideTimeUntil?: boolean;
 }
 
 const TrainScheduleDisplay: FunctionComponent<TrainScheduleDisplayProps> = ({
   timetable,
   delays,
   trainTimetableIndex,
+  highlightedStationIndex = trainTimetableIndex,
+  hideTimeUntil,
 }) => {
   const stepperRef = useRef<HTMLLIElement>(null);
 
   useEffect(() => {
-    if (trainTimetableIndex > 0) {
+    if (highlightedStationIndex > 0) {
       stepperRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "center",
       });
     }
-  }, [trainTimetableIndex]);
+  }, [highlightedStationIndex]);
 
   return (
     <Stepper
@@ -45,7 +53,11 @@ const TrainScheduleDisplay: FunctionComponent<TrainScheduleDisplayProps> = ({
       }}
       orientation="vertical">
       {timetable.TimetableEntries.map((x, i) => {
-        const current = (trainTimetableIndex === i && !delays[i]) || (!!delays[i - 1] && trainTimetableIndex === i - 1);
+        // This is the next station if:
+        // 1. The train's next station is this station (highlightedStationIndex === i) and there is **no** delay registered at this station
+        // 2. The train's next station is the previous station (highlightedStationIndex === i - 1) and there is a delay registered at the previous station
+        const current =
+          (highlightedStationIndex === i && !delays[i]) || (!!delays[i - 1] && highlightedStationIndex === i - 1);
 
         return (
           <Step
@@ -59,6 +71,7 @@ const TrainScheduleDisplay: FunctionComponent<TrainScheduleDisplayProps> = ({
               mainStation={x.SupervisedBy === x.NameOfPoint}
               delay={delays[i]}
               current={current}
+              hideTimeUntil={hideTimeUntil}
             />
           </Step>
         );

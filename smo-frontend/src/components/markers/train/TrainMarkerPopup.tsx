@@ -13,17 +13,18 @@ import { styled, useTheme } from "@mui/joy/styles";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import moment from "moment";
-import { type FunctionComponent, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { type FunctionComponent, useCallback, useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useSetting } from "../../../hooks/useSetting";
 import { useSteamProfileData } from "../../../hooks/useSteamProfileData";
 import useSubject from "../../../hooks/useSubject";
+import { useTrainTimetable } from "../../../hooks/useTrainTimetable";
 import { dataProvider } from "../../../utils/data-manager";
 import MapLinesContext from "../../../utils/map-lines-context";
 import SelectedRouteContext from "../../../utils/selected-route-context";
 import SelectedTrainContext from "../../../utils/selected-train-context";
-import { SteamProfileResponse, Timetable, Train } from "../../../utils/types";
+import { SteamProfileResponse, Train } from "../../../utils/types";
 import { getColorTrainMarker, getDistanceColorForSignal } from "../../../utils/ui";
 import CollapseIcon from "../../icons/CollapseIcon";
 import ExpandIcon from "../../icons/ExpandIcon";
@@ -57,29 +58,6 @@ const Image = styled("img")(({ theme }) => ({
     display: "block",
   },
 }));
-
-function useTrainTimetable(trainNo: string) {
-  const [timetable, setTimetable] = useState<Timetable | null>(null);
-
-  useEffect(() => {
-    const abortController = new AbortController();
-
-    dataProvider
-      .fetchTimetable(trainNo)
-      .then((data) => {
-        if (!abortController.signal.aborted) setTimetable(data);
-      })
-      .catch((e) => {
-        console.error("Failed to fetch timetable: ", e);
-      });
-
-    return () => {
-      abortController.abort();
-    };
-  }, [trainNo]);
-
-  return timetable;
-}
 
 function useTrainDelays(trainId: string) {
   const delays = useSubject(

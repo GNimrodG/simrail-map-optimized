@@ -190,8 +190,13 @@ export function getVisibleSignals(signals: SignalStatus[], map: L.Map | null, mi
   }
 }
 
-export function getVisibleStations(stations: Station[], map: L.Map | null) {
+export function getVisibleStations(stations: Station[], map: L.Map | null, minZoom?: number) {
   try {
+    const mapZoom = map?.getZoom() || 0;
+    if (minZoom && mapZoom < minZoom) {
+      return [];
+    }
+
     const mapBounds = map?.getBounds();
 
     if (!mapBounds) {

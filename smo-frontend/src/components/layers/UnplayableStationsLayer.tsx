@@ -10,6 +10,8 @@ import { getVisibleStations } from "../../utils/geom-utils";
 import { Station } from "../../utils/types";
 import UnplayableStation from "../markers/station/UnplayableStation";
 
+const MIN_ZOOM = 11; // Minimum zoom level to show unplayable stations
+
 const UnplayableStationsLayer: FunctionComponent = () => {
   const map = useMap();
 
@@ -27,7 +29,7 @@ const UnplayableStationsLayer: FunctionComponent = () => {
     // Create the debounced handler once
     if (!handlerRef.current) {
       handlerRef.current = debounce(function (this: L.Map) {
-        setVisibleStations(getVisibleStations(dataProvider.unplayableStations$.value, this));
+        setVisibleStations(getVisibleStations(dataProvider.unplayableStations$.value, this, MIN_ZOOM));
       }, 500);
     }
 
@@ -47,7 +49,7 @@ const UnplayableStationsLayer: FunctionComponent = () => {
 
   useEffect(() => {
     if (map) {
-      setVisibleStations(getVisibleStations(unplayableStations, map));
+      setVisibleStations(getVisibleStations(unplayableStations, map, MIN_ZOOM));
     }
   }, [unplayableStations, map]);
 

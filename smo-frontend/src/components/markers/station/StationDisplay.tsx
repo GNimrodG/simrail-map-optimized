@@ -6,7 +6,7 @@ import equals from "lodash/isEqual";
 import moment from "moment";
 import { type FunctionComponent, memo, ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { filter } from "rxjs";
+import { EMPTY, filter } from "rxjs";
 
 import useSubject from "../../../hooks/useSubject";
 import { timeSubj$ } from "../../../utils/time";
@@ -37,6 +37,10 @@ export interface StationDisplayProps {
    * Set the station name to green.
    */
   current?: boolean;
+  /**
+   * Whether to hide the time until arrival.
+   */
+  hideTimeUntil?: boolean;
 }
 
 const filteredTimeSubj$ = timeSubj$.pipe(filter((_, index) => index % 30 === 0));
@@ -50,17 +54,20 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
   pastStation,
   delay,
   current,
+  hideTimeUntil,
 }) => {
   const { t } = useTranslation("translation", { keyPrefix: "StationDisplay" });
   const theme = useTheme();
   const isSmallHeight = useMediaQuery(`(max-height: ${theme.breakpoints.values.md}px)`) || false;
-  const timeUntil = useSubject(filteredTimeSubj$, null, (time) => {
+  const timeUntil = useSubject(hideTimeUntil ? EMPTY : filteredTimeSubj$, null, (time) => {
+    if (hideTimeUntil) return null;
+
     if (!pastStation) {
-      const arrivalTime = moment(station.ArrivalTime);
+      const arrivalTime = moment(station.ArrivalTime || station.DepartureTime);
       arrivalTime.set("year", moment(time).year());
       arrivalTime.set("month", moment(time).month());
       arrivalTime.set("date", moment(time).date());
-      return moment(time).diff(arrivalTime, "m");
+      return moment(time).diff(arrivalTime, "m") || null;
     } else {
       return null;
     }
@@ -93,7 +100,7 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
           }
           color={timeColor}>
           <Typography variant="outlined" level="body-xs" color={timeColor}>
-            {timeUntil}'
+            {timeUntil || 0}'
           </Typography>
         </Tooltip>
       </>

@@ -24,6 +24,7 @@ import StopTypeDisplay from "../utils/StopTypeDisplay";
 import TimeDiffDisplay from "../utils/TimeDiffDisplay";
 import TimeDisplay from "../utils/TimeDisplay";
 import TrainTypeDisplay from "../utils/TrainTypeDisplay";
+import TrainTimetableModal from "./TrainTimetableModal";
 
 export interface StationTimetableDisplayProps {
   timetable: SimplifiedTimtableEntry[];
@@ -191,6 +192,13 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                           </Stack>
                         </Tooltip>
                       </Stack>
+                    )}
+                    {!train && (
+                      <TrainTimetableModal
+                        trainNoLocal={entry.trainNoLocal}
+                        hideTimeUntil={past}
+                        scrollToStation={entry.stationName}
+                      />
                     )}
                     {passedEarly && (
                       <Typography level="body-sm" color="success">
