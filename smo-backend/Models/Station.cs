@@ -1,11 +1,17 @@
 ﻿using Newtonsoft.Json;
+using SMOBackend.Utils;
 
 namespace SMOBackend.Models;
 
 public class Station
 {
-    [JsonProperty(nameof(Name))] public required string Name { get; set; }
-    [JsonProperty(nameof(Prefix))] public required string Prefix { get; set; }
+    [JsonProperty(nameof(Name))]
+    [JsonConverter(typeof(InterningStringConverter))]
+    public required string Name { get; set; }
+
+    [JsonProperty(nameof(Prefix))]
+    [JsonConverter(typeof(InterningStringConverter))]
+    public required string Prefix { get; set; }
 
     [JsonProperty(nameof(DifficultyLevel))]
     public required sbyte DifficultyLevel { get; set; }
@@ -22,12 +28,26 @@ public class Station
     [JsonProperty("AdditionalImage2URL")] public required string? AdditionalImage2Url { get; set; }
 
     [JsonProperty(nameof(DispatchedBy))] public StationDispatcher[] DispatchedBy { get; set; } = [];
-    [JsonProperty("id")] public required string Id { get; set; }
 
-    [JsonProperty(nameof(PointId))] public string? PointId { get; set; }
+    [JsonProperty("id")]
+    [JsonConverter(typeof(InterningStringConverter))]
+    public required string Id { get; set; }
+
+    [JsonProperty(nameof(PointId))]
+    [JsonConverter(typeof(InterningStringConverter))]
+    public string? PointId { get; set; }
 
     [JsonProperty(nameof(RemoteControlled))]
+    [JsonConverter(typeof(InterningStringConverter))]
     public string? RemoteControlled { get; set; }
+    
+    [JsonProperty(nameof(SubStations))]
+    [JsonConverter(typeof(InterningStringArrayConverter))]
+    public string[]? SubStations { get; set; } = [];
+    
+    [JsonProperty(nameof(IgnoredStations))]
+    [JsonConverter(typeof(InterningStringArrayConverter))]
+    public string[]? IgnoredStations { get; set; } = [];
 
     public class PartialStation
     {

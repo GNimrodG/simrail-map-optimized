@@ -112,13 +112,21 @@ public readonly struct SimplifiedTimetableEntry
                $"[Index: {Index}, Previous: {PreviousStation ?? "N/A"}, Next: {NextStation ?? "N/A"}]";
     }
 
+    /// <summary>
+    /// Represents a train type code, which is a 3-character string.
+    /// </summary>
     [JsonConverter(typeof(Utils.Utils.TrainTypeCodeConverter))]
-    public readonly struct TrainTypeCode
+    public readonly struct TrainTypeCode : IEquatable<TrainTypeCode>
     {
         private readonly char _c1;
         private readonly char _c2;
         private readonly char _c3;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TrainTypeCode"/> struct with a 3-character code.
+        /// </summary>
+        /// <param name="code">The 3-character train type code.</param>
+        /// <exception cref="ArgumentException">Thrown if the code is not exactly 3 characters long.</exception>
         public TrainTypeCode(string code)
         {
             if (code is not { Length: 3 })
@@ -129,34 +137,16 @@ public readonly struct SimplifiedTimetableEntry
             _c3 = code[2];
         }
 
-        public override string ToString()
-        {
-            return $"{_c1}{_c2}{_c3}";
-        }
+        public override string ToString() => $"{_c1}{_c2}{_c3}";
 
-        public override bool Equals(object? obj)
-        {
-            return obj is TrainTypeCode other && Equals(other);
-        }
+        public override bool Equals(object? obj) => obj is TrainTypeCode other && Equals(other);
 
-        public bool Equals(TrainTypeCode other)
-        {
-            return _c1 == other._c1 && _c2 == other._c2 && _c3 == other._c3;
-        }
+        public bool Equals(TrainTypeCode other) => _c1 == other._c1 && _c2 == other._c2 && _c3 == other._c3;
 
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(_c1, _c2, _c3);
-        }
+        public override int GetHashCode() => HashCode.Combine(_c1, _c2, _c3);
 
-        public static bool operator ==(TrainTypeCode left, TrainTypeCode right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(TrainTypeCode left, TrainTypeCode right) => left.Equals(right);
 
-        public static bool operator !=(TrainTypeCode left, TrainTypeCode right)
-        {
-            return !(left == right);
-        }
+        public static bool operator !=(TrainTypeCode left, TrainTypeCode right) => !(left == right);
     }
 }

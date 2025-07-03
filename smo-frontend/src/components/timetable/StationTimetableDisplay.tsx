@@ -1,6 +1,8 @@
 ﻿import Box from "@mui/joy/Box";
+import Divider from "@mui/joy/Divider";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
+import { styled } from "@mui/joy/styles";
 import Table from "@mui/joy/Table";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
@@ -16,6 +18,7 @@ import SelectedTrainContext from "../../utils/selected-train-context";
 import { timeSubj$ } from "../../utils/time";
 import { SimplifiedTimtableEntry, Train } from "../../utils/types";
 import { getColorTrainMarker } from "../../utils/ui";
+import ArrowDownIcon from "../icons/arrow-down-solid.svg?react";
 import InfoIcon from "../icons/InfoIcon";
 import MapMarkerIcon from "../icons/map-location-dot-solid.svg?react";
 import TrainMarkerPopup from "../markers/train/TrainMarkerPopup";
@@ -42,6 +45,22 @@ function isPastStation(entry: SimplifiedTimtableEntry, currentTime: Date): boole
 
 const timeSubjEvery10s$ = timeSubj$.pipe(filter((_, index) => index % 10 === 0));
 
+const FlashingBox = styled(Box, { shouldForwardProp: (p) => p !== "shouldLeave" })<{
+  shouldLeave: boolean;
+}>(({ shouldLeave, theme }) => ({
+  "animation": shouldLeave ? `pulse 1.5s infinite` : "none",
+  // this is a fix for the animation getting stuck on the light theme if you toggle the theme
+
+  "@keyframes pulse": {
+    "0%,100%": {},
+    "50%": {
+      color: theme.palette.success.plainColor,
+    },
+  },
+
+  "transition": "color 0.75s",
+}));
+
 const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> = ({ timetable, onClose }) => {
   const map = useMap();
   const { setSelectedTrain } = useContext(SelectedTrainContext);
@@ -52,8 +71,8 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
 
   const relevantTimetable = timetable
     .filter((entry) => {
-      // Always ignore entries without a departure time
-      if (!entry.departureTime) return false;
+      // Always ignore entries without departure or arrival time
+      if (!entry.departureTime && !entry.arrivalTime) return false;
 
       // Find the train in the data provider
       const train = dataProvider.trainsData$.value.find((x) => x.TrainNoLocal === entry.trainNoLocal);
@@ -65,7 +84,7 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
       }
 
       // For trains not in the system (not currently running), use the time-based filter
-      const departureTime = new Date(entry.departureTime);
+      const departureTime = new Date(entry.departureTime ?? entry.arrivalTime!);
       return departureTime >= currentTimeBuffered;
     })
     .toSorted((a, b) => {
@@ -92,7 +111,7 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
         stickyFooter
         aria-label="sticky table"
         sx={{
-          "& th:nth-of-type(1), & td:nth-of-type(1)": { width: 140 }, // Train No (has extra info text sometimes)
+          "& th:nth-of-type(1), & td:nth-of-type(1)": { width: 150 }, // Train No (has extra info text sometimes)
           "& th:nth-of-type(2), & td:nth-of-type(2)": { width: 60 }, // Type
           "& th:nth-of-type(3), & td:nth-of-type(3)": { width: 140 }, // From
           "& th:nth-of-type(4), & td:nth-of-type(4)": { width: 70 }, // Arrival
@@ -105,10 +124,10 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
           <tr>
             <th>{t("TrainNo")}</th>
             <th>{t("Type")}</th>
-            <th>{t("From")}</th>
+            <th style={{ textAlign: "center" }}>{t("From")}</th>
             <th>{t("Arrival")}</th>
             <th>{t("Departure")}</th>
-            <th>{t("To")}</th>
+            <th style={{ textAlign: "center" }}>{t("To")}</th>
             <th>{t("Line")}</th>
             <th>{t("Stop")}</th>
           </tr>
@@ -120,29 +139,40 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
             const lastDelay = Object.values(trainDelays ?? {}).slice(-1)[0] ?? null;
             const departureDelay = trainDelays?.[entry.index] ?? null;
             const passedBasedOnDepartureTime = isPastStation(entry, currentTime);
-            const past =
-              departureDelay !== null ||
-              (train && train.TrainData.VDDelayedTimetableIndex > entry.index) ||
-              (!train && passedBasedOnDepartureTime);
             const passedEarly = train && !passedBasedOnDepartureTime && departureDelay && departureDelay <= -60;
 
             const isPrevStationTheNextStation =
               train?.TrainData.VDDelayedTimetableIndex === entry.index - 1 && !trainDelays?.[entry.index - 1];
-            const isCurrentStationTheNextStation =
-              (train?.TrainData.VDDelayedTimetableIndex === entry.index && !trainDelays?.[entry.index]) ||
-              (train?.TrainData.VDDelayedTimetableIndex === entry.index - 1 && !!trainDelays?.[entry.index - 1]);
+            const isCurrentStationTheNextStation = isTrainAtPrevStation(train, entry, trainDelays);
 
             const isInsideStation =
               isCurrentStationTheNextStation &&
-              train.TrainData.SignalInFront &&
+              !!train?.TrainData.SignalInFront &&
               findStationForSignal(train.TrainData.SignalInFront.split("@")[0])?.Name === entry.stationName;
+
+            const past =
+              !isInsideStation &&
+              (departureDelay !== null ||
+                (train && train.TrainData.VDDelayedTimetableIndex > entry.index) ||
+                (!train && passedBasedOnDepartureTime));
 
             const delayed = !past && !isInsideStation && passedBasedOnDepartureTime && train;
 
+            const prevStations = entry.previousStation?.includes(",\n")
+              ? entry.previousStation.split(",\n")
+              : [entry.previousStation || t("N/A")];
+
+            const nextStations = entry.nextStation?.includes(",\n")
+              ? entry.nextStation.split(",\n")
+              : [entry.nextStation || t("N/A")];
+
+            const shouldLeave = isInsideStation && passedBasedOnDepartureTime;
+
             return (
-              <Box
-                component="tr"
+              <FlashingBox
                 key={entry.trainNoLocal}
+                component="tr"
+                shouldLeave={shouldLeave}
                 sx={{
                   color: past
                     ? passedEarly
@@ -159,7 +189,7 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                   <Stack direction="row" spacing={0.5} alignItems="center">
                     <Typography
                       fontFamily="monospace"
-                      level="body-sm"
+                      level="body-md"
                       variant="outlined"
                       color={train ? getColorTrainMarker(train.TrainData.Velocity) : "neutral"}>
                       {entry.trainNoLocal}
@@ -220,9 +250,25 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                 </td>
                 {/* From */}
                 <td>
-                  <Typography fontFamily="monospace" level="body-sm" sx={{ color: "inherit" }}>
-                    {entry.previousStation || t("N/A")}
-                  </Typography>
+                  <Stack direction="column">
+                    {prevStations.map((station, index) => (
+                      <>
+                        <Typography
+                          key={station + index}
+                          fontFamily="monospace"
+                          level="body-sm"
+                          textAlign="center"
+                          sx={{ color: "inherit" }}>
+                          {station || t("N/A")}
+                        </Typography>
+                        {index < prevStations.length - 1 && (
+                          <Divider sx={{ width: "80%", margin: "0 auto" }}>
+                            <ArrowDownIcon />
+                          </Divider>
+                        )}
+                      </>
+                    ))}
+                  </Stack>
                 </td>
                 {/* Arrival */}
                 <td>
@@ -314,9 +360,25 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                 </td>
                 {/* To */}
                 <td>
-                  <Typography fontFamily="monospace" level="body-sm" sx={{ color: "inherit" }}>
-                    {entry.nextStation || t("N/A")}
-                  </Typography>
+                  <Stack direction="column">
+                    {nextStations.map((station, index) => (
+                      <>
+                        <Typography
+                          key={station + index}
+                          fontFamily="monospace"
+                          level="body-sm"
+                          textAlign="center"
+                          sx={{ color: "inherit" }}>
+                          {station || t("N/A")}
+                        </Typography>
+                        {index < nextStations.length - 1 && (
+                          <Divider sx={{ width: "80%", margin: "0 auto" }}>
+                            <ArrowDownIcon />
+                          </Divider>
+                        )}
+                      </>
+                    ))}
+                  </Stack>
                 </td>
                 {/* Line */}
                 <td>
@@ -326,37 +388,45 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                 </td>
                 {/* Stop */}
                 <td>
-                  <Box
-                    sx={{
-                      display: "inline-grid",
-                      gridTemplateColumns: "1rem 4rem 2rem",
-                      gap: 0.5,
-                      alignItems: "center",
-                    }}>
-                    {entry.arrivalTime && entry.departureTime && (
-                      <Typography sx={{ gridColumn: "1", color: "inherit" }} fontFamily="monospace" level="body-sm">
-                        <TimeDiffDisplay start={entry.arrivalTime} end={entry.departureTime} />
-                      </Typography>
-                    )}
-                    {entry.platform && entry.track !== null ? (
-                      <Typography
-                        sx={{ gridColumn: "2", color: "inherit" }}
-                        fontFamily="monospace"
-                        level="body-sm"
-                        textAlign="center">
-                        {entry.platform}/{entry.track}
-                      </Typography>
-                    ) : (
-                      ""
-                    )}
-                    {entry.stopType && (
-                      <Box sx={{ gridColumn: "3", display: "flex", justifyContent: "center" }}>
-                        <StopTypeDisplay stopType={entry.stopType} />
-                      </Box>
-                    )}
-                  </Box>
+                  {entry.arrivalTime && entry.departureTime && (
+                    <Box
+                      sx={{
+                        display: "inline-grid",
+                        gridTemplateColumns: "1rem 4rem 2rem",
+                        gap: 0.5,
+                        alignItems: "center",
+                      }}>
+                      {entry.arrivalTime && entry.departureTime && (
+                        <Typography sx={{ gridColumn: "1", color: "inherit" }} fontFamily="monospace" level="body-sm">
+                          <TimeDiffDisplay start={entry.arrivalTime} end={entry.departureTime} />
+                        </Typography>
+                      )}
+                      {entry.platform && entry.track !== null ? (
+                        <Typography
+                          sx={{ gridColumn: "2", color: "inherit" }}
+                          fontFamily="monospace"
+                          level="body-sm"
+                          textAlign="center">
+                          {entry.platform}/{entry.track}
+                        </Typography>
+                      ) : (
+                        ""
+                      )}
+                      {entry.stopType && (
+                        <Box sx={{ gridColumn: "3", display: "flex", justifyContent: "center" }}>
+                          <StopTypeDisplay stopType={entry.stopType} />
+                        </Box>
+                      )}
+                    </Box>
+                  )}
+
+                  {entry.note && (
+                    <Typography level="body-sm" sx={{ color: "neutral.500" }} fontFamily="monospace">
+                      {entry.note}
+                    </Typography>
+                  )}
                 </td>
-              </Box>
+              </FlashingBox>
             );
           })}
         </tbody>
@@ -366,3 +436,13 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
 };
 
 export default StationTimetableDisplay;
+function isTrainAtPrevStation(
+  train: Train | undefined,
+  entry: SimplifiedTimtableEntry,
+  trainDelays: Record<number, number> | null,
+) {
+  return (
+    (train?.TrainData.VDDelayedTimetableIndex === entry.index && !trainDelays?.[entry.index]) ||
+    (train?.TrainData.VDDelayedTimetableIndex === entry.index - 1 && !!trainDelays?.[entry.index - 1])
+  );
+}

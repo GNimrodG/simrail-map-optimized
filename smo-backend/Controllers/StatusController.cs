@@ -29,7 +29,7 @@ public class StatusController(
     private static bool ValidatePassword(string? password) =>
         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ADMIN_PASSWORD")) &&
         Environment.GetEnvironmentVariable("ADMIN_PASSWORD") == password;
-    
+
     /// <summary>
     /// Get the status of the server
     /// </summary>
@@ -157,9 +157,6 @@ public class StatusController(
     {
         if (!CheckServer(serverCode))
             return NotFound(new NotFoundError("Server not found", "server_not_found"));
-
-        if (!CheckTrain(serverCode, trainNoLocal))
-            return NotFound(new NotFoundError("Train not found", "train_not_found"));
 
         var timetable = await timetableDataService.GetTimetableForTrainAsync(serverCode, trainNoLocal);
 
@@ -306,7 +303,7 @@ public class StatusController(
     {
         if (!ValidatePassword(password))
             return Unauthorized(new NotFoundError("Invalid password", "invalid_password"));
-        
+
         if (stations == null || stations.Length == 0)
             return BadRequest(new NotFoundError("No stations provided", "no_stations_provided"));
 

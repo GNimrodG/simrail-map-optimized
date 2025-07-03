@@ -2,6 +2,7 @@
 
 using Newtonsoft.Json;
 using MessagePack;
+using SMOBackend.Utils;
 
 namespace SMOBackend.Models.Trains;
 
@@ -11,8 +12,12 @@ public class BaseTrainData
     /// <summary>
     /// The velocity of the train.
     /// </summary>
-    [JsonProperty(nameof(Velocity))] public required double Velocity { get; set; }
-    [JsonProperty(nameof(SignalInFront))] public string? SignalInFront { get; set; }
+    [JsonProperty(nameof(Velocity))]
+    public required double Velocity { get; set; }
+
+    [JsonProperty(nameof(SignalInFront))]
+    [JsonConverter(typeof(InterningStringConverter))]
+    public string? SignalInFront { get; set; }
 
     [JsonProperty(nameof(DistanceToSignalInFront))]
     public required double DistanceToSignalInFront { get; set; }

@@ -14,7 +14,16 @@ import Tabs from "@mui/joy/Tabs";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import L from "leaflet";
-import { type FunctionComponent, lazy, Suspense, useCallback, useMemo, useState, useTransition } from "react";
+import {
+  type FunctionComponent,
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 
@@ -49,6 +58,7 @@ export interface StationMarkerPopupProps {
   station: Station;
   userData: SteamProfileResponse | null;
   onClosePopup: () => void;
+  onShouldKeepMounted?: (shouldKeepMounted: boolean) => void;
   stationOsmData: OsmNode | null;
 }
 
@@ -58,6 +68,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
   station,
   userData,
   onClosePopup,
+  onShouldKeepMounted,
   stationOsmData,
 }) => {
   const { t, i18n } = useTranslation("translation", { keyPrefix: "StationMarkerPopup" });
@@ -75,7 +86,11 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
 
   const [timetableModalOpen, setTimetableModalOpen] = useState(false);
 
-  const stationTimetable = useStationTimetableEntries(station.Name);
+  useEffect(() => {
+    onShouldKeepMounted?.(timetableModalOpen);
+  }, [onShouldKeepMounted, timetableModalOpen]);
+
+  const { stationTimetable, loading: timetableLoading } = useStationTimetableEntries(station.Name);
 
   const showStationArea = useCallback(() => {
     const polygon = L.polygon(getStationGeometry(station), {
@@ -259,7 +274,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
 
         <Button
           fullWidth
-          loading={!stationTimetable}
+          loading={timetableLoading}
           disabled={!stationTimetable?.length}
           variant="solid"
           color="neutral"

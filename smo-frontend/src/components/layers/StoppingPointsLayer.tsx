@@ -65,6 +65,9 @@ const StoppingPointsLayer: FunctionComponent = () => {
   const [visibleStoppingPoints, setVisibleStoppingPoints] = useState<OsmNode[]>([]);
   const [currentZoom, setCurrentZoom] = useState<number>(map?.getZoom() || 0);
 
+  // Store the current abort controller to cancel ongoing requests
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   // Store the handler in a ref to prevent recreating it on every render
   const handlerRef = useRef<DebouncedFunc<LeafletEventHandlerFn>>();
   const fetchHandlerRef = useRef<DebouncedFunc<() => Promise<void>>>();
@@ -81,12 +84,26 @@ const StoppingPointsLayer: FunctionComponent = () => {
       return;
     }
 
+    // Cancel any ongoing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new abort controller for this request
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     try {
       const bounds = map.getBounds();
       const cacheKey = getBoundsCacheKey(bounds);
 
       // Check if we have cached data for these bounds
       if (cache.has(cacheKey)) {
+        // Check if request was aborted before using cached data
+        if (abortController.signal.aborted) {
+          return;
+        }
+
         fetchedHaltsRef.current = cache.get(cacheKey)!;
         setVisibleStoppingPoints(getVisibleStoppingPoints(map, fetchedHaltsRef.current));
         return;
@@ -98,14 +115,29 @@ const StoppingPointsLayer: FunctionComponent = () => {
       const north = bounds.getNorth();
       const east = bounds.getEast();
 
-      const response = await fetchRailwayHaltsWithoutRef(south, west, north, east);
+      const response = await fetchRailwayHaltsWithoutRef(south, west, north, east, abortController.signal);
+
+      // Check if request was aborted after fetch
+      if (abortController.signal.aborted) {
+        return;
+      }
 
       // Cache the results
       cache.set(cacheKey, response.elements);
       fetchedHaltsRef.current = response.elements;
       setVisibleStoppingPoints(getVisibleStoppingPoints(map, fetchedHaltsRef.current));
     } catch (error) {
+      // Don't log errors for aborted requests
+      if (error instanceof Error && error.name === "AbortError") {
+        console.debug("Railway halts fetch was aborted");
+        return;
+      }
       console.error("Error fetching railway halts:", error);
+    } finally {
+      // Clear the abort controller if this is still the current one
+      if (abortControllerRef.current === abortController) {
+        abortControllerRef.current = null;
+      }
     }
   }, [map]);
 
@@ -153,6 +185,12 @@ const StoppingPointsLayer: FunctionComponent = () => {
     fetchHandler();
 
     return () => {
+      // Cancel any ongoing request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+
       handler.cancel(); // Cancel any pending debounced calls
       fetchHandler.cancel();
       map.off("move", handler);

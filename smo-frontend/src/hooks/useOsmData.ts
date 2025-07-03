@@ -10,6 +10,9 @@ export function useOsmData(name: string, prefix?: string): OsmNode | null {
   const [osmData, setOsmData] = useState<OsmNode | null>(null);
 
   useEffect(() => {
+    const abortController = new AbortController();
+    const { signal } = abortController;
+
     const fetchData = async () => {
       const cachedData = cache.get(name);
       if (cachedData) {
@@ -17,12 +20,17 @@ export function useOsmData(name: string, prefix?: string): OsmNode | null {
         return;
       }
 
-      const data = await fetchOsmDataForStation(name, prefix);
-      setOsmData(data);
+      const data = await fetchOsmDataForStation(name, prefix, signal);
       if (data) cache.set(name, data); // Cache the fetched data
+      if (signal.aborted) return;
+      setOsmData(data);
     };
 
     fetchData();
+
+    return () => {
+      abortController.abort(); // Clean up on unmount
+    };
   }, [name, prefix]);
 
   return osmData;

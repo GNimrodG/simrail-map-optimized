@@ -199,7 +199,8 @@
         "Timetable": {
           "Button": "Show timetable",
           "Title": "{{stationName}} - Timetable",
-          "Unavailabe": "Timetable unavailable"
+          "Unavailabe": "Timetable unavailable",
+          "SearchPlaceholder": "Search for train"
         },
         "WikiLink": "SimRail Wiki"
       },
@@ -306,7 +307,8 @@
         "ZUE": "Other service train hauled by electric locomotive",
         "ZUJ": "Other service train formed by electric multiple unit",
         "ZUS": "Other service train hauled by diesel locomotive",
-        "ZUM": "Other service train formed by diesel multiple unit"
+        "ZUM": "Other service train formed by diesel multiple unit",
+        "ZXE": "Other train hauled by electric locomotive"
       },
       "TrainTimetable": {
         "TrainNo": "Train No.",
@@ -542,7 +544,8 @@
         "Timetable": {
           "Button": "Fahrplan anzeigen",
           "Title": "{{stationName}} - Fahrplan",
-          "Unavailabe": "Fahrplan nicht verfügbar"
+          "Unavailabe": "Fahrplan nicht verfügbar",
+          "SearchPlaceholder": "Nach Zug suchen"
         },
         "WikiLink": "SimRail Wiki"
       },
@@ -649,7 +652,8 @@
         "ZUE": "Sonstiger Wartungszug mit Elektrolokomotive",
         "ZUJ": "Sonstiger Wartungszug mit elektrischen Triebzügen",
         "ZUS": "Sonstiger Wartungszug mit Diesellokomotive",
-        "ZUM": "Sonstiger Wartungszug mit Dieseltriebzügen"
+        "ZUM": "Sonstiger Wartungszug mit Dieseltriebzügen",
+        "ZXE": "Sonstiger Zug mit Elektrolokomotive"
       },
       "TrainTimetable": {
         "TrainNo": "Zug-Nr.",
@@ -885,7 +889,8 @@
         "Timetable": {
           "Button": "Menetrend megjelenítése",
           "Title": "{{stationName}} - Menetrend",
-          "Unavailabe": "Menetrend nem elérhető"
+          "Unavailabe": "Menetrend nem elérhető",
+          "SearchPlaceholder": "Vonat keresése"
         },
         "WikiLink": "SimRail Wiki"
       },
@@ -992,7 +997,8 @@
         "ZUE": "Egyéb karbantartó vonat villamos mozdony vontatással",
         "ZUJ": "Egyéb karbantartó vonat villamos motorvonattal",
         "ZUS": "Egyéb karbantartó vonat dízelmozdony vontatással",
-        "ZUM": "Egyéb karbantartó vonat dízel motorvonattal"
+        "ZUM": "Egyéb karbantartó vonat dízel motorvonattal",
+        "ZXE": "Egyéb vonat villamos mozdony vontatással"
       },
       "TrainTimetable": {
         "TrainNo": "Vonatszám",
@@ -1228,7 +1234,8 @@
         "Timetable": {
           "Button": "Zaman çizelgesini göster",
           "Title": "{{stationName}} - Zaman Çizelgesi",
-          "Unavailabe": "Zaman çizelgesi mevcut değil"
+          "Unavailabe": "Zaman çizelgesi mevcut değil",
+          "SearchPlaceholder": "Tren ara"
         },
         "WikiLink": "SimRail Wiki"
       },
@@ -1335,7 +1342,8 @@
         "ZUE": "Elektrikli lokomotifli diğer bakım treni",
         "ZUJ": "Elektrikli çoklu birimlerden oluşan diğer bakım treni",
         "ZUS": "Dizel lokomotifli diğer bakım treni",
-        "ZUM": "Dizel çoklu birimlerden oluşan diğer bakım treni"
+        "ZUM": "Dizel çoklu birimlerden oluşan diğer bakım treni",
+        "ZXE": "Elektrikli lokomotifli diğer tren"
       },
       "TrainTimetable": {
         "TrainNo": "Tren No",
@@ -1571,7 +1579,8 @@
         "Timetable": {
           "Button": "Pokaż rozkład jazdy",
           "Title": "{{stationName}} - Rozkład jazdy",
-          "Unavailabe": "Rozkład jazdy niedostępny"
+          "Unavailabe": "Rozkład jazdy niedostępny",
+          "SearchPlaceholder": "Szukaj pociągu"
         },
         "WikiLink": "SimRail Wiki"
       },
@@ -1678,7 +1687,8 @@
         "ZUE": "Inny pociąg roboczy z lokomotywą elektryczną",
         "ZUJ": "Inny pociąg roboczy jako EZT",
         "ZUS": "Inny pociąg roboczy z lokomotywą spalinową",
-        "ZUM": "Inny pociąg roboczy jako SZT"
+        "ZUM": "Inny pociąg roboczy jako SZT",
+        "ZXE": "Inny pociąg roboczy z lokomotywą elektryczną"
       },
       "TrainTimetable": {
         "TrainNo": "Nr pociągu",

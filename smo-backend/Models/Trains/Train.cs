@@ -2,6 +2,7 @@
 using MessagePack;
 using Newtonsoft.Json;
 using SMOBackend.Models.Entity;
+using SMOBackend.Utils;
 
 namespace SMOBackend.Models.Trains;
 
@@ -11,12 +12,29 @@ namespace SMOBackend.Models.Trains;
 [MessagePackObject(keyAsPropertyName: true)]
 public class Train : IEntityWithTimestamp
 {
-    [JsonProperty(nameof(TrainNoLocal))] public required string TrainNoLocal { get; set; }
-    [JsonProperty(nameof(TrainName))] public required string TrainName { get; set; }
-    [JsonProperty(nameof(StartStation))] public required string StartStation { get; set; }
-    [JsonProperty(nameof(EndStation))] public required string EndStation { get; set; }
-    [JsonProperty(nameof(Vehicles))] public required string[] Vehicles { get; set; }
-    [JsonProperty(nameof(ServerCode))] public required string ServerCode { get; set; }
+    [JsonProperty(nameof(TrainNoLocal))]
+    [JsonConverter(typeof(InterningStringConverter))]
+    public required string TrainNoLocal { get; set; }
+
+    [JsonProperty(nameof(TrainName))]
+    [JsonConverter(typeof(InterningStringConverter))]
+    public required string TrainName { get; set; }
+
+    [JsonProperty(nameof(StartStation))]
+    [JsonConverter(typeof(InterningStringConverter))]
+    public required string StartStation { get; set; }
+
+    [JsonProperty(nameof(EndStation))]
+    [JsonConverter(typeof(InterningStringConverter))]
+    public required string EndStation { get; set; }
+
+    [JsonProperty(nameof(Vehicles))]
+    [JsonConverter(typeof(InterningStringArrayConverter))]
+    public required string[] Vehicles { get; set; }
+
+    [JsonProperty(nameof(ServerCode))]
+    [JsonConverter(typeof(InterningStringConverter))]
+    public required string ServerCode { get; set; }
 
     [JsonProperty(nameof(TrainData))] public required TrainData TrainData { get; set; }
 
@@ -24,18 +42,21 @@ public class Train : IEntityWithTimestamp
     /// The id of the run.
     /// </summary>
     [JsonProperty(nameof(RunId))]
+    [JsonConverter(typeof(InterningStringConverter))]
     public required string RunId { get; set; }
 
     /// <summary>
     /// The id of the train.
     /// </summary>
     [JsonProperty("id")]
+    [JsonConverter(typeof(InterningStringConverter))]
     public required string Id { get; set; }
 
     /// <summary>
     /// The type of the train, either "bot" or "player".
     /// </summary>
     [JsonProperty(nameof(Type))]
+    [JsonConverter(typeof(InterningStringConverter))]
     public required string Type { get; set; }
 
     /// <inheritdoc />

@@ -72,7 +72,7 @@ const ErrorFallbackRender: FunctionComponent<ErrorFallbackProps> = ({ error, res
   }
 
   const isDynamicallyImportedModuleError =
-    error instanceof Error && error.message.includes("error loading dynamically imported module") && navigator.onLine;
+    error instanceof Error && error.message.includes("dynamically imported module") && navigator.onLine;
 
   if (isDynamicallyImportedModuleError) {
     console.warn("This error is probably caused by a dynamically imported module that failed to load.");

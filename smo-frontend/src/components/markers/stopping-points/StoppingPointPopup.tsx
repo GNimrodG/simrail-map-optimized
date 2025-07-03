@@ -18,7 +18,7 @@ const StoppingPointPopup: FunctionComponent<StoppingPointPopupProps> = ({ stop }
   const [isPending, startTransition] = useTransition();
   const [timetableModalOpen, setTimetableModalOpen] = useState(false);
 
-  const stationTimetable = useStationTimetableEntries(stop.tags.name);
+  const { stationTimetable, loading: timetableLoading } = useStationTimetableEntries(stop.tags.name);
 
   return (
     <>
@@ -37,7 +37,7 @@ const StoppingPointPopup: FunctionComponent<StoppingPointPopupProps> = ({ stop }
         )}
         <Button
           fullWidth
-          loading={!stationTimetable}
+          loading={timetableLoading}
           disabled={!stationTimetable?.length}
           variant="solid"
           color="neutral"

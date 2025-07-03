@@ -1,15 +1,20 @@
 ﻿using Newtonsoft.Json;
 using SMOBackend.Models.Entity;
 using SMOBackend.Models.Trains;
+using SMOBackend.Utils;
 
 namespace SMOBackend.Models;
 
+/// <summary>
+/// Represents the position and speed of a train at a specific time.
+/// </summary>
 public class TrainPosition : IEntityWithTimestamp
 {
     /// <summary>
     /// The id of the train.
     /// </summary>
     [JsonProperty("id")]
+    [JsonConverter(typeof(InterningStringConverter))]
     public required string Id { get; set; }
 
     /// <summary>

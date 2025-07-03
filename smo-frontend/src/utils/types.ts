@@ -54,9 +54,9 @@ export interface Station {
   DifficultyLevel: number;
   Latitude: number;
   Longitude: number;
-  MainImageUrl: string;
-  AdditionalImage1Url: string;
-  AdditionalImage2Url: string;
+  MainImageUrl?: string;
+  AdditionalImage1Url?: string;
+  AdditionalImage2Url?: string;
   DispatchedBy:
     | [
         {
@@ -67,6 +67,8 @@ export interface Station {
     | never[];
   Id: string;
   RemoteControlled?: string;
+  SubStations?: string[];
+  IgnoredStations?: string[];
 }
 
 export interface PartialStation {
@@ -165,6 +167,9 @@ export interface SimplifiedTimtableEntry {
   nextStation: string | null;
 
   index: number;
+
+  subStationEntries?: SimplifiedTimtableEntry[];
+  note?: string | null;
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types

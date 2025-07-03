@@ -73,3 +73,47 @@ public class InterningStringEnumConverter : StringEnumConverter
         }
     }
 }
+
+public class InterningStringArrayConverter : JsonConverter<string[]?>
+{
+    /// <inheritdoc />
+    public override void WriteJson(JsonWriter writer, string[]? value, JsonSerializer serializer)
+    {
+        if (value == null)
+        {
+            writer.WriteNull();
+            return;
+        }
+
+        writer.WriteStartArray();
+        foreach (var item in value)
+        {
+            writer.WriteValue(item);
+        }
+        writer.WriteEndArray();
+    }
+
+    /// <summary>
+    /// Reads JSON array and interns each string
+    /// </summary>
+    public override string[]? ReadJson(JsonReader reader, Type objectType, string[]? existingValue,
+        bool hasExistingValue, JsonSerializer serializer)
+    {
+        if (reader.TokenType == JsonToken.Null) return null;
+
+        if (reader.TokenType != JsonToken.StartArray)
+            throw new JsonSerializationException($"Unexpected token type: {reader.TokenType}");
+
+        var list = new List<string>();
+        while (reader.Read() && reader.TokenType != JsonToken.EndArray)
+        {
+            if (reader.TokenType != JsonToken.String)
+                throw new JsonSerializationException($"Unexpected token type: {reader.TokenType}");
+
+            var value = reader.Value?.ToString();
+            if (value != null) list.Add(string.Intern(value));
+        }
+
+        return list.ToArray();
+    }
+}

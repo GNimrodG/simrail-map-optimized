@@ -54,6 +54,7 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
   }, [i18n.language, osmData, station.DispatchedBy, station.Name, translateStationNames, userData?.Avatar]);
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [shouldKeepMounted, setShouldKeepMounted] = useState(false);
 
   return (
     <Marker
@@ -68,11 +69,12 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
       }}
       pane="stationsPane">
       <Popup autoPan={false}>
-        {isPopupOpen && (
+        {(isPopupOpen || shouldKeepMounted) && (
           <StationMarkerPopup
             station={station}
             userData={userData}
             onClosePopup={() => markerRef.current?.closePopup()}
+            onShouldKeepMounted={setShouldKeepMounted}
             stationOsmData={osmData}
           />
         )}

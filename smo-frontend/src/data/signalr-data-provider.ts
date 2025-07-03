@@ -113,7 +113,21 @@ export class SignalRDataProvider implements IDataProvider {
         );
       });
 
-    this.connection.on("StationsReceived", (stations: Station[]) => this.stationsData$.next(stations));
+    this.connection.on("StationsReceived", (stations: Station[]) =>
+      this.stationsData$.next(
+        stations.map((station) => {
+          const unplayableStation = this.unplayableStations$.value.find((s) => s.Name === station.Name);
+          if (unplayableStation) {
+            return {
+              ...station,
+              ...unplayableStation,
+              SubStations: unplayableStation.SubStations || [],
+            };
+          }
+          return station;
+        }),
+      ),
+    );
 
     this.connection.on("PartialStationsReceived", (partialStations: PartialStation[]) => {
       const currentStations = this.stationsData$.value;
@@ -196,7 +210,7 @@ export class SignalRDataProvider implements IDataProvider {
         });
 
         if (currentTrains.length > trainPositions.length) {
-          console.debug(`${currentTrains.length - trainPositions.length} trains have despawned`);
+          console.debug(`${currentTrains.length - trainPositions.length} train(s) have despawned`);
           // delete the extra trains that are not in the partialTrains list because they are not in the server anymore
           updatedTrains = updatedTrains.filter((train) => trainPositions.some((t) => t.Id === train.Id));
         }
@@ -279,7 +293,6 @@ export class SignalRDataProvider implements IDataProvider {
     const cached = this.profileDataCache.get(steamId);
 
     if (cached) {
-      console.debug("Got cached steam profile data for", steamId, cached);
       return cached;
     }
 
@@ -288,7 +301,6 @@ export class SignalRDataProvider implements IDataProvider {
         .invoke("GetSteamProfileData", steamId)
         .then((data: SteamProfileResponse | null) => {
           if (data) {
-            console.debug("Got steam profile data for", steamId, data);
             this.profileDataCache.set(steamId, Promise.resolve(data));
             resolve(data);
           } else {
@@ -413,14 +425,12 @@ export class SignalRDataProvider implements IDataProvider {
     const cached = this.timetableCache.get(trainNoLocal);
 
     if (cached) {
-      console.log("Got cached timetable for train", trainNoLocal);
       return cached;
     }
 
     const cachedPromise = this.timetablePromiseCache.get(trainNoLocal);
 
     if (cachedPromise) {
-      console.log("Got cached timetable promise for train", trainNoLocal);
       return cachedPromise;
     }
 
@@ -429,7 +439,6 @@ export class SignalRDataProvider implements IDataProvider {
         .invoke("GetTimetable", trainNoLocal)
         .then((timetable) => {
           if (timetable) {
-            console.log("Got timetable for train", trainNoLocal);
             this.timetableCache.set(trainNoLocal, timetable);
             resolve(timetable);
           } else {
