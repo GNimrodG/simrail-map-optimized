@@ -80,7 +80,10 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
       // If train exists in the system, check if it has passed this station
       if (train) {
         // If the train index is greater than this station's index, it means the train has passed
-        return train.TrainData.VDDelayedTimetableIndex <= entry.index;
+        return (
+          train.TrainData.VDDelayedTimetableIndex <= entry.index ||
+          entry?.subStationEntries?.some((subEntry) => train.TrainData.VDDelayedTimetableIndex <= subEntry.index)
+        );
       }
 
       // For trains not in the system (not currently running), use the time-based filter
@@ -383,7 +386,10 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                 {/* Line */}
                 <td>
                   <Typography fontFamily="monospace" level="body-sm" sx={{ color: "inherit" }}>
-                    {entry.line}
+                    {}
+                    {[entry.line, ...(entry.subStationEntries?.map((subEntry) => subEntry.line) ?? [])]
+                      .filter((x, i, arr) => arr.indexOf(x) === i)
+                      .join(";")}
                   </Typography>
                 </td>
                 {/* Stop */}
@@ -443,6 +449,12 @@ function isTrainAtPrevStation(
 ) {
   return (
     (train?.TrainData.VDDelayedTimetableIndex === entry.index && !trainDelays?.[entry.index]) ||
-    (train?.TrainData.VDDelayedTimetableIndex === entry.index - 1 && !!trainDelays?.[entry.index - 1])
+    (train?.TrainData.VDDelayedTimetableIndex === entry.index - 1 && !!trainDelays?.[entry.index - 1]) ||
+    !!entry.subStationEntries?.some(
+      (subEntry) => subEntry.index === entry.index && !trainDelays?.[subEntry.index] && !trainDelays?.[subEntry.index],
+    ) ||
+    !!entry.subStationEntries?.some(
+      (subEntry) => subEntry.index === entry.index - 1 && !!trainDelays?.[subEntry.index - 1],
+    )
   );
 }

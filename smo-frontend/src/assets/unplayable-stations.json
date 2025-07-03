@@ -325,7 +325,8 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/pr3.jpg",
     "DispatchedBy": [],
     "Id": "664bb464266957c3158393e5",
-    "SubStations": ["Józefinów"]
+    "SubStations": ["Józefinów"],
+    "IgnoredStations": ["Piastów", "Warszawa Ursus Niedźwiadek", "Warszawa Ursus", "Parzniew", "Brwinów", "Milanówek"]
   },
   {
     "Name": "Psary",

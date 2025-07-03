@@ -1,4 +1,4 @@
-import { useDebouncedState } from "@mantine/hooks";
+import { useDebouncedValue } from "@mantine/hooks";
 import DialogTitle from "@mui/joy/DialogTitle";
 import IconButton from "@mui/joy/IconButton";
 import Input from "@mui/joy/Input";
@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { SimplifiedTimtableEntry } from "../../utils/types";
 import CollapseIcon from "../icons/CollapseIcon";
 import ExpandIcon from "../icons/ExpandIcon";
+import CloseIcon from "../icons/xmark-solid.svg?react";
 import MapTimeDisplay from "../MapTimeDisplay";
 import StationTimetableDisplay from "./StationTimetableDisplay";
 
@@ -30,17 +31,19 @@ const StationTimetableModal: FunctionComponent<StationTimetableModalProps> = ({
   const { t } = useTranslation("translation", { keyPrefix: "StationMarkerPopup" });
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const [search, setSearch] = useDebouncedState("", 300);
+  const [search, setSearch] = useState("");
+
+  const [debouncedSearch] = useDebouncedValue(search, 100);
 
   const filteredTimetable = useMemo(() => {
-    if (!stationTimetable || !search) return stationTimetable;
+    if (!stationTimetable || !debouncedSearch) return stationTimetable;
 
-    const searchLower = search.toLowerCase();
+    const searchLower = debouncedSearch.toLowerCase();
     return stationTimetable.filter(
       (entry) =>
         entry.trainNoLocal.toLowerCase().includes(searchLower) || entry.note?.toLowerCase().includes(searchLower),
     );
-  }, [stationTimetable, search]);
+  }, [stationTimetable, debouncedSearch]);
 
   return (
     <Modal
@@ -92,6 +95,7 @@ const StationTimetableModal: FunctionComponent<StationTimetableModalProps> = ({
           {t("Timetable.Title", { stationName })} <MapTimeDisplay />
           <Input
             variant="soft"
+            value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("Timetable.SearchPlaceholder")}
             sx={(theme) => ({
@@ -107,6 +111,11 @@ const StationTimetableModal: FunctionComponent<StationTimetableModalProps> = ({
                 "aria-label": t("Timetable.SearchPlaceholder"),
               },
             }}
+            endDecorator={
+              <IconButton variant="plain" size="sm" color="neutral" onClick={() => setSearch("")} disabled={!search}>
+                <CloseIcon />
+              </IconButton>
+            }
           />
         </DialogTitle>
 

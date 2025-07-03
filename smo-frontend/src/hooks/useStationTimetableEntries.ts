@@ -82,6 +82,11 @@ const useStationTimetableEntries = (mainStation: string) => {
             .filter((x) => !!x && !ignoredStations.includes(x))
             .join(",\n");
         }
+
+        // Remove subStationEntries if they are ignored
+        mainStationEntry.subStationEntries = mainStationEntry.subStationEntries.filter(
+          (subEntry) => !ignoredStations.includes(subEntry.stationName),
+        );
       }
 
       return processedEntries;
