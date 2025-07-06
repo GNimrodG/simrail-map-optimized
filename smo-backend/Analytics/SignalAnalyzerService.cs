@@ -58,6 +58,9 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     private readonly TtlCache<string, string> _trainLastSignalCache =
         new(TimeSpan.FromSeconds(30), "TrainLastSignalCache");
 
+    private readonly TtlCache<string, string> _trainPassedSignalCache =
+        new(TimeSpan.FromMinutes(5), "TrainPassedSignalCache");
+
     private readonly TtlCache<string, TrainPrevSignalData> _trainPrevSignalCache = new(TimeSpan.FromSeconds(30),
         "TrainPrevSignalCache");
 
@@ -97,6 +100,49 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         _queueProcessor.ClearQueue();
 
         return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public void ClearServerMetrics(string serverCode)
+    {
+        // Clear invalid trains histogram metrics for the offline server
+        var invalidTrainsLabels = InvalidTrainsHistogram.GetAllLabelValues()
+            .Where(labels => labels.Length > 0 && labels[0] == serverCode)
+            .ToList();
+        foreach (var labels in invalidTrainsLabels) InvalidTrainsHistogram.RemoveLabelled(labels);
+
+        // Clear signals with multiple trains per server metrics
+        var signalsMultipleTrainsPerServerLabels = SignalsWithMultipleTrainsPerServer.GetAllLabelValues()
+            .Where(labels => labels.Length > 0 && labels[0] == serverCode)
+            .ToList();
+        foreach (var labels in signalsMultipleTrainsPerServerLabels)
+            SignalsWithMultipleTrainsPerServer.RemoveLabelled(labels);
+
+        // Clear signals with multiple trains metrics
+        var signalsMultipleTrainsLabels = SignalsWithMultipleTrains.GetAllLabelValues()
+            .Where(labels => labels.Length > 0 && labels[0] == serverCode)
+            .ToList();
+        foreach (var labels in signalsMultipleTrainsLabels) SignalsWithMultipleTrains.RemoveLabelled(labels);
+
+        // Clear train signal cache data for all trains from the offline server
+        // Find all train IDs that belong to the offline server
+        var trainIdsToRemove =
+            _trainLastSignalCache.Keys.Where(trainId => trainId.Contains($"@{serverCode}-")).ToList();
+
+        // Also check the previous signal cache for the same train IDs
+        trainIdsToRemove.AddRange(_trainPrevSignalCache.Keys
+            .Where(trainId => trainId.Contains($"@{serverCode}-") && !trainIdsToRemove.Contains(trainId)));
+
+        // Remove train signal cache entries for offline server's trains
+        foreach (var trainId in trainIdsToRemove)
+        {
+            _trainLastSignalCache.Remove(trainId);
+            _trainPrevSignalCache.Remove(trainId);
+            _trainPassedSignalCache.Remove(trainId);
+        }
+
+        _logger.LogInformation("Cleared {TrainCount} train signal cache records for offline server {ServerCode}",
+            trainIdsToRemove.Count, serverCode);
     }
 
     private void AddTrainPrevSignalData(string trainId, TrainPrevSignalData data) =>
@@ -226,6 +272,18 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 .GroupBy(train => train.data!)
                 .ToDictionary(g => g.Key, g => g.Select(x => x.train).ToArray());
 
+            var passedSignalIndex = trains
+                .Where(train => _trainPassedSignalCache.ContainsKey(train.GetTrainId()))
+                .Select(train => new
+                {
+                    data = _trainPassedSignalCache.TryGetValue(train.GetTrainId(), out var value) ? value : null,
+                    train
+                })
+                // filter for the last 30 seconds
+                .Where(x => x.data != null)
+                .GroupBy(train => train.data!)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.train).ToArray());
+
             var signals = await GetSignals();
             var signalLookup = signals.ToDictionary(s => s.Name);
 
@@ -269,6 +327,31 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                                      (earlierSignalIndex.TryGetValue(nextSignalName, out var earlierTrains)
                                          ? earlierTrains.Select(x => x.TrainNoLocal).ToArray()
                                          : null);
+
+                var blockingConnections = signal.GetBlockingConnections()
+                    .Where(c =>
+                    {
+                        var nextTrains = signalsIndex.GetValueOrDefault(c.Next) ?? [];
+                        var hasTrainAtNext = nextTrains.Length > 0;
+
+                        var isSameTrainComingFromPrev = passedSignalIndex.TryGetValue(c.Prev, out var prevTrains) &&
+                                                        prevTrains.Length > 0 &&
+                                                        prevTrains.All(t => nextTrains.Contains(t));
+
+                        return hasTrainAtNext && isSameTrainComingFromPrev;
+                    })
+                    .SelectMany(c => signalsIndex.GetValueOrDefault(c.Next)?.Select(t => t.TrainNoLocal) ?? [])
+                    .ToArray();
+
+                if (blockingConnections.Length > 0)
+                {
+                    signal.TrainsAhead ??= [];
+
+                    signal.TrainsAhead = signal.TrainsAhead
+                        .Concat(blockingConnections)
+                        .Distinct()
+                        .ToArray();
+                }
 
                 // Check for a train two signals ahead
                 if (!signalLookup.TryGetValue(nextSignalName, out var nextSignal) ||
@@ -444,6 +527,8 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 {
                     if (prevSignalData.SignalName != signal.Name)
                     {
+                        // Train has moved to a new signal - update the passed signal cache
+                        _trainPassedSignalCache.Set(train.GetTrainId(), prevSignalData.SignalName);
                         _trainLastSignalCache.Set(train.GetTrainId(), signal.Name);
                     }
 
@@ -876,7 +961,20 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     [GeneratedRegex(@"^(.+)_([A-Z])$")]
     private static partial Regex SIGNAL_BASE_NAME_REGEX();
 
-    private record TrainPrevSignalData(
+    /// <summary>
+    ///     Gets the name of the previous signal that the train has actually passed.
+    /// </summary>
+    /// <param name="trainId">The train identifier</param>
+    /// <returns>The name of the passed signal, or null if no signal has been passed or data has expired</returns>
+    public string? GetTrainPassedSignalName(string trainId)
+    {
+        return _trainPassedSignalCache.TryGetValue(trainId, out var passedSignalName) ? passedSignalName : null;
+    }
+
+    /// <summary>
+    ///     Represents the previous signal data for a train.
+    /// </summary>
+    public record TrainPrevSignalData(
         string SignalName,
         short SignalSpeed,
         Point Location,
@@ -981,55 +1079,5 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         }
 
         public record SignalConnection(string Signal, short? Vmax);
-    }
-
-    /// <inheritdoc />
-    public void ClearServerMetrics(string serverCode)
-    {
-        // Clear invalid trains histogram metrics for the offline server
-        var invalidTrainsLabels = InvalidTrainsHistogram.GetAllLabelValues()
-            .Where(labels => labels.Length > 0 && labels[0] == serverCode)
-            .ToList();
-        foreach (var labels in invalidTrainsLabels)
-        {
-            InvalidTrainsHistogram.RemoveLabelled(labels);
-        }
-
-        // Clear signals with multiple trains per server metrics
-        var signalsMultipleTrainsPerServerLabels = SignalsWithMultipleTrainsPerServer.GetAllLabelValues()
-            .Where(labels => labels.Length > 0 && labels[0] == serverCode)
-            .ToList();
-        foreach (var labels in signalsMultipleTrainsPerServerLabels)
-        {
-            SignalsWithMultipleTrainsPerServer.RemoveLabelled(labels);
-        }
-
-        // Clear signals with multiple trains metrics
-        var signalsMultipleTrainsLabels = SignalsWithMultipleTrains.GetAllLabelValues()
-            .Where(labels => labels.Length > 0 && labels[0] == serverCode)
-            .ToList();
-        foreach (var labels in signalsMultipleTrainsLabels)
-        {
-            SignalsWithMultipleTrains.RemoveLabelled(labels);
-        }
-
-        // Clear train signal cache data for all trains from the offline server
-        // Find all train IDs that belong to the offline server
-        var trainIdsToRemove =
-            _trainLastSignalCache.Keys.Where(trainId => trainId.Contains($"@{serverCode}-")).ToList();
-
-        // Also check the previous signal cache for the same train IDs
-        trainIdsToRemove.AddRange(_trainPrevSignalCache.Keys
-            .Where(trainId => trainId.Contains($"@{serverCode}-") && !trainIdsToRemove.Contains(trainId)));
-
-        // Remove train signal cache entries for offline server's trains
-        foreach (var trainId in trainIdsToRemove)
-        {
-            _trainLastSignalCache.Remove(trainId);
-            _trainPrevSignalCache.Remove(trainId);
-        }
-
-        _logger.LogInformation("Cleared {TrainCount} train signal cache records for offline server {ServerCode}",
-            trainIdsToRemove.Count, serverCode);
     }
 }

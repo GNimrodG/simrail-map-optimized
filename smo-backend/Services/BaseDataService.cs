@@ -16,7 +16,7 @@ public abstract class BaseDataService<T>(
     IServiceScopeFactory scopeFactory)
     : IHostedService, IDataService where T : class?
 {
-    private readonly TaskCompletionSource _firstDataReceivedSource = new();
+    private protected readonly TaskCompletionSource FirstDataReceivedSource = new();
 
     private CancellationTokenSource? _cancellationTokenSource;
     private Task? _dataServiceTask;
@@ -31,18 +31,18 @@ public abstract class BaseDataService<T>(
     /// <summary>
     /// The latest data received from the service.
     /// </summary>
-    public T? Data { get; private set; }
+    public T? Data { get; protected set; }
 
     /// <summary>
     /// Task that is completed when the first data is received.
     /// </summary>
-    public Task FirstDataReceived => _firstDataReceivedSource.Task;
+    public Task FirstDataReceived => FirstDataReceivedSource.Task;
 
     /// <inheritdoc />
     public string ServiceId => serviceId;
 
     /// <inheritdoc />
-    public DateTime LastFetch { get; private set; } = DateTime.MinValue;
+    public DateTime LastFetch { get; private protected set; } = DateTime.MinValue;
 
     /// <inheritdoc />
     public TimeSpan GetFetchInterval()
@@ -100,7 +100,7 @@ public abstract class BaseDataService<T>(
     /// </summary>
     public event DataReceivedEventHandler<T>? DataReceived;
 
-    private async Task ExecuteService(CancellationToken stoppingToken)
+    private protected virtual async Task ExecuteService(CancellationToken stoppingToken)
     {
         using var timer = new PeriodicTimer(GetFetchInterval());
 
@@ -129,8 +129,8 @@ public abstract class BaseDataService<T>(
                     OnDataReceived(data);
 
                     // Signal that the first data has been received
-                    if (!_firstDataReceivedSource.Task.IsCompleted)
-                        _firstDataReceivedSource.SetResult();
+                    if (!FirstDataReceivedSource.Task.IsCompleted)
+                        FirstDataReceivedSource.SetResult();
 
                     await WriteStats(elapsed, stoppingToken);
                     LastFetch = DateTime.UtcNow;
@@ -176,6 +176,9 @@ public abstract class BaseDataService<T>(
 
     private protected abstract Task<T> FetchData(CancellationToken stoppingToken);
 
+    /// <summary>
+    ///     Emits an event when data is received.
+    /// </summary>
     protected virtual void OnDataReceived(T data)
     {
         if (data == null) return;

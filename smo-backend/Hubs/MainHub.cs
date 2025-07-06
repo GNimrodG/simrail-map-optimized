@@ -310,4 +310,45 @@ public class MainHub(
 
         return null;
     }
+
+    /// <summary>
+    ///     Gets the possible path lines in WKT for a given signal.
+    /// </summary>
+    /// <param name="signal">The signal for which to get the lines.</param>
+    /// <returns>An array of WKT (Well-Known Text) representations of the lines.</returns>
+    public async Task<string[]> GetLinesForSignal(string signal)
+    {
+        try
+        {
+            return await routePointAnalyzerService.GetLinesForSignal(signal);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error getting lines for signal {Signal}", signal);
+            await Clients.Caller.SendAsync("SignalLinesError", new { signal, error = e.Message });
+            return [];
+        }
+    }
+
+    /// <summary>
+    ///     Gets the possible path lines in WKT for a connection between two signals.
+    /// </summary>
+    /// <param name="prevSignal">The previous signal in the connection.</param>
+    /// <param name="nextSignal">The next signal in the connection.</param>
+    /// <returns>An array of WKT (Well-Known Text) representations of the lines for the connection.</returns>
+    public async Task<string[]> GetLinesForSignalConnection(string prevSignal, string nextSignal)
+    {
+        try
+        {
+            return await routePointAnalyzerService.GetLinesForSignalConnection(prevSignal, nextSignal);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error getting lines for signal connection {PrevSignal} -> {NextSignal}", prevSignal,
+                nextSignal);
+            await Clients.Caller.SendAsync("SignalConnectionLinesError",
+                new { prevSignal, nextSignal, error = e.Message });
+            return [];
+        }
+    }
 }

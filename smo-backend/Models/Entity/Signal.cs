@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.RegularExpressions;
 using NetTopologySuite.Geometries;
@@ -14,32 +13,111 @@ namespace SMOBackend.Models.Entity;
 [Table("signals")]
 public partial class Signal : BaseEntity
 {
+    /// <summary>
+    ///     Gets or sets the unique name identifier of the signal.
+    /// </summary>
+    /// <remarks>
+    ///     This serves as the primary key for the signal entity.
+    ///     Maximum length is defined by <see cref="Utils.Utils.SignalNameLength" />.
+    /// </remarks>
     [JsonProperty(nameof(Name)), Key, MaxLength(Utils.Utils.SignalNameLength)]
     public string Name { get; set; }
 
+    /// <summary>
+    ///     Gets or sets additional information about the signal.
+    /// </summary>
+    /// <remarks>
+    ///     Optional field for storing supplementary signal data.
+    ///     Maximum length is 255 characters.
+    /// </remarks>
     [JsonProperty(nameof(Extra)), MaxLength(255)]
     public string Extra { get; set; }
 
+    /// <summary>
+    ///     Gets or sets the geographic location of the signal.
+    /// </summary>
+    /// <remarks>
+    ///     Stored as a PostGIS Point geometry with SRID 4326 (WGS84).
+    /// </remarks>
     [JsonProperty(nameof(Location)), Column(TypeName = "Geometry(Point, 4326)")]
     public Point Location { get; set; }
 
-    [JsonProperty(nameof(Accuracy))] public double Accuracy { get; set; }
+    /// <summary>
+    ///     Gets or sets the accuracy of the signal's location in meters.
+    /// </summary>
+    /// <remarks>
+    ///     Represents the precision of the GPS coordinates used to determine the signal's position.
+    /// </remarks>
+    [JsonProperty(nameof(Accuracy))]
+    public double Accuracy { get; set; }
 
+    /// <summary>
+    ///     Gets or sets the type classification of the signal.
+    /// </summary>
+    /// <remarks>
+    ///     Common values include "main", "block", or null for unknown types.
+    ///     Maximum length is 10 characters.
+    /// </remarks>
     [JsonProperty(nameof(Station)), MaxLength(10)]
     public string? Type { get; set; }
 
+    /// <summary>
+    ///     Gets or sets the functional role of the signal within the railway network.
+    /// </summary>
+    /// <remarks>
+    ///     Examples include "entry", "exit", "entry-exit", "block-entry", "block-exit", "single-block", "intermediate",
+    ///     "middle-block", or null.
+    ///     Maximum length is 20 characters.
+    /// </remarks>
     [JsonProperty(nameof(Role)), MaxLength(20)]
     public string? Role { get; set; }
 
+    /// <summary>
+    ///     Gets or sets the regular expression pattern for matching previous signal connections.
+    /// </summary>
+    /// <remarks>
+    ///     Used to validate or filter signals that can connect as predecessors to this signal.
+    ///     Maximum length is 255 characters.
+    /// </remarks>
     [JsonProperty(nameof(PrevRegex)), MaxLength(255)]
     public string? PrevRegex { get; set; }
 
+    /// <summary>
+    ///     Gets or sets the regular expression pattern for matching next signal connections.
+    /// </summary>
+    /// <remarks>
+    ///     Used to validate or filter signals that can connect as successors to this signal.
+    ///     Maximum length is 255 characters.
+    /// </remarks>
     [JsonProperty(nameof(NextRegex)), MaxLength(255)]
     public string? NextRegex { get; set; }
 
-    [JsonProperty(nameof(PrevFinalized))] public bool PrevFinalized { get; set; } = false;
+    /// <summary>
+    ///     Gets or sets a value indicating whether the previous signal connections are finalized.
+    /// </summary>
+    /// <remarks>
+    ///     When true, indicates that the previous signal connections have been validated and locked.
+    ///     Defaults to false.
+    /// </remarks>
+    [JsonProperty(nameof(PrevFinalized))]
+    public bool PrevFinalized { get; set; }
 
-    [JsonProperty(nameof(NextFinalized))] public bool NextFinalized { get; set; } = false;
+    /// <summary>
+    ///     Gets or sets a value indicating whether the next signal connections are finalized.
+    /// </summary>
+    /// <remarks>
+    ///     When true, indicates that the next signal connections have been validated and locked.
+    ///     Defaults to false.
+    /// </remarks>
+    [JsonProperty(nameof(NextFinalized))]
+    public bool NextFinalized { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the connections that block this signal.
+    /// </summary>
+    [JsonIgnore]
+    [MaxLength(200)]
+    public string? BlockingConnections { get; set; }
 
     /// <summary>
     /// Connections where this signal is the previous one.
@@ -242,4 +320,21 @@ public partial class Signal : BaseEntity
     /// <inheritdoc />
     public override string ToString() =>
         $"{Name} ({Type ?? "unknown"}: {Role ?? "unknown"})) at {Location} ({Accuracy} m)";
+
+    public SignalConnection[] GetBlockingConnections()
+    {
+        if (string.IsNullOrEmpty(BlockingConnections))
+            return [];
+
+        return BlockingConnections.Split(',')
+            .Select(c =>
+            {
+                var parts = c.Split('-');
+                return new SignalConnection
+                {
+                    Prev = parts[0],
+                    Next = parts[1]
+                };
+            }).ToArray();
+    }
 }

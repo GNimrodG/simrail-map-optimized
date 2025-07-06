@@ -1,10 +1,10 @@
-﻿import { readLocalStorageValue } from "@mantine/hooks";
-import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
-import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
+﻿import {readLocalStorageValue} from "@mantine/hooks";
+import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
+import {MessagePackHubProtocol} from "@microsoft/signalr-protocol-msgpack";
 import isEqual from "lodash/isEqual";
 import omit from "lodash/omit";
-import { LRUCache } from "lru-cache";
-import { BehaviorSubject, debounceTime, distinctUntilChanged, map, Observable, withLatestFrom } from "rxjs";
+import {LRUCache} from "lru-cache";
+import {BehaviorSubject, debounceTime, distinctUntilChanged, map, Observable, withLatestFrom} from "rxjs";
 
 import UnplayableStations from "../assets/unplayable-stations.json";
 import {
@@ -21,7 +21,7 @@ import {
   Timetable,
   Train,
 } from "../utils/types";
-import { IDataProvider } from "./data-provider.interface";
+import {IDataProvider} from "./data-provider.interface";
 
 export class SignalRDataProvider implements IDataProvider {
   private readonly serverApiUrl: string;
@@ -651,6 +651,42 @@ export class SignalRDataProvider implements IDataProvider {
       .catch((e) => {
         console.error(`Failed to delete signal ${signal}`, e);
       });
+  }
+
+  async getLinesForSignal(signal: string): Promise<string[] | null> {
+    // Fetch the lines with the GetLinesForSignal SignalR method
+    try {
+      const lines = await this.connection.invoke<string[] | null>("GetLinesForSignal", signal);
+      if (lines) {
+        return lines;
+      } else {
+        console.warn(`No lines found for signal ${signal}`);
+        return null;
+      }
+    } catch (e) {
+      console.error(`Failed to get lines for signal ${signal}`, e);
+      return null;
+    }
+  }
+
+  async getLinesForSignalConnection(prevSignal: string, nextSignal: string): Promise<string[] | null> {
+    // Fetch the lines with the GetLinesForSignalConnection SignalR method
+    try {
+      const lines = await this.connection.invoke<string[] | null>(
+          "GetLinesForSignalConnection",
+          prevSignal,
+          nextSignal,
+      );
+      if (lines) {
+        return lines;
+      } else {
+        console.warn(`No lines found for connection ${prevSignal} -> ${nextSignal}`);
+        return null;
+      }
+    } catch (e) {
+      console.error(`Failed to get lines for connection ${prevSignal} -> ${nextSignal}`, e);
+      return null;
+    }
   }
 
   async getStationTimetable(stationName: string): Promise<SimplifiedTimtableEntry[] | null> {

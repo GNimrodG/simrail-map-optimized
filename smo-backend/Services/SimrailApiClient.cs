@@ -6,6 +6,37 @@ using SMOBackend.Models.Trains;
 namespace SMOBackend.Services;
 
 /// <summary>
+///     Response wrapper that includes Age header information for cache alignment
+/// </summary>
+public class ApiResponseWithAge<T>
+{
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ApiResponseWithAge{T}" /> class.
+    /// </summary>
+    public ApiResponseWithAge(T data, TimeSpan? age, DateTime? responseDate)
+    {
+        Data = data;
+        Age = age;
+        ResponseDate = responseDate;
+    }
+
+    /// <summary>
+    ///     The data returned by the API.
+    /// </summary>
+    public T Data { get; }
+
+    /// <summary>
+    ///     The age of the response, as provided by the Age header.
+    /// </summary>
+    public TimeSpan? Age { get; }
+
+    /// <summary>
+    ///     The date and time when the response was generated, as provided by the Date header.
+    /// </summary>
+    public DateTime? ResponseDate { get; }
+}
+
+/// <summary>
 /// A client for the Simrail API.
 /// </summary>
 public class SimrailApiClient
@@ -22,6 +53,14 @@ public class SimrailApiClient
     private readonly HttpClient _httpClient = new();
 
     private static async Task<T[]> HandleResponse<T>(HttpResponseMessage response, CancellationToken stoppingToken)
+        where T : class
+    {
+        var responseWithAge = await HandleResponseWithAge<T>(response, stoppingToken);
+        return responseWithAge.Data;
+    }
+
+    private static async Task<ApiResponseWithAge<T[]>> HandleResponseWithAge<T>(HttpResponseMessage response,
+        CancellationToken stoppingToken)
         where T : class
     {
         response.EnsureSuccessStatusCode();
@@ -43,8 +82,11 @@ public class SimrailApiClient
             throw new(result.Description);
         }
 
+        var responseWithAge =
+            new ApiResponseWithAge<T[]>(result.Data, response.Headers.Age, response.Headers.Date?.UtcDateTime);
+
         if (response.Headers.Date == null || response.Headers.Age == null || result.Data.Length <= 0 ||
-            result.Data[0] is not IEntityWithTimestamp) return result.Data;
+            result.Data[0] is not IEntityWithTimestamp) return responseWithAge;
 
         foreach (var item in result.Data)
         {
@@ -52,7 +94,7 @@ public class SimrailApiClient
                 response.Headers.Date!.Value.UtcDateTime - response.Headers.Age!.Value;
         }
 
-        return result.Data;
+        return responseWithAge;
     }
 
     /// <summary>
@@ -159,5 +201,44 @@ public class SimrailApiClient
         }
 
         return result;
+    }
+
+    /// <summary>
+    ///     Get the list of all servers with Age header information.
+    /// </summary>
+    public async Task<ApiResponseWithAge<ServerStatus[]>> GetServersWithAgeAsync(CancellationToken stoppingToken)
+    {
+        var response = await _httpClient.GetAsync(ServersOpenUrl, stoppingToken);
+        return await HandleResponseWithAge<ServerStatus>(response, stoppingToken);
+    }
+
+    /// <summary>
+    ///     Get the list of all trains on a server with Age header information.
+    /// </summary>
+    public async Task<ApiResponseWithAge<Train[]>> GetTrainsWithAgeAsync(string serverCode,
+        CancellationToken stoppingToken)
+    {
+        var response = await _httpClient.GetAsync(TrainsUrlPrefix + serverCode, stoppingToken);
+        return await HandleResponseWithAge<Train>(response, stoppingToken);
+    }
+
+    /// <summary>
+    ///     Get the list of all train positions on a server with Age header information.
+    /// </summary>
+    public async Task<ApiResponseWithAge<TrainPosition[]>> GetTrainPositionsWithAgeAsync(string serverCode,
+        CancellationToken stoppingToken)
+    {
+        var response = await _httpClient.GetAsync(TrainPositionsUrlPrefix + serverCode, stoppingToken);
+        return await HandleResponseWithAge<TrainPosition>(response, stoppingToken);
+    }
+
+    /// <summary>
+    ///     Get the list of all stations on a server with Age header information.
+    /// </summary>
+    public async Task<ApiResponseWithAge<Station[]>> GetStationsWithAgeAsync(string serverCode,
+        CancellationToken stoppingToken)
+    {
+        var response = await _httpClient.GetAsync(StationsUrlPrefix + serverCode, stoppingToken);
+        return await HandleResponseWithAge<Station>(response, stoppingToken);
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
-using SMOBackend.Models;
 using SMOBackend.Models.Entity;
 using SMOBackend.Utils;
 
@@ -40,6 +38,13 @@ public class SmoContext(DbContextOptions<SmoContext> options) : DbContext(option
 
         builder.HasPostgresExtension("postgis");
 
+        // Create a cyclical sequence for RoutePoint Id
+        builder.HasSequence<long>("route_point_id_seq")
+            .StartsAt(1)
+            .IncrementsBy(1)
+            .HasMax(long.MaxValue)
+            .IsCyclic();
+
         builder.Entity<Signal>()
             .HasIndex(s => s.Location)
             .HasMethod("gist");
@@ -57,7 +62,7 @@ public class SmoContext(DbContextOptions<SmoContext> options) : DbContext(option
             .HasOne(c => c.NextSignal)
             .WithMany(s => s.PrevSignalConnections)
             .HasForeignKey(c => c.Next)
-            .HasPrincipalKey(c => c.Name)
+            .HasPrincipalKey(s => s.Name)
             .OnDelete(DeleteBehavior.Cascade);
 
         // SignalConnection.Prev != SignalConnection.Next
@@ -67,6 +72,11 @@ public class SmoContext(DbContextOptions<SmoContext> options) : DbContext(option
         builder.Entity<RoutePoint>()
             .HasIndex(rp => rp.Point)
             .HasMethod("gist");
+
+        // Configure RoutePoint to use the cyclical sequence
+        builder.Entity<RoutePoint>()
+            .Property(rp => rp.Id)
+            .HasDefaultValueSql("nextval('route_point_id_seq')");
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

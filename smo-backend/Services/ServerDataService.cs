@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Prometheus;
 using SMOBackend.Data;
 using SMOBackend.Models;
 using SMOBackend.Utils;
-using System.Reflection;
 
 namespace SMOBackend.Services;
 
@@ -16,16 +16,17 @@ public class ServerDataService(
     IServiceScopeFactory scopeFactory,
     SimrailApiClient apiClient
 )
-    : BaseDataService<ServerStatus[]>("SERVER", logger, scopeFactory)
+    : BaseTimeAlignedDataService<ServerStatus[]>("SERVER", logger, scopeFactory)
 {
     private static readonly Gauge ServerStatusGauge = Metrics
         .CreateGauge("smo_server_status", "Status of the server", "server", "region", "name");
 
-    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
     private readonly List<IServerMetricsCleaner> _metricCleaners = [];
 
     // Keep track of previously active servers to detect which ones went offline
     private readonly HashSet<string> _previouslyActiveServers = [];
+
+    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
     /// <inheritdoc />
     protected override TimeSpan FetchInterval => TimeSpan.FromSeconds(30);
@@ -78,11 +79,13 @@ public class ServerDataService(
         }
     }
 
-    private protected override Task<ServerStatus[]> FetchData(CancellationToken stoppingToken) =>
-        apiClient.GetServersAsync(stoppingToken);
+    private protected override Task<ApiResponseWithAge<ServerStatus[]>> FetchData(CancellationToken stoppingToken)
+    {
+        return apiClient.GetServersWithAgeAsync(stoppingToken);
+    }
 
     /// <inheritdoc />
-    protected override void OnDataReceived(ServerStatus[] data)
+    protected override void OnDataReceived(ApiResponseWithAge<ServerStatus[]> data)
     {
         base.OnDataReceived(data);
 
@@ -91,7 +94,7 @@ public class ServerDataService(
         // Get current active server codes
         var currentActiveServers = new HashSet<string>();
 
-        foreach (var server in data)
+        foreach (var server in data.Data)
         {
             ServerStatusGauge.WithLabels(server.ServerCode, server.ServerRegion, server.ServerName)
                 .Set(server.IsActive ? 1 : 0);

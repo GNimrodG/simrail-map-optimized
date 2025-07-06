@@ -20,7 +20,7 @@ public class RoutePointAnalyzerService : IHostedService
 {
     private const int CleanupIntervalHours = 48; // in hours
 
-    private const double MinDistance = 200; // in meters
+    private const double MinDistance = 100; // in meters
 
     private static readonly Gauge RoutePointQueueGauge = Metrics
         .CreateGauge("smo_route_point_queue", "Number of items in the route point queue");
@@ -28,6 +28,7 @@ public class RoutePointAnalyzerService : IHostedService
     private readonly ILogger<RoutePointAnalyzerService> _logger;
     private readonly QueueProcessor<Dictionary<string, Train[]>> _queueProcessor;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly SignalAnalyzerService _signalAnalyzerService;
     private readonly TrainDataService _trainDataService;
 
     private CancellationTokenSource _cancellationTokenSource;
@@ -35,13 +36,16 @@ public class RoutePointAnalyzerService : IHostedService
 
     private Task? _cleanRouteLinesTask;
 
+    /// <inheritdoc cref="RoutePointAnalyzerService" />
     public RoutePointAnalyzerService(ILogger<RoutePointAnalyzerService> logger,
         IServiceScopeFactory scopeFactory,
-        TrainDataService trainDataService)
+        TrainDataService trainDataService,
+        SignalAnalyzerService signalAnalyzerService)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
         _trainDataService = trainDataService;
+        _signalAnalyzerService = signalAnalyzerService;
         _cancellationTokenSource = new();
         _queueProcessor = new(logger,
             ProcessTrainData,
@@ -100,9 +104,11 @@ public class RoutePointAnalyzerService : IHostedService
                     using var scope = _scopeFactory.CreateScope();
                     await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
+                    _logger.LogInformation("Cleaning route lines...");
                     await CleanRouteLineGaps(context, cancellationToken);
 
                     await CleanTooManyLines(context, cancellationToken);
+                    _logger.LogInformation("Cleaning route lines completed");
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
@@ -124,50 +130,131 @@ public class RoutePointAnalyzerService : IHostedService
     {
         try
         {
-            // Clean route lines with gaps
-            // If a route line has a gap of more than 2 times the minimum distance, remove the whole line
-            _logger.LogInformation("Removing route lines with gaps...");
-            var routePoints = await context.RoutePoints
+            // Split route lines with gaps into multiple lines
+
+            // Get currently active trains from the train data service
+            await _trainDataService.FirstDataReceived;
+            var activeTrains = _trainDataService.Data ?? new Dictionary<string, Train[]>();
+            var activeTrainKeys = activeTrains.Values
+                .SelectMany(trains => trains)
+                .Select(train => train.RunId)
+                .ToHashSet();
+
+            // First get all route point groups, then filter in memory
+            var allRoutePoints = await context.RoutePoints
                 .GroupBy(rp => new { rp.RouteId, rp.RunId, rp.TrainId })
                 .Select(g => new { g.Key.RouteId, g.Key.RunId, g.Key.TrainId })
+                .Where(g => !g.RunId.Contains("_seg")) // Ignore already segmented routes
                 .ToListAsync(cancellationToken);
 
-            var counter = 0;
+            // Filter out active trains in memory
+            var routePoints = allRoutePoints
+                .Where(g => !activeTrainKeys.Contains(g.RunId))
+                .ToList();
+
+            var splitCounter = 0;
+            var pointsToAdd = new List<RoutePoint>();
+            var pointsToRemove = new List<RoutePoint>();
 
             foreach (var routePoint in routePoints)
             {
-                var pointsToRemove = await context.RoutePoints.Where(rp =>
+                var points = await context.RoutePoints.Where(rp =>
                         rp.RouteId == routePoint.RouteId && rp.RunId == routePoint.RunId &&
                         rp.TrainId == routePoint.TrainId)
+                    .OrderBy(p => p.CreatedAt)
                     .ToListAsync(cancellationToken);
 
-                var gaps = pointsToRemove
-                    .OrderBy(p => p.Id)
-                    .Select(p => p.Point)
-                    .ToList();
+                if (points.Count <= 1) continue;
 
-                for (var i = 1; i < gaps.Count; i++)
+                var segments = SplitPointsAtGaps(points, MinDistance * 2); // Split at gaps larger than 2x MinDistance
+
+                // Only process if we actually split the line and have a reasonable number of segments
+                if (segments.Count is <= 1 or > 999) continue;
+
+                _logger.LogInformation("Splitting route line {Id} into {SegmentCount} segments",
+                    $"{routePoint.RouteId}:{routePoint.RunId}:{routePoint.TrainId}",
+                    segments.Count);
+
+                // Remove original points
+                pointsToRemove.AddRange(points);
+
+                // Create new points for each segment with unique RunIds
+                for (var segmentIndex = 0; segmentIndex < segments.Count; segmentIndex++)
                 {
-                    var distance = gaps[i].Distance(gaps[i - 1]);
-                    if (!(distance > MinDistance * 2)) continue;
+                    var segment = segments[segmentIndex];
+                    var newRunId = $"{routePoint.RunId}_seg{segmentIndex:00}";
 
-                    _logger.LogInformation("Removing route line {Id} with gap of {Distance} meters",
-                        $"{routePoint.RouteId}:{routePoint.RunId}:{routePoint.TrainId}",
-                        distance);
-                    context.RoutePoints.RemoveRange(pointsToRemove);
-                    counter++;
-                    break;
+                    pointsToAdd.AddRange(segment.Select(point =>
+                        new RoutePoint(routePoint.RouteId, newRunId, routePoint.TrainId, point.Point,
+                                point.InsidePlayArea, point.NextSignal, point.PrevSignal, point.ServerCode)
+                            { CreatedAt = point.CreatedAt }));
                 }
+
+                splitCounter++;
             }
 
-            await context.SaveChangesAsync(cancellationToken);
-            _logger.LogInformation("Removed {Count} route lines with gaps",
-                counter);
+            if (pointsToRemove.Count > 0)
+            {
+                context.RoutePoints.RemoveRange(pointsToRemove);
+                await context.RoutePoints.AddRangeAsync(pointsToAdd, cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
+            }
+
+            _logger.LogInformation("Split {Count} route lines with gaps into {TotalSegments} segments",
+                splitCounter, pointsToAdd.GroupBy(p => p.RunId).Count());
+            _logger.LogInformation("Splitting route lines with gaps...");
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogError(ex, "Error cleaning route lines with gaps");
+            _logger.LogError(ex, "Error splitting route lines with gaps");
         }
+    }
+
+    /// <summary>
+    ///     Splits a list of route points into segments at gap points.
+    /// </summary>
+    /// <param name="points">The ordered list of route points</param>
+    /// <param name="maxGapDistance">Maximum allowed distance between consecutive points</param>
+    /// <returns>List of point segments</returns>
+    private static List<List<RoutePoint>> SplitPointsAtGaps(List<RoutePoint> points, double maxGapDistance)
+    {
+        var segments = new List<List<RoutePoint>>();
+        var currentSegment = new List<RoutePoint>();
+
+        for (var i = 0; i < points.Count; i++)
+        {
+            var currentPoint = points[i];
+
+            // Always add the first point
+            if (i == 0)
+            {
+                currentSegment.Add(currentPoint);
+                continue;
+            }
+
+            var previousPoint = points[i - 1];
+            var distance = currentPoint.Point.HaversineDistance(previousPoint.Point);
+
+            // If gap is too large, start a new segment
+            if (distance > maxGapDistance)
+            {
+                // Save current segment if it has enough points
+                if (currentSegment.Count > 1) segments.Add(currentSegment);
+
+                // Start new segment with current point
+                currentSegment = [currentPoint];
+            }
+            else
+            {
+                // Add to current segment
+                currentSegment.Add(currentPoint);
+            }
+        }
+
+        // Add the last segment if it has enough points
+        if (currentSegment.Count > 1) segments.Add(currentSegment);
+
+        return segments;
     }
 
     private async Task CleanTooManyLines(SmoContext context, CancellationToken cancellationToken)
@@ -305,8 +392,7 @@ public class RoutePointAnalyzerService : IHostedService
             .Where(t => t.TrainData.Location != null)
             .ToList();
 
-        // Create a semaphore to limit parallelism to 3 threads
-        var semaphore = new SemaphoreSlim(10, 50);
+        var semaphore = new SemaphoreSlim(10, 70);
 
         // Create lists to track tasks and results
         var tasks = new List<Task<(bool ShouldAdd, RoutePoint? Point)>>();
@@ -328,7 +414,9 @@ public class RoutePointAnalyzerService : IHostedService
 
                     return closestPoint < MinDistance
                         ? (ShouldAdd: false, Point: null)
-                        : (ShouldAdd: true, Point: new RoutePoint(train));
+                        : (ShouldAdd: true,
+                            Point: new RoutePoint(train,
+                                _signalAnalyzerService.GetTrainPassedSignalName(train.GetTrainId())));
                 }
                 catch (Exception ex)
                 {
@@ -446,20 +534,38 @@ public class RoutePointAnalyzerService : IHostedService
             using var scope = _scopeFactory.CreateScope();
             await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-            var points = await context.RoutePoints
+            // First, get route line metadata with point counts to filter at database level
+            var validRunIds = await context.RoutePoints
                 .Where(rp => rp.RouteId == trainNoLocal)
-                .OrderBy(rp => rp.Id)
+                .GroupBy(rp => new { rp.RouteId, rp.TrainId, rp.RunId })
+                .Where(g => g.Count() > 20)
+                .OrderByDescending(g => g.Max(x => x.CreatedAt)) // Get most recent routes first
+                .Take(10) // Limit to prevent excessive memory usage
+                .Select(g => g.Key.RunId)
+                .ToHashSetAsync();
+
+            if (validRunIds.Count == 0)
+                return [];
+
+            // Fetch coordinates for valid route lines only
+            var points = await context.RoutePoints
+                .Where(rp => rp.RouteId == trainNoLocal && validRunIds.Contains(rp.RunId))
+                .OrderBy(rp => rp.RunId)
+                .ThenBy(rp => rp.CreatedAt)
                 .Select(rp => new { rp.RouteId, rp.TrainId, rp.RunId, rp.Point.Coordinate })
                 .ToArrayAsync();
 
+            // Group and process in parallel
             var lines = points
                 .GroupBy(p => new { p.RouteId, p.TrainId, p.RunId })
-                .Where(g => g.Count() > 20)
+                .AsParallel()
+                .WithDegreeOfParallelism(Environment.ProcessorCount)
                 .Select(g => GeoUtils.CatmullRomSplineToLineString(g.Select(x => x.Coordinate).ToList(), 3))
                 .ToArray();
 
-            // convert each linestring to wkt
+            // Convert to WKT in parallel
             var wktLines = lines
+                .AsParallel()
                 .Select(l => l.AsText())
                 .ToArray();
 
@@ -497,5 +603,74 @@ public class RoutePointAnalyzerService : IHostedService
             _logger.LogError(ex, "Error getting routes with valid lines");
             return [];
         }
+    }
+
+    /// <summary>
+    ///     Gets the lines for a specific signal.
+    /// </summary>
+    /// <param name="signalId">The signal identifier</param>
+    /// <param name="maxLines">Maximum number of lines to return</param>
+    /// <returns>An array of WKT (Well-Known Text) representations of the lines</returns>
+    public async Task<string[]> GetLinesForSignal(string signalId, int maxLines = 5)
+    {
+        try
+        {
+            return await GetFilteredRouteLines(
+                context => context.RoutePoints.Where(rp => rp.NextSignal == signalId),
+                maxLines);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting lines for signal {SignalId}", signalId);
+            return [];
+        }
+    }
+
+    /// <summary>
+    ///     Gets the lines for a specific signal connection.
+    /// </summary>
+    public async Task<string[]> GetLinesForSignalConnection(string prevSignalId, string nextSignalId, int maxLines = 5)
+    {
+        try
+        {
+            return await GetFilteredRouteLines(
+                context => context.RoutePoints.Where(rp =>
+                    rp.PrevSignal == prevSignalId && rp.NextSignal == nextSignalId),
+                maxLines);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting lines for signal connection {PrevSignalId} -> {NextSignalId}",
+                prevSignalId, nextSignalId);
+            return [];
+        }
+    }
+
+    /// <summary>
+    ///     Helper method to get filtered route lines with common processing logic.
+    /// </summary>
+    private async Task<string[]> GetFilteredRouteLines(Func<SmoContext, IQueryable<RoutePoint>> filterFunc,
+        int maxLines)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
+
+        var points = await filterFunc(context)
+            .OrderBy(rp => rp.CreatedAt)
+            .Select(rp => new { rp.TrainId, rp.RunId, rp.Point.Coordinate })
+            .ToArrayAsync();
+
+        var lines = points
+            .GroupBy(p => new { p.TrainId, p.RunId })
+            .Where(g => g.Count() > 2)
+            .Select(g => GeoUtils.CatmullRomSplineToLineString(g.Select(x => x.Coordinate).ToList(), 1))
+            .ToArray();
+
+        // Limit the number of lines to maxLines, prioritizing the longest lines
+        if (lines.Length > maxLines)
+            lines = lines.OrderByDescending(l => l.Coordinates.Length).Take(maxLines).ToArray();
+
+        // convert each linestring to wkt
+        return lines.Select(l => l.AsText()).ToArray();
     }
 }

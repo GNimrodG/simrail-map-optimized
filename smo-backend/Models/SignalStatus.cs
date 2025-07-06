@@ -8,10 +8,30 @@ namespace SMOBackend.Models;
 /// </summary>
 public class SignalStatus : Signal
 {
-    /// <summary>
-    /// Represents a connection to another signal.
-    /// </summary>
-    public record SignalConnection(string Name, short? Vmax);
+    public SignalStatus()
+    {
+    }
+
+    public SignalStatus(Signal signal)
+    {
+        Name = signal.Name;
+        Extra = signal.Extra;
+        Location = signal.Location;
+        Accuracy = signal.Accuracy;
+        Type = signal.Type;
+        Role = signal.Role;
+        PrevRegex = signal.PrevRegex;
+        NextRegex = signal.NextRegex;
+        PrevFinalized = signal.PrevFinalized;
+        NextFinalized = signal.NextFinalized;
+        CreatedBy = signal.CreatedBy;
+
+        Trains = null;
+        TrainsAhead = null;
+        NextSignalWithTrainAhead = null;
+        NextSignals = signal.NextSignalConnections.Select(c => new SignalConnection(c.Next, c.VMAX)).ToArray();
+        PrevSignals = signal.PrevSignalConnections.Select(c => new SignalConnection(c.Prev, c.VMAX)).ToArray();
+    }
 
     /// <summary>
     /// The trains that are currently at this signal. (their TrainNoLocal)
@@ -55,38 +75,13 @@ public class SignalStatus : Signal
     [JsonIgnore, Obsolete("Use PrevSignals instead.")]
     public new ICollection<SignalConnection> PrevSignalConnections { get; } = [];
 
-    public SignalStatus()
-    {
-    }
-
-    public SignalStatus(Signal signal)
-    {
-        Name = signal.Name;
-        Extra = signal.Extra;
-        Location = signal.Location;
-        Accuracy = signal.Accuracy;
-        Type = signal.Type;
-        Role = signal.Role;
-        PrevRegex = signal.PrevRegex;
-        NextRegex = signal.NextRegex;
-        PrevFinalized = signal.PrevFinalized;
-        NextFinalized = signal.NextFinalized;
-        CreatedBy = signal.CreatedBy;
-
-        Trains = null;
-        TrainsAhead = null;
-        NextSignalWithTrainAhead = null;
-        NextSignals = signal.NextSignalConnections.Select(c => new SignalConnection(c.Next, c.VMAX)).ToArray();
-        PrevSignals = signal.PrevSignalConnections.Select(c => new SignalConnection(c.Prev, c.VMAX)).ToArray();
-    }
+    /// <summary>
+    ///     Represents a connection to another signal.
+    /// </summary>
+    public record SignalConnection(string Name, short? Vmax);
 
     public class PartialSignalStatus
     {
-        public string Name { get; set; }
-        public string[]? Trains { get; set; }
-        public string[]? TrainsAhead { get; set; }
-        public string? NextSignalWithTrainAhead { get; set; }
-
         public PartialSignalStatus()
         {
         }
@@ -98,5 +93,12 @@ public class SignalStatus : Signal
             TrainsAhead = signal.TrainsAhead;
             NextSignalWithTrainAhead = signal.NextSignalWithTrainAhead;
         }
+
+        [JsonProperty(nameof(Name))] public string Name { get; set; }
+        [JsonProperty(nameof(Trains))] public string[]? Trains { get; set; }
+        [JsonProperty(nameof(TrainsAhead))] public string[]? TrainsAhead { get; set; }
+
+        [JsonProperty(nameof(NextSignalWithTrainAhead))]
+        public string? NextSignalWithTrainAhead { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿import { BehaviorSubject, Observable } from "rxjs";
+﻿import {BehaviorSubject, Observable} from "rxjs";
 
 import {
   ServerStatus,
@@ -44,6 +44,21 @@ export interface IDataProvider {
   markSignalPrevFinalized(signal: string, finalized: boolean): void;
 
   deleteSignal(signal: string): void;
+
+  /**
+   * Get lines for a specific signal in WKT format.
+   * @param signal The name of the signal to get lines for.
+   * @return A promise that resolves to an array of WKT lines or null if not found.
+   */
+  getLinesForSignal(signal: string): Promise<string[] | null>;
+
+  /**
+   * Get lines for a connection between two signals in WKT format.
+   * @param prevSignal The name of the previous signal.
+   * @param nextSignal The name of the next signal.
+   * @return A promise that resolves to an array of WKT lines or null if not found.
+   */
+  getLinesForSignalConnection(prevSignal: string, nextSignal: string): Promise<string[] | null>;
 
   getSteamProfileData(steamId: string): Promise<SteamProfileResponse | null>;
   getSteamProfileStats(steamId: string): Promise<SteamProfileStats | null>;

@@ -1,11 +1,12 @@
-import { DivIcon, DivIconOptions, Icon, IconOptions } from "leaflet";
+import {DivIcon, DivIconOptions, Icon, IconOptions} from "leaflet";
 import equals from "lodash/isEqual";
-import { type FunctionComponent, memo, useEffect, useMemo, useState } from "react";
-import { Marker, Popup } from "react-leaflet";
+import {type FunctionComponent, memo, useEffect, useMemo, useState} from "react";
+import {Marker, Popup} from "react-leaflet";
 
-import { dataProvider } from "../../../utils/data-manager.ts";
-import { SignalStatus } from "../../../utils/types.ts";
-import { getSpeedColorForSignal } from "../../../utils/ui.ts";
+import useBehaviorSubj from "../../../hooks/useBehaviorSubj.ts";
+import {dataProvider} from "../../../utils/data-manager.ts";
+import {SignalStatus} from "../../../utils/types.ts";
+import {getSpeedColorForSignal} from "../../../utils/ui.ts";
 import SignalIcon from "../icons/signal.svg?raw";
 import SignalMarkerPopup from "./SignalMarkerPopup.tsx";
 
@@ -139,11 +140,11 @@ const SMALL_SIGNAL_WHITE_ICON = new Icon({
 
 const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSelect, opacity = 1, pane }) => {
   const [icon, setIcon] = useState<Icon<DivIconOptions | IconOptions>>(new DivIcon(DEFAULT_ICON_OPTIONS));
+  const trainsData = useBehaviorSubj(dataProvider.trainsData$);
 
   const trains = useMemo(
-    () =>
-      (signal.Trains && dataProvider.trainsData$.value.filter((t) => signal.Trains?.includes(t.TrainNoLocal))) || null,
-    [signal.Trains],
+      () => (signal.Trains && trainsData.filter((t) => signal.Trains?.includes(t.TrainNoLocal))) || null,
+      [signal.Trains, trainsData],
   );
 
   useEffect(() => {
@@ -170,7 +171,6 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
       if (signal.Type === "main") {
         if (train.TrainData.SignalInFrontSpeed > 200) {
           if (signal.NextSignalWithTrainAhead) {
-            console.log(signal.Name, "has a train ahead but speed is > 200");
             setIcon(MAIN_SIGNAL_VMAX_ORANGE_ICON);
             return;
           }
@@ -186,7 +186,6 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
 
         if (train.TrainData.SignalInFrontSpeed === 40) {
           if (signal.NextSignalWithTrainAhead) {
-            console.log(signal.Name, "has a train ahead but speed is 40");
             setIcon(MAIN_SIGNAL_40_ORANGE_ICON);
             return;
           }
@@ -197,7 +196,6 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
 
         if (train.TrainData.SignalInFrontSpeed === 60) {
           if (signal.NextSignalWithTrainAhead) {
-            console.log(signal.Name, "has a train ahead but speed is 60");
             setIcon(MAIN_SIGNAL_60_ORANGE_ICON);
             return;
           }
@@ -208,7 +206,6 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
 
         if (train.TrainData.SignalInFrontSpeed === 80) {
           if (signal.NextSignalWithTrainAhead) {
-            console.log(signal.Name, "has a train ahead but speed is 80");
             setIcon(MAIN_SIGNAL_80_ORANGE_ICON);
             return;
           }
@@ -219,7 +216,6 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
 
         if (train.TrainData.SignalInFrontSpeed === 100) {
           if (signal.NextSignalWithTrainAhead) {
-            console.log(signal.Name, "has a train ahead but speed is 100");
             setIcon(MAIN_SIGNAL_100_ORANGE_ICON);
             return;
           }
@@ -230,7 +226,6 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
 
         if (train.TrainData.SignalInFrontSpeed === 130) {
           if (signal.NextSignalWithTrainAhead) {
-            console.log(signal.Name, "has a train ahead but speed is 130");
             setIcon(MAIN_SIGNAL_130_ORANGE_ICON);
             return;
           }
@@ -260,7 +255,6 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
       return;
     }
 
-    // it's only guaranteed to be red if it's a block signal
     if (signal.TrainsAhead?.length) {
       switch (signal.Type) {
         case "block":

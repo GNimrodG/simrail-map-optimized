@@ -1,13 +1,14 @@
-import { createContext } from "react";
+import {createContext} from "react";
 
 export type MapLineData = {
   signal: string;
   lines: {
     color: string;
     color2?: string | null;
-    label: string;
+    label?: string;
     coords: [number, number][];
     index: number;
+    width?: number;
   }[];
 };
 

@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
@@ -7,12 +6,50 @@ using SMOBackend.Models.Trains;
 
 namespace SMOBackend.Models.Entity;
 
+/// <summary>
+///     Represents a point in the route of a train.
+/// </summary>
 [Table("route_points")]
 [Index(nameof(RouteId), IsUnique = false)]
 [Index(nameof(RouteId), nameof(RunId), nameof(TrainId), IsUnique = false)]
+[Index(nameof(RouteId), nameof(CreatedAt), IsUnique = false)]
 public class RoutePoint
 {
-    [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    private const int MaxRunIdLength = 43;
+
+    internal RoutePoint(Train train, string? prevSignal)
+    {
+        ArgumentNullException.ThrowIfNull(train.TrainData.Location);
+
+        RouteId = train.TrainNoLocal;
+        RunId = train.RunId;
+        TrainId = train.Id;
+        Point = train.TrainData.Location;
+        InsidePlayArea = !train.TrainData.InBorderStationArea;
+        NextSignal = train.TrainData.GetSignal();
+        ServerCode = train.ServerCode;
+        PrevSignal = prevSignal;
+    }
+
+    /// <inheritdoc cref="RoutePoint" />
+    public RoutePoint(string routeId, [MaxLength(MaxRunIdLength)] string runId, string trainId, Point point,
+        bool insidePlayArea = false,
+        string? nextSignal = null, string? prevSignal = null, string serverCode = "")
+    {
+        RouteId = routeId;
+        RunId = runId;
+        TrainId = trainId;
+        Point = point;
+        InsidePlayArea = insidePlayArea;
+        NextSignal = nextSignal;
+        PrevSignal = prevSignal;
+        ServerCode = serverCode;
+    }
+
+    /// <summary>
+    ///     Unique identifier for the route point.
+    /// </summary>
+    [Key]
     public long Id { get; set; }
 
     /// <summary>
@@ -22,10 +59,10 @@ public class RoutePoint
     public string RouteId { get; set; } // 123456 (TrainNoLocal)
 
     /// <summary>
-    /// Run ID of the train.
+    /// Run ID of the train. (UUID format + segment index if applicable)
     /// </summary>
-    [MaxLength(36)]
-    public string RunId { get; set; } // cfcc209f-4a88-422f-a27d-71e7264acded
+    [MaxLength(MaxRunIdLength)]
+    public string RunId { get; set; } // cfcc209f-4a88-422f-a27d-71e7264acded_seg000
 
     /// <summary>
     /// ID of the train.
@@ -40,33 +77,30 @@ public class RoutePoint
     public Point Point { get; set; }
 
     /// <summary>
+    ///     Indicates whether the train is inside the playable area of the map at this point.
+    /// </summary>
+    public bool InsidePlayArea { get; set; }
+
+    /// <summary>
+    ///     The next signal that the train will encounter, if any, at this point.
+    /// </summary>
+    [MaxLength(Utils.Utils.SignalNameLength)]
+    public string? NextSignal { get; set; }
+
+    /// <summary>
+    ///     The previous signal that the train passed, if any, at this point.
+    /// </summary>
+    [MaxLength(Utils.Utils.SignalNameLength)]
+    public string? PrevSignal { get; set; }
+
+    /// <summary>
+    ///     The server code of the train, if applicable.
+    /// </summary>
+    [MaxLength(5)]
+    public string ServerCode { get; set; }
+
+    /// <summary>
     /// Created at timestamp of the route point.
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    internal RoutePoint(Train train)
-    {
-        ArgumentNullException.ThrowIfNull(train.TrainData.Location);
-
-        RouteId = train.TrainNoLocal;
-        RunId = train.RunId;
-        TrainId = train.Id;
-        Point = train.TrainData.Location;
-    }
-
-    internal RoutePoint(Train train, Point point)
-    {
-        RouteId = train.TrainNoLocal;
-        RunId = train.RunId;
-        TrainId = train.Id;
-        Point = point;
-    }
-
-    public RoutePoint(string routeId, string runId, string trainId, Point point)
-    {
-        RouteId = routeId;
-        RunId = runId;
-        TrainId = trainId;
-        Point = point;
-    }
 }
