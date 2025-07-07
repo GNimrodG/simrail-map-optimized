@@ -85,7 +85,7 @@ public class ServerDataService(
     }
 
     /// <inheritdoc />
-    protected override void OnDataReceived(ApiResponseWithAge<ServerStatus[]> data)
+    protected override void OnDataReceived(ServerStatus[] data)
     {
         base.OnDataReceived(data);
 
@@ -94,7 +94,7 @@ public class ServerDataService(
         // Get current active server codes
         var currentActiveServers = new HashSet<string>();
 
-        foreach (var server in data.Data)
+        foreach (var server in data)
         {
             ServerStatusGauge.WithLabels(server.ServerCode, server.ServerRegion, server.ServerName)
                 .Set(server.IsActive ? 1 : 0);
