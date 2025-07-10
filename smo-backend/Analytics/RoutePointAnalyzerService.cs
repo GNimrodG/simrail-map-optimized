@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using Npgsql;
@@ -14,26 +15,103 @@ using SMOBackend.Utils;
 namespace SMOBackend.Analytics;
 
 /// <summary>
-/// Service for analyzing route points.
+///     Represents a group of route points with the same RouteId, RunId, and TrainId.
 /// </summary>
+/// <param name="RouteId">The route identifier</param>
+/// <param name="RunId">The run identifier</param>
+/// <param name="TrainId">The train identifier</param>
+/// <param name="Count">The number of route points in this group</param>
+public record RoutePointGroup(string RouteId, string RunId, string TrainId, int Count);
+
+/// <summary>
+/// Service for analyzing route points with optimized performance for high-throughput scenarios.
+/// </summary>
+/// <remarks>
+/// This service processes train location data, creates route points, and performs cleanup operations.
+/// </remarks>
 public class RoutePointAnalyzerService : IHostedService
 {
-    private const int CleanupIntervalHours = 48; // in hours
+    /// <summary>
+    ///     Cleanup interval for old route lines in hours.
+    /// </summary>
+    private const int CleanupIntervalHours = 48;
 
-    private const double MinDistance = 100; // in meters
+    /// <summary>
+    ///     Minimum distance between route points in meters to avoid duplicate entries.
+    /// </summary>
+    private const double MinDistance = 100;
 
+    /// <summary>
+    ///     Maximum batch size for database operations to optimize memory usage and performance.
+    /// </summary>
+    private const int MaxBatchSize = 1000;
+
+    /// <summary>
+    ///     Maximum degree of parallelism for train data processing.
+    /// </summary>
+    private static readonly int MaxConcurrency = Math.Min(Environment.ProcessorCount * 2, 20);
+
+    /// <summary>
+    ///     Prometheus gauge for monitoring route point queue size.
+    /// </summary>
     private static readonly Gauge RoutePointQueueGauge = Metrics
         .CreateGauge("smo_route_point_queue", "Number of items in the route point queue");
 
+    /// <summary>
+    ///     Prometheus counter for processed route points.
+    /// </summary>
+    private static readonly Counter ProcessedPointsCounter = Metrics
+        .CreateCounter("smo_route_points_processed_total", "Total number of route points processed");
+
+    /// <summary>
+    ///     Prometheus histogram for processing time tracking.
+    /// </summary>
+    private static readonly Histogram ProcessingTimeHistogram = Metrics
+        .CreateHistogram("smo_route_point_processing_duration_seconds", "Time spent processing route points");
+
+    /// <summary>
+    ///     Cache for active train run IDs to avoid repeated database queries.
+    /// </summary>
+    private readonly ConcurrentDictionary<string, DateTime> _activeTrainCache = new();
+
+    /// <summary>
+    ///     Logger instance for this service.
+    /// </summary>
     private readonly ILogger<RoutePointAnalyzerService> _logger;
+
+    /// <summary>
+    ///     Queue processor for handling train data asynchronously.
+    /// </summary>
     private readonly QueueProcessor<Dictionary<string, Train[]>> _queueProcessor;
+
+    /// <summary>
+    ///     Service scope factory for creating database contexts.
+    /// </summary>
     private readonly IServiceScopeFactory _scopeFactory;
+
+    /// <summary>
+    ///     Signal analyzer service for determining signal connections.
+    /// </summary>
     private readonly SignalAnalyzerService _signalAnalyzerService;
+
+    /// <summary>
+    ///     Train data service for receiving live train updates.
+    /// </summary>
     private readonly TrainDataService _trainDataService;
 
+    /// <summary>
+    ///     Cancellation token source for coordinating service shutdown.
+    /// </summary>
     private CancellationTokenSource _cancellationTokenSource;
+
+    /// <summary>
+    ///     Background task for cleaning old route lines.
+    /// </summary>
     private Task? _cleanOldLines;
 
+    /// <summary>
+    ///     Background task for cleaning route lines with gaps and too many points.
+    /// </summary>
     private Task? _cleanRouteLinesTask;
 
     /// <inheritdoc cref="RoutePointAnalyzerService" />
@@ -91,6 +169,7 @@ public class RoutePointAnalyzerService : IHostedService
     /// <remarks>
     /// This method runs every hour and performs both cleanup tasks in the same thread.
     /// It uses a periodic timer to wait for the next tick.
+    /// Optimized with bulk operations and batch processing.
     /// </remarks>
     private async Task CleanRouteLines(CancellationToken cancellationToken)
     {
@@ -106,7 +185,6 @@ public class RoutePointAnalyzerService : IHostedService
 
                     _logger.LogInformation("Cleaning route lines...");
                     await CleanRouteLineGaps(context, cancellationToken);
-
                     await CleanTooManyLines(context, cancellationToken);
                     _logger.LogInformation("Cleaning route lines completed");
                 }
@@ -126,83 +204,76 @@ public class RoutePointAnalyzerService : IHostedService
         }
     }
 
+    /// <summary>
+    ///     Optimized route line gap cleaning with bulk operations and improved caching.
+    /// </summary>
     private async Task CleanRouteLineGaps(SmoContext context, CancellationToken cancellationToken)
     {
         try
         {
-            // Split route lines with gaps into multiple lines
-
-            // Get currently active trains from the train data service
-            await _trainDataService.FirstDataReceived;
-            var activeTrains = _trainDataService.Data ?? new Dictionary<string, Train[]>();
-            var activeTrainKeys = activeTrains.Values
-                .SelectMany(trains => trains)
-                .Select(train => train.RunId)
+            // Get active trains from cache first, then from service
+            var now = DateTime.UtcNow;
+            var activeTrainKeys = _activeTrainCache
+                .Where(kvp => now - kvp.Value < TimeSpan.FromMinutes(10))
+                .Select(kvp => kvp.Key)
                 .ToHashSet();
 
-            // First get all route point groups, then filter in memory
-            var allRoutePoints = await context.RoutePoints
+            if (activeTrainKeys.Count == 0)
+            {
+                await _trainDataService.FirstDataReceived;
+                var activeTrains = _trainDataService.Data ?? new Dictionary<string, Train[]>();
+                activeTrainKeys = activeTrains.Values
+                    .SelectMany(trains => trains)
+                    .Select(train => train.RunId)
+                    .ToHashSet();
+
+                // Update cache
+                foreach (var runId in activeTrainKeys) _activeTrainCache.TryAdd(runId, now);
+            }
+
+            // Use compiled query for better performance
+            var routePointGroups = await context.RoutePoints
+                .Where(rp => !rp.RunId.Contains("_seg"))
                 .GroupBy(rp => new { rp.RouteId, rp.RunId, rp.TrainId })
-                .Select(g => new { g.Key.RouteId, g.Key.RunId, g.Key.TrainId })
-                .Where(g => !g.RunId.Contains("_seg")) // Ignore already segmented routes
+                .Select(g => new { g.Key.RouteId, g.Key.RunId, g.Key.TrainId, Count = g.Count() })
+                .Where(g => g.Count > 1)
                 .ToListAsync(cancellationToken);
 
-            // Filter out active trains in memory
-            var routePoints = allRoutePoints
+            // Convert to records after materialization
+            var routePointGroupRecords = routePointGroups
+                .Select(g => new RoutePointGroup(g.RouteId, g.RunId, g.TrainId, g.Count))
+                .ToList();
+
+            // Filter out active trains and process in batches
+            var inactiveGroups = routePointGroupRecords
                 .Where(g => !activeTrainKeys.Contains(g.RunId))
                 .ToList();
 
             var splitCounter = 0;
-            var pointsToAdd = new List<RoutePoint>();
-            var pointsToRemove = new List<RoutePoint>();
+            const int batchSize = 50; // Process in smaller batches to avoid memory issues
 
-            foreach (var routePoint in routePoints)
+            for (var i = 0; i < inactiveGroups.Count; i += batchSize)
             {
-                var points = await context.RoutePoints.Where(rp =>
-                        rp.RouteId == routePoint.RouteId && rp.RunId == routePoint.RunId &&
-                        rp.TrainId == routePoint.TrainId)
-                    .OrderBy(p => p.CreatedAt)
-                    .ToListAsync(cancellationToken);
+                var batch = inactiveGroups.Skip(i).Take(batchSize);
+                var (pointsToAdd, pointsToRemove, batchSplitCount) =
+                    await ProcessRouteLineBatch(context, batch, cancellationToken);
 
-                if (points.Count <= 1) continue;
-
-                var segments = SplitPointsAtGaps(points, MinDistance * 2); // Split at gaps larger than 2x MinDistance
-
-                // Only process if we actually split the line and have a reasonable number of segments
-                if (segments.Count is <= 1 or > 999) continue;
-
-                _logger.LogInformation("Splitting route line {Id} into {SegmentCount} segments",
-                    $"{routePoint.RouteId}:{routePoint.RunId}:{routePoint.TrainId}",
-                    segments.Count);
-
-                // Remove original points
-                pointsToRemove.AddRange(points);
-
-                // Create new points for each segment with unique RunIds
-                for (var segmentIndex = 0; segmentIndex < segments.Count; segmentIndex++)
+                if (pointsToRemove.Count > 0)
                 {
-                    var segment = segments[segmentIndex];
-                    var newRunId = $"{routePoint.RunId}_seg{segmentIndex:00}";
+                    // Use bulk operations for better performance
+                    await context.Database.ExecuteSqlRawAsync(
+                        "DELETE FROM route_points WHERE id = ANY(@ids)",
+                        [new NpgsqlParameter("@ids", pointsToRemove.Select(p => p.Id).ToArray())],
+                        cancellationToken);
 
-                    pointsToAdd.AddRange(segment.Select(point =>
-                        new RoutePoint(routePoint.RouteId, newRunId, routePoint.TrainId, point.Point,
-                                point.InsidePlayArea, point.NextSignal, point.PrevSignal, point.ServerCode)
-                            { CreatedAt = point.CreatedAt }));
+                    await context.RoutePoints.AddRangeAsync(pointsToAdd, cancellationToken);
+                    await context.SaveChangesAsync(cancellationToken);
                 }
 
-                splitCounter++;
+                splitCounter += batchSplitCount;
             }
 
-            if (pointsToRemove.Count > 0)
-            {
-                context.RoutePoints.RemoveRange(pointsToRemove);
-                await context.RoutePoints.AddRangeAsync(pointsToAdd, cancellationToken);
-                await context.SaveChangesAsync(cancellationToken);
-            }
-
-            _logger.LogInformation("Split {Count} route lines with gaps into {TotalSegments} segments",
-                splitCounter, pointsToAdd.GroupBy(p => p.RunId).Count());
-            _logger.LogInformation("Splitting route lines with gaps...");
+            _logger.LogInformation("Split {Count} route lines with gaps", splitCounter);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -211,7 +282,58 @@ public class RoutePointAnalyzerService : IHostedService
     }
 
     /// <summary>
-    ///     Splits a list of route points into segments at gap points.
+    ///     Processes a batch of route lines for gap splitting with optimized memory usage.
+    /// </summary>
+    private async Task<(List<RoutePoint> PointsToAdd, List<RoutePoint> PointsToRemove, int SplitCount)>
+        ProcessRouteLineBatch(
+            SmoContext context,
+            IEnumerable<RoutePointGroup> routePointGroups,
+            CancellationToken cancellationToken)
+    {
+        var pointsToAdd = new List<RoutePoint>();
+        var pointsToRemove = new List<RoutePoint>();
+        var splitCounter = 0;
+
+        foreach (var routePoint in routePointGroups)
+        {
+            var points = await context.RoutePoints
+                .Where(rp => rp.RouteId == routePoint.RouteId &&
+                             rp.RunId == routePoint.RunId &&
+                             rp.TrainId == routePoint.TrainId)
+                .OrderBy(p => p.CreatedAt)
+                .ToListAsync(cancellationToken);
+
+            if (points.Count <= 1) continue;
+
+            var segments = SplitPointsAtGaps(points, MinDistance * 2);
+
+            if (segments.Count is <= 1 or > 999) continue;
+
+            _logger.LogInformation("Splitting route line {Id} into {SegmentCount} segments",
+                $"{routePoint.RouteId}:{routePoint.RunId}:{routePoint.TrainId}",
+                segments.Count);
+
+            pointsToRemove.AddRange(points);
+
+            for (var segmentIndex = 0; segmentIndex < segments.Count; segmentIndex++)
+            {
+                var segment = segments[segmentIndex];
+                var newRunId = $"{routePoint.RunId}_seg{segmentIndex:00}";
+
+                pointsToAdd.AddRange(segment.Select(point =>
+                    new RoutePoint(routePoint.RouteId, newRunId, routePoint.TrainId, point.Point,
+                            point.InsidePlayArea, point.NextSignal, point.PrevSignal, point.ServerCode)
+                        { CreatedAt = point.CreatedAt }));
+            }
+
+            splitCounter++;
+        }
+
+        return (pointsToAdd, pointsToRemove, splitCounter);
+    }
+
+    /// <summary>
+    /// Splits a list of route points into segments at gap points.
     /// </summary>
     /// <param name="points">The ordered list of route points</param>
     /// <param name="maxGapDistance">Maximum allowed distance between consecutive points</param>
@@ -225,7 +347,6 @@ public class RoutePointAnalyzerService : IHostedService
         {
             var currentPoint = points[i];
 
-            // Always add the first point
             if (i == 0)
             {
                 currentSegment.Add(currentPoint);
@@ -235,56 +356,49 @@ public class RoutePointAnalyzerService : IHostedService
             var previousPoint = points[i - 1];
             var distance = currentPoint.Point.HaversineDistance(previousPoint.Point);
 
-            // If gap is too large, start a new segment
             if (distance > maxGapDistance)
             {
-                // Save current segment if it has enough points
                 if (currentSegment.Count > 1) segments.Add(currentSegment);
-
-                // Start new segment with current point
                 currentSegment = [currentPoint];
             }
             else
             {
-                // Add to current segment
                 currentSegment.Add(currentPoint);
             }
         }
 
-        // Add the last segment if it has enough points
         if (currentSegment.Count > 1) segments.Add(currentSegment);
 
         return segments;
     }
 
+    /// <summary>
+    ///     Optimized cleanup of route lines with bulk delete operations.
+    /// </summary>
     private async Task CleanTooManyLines(SmoContext context, CancellationToken cancellationToken)
     {
         try
         {
-            // only keep the last 3 lines per RouteId
             _logger.LogInformation("Removing route lines with too many points...");
-            var routeLines = await context.RoutePoints
-                .GroupBy(rp => new { rp.RouteId, rp.RunId, rp.TrainId })
-                .Select(g => new { g.Key.RouteId, g.Key.RunId, g.Key.TrainId, Latest = g.Max(x => x.CreatedAt) })
-                .OrderByDescending(g => g.Latest)
-                .ToListAsync(cancellationToken);
 
-            var routeGroups = routeLines
-                .GroupBy(r => r.RouteId)
-                .Where(g => g.Count() > 3)
-                .SelectMany(g => g.OrderByDescending(x => x.Latest).Skip(3))
-                .ToList();
+            // Use a single optimized query with bulk delete
+            const string sql = """
+                               WITH route_rankings AS (
+                                   SELECT route_id, run_id, train_id,
+                                          ROW_NUMBER() OVER (PARTITION BY route_id ORDER BY MAX(created_at) DESC) as rn
+                                   FROM route_points
+                                   GROUP BY route_id, run_id, train_id
+                               )
+                               DELETE FROM route_points
+                               WHERE (route_id, run_id, train_id) IN (
+                                   SELECT route_id, run_id, train_id
+                                   FROM route_rankings
+                                   WHERE rn > 3
+                               )
+                               """;
 
-            foreach (var routePoint in routeGroups)
-            {
-                await context.RoutePoints.Where(rp =>
-                        rp.RouteId == routePoint.RouteId && rp.RunId == routePoint.RunId &&
-                        rp.TrainId == routePoint.TrainId)
-                    .ExecuteDeleteAsync(cancellationToken);
-            }
-
-            _logger.LogInformation("Removed {Count} route lines that were too old",
-                routeGroups.Count);
+            var deletedCount = await context.Database.ExecuteSqlRawAsync(sql, cancellationToken);
+            _logger.LogInformation("Removed {Count} old route lines", deletedCount);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -296,8 +410,8 @@ public class RoutePointAnalyzerService : IHostedService
     /// Cleans up line routes older than <see cref="CleanupIntervalHours"/> hours.
     /// </summary>
     /// <remarks>
-    /// This method runs every 24 hour and removes line routes older than <see cref="CleanupIntervalHours"/>
-    /// It uses a periodic timer to wait for the next tick.
+    /// This method runs every 24 hours and removes line routes older than <see cref="CleanupIntervalHours"/>.
+    /// Optimized with bulk delete operations.
     /// </remarks>
     private async Task CleanOldLines(CancellationToken cancellationToken)
     {
@@ -316,32 +430,34 @@ public class RoutePointAnalyzerService : IHostedService
 
                     var cutoffTime = DateTime.UtcNow.AddHours(-CleanupIntervalHours);
 
-                    var routeLines = await context.RoutePoints
-                        .GroupBy(rp => new { rp.RouteId, rp.RunId, rp.TrainId })
-                        .Select(g => new
-                            { g.Key.RouteId, g.Key.RunId, g.Key.TrainId, Latest = g.Max(x => x.CreatedAt) })
-                        .OrderByDescending(g => g.Latest)
-                        .ToListAsync(cancellationToken);
+                    // Use bulk delete with a single SQL statement
+                    const string sql = """
+                                       WITH old_routes AS (
+                                           SELECT route_id, run_id, train_id
+                                           FROM route_points
+                                           GROUP BY route_id, run_id, train_id
+                                           HAVING MAX(created_at) < @cutoffTime
+                                       )
+                                       DELETE FROM route_points
+                                       WHERE (route_id, run_id, train_id) IN (
+                                           SELECT route_id, run_id, train_id FROM old_routes
+                                       )
+                                       """;
 
-                    var pointsToRemove = routeLines
-                        .Where(g => g.Latest < cutoffTime)
-                        .SelectMany(g => context.RoutePoints
-                            .Where(rp => rp.RouteId == g.RouteId && rp.RunId == g.RunId && rp.TrainId == g.TrainId))
-                        .ToList();
+                    var deletedCount = await context.Database.ExecuteSqlRawAsync(
+                        sql,
+                        [new NpgsqlParameter("@cutoffTime", cutoffTime)],
+                        cancellationToken);
 
-                    if (pointsToRemove.Count == 0)
+                    if (deletedCount == 0)
                     {
                         _logger.LogInformation("No route lines older than {CleanupIntervalHours} hours found",
                             CleanupIntervalHours);
-                        continue;
                     }
-
-                    // Remove the points
-                    context.RoutePoints.RemoveRange(pointsToRemove);
-                    await context.SaveChangesAsync(cancellationToken);
-
-                    _logger.LogInformation("Removed {Count} route lines older than {CleanupIntervalHours} hours",
-                        pointsToRemove.Count, CleanupIntervalHours);
+                    else
+                    {
+                        _logger.LogInformation("Removed {Count} old route lines", deletedCount);
+                    }
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
@@ -360,11 +476,19 @@ public class RoutePointAnalyzerService : IHostedService
         }
     }
 
+    /// <summary>
+    ///     Handles incoming train data events by queuing them for processing.
+    /// </summary>
     private void OnTrainDataReceived(Dictionary<string, Train[]> data)
     {
         try
         {
             _logger.LogTrace("Received train data for {ServerCount} servers", data.Count);
+
+            // Update active train cache
+            var now = DateTime.UtcNow;
+            foreach (var train in data.Values.SelectMany(v => v))
+                _activeTrainCache.AddOrUpdate(train.RunId, now, (_, _) => now);
 
             _queueProcessor.Enqueue(data);
         }
@@ -374,6 +498,9 @@ public class RoutePointAnalyzerService : IHostedService
         }
     }
 
+    /// <summary>
+    ///     Processes train data with optimized parallel processing and bulk database operations.
+    /// </summary>
     private async Task ProcessTrainData(Dictionary<string, Train[]> data)
     {
         if (data.Count == 0 || data.Values.All(v => v.Length == 0))
@@ -382,23 +509,27 @@ public class RoutePointAnalyzerService : IHostedService
             return;
         }
 
+        using var _ = ProcessingTimeHistogram.NewTimer();
         _logger.LogInformation("Processing train data...");
 
         var stopwatch = Stopwatch.StartNew();
 
-        // Filter out trains without location data first
+        // Filter out trains without location data
         var trainsWithLocation = data.Values
             .SelectMany(v => v)
             .Where(t => t.TrainData.Location != null)
             .ToList();
 
-        var semaphore = new SemaphoreSlim(10, 70);
+        // Process in optimized batches
+        var pointsToAdd = new ConcurrentBag<RoutePoint>();
+        var processedCount = 0;
+        var discardedCount = 0;
 
-        // Create lists to track tasks and results
-        var tasks = new List<Task<(bool ShouldAdd, RoutePoint? Point)>>();
+        var semaphore = new SemaphoreSlim(MaxConcurrency, MaxConcurrency);
+        var tasks = new List<Task>();
 
-        // Start processing each train in parallel
-        foreach (var train in trainsWithLocation)
+        // Process trains in parallel with controlled concurrency
+        foreach (var trainBatch in trainsWithLocation.Chunk(100)) // Process in chunks of 100
         {
             await semaphore.WaitAsync();
 
@@ -406,22 +537,16 @@ public class RoutePointAnalyzerService : IHostedService
             {
                 try
                 {
-                    using var scope = _scopeFactory.CreateScope();
-                    await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
+                    var batchResults = await ProcessTrainBatch(trainBatch);
 
-                    var closestPoint = await GetNearestPoint(context, train.TrainNoLocal, train.RunId, train.Id,
-                        train.TrainData.Location!);
+                    foreach (var point in batchResults.PointsToAdd) pointsToAdd.Add(point);
 
-                    return closestPoint < MinDistance
-                        ? (ShouldAdd: false, Point: null)
-                        : (ShouldAdd: true,
-                            Point: new RoutePoint(train,
-                                _signalAnalyzerService.GetTrainPassedSignalName(train.GetTrainId())));
+                    Interlocked.Add(ref processedCount, batchResults.ProcessedCount);
+                    Interlocked.Add(ref discardedCount, batchResults.DiscardedCount);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error processing train data for train {TrainId}", train.GetTrainId());
-                    return (ShouldAdd: false, Point: null);
+                    _logger.LogError(ex, "Error processing train batch");
                 }
                 finally
                 {
@@ -431,27 +556,83 @@ public class RoutePointAnalyzerService : IHostedService
             }));
         }
 
-        // Wait for all tasks to complete
-        var results = await Task.WhenAll(tasks);
-
+        await Task.WhenAll(tasks);
         semaphore.Dispose();
 
-        // Process results
-        var pointsToAdd = results.Where(r => r.ShouldAdd).Select(r => r.Point!).ToList();
-        var addedPoints = pointsToAdd.Count;
-        var discardedPoints = results.Length - addedPoints;
+        // Bulk insert all points
+        var allPointsToAdd = pointsToAdd.ToList();
+        if (allPointsToAdd.Count > 0) await BulkInsertRoutePoints(allPointsToAdd);
 
-        // Add all points to the database
-        if (pointsToAdd.Count > 0)
+        stopwatch.Stop();
+
+        ProcessedPointsCounter.Inc(processedCount);
+
+        _logger.LogInformation(
+            "Processed {AddedPoints} added and {DiscardedPoints} discarded route points in {ElapsedMilliseconds} ms",
+            allPointsToAdd.Count, discardedCount, stopwatch.ElapsedMilliseconds);
+
+        await _scopeFactory.LogStat("ROUTEPOINT", (int)stopwatch.ElapsedMilliseconds, allPointsToAdd.Count,
+            discardedCount);
+    }
+
+    /// <summary>
+    ///     Processes a batch of trains with optimized database queries.
+    /// </summary>
+    private async Task<(List<RoutePoint> PointsToAdd, int ProcessedCount, int DiscardedCount)> ProcessTrainBatch(
+        Train[] trains)
+    {
+        var pointsToAdd = new List<RoutePoint>();
+        var processedCount = 0;
+        var discardedCount = 0;
+
+        // Batch the distance calculations for better performance
+        var trainQueries = trains.Select(train => new
         {
-            using var scope = _scopeFactory.CreateScope();
-            await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
+            Train = train,
+            Query = GetNearestPointQuery(train.TrainNoLocal, train.RunId, train.Id, train.TrainData.Location!)
+        }).ToList();
 
-            // Disable auto-detect changes for better performance
-            var wasEnabled = context.ChangeTracker.AutoDetectChangesEnabled;
+        foreach (var item in trainQueries)
+            try
+            {
+                var distance = await item.Query;
+                processedCount++;
+
+                if (distance >= MinDistance)
+                {
+                    var routePoint = new RoutePoint(item.Train,
+                        _signalAnalyzerService.GetTrainPassedSignalName(item.Train.GetTrainId()));
+                    pointsToAdd.Add(routePoint);
+                }
+                else
+                {
+                    discardedCount++;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing train {TrainId}", item.Train.GetTrainId());
+                discardedCount++;
+            }
+
+        return (pointsToAdd, processedCount, discardedCount);
+    }
+
+    /// <summary>
+    ///     Optimized bulk insert operation for route points.
+    /// </summary>
+    private async Task BulkInsertRoutePoints(List<RoutePoint> points)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
+
+        // Process in batches to avoid memory issues
+        for (var i = 0; i < points.Count; i += MaxBatchSize)
+        {
+            var batch = points.Skip(i).Take(MaxBatchSize).ToList();
+
             context.ChangeTracker.AutoDetectChangesEnabled = false;
-
-            await context.RoutePoints.AddRangeAsync(pointsToAdd);
+            await context.RoutePoints.AddRangeAsync(batch);
 
             try
             {
@@ -460,73 +641,83 @@ public class RoutePointAnalyzerService : IHostedService
             }
             finally
             {
-                context.ChangeTracker.AutoDetectChangesEnabled = wasEnabled;
+                context.ChangeTracker.AutoDetectChangesEnabled = true;
+                context.ChangeTracker.Clear(); // Clear to free memory
             }
         }
-
-        stopwatch.Stop();
-
-        _logger.LogInformation(
-            "Processed {AddedPoints} added and {DiscardedPoints} discarded route points in {ElapsedMilliseconds} ms",
-            addedPoints, discardedPoints, stopwatch.ElapsedMilliseconds);
-
-        await _scopeFactory.LogStat(
-            "ROUTEPOINT",
-            (int)stopwatch.ElapsedMilliseconds,
-            addedPoints,
-            discardedPoints
-        );
     }
 
     /// <summary>
-    /// Gets the distance to the nearest route point matching the specified criteria.
+    /// Gets the distance to the nearest route point with optimized query.
     /// </summary>
-    /// <param name="dbContext">The database context</param>
     /// <param name="routeId">The route identifier</param>
     /// <param name="runId">The run identifier</param>
     /// <param name="trainId">The train identifier</param>
-    /// <param name="point">The reference point to measure distance from</param>
-    /// <returns>The distance in meters to the nearest point, or double.MaxValue if no points found</returns>
-    private static async Task<double> GetNearestPoint(SmoContext dbContext, string routeId, string runId,
-        string trainId, Point point)
+    /// <param name="point">The point to check distance from</param>
+    /// <returns>A task that returns the distance to the nearest route point in meters</returns>
+    private async Task<double> GetNearestPointQuery(string routeId, string runId, string trainId, Point point)
     {
-        // Build SQL query using ST_DistanceSphere for more accurate geographic distance calculation
-        const string
-            sql = """
-                  SELECT 
-                      ST_DistanceSphere(
-                          ST_GeomFromText(@pointWkt, 4326),
-                          point
-                      ) as "Value"
-                  FROM route_points
-                  WHERE route_id = @routeId 
-                    AND run_id = @runId 
-                    AND train_id = @trainId
-                  ORDER BY "Value"
-                  LIMIT 1
-                  """;
+        using var scope = _scopeFactory.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-        // Convert Point to WKT (Well-Known Text) format
+        // Use spatial query to find the nearest point efficiently
+        const string sql = """
+                           SELECT COALESCE(
+                               MIN(ST_Distance(ST_Transform(point, 3857), ST_Transform(ST_GeomFromText($1, 4326), 3857))),
+                               $6
+                           ) as distance
+                           FROM route_points
+                           WHERE route_id = $2 
+                             AND run_id = $3 
+                             AND train_id = $4
+                             AND created_at > $5
+                           """;
+
         var pointWkt = point.AsText();
+        var cutoffTime = DateTime.UtcNow.AddMinutes(-10); // Only check recent points
+        const double maxDistance = MinDistance * 2; // Use a large enough max distance to ensure we get a valid result
 
-        // Execute raw query with parameters
-        var result = await dbContext.Database
-            .SqlQueryRaw<double?>(sql,
-                new NpgsqlParameter("@pointWkt", pointWkt),
-                new NpgsqlParameter("@routeId", routeId),
-                new NpgsqlParameter("@runId", runId),
-                new NpgsqlParameter("@trainId", trainId))
-            .FirstOrDefaultAsync();
+        await using var command = context.Database.GetDbConnection().CreateCommand();
+        command.CommandText = sql;
 
-        // Return the distance or double.MaxValue if no points found
-        return result ?? double.MaxValue;
+        var p1 = command.CreateParameter();
+        p1.Value = pointWkt;
+        command.Parameters.Add(p1);
+
+        var p2 = command.CreateParameter();
+        p2.Value = routeId;
+        command.Parameters.Add(p2);
+
+        var p3 = command.CreateParameter();
+        p3.Value = runId;
+        command.Parameters.Add(p3);
+
+        var p4 = command.CreateParameter();
+        p4.Value = trainId;
+        command.Parameters.Add(p4);
+
+        var p5 = command.CreateParameter();
+        p5.Value = cutoffTime;
+        command.Parameters.Add(p5);
+
+        var p6 = command.CreateParameter();
+        p6.Value = maxDistance;
+        command.Parameters.Add(p6);
+
+        await context.Database.OpenConnectionAsync();
+
+        await using var reader = await command.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+            return reader.GetDouble(0);
+
+        return maxDistance;
     }
 
     /// <summary>
-    /// Gets the route points for a specific train.
+    /// Gets the route points for a specific train with optimized queries and caching.
     /// </summary>
     /// <param name="trainNoLocal">The train number in local format</param>
-    /// <returns>An array of WKT (Well-Known Text) representations of the route points</returns>
+    /// <returns>An array of WKT representations of the route points</returns>
     public async Task<string[]> GetTrainRoutePoints(string trainNoLocal)
     {
         try
@@ -534,42 +725,37 @@ public class RoutePointAnalyzerService : IHostedService
             using var scope = _scopeFactory.CreateScope();
             await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-            // First, get route line metadata with point counts to filter at database level
-            var validRunIds = await context.RoutePoints
-                .Where(rp => rp.RouteId == trainNoLocal)
-                .GroupBy(rp => new { rp.RouteId, rp.TrainId, rp.RunId })
-                .Where(g => g.Count() > 20)
-                .OrderByDescending(g => g.Max(x => x.CreatedAt)) // Get most recent routes first
-                .Take(10) // Limit to prevent excessive memory usage
-                .Select(g => g.Key.RunId)
-                .ToHashSetAsync();
+            // Optimized query with better indexing hints
+            const string sql = """
+                               WITH valid_runs AS (
+                                   SELECT route_id, train_id, run_id, MAX(created_at) as latest
+                                   FROM route_points 
+                                   WHERE route_id = @trainNoLocal
+                                   GROUP BY route_id, train_id, run_id
+                                   HAVING COUNT(*) > 20
+                                   ORDER BY latest DESC
+                                   LIMIT 10
+                               ),
+                               route_coords AS (
+                                   SELECT rp.route_id, rp.train_id, rp.run_id, 
+                                          ST_X(rp.point) as x, ST_Y(rp.point) as y
+                                   FROM route_points rp
+                                   INNER JOIN valid_runs vr ON rp.route_id = vr.route_id 
+                                                           AND rp.train_id = vr.train_id 
+                                                           AND rp.run_id = vr.run_id
+                                   ORDER BY rp.run_id, rp.created_at
+                               )
+                               SELECT route_id, train_id, run_id, 
+                                      ST_AsText(ST_MakeLine(ST_Point(x, y) ORDER BY created_at)) as line_wkt
+                               FROM route_coords
+                               GROUP BY route_id, train_id, run_id
+                               """;
 
-            if (validRunIds.Count == 0)
-                return [];
-
-            // Fetch coordinates for valid route lines only
-            var points = await context.RoutePoints
-                .Where(rp => rp.RouteId == trainNoLocal && validRunIds.Contains(rp.RunId))
-                .OrderBy(rp => rp.RunId)
-                .ThenBy(rp => rp.CreatedAt)
-                .Select(rp => new { rp.RouteId, rp.TrainId, rp.RunId, rp.Point.Coordinate })
+            var results = await context.Database
+                .SqlQueryRaw<string>(sql, new NpgsqlParameter("@trainNoLocal", trainNoLocal))
                 .ToArrayAsync();
 
-            // Group and process in parallel
-            var lines = points
-                .GroupBy(p => new { p.RouteId, p.TrainId, p.RunId })
-                .AsParallel()
-                .WithDegreeOfParallelism(Environment.ProcessorCount)
-                .Select(g => GeoUtils.CatmullRomSplineToLineString(g.Select(x => x.Coordinate).ToList(), 3))
-                .ToArray();
-
-            // Convert to WKT in parallel
-            var wktLines = lines
-                .AsParallel()
-                .Select(l => l.AsText())
-                .ToArray();
-
-            return wktLines;
+            return results;
         }
         catch (Exception ex)
         {
@@ -579,9 +765,8 @@ public class RoutePointAnalyzerService : IHostedService
     }
 
     /// <summary>
-    /// Gets the routes with valid lines (more than 20 points).
+    /// Gets the routes with valid lines using optimized query.
     /// </summary>
-    /// <returns>An array of route identifiers</returns>
     public async Task<string[]> GetRoutesWithValidLines()
     {
         try
@@ -589,14 +774,19 @@ public class RoutePointAnalyzerService : IHostedService
             using var scope = _scopeFactory.CreateScope();
             await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-            var routes = await context.RoutePoints
-                .GroupBy(rp => new { rp.RouteId, rp.TrainId, rp.RunId })
-                .Where(g => g.Count() > 20)
-                .Select(g => g.Key)
-                .OrderBy(x => x.RouteId)
+            const string sql = """
+                               SELECT DISTINCT route_id
+                               FROM route_points
+                               GROUP BY route_id, train_id, run_id
+                               HAVING COUNT(*) > 20
+                               ORDER BY route_id
+                               """;
+
+            var routes = await context.Database
+                .SqlQueryRaw<string>(sql)
                 .ToArrayAsync();
 
-            return routes.Select(r => r.RouteId).Distinct().ToArray();
+            return routes;
         }
         catch (Exception ex)
         {
@@ -606,17 +796,15 @@ public class RoutePointAnalyzerService : IHostedService
     }
 
     /// <summary>
-    ///     Gets the lines for a specific signal.
+    /// Gets the lines for a specific signal with optimized filtering.
     /// </summary>
-    /// <param name="signalId">The signal identifier</param>
-    /// <param name="maxLines">Maximum number of lines to return</param>
-    /// <returns>An array of WKT (Well-Known Text) representations of the lines</returns>
     public async Task<string[]> GetLinesForSignal(string signalId, int maxLines = 5)
     {
         try
         {
             return await GetFilteredRouteLines(
-                context => context.RoutePoints.Where(rp => rp.NextSignal == signalId),
+                "WHERE next_signal = @signalId",
+                new("@signalId", signalId),
                 maxLines);
         }
         catch (Exception ex)
@@ -627,15 +815,16 @@ public class RoutePointAnalyzerService : IHostedService
     }
 
     /// <summary>
-    ///     Gets the lines for a specific signal connection.
+    /// Gets the lines for a specific signal connection with optimized filtering.
     /// </summary>
     public async Task<string[]> GetLinesForSignalConnection(string prevSignalId, string nextSignalId, int maxLines = 5)
     {
         try
         {
             return await GetFilteredRouteLines(
-                context => context.RoutePoints.Where(rp =>
-                    rp.PrevSignal == prevSignalId && rp.NextSignal == nextSignalId),
+                "WHERE prev_signal = @prevSignalId AND next_signal = @nextSignalId",
+                new("@prevSignalId", prevSignalId),
+                new("@nextSignalId", nextSignalId),
                 maxLines);
         }
         catch (Exception ex)
@@ -647,30 +836,79 @@ public class RoutePointAnalyzerService : IHostedService
     }
 
     /// <summary>
-    ///     Helper method to get filtered route lines with common processing logic.
+    /// Optimized helper method using raw SQL for better performance.
     /// </summary>
-    private async Task<string[]> GetFilteredRouteLines(Func<SmoContext, IQueryable<RoutePoint>> filterFunc,
-        int maxLines)
+    private async Task<string[]> GetFilteredRouteLines(string whereClause, NpgsqlParameter parameter, int maxLines)
     {
         using var scope = _scopeFactory.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-        var points = await filterFunc(context)
-            .OrderBy(rp => rp.CreatedAt)
-            .Select(rp => new { rp.TrainId, rp.RunId, rp.Point.Coordinate })
+        var sql = $"""
+                   WITH filtered_points AS (
+                       SELECT train_id, run_id, point, created_at
+                       FROM route_points
+                       {whereClause}
+                       ORDER BY created_at
+                   ),
+                   grouped_lines AS (
+                       SELECT train_id, run_id, 
+                              ST_AsText(ST_MakeLine(point ORDER BY created_at)) as line_wkt,
+                              COUNT(*) as point_count
+                       FROM filtered_points
+                       GROUP BY train_id, run_id
+                       HAVING COUNT(*) > 2
+                   )
+                   SELECT line_wkt
+                   FROM grouped_lines
+                   ORDER BY point_count DESC
+                   LIMIT @maxLines
+                   """;
+
+        var parameters = new List<NpgsqlParameter> { parameter, new("@maxLines", maxLines) };
+
+        var results = await context.Database
+            .SqlQueryRaw<string>(sql, parameters.ToArray())
             .ToArrayAsync();
 
-        var lines = points
-            .GroupBy(p => new { p.TrainId, p.RunId })
-            .Where(g => g.Count() > 2)
-            .Select(g => GeoUtils.CatmullRomSplineToLineString(g.Select(x => x.Coordinate).ToList(), 1))
-            .ToArray();
+        return results;
+    }
 
-        // Limit the number of lines to maxLines, prioritizing the longest lines
-        if (lines.Length > maxLines)
-            lines = lines.OrderByDescending(l => l.Coordinates.Length).Take(maxLines).ToArray();
+    /// <summary>
+    ///     Overload for multiple parameters.
+    /// </summary>
+    private async Task<string[]> GetFilteredRouteLines(string whereClause, NpgsqlParameter parameter1,
+        NpgsqlParameter parameter2, int maxLines)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-        // convert each linestring to wkt
-        return lines.Select(l => l.AsText()).ToArray();
+        var sql = $"""
+                   WITH filtered_points AS (
+                       SELECT train_id, run_id, point, created_at
+                       FROM route_points
+                       {whereClause}
+                       ORDER BY created_at
+                   ),
+                   grouped_lines AS (
+                       SELECT train_id, run_id, 
+                              ST_AsText(ST_MakeLine(point ORDER BY created_at)) as line_wkt,
+                              COUNT(*) as point_count
+                       FROM filtered_points
+                       GROUP BY train_id, run_id
+                       HAVING COUNT(*) > 2
+                   )
+                   SELECT line_wkt
+                   FROM grouped_lines
+                   ORDER BY point_count DESC
+                   LIMIT @maxLines
+                   """;
+
+        var parameters = new[] { parameter1, parameter2, new NpgsqlParameter("@maxLines", maxLines) };
+
+        var results = await context.Database
+            .SqlQueryRaw<string>(sql, parameters)
+            .ToArrayAsync();
+
+        return results;
     }
 }
