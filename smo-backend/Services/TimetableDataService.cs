@@ -14,6 +14,11 @@ public class TimetableDataService(
 {
     private readonly string _dataDirectory = Path.Combine(AppContext.BaseDirectory, "data", "timetables");
 
+    /// <inheritdoc cref="BaseServerDataService{Nullable{object}}.FetchInterval" />
+    protected override TimeSpan FetchInterval => TimeSpan.FromHours(1);
+
+    private protected override TimeSpan DelayBetweenServers => TimeSpan.FromSeconds(1);
+
     /// <inheritdoc cref="BaseServerDataService{Nullable{object}}.PerServerDataReceived"/>
     public new event DataReceivedEventHandler<PerServerData<Timetable[]>>? PerServerDataReceived;
 
@@ -48,7 +53,7 @@ public class TimetableDataService(
 
         await Parallel.ForEachAsync(
             timetables,
-            new ParallelOptions { MaxDegreeOfParallelism = 16 },
+            new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
             async (timetable, token) =>
             {
                 var tempFilePath = Path.Combine(serverDirectory, $"{serverCode}-{timetable.TrainNoLocal}.bin.tmp");
@@ -69,11 +74,10 @@ public class TimetableDataService(
 
                     fileStream.Close();
 
-                    // Rename the file to remove the .temp extension
+                    // Rename the file to remove the .temp extension with retry logic
                     var finalFilePath = Path.Combine(serverDirectory, $"{serverCode}-{timetable.TrainNoLocal}.bin");
 
-                    if (File.Exists(finalFilePath)) File.Delete(finalFilePath);
-                    File.Move(tempFilePath, finalFilePath);
+                    await AtomicFileReplaceAsync(tempFilePath, finalFilePath, token);
                 }
                 catch (Exception ex)
                 {
@@ -83,11 +87,6 @@ public class TimetableDataService(
                 }
             });
     }
-
-    /// <inheritdoc cref="BaseServerDataService{Nullable{object}}.FetchInterval"/>
-    protected override TimeSpan FetchInterval => TimeSpan.FromHours(1);
-
-    private protected override TimeSpan DelayBetweenServers => TimeSpan.FromSeconds(1);
 
     /// <inheritdoc cref="BaseServerDataService{Nullable{object}}.FetchServerData"/>
     protected override async Task<object?> FetchServerData(string serverCode,
@@ -173,5 +172,74 @@ public class TimetableDataService(
 
             return null;
         }
+    }
+
+    /// <summary>
+    ///     Atomically replaces a file with retry logic to handle file access conflicts.
+    /// </summary>
+    /// <param name="tempFilePath">The temporary file path to move from</param>
+    /// <param name="finalFilePath">The final file path to move to</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    private async Task AtomicFileReplaceAsync(string tempFilePath, string finalFilePath,
+        CancellationToken cancellationToken)
+    {
+        const int maxRetries = 5;
+        var baseDelay = TimeSpan.FromMilliseconds(100);
+
+        for (var attempt = 0; attempt <= maxRetries; attempt++)
+            try
+            {
+                // If the target file exists, delete it first
+                if (File.Exists(finalFilePath)) File.Delete(finalFilePath);
+
+                // Move the temp file to the final location
+                File.Move(tempFilePath, finalFilePath);
+                return; // Success
+            }
+            catch (IOException ex) when (attempt < maxRetries && IsFileInUseError(ex))
+            {
+                // Calculate exponential backoff delay: 100ms, 200ms, 400ms, 800ms, 1600ms
+                var delay = TimeSpan.FromMilliseconds(baseDelay.TotalMilliseconds * Math.Pow(2, attempt));
+
+                logger.LogWarning("File {FilePath} is in use, retrying in {Delay}ms (attempt {Attempt}/{MaxRetries})",
+                    finalFilePath, delay.TotalMilliseconds, attempt + 1, maxRetries);
+
+                await Task.Delay(delay, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to move file from {TempPath} to {FinalPath} on attempt {Attempt}",
+                    tempFilePath, finalFilePath, attempt + 1);
+
+                // Clean up temp file if it still exists
+                try
+                {
+                    if (File.Exists(tempFilePath)) File.Delete(tempFilePath);
+                }
+                catch (Exception cleanupEx)
+                {
+                    logger.LogWarning(cleanupEx, "Failed to clean up temp file {TempPath}", tempFilePath);
+                }
+
+                throw;
+            }
+
+        // If we get here, all retries failed
+        throw new IOException(
+            $"Failed to replace file {finalFilePath} after {maxRetries} attempts due to file access conflicts");
+    }
+
+    /// <summary>
+    ///     Determines if an IOException is caused by the file being in use by another process.
+    /// </summary>
+    /// <param name="ex">The IOException to check</param>
+    /// <returns>True if the error indicates the file is in use</returns>
+    private static bool IsFileInUseError(IOException ex)
+    {
+        const int errorSharingViolation = 0x20;
+        const int errorLockViolation = 0x21;
+
+        var hResult = ex.HResult & 0xFFFF;
+        return hResult is errorSharingViolation or errorLockViolation;
     }
 }
