@@ -64,7 +64,10 @@ public class MainHub(
 
         await Groups.AddToGroupAsync(Context.ConnectionId, serverCode);
 
-        clientManagerService.SelectedServers[Context.ConnectionId] = serverCode;
+        lock (clientManagerService.SelectedServers)
+        {
+            clientManagerService.SelectedServers[Context.ConnectionId] = serverCode;
+        }
 
         logger.LogInformation("Client {ConnectionId} switched to server {ServerCode}", Context.ConnectionId,
             serverCode);
@@ -91,24 +94,19 @@ public class MainHub(
 
 
         var time = timeDataService[serverCode];
-        if (time != null)
-        {
-            await Clients.Caller.SendAsync("TimeReceived", time);
-        }
+        if (time != null) await Clients.Caller.SendAsync("TimeReceived", time);
 
-
-        // Remove the old values
-        foreach (var labelValue in ServerClientsGauge.GetAllLabelValues())
+        lock (clientManagerService.SelectedServers)
         {
-            if (clientManagerService.SelectedServers.Values.All(x => x != labelValue[0]))
-                ServerClientsGauge.RemoveLabelled(labelValue);
-        }
+            // Remove the old values
+            foreach (var labelValue in ServerClientsGauge.GetAllLabelValues())
+                if (clientManagerService.SelectedServers.Values.All(x => x != labelValue[0]))
+                    ServerClientsGauge.RemoveLabelled(labelValue);
 
-        foreach (var server in clientManagerService.SelectedServers.Values.Distinct())
-        {
-            ServerClientsGauge
-                .WithLabels(server)
-                .Set(clientManagerService.SelectedServers.Count(x => x.Value == server));
+            foreach (var server in clientManagerService.SelectedServers.Values.Distinct())
+                ServerClientsGauge
+                    .WithLabels(server)
+                    .Set(clientManagerService.SelectedServers.Count(x => x.Value == server));
         }
     }
 
@@ -154,7 +152,12 @@ public class MainHub(
     {
         try
         {
-            var serverCode = clientManagerService.SelectedServers[Context.ConnectionId];
+            if (!clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out var serverCode))
+            {
+                logger.LogWarning("Client {ConnectionId} tried to get stations without a selected server",
+                    Context.ConnectionId);
+                return;
+            }
 
             var stations = stationDataService[serverCode];
             if (stations != null)
@@ -175,7 +178,12 @@ public class MainHub(
     {
         try
         {
-            var serverCode = clientManagerService.SelectedServers[Context.ConnectionId];
+            if (!clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out var serverCode))
+            {
+                logger.LogWarning("Client {ConnectionId} tried to get trains without a selected server",
+                    Context.ConnectionId);
+                return;
+            }
 
             var trains = trainDataService[serverCode];
             if (trains != null)
@@ -196,7 +204,12 @@ public class MainHub(
     {
         try
         {
-            var serverCode = clientManagerService.SelectedServers[Context.ConnectionId];
+            if (!clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out var serverCode))
+            {
+                logger.LogWarning("Client {ConnectionId} tried to get signals without a selected server",
+                    Context.ConnectionId);
+                return;
+            }
 
             var trains = trainDataService[serverCode];
             if (trains == null) return;
