@@ -1,7 +1,7 @@
-﻿using SMOBackend.Models.OSM;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
+using SMOBackend.Models.OSM;
 
 namespace SMOBackend.Services;
 
@@ -11,12 +11,12 @@ namespace SMOBackend.Services;
 public class OsmApiClient : IDisposable
 {
     private const string BaseUrl = "https://overpass-api.de/api/interpreter";
+    private readonly Timer _batchTimer;
     private readonly HttpClient _httpClient = new();
     private readonly ILogger<OsmApiClient> _logger;
 
     // Cache for pending requests
     private readonly ConcurrentDictionary<string, TaskCompletionSource<OSMWay?>> _pendingRequests = new();
-    private readonly Timer _batchTimer;
     private readonly Lock _timerLock = new();
     private volatile bool _timerScheduled;
 
@@ -27,6 +27,16 @@ public class OsmApiClient : IDisposable
     {
         _logger = logger;
         _batchTimer = new(ProcessBatchedRequests, null, Timeout.Infinite, Timeout.Infinite);
+    }
+
+    /// <summary>
+    ///     Disposes the OSM API client and releases all resources
+    /// </summary>
+    public void Dispose()
+    {
+        _batchTimer.Dispose();
+        _httpClient.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -105,7 +115,7 @@ public class OsmApiClient : IDisposable
 
             // Send POST request with the batched query
             var content = new StringContent(query, Encoding.UTF8, "application/x-www-form-urlencoded");
-            
+
             using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
             var response = await _httpClient.PostAsync(BaseUrl, content, cts.Token);
 
@@ -164,16 +174,6 @@ public class OsmApiClient : IDisposable
             _logger.LogInformation("Processed {Count} batched requests in {ElapsedMilliseconds} ms",
                 requestsToProcess.Count, stopwatch.ElapsedMilliseconds);
         }
-    }
-
-    /// <summary>
-    /// Disposes the OSM API client and releases all resources
-    /// </summary>
-    public void Dispose()
-    {
-        _batchTimer.Dispose();
-        _httpClient.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     /// <summary>

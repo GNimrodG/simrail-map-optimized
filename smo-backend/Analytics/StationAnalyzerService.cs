@@ -18,8 +18,13 @@ public class StationAnalyzerService : IHostedService
     private static readonly Gauge StationCountGauge = Metrics
         .CreateGauge("smo_known_station_count", "Number of known stations loaded from the data file");
 
+    private static readonly Gauge NotFoundCountGauge = Metrics
+        .CreateGauge("smo_not_found_station_count", "Number of stations that were not found in OSM");
+
     private static readonly Gauge StationTimetableAnalyzerQueueGauge = Metrics
         .CreateGauge("smo_station_timetable_analyzer_queue_length", "Length of the station timetable analyzer queue");
+
+    private readonly HashSet<string> _enqueuedStations = [];
 
     private readonly Lock _lock = new();
 
@@ -76,9 +81,13 @@ public class StationAnalyzerService : IHostedService
     public Task StopAsync(CancellationToken cancellationToken)
     {
         SaveStations();
+        SaveNotFoundStations();
+
         lock (_lock)
         {
             _logger.LogInformation("Saved {StationCount} stations to {FilePath}", _stations.Count, StationsFilePath);
+            _logger.LogInformation("Saved {NotFoundCount} not found stations to {FilePath}",
+                _notFoundStations.Count, NotFoundStationsFilePath);
         }
 
         _stationDataService.DataReceived -= OnStationDataReceived;
@@ -163,7 +172,6 @@ public class StationAnalyzerService : IHostedService
         propertyInfo.SetValue(existingStation, newValue);
     }
 
-
     private void OnTimetableDataReceived(PerServerData<Timetable[]> data)
     {
         try
@@ -172,7 +180,25 @@ public class StationAnalyzerService : IHostedService
                 .SelectMany(timetable => timetable.TimetableEntries)
                 .DistinctBy(x => x.PointId).ToArray();
 
-            foreach (var station in stations) _queueProcessor.Enqueue(station);
+            foreach (var station in stations)
+            {
+                if (string.IsNullOrWhiteSpace(station.NameOfPoint) || string.IsNullOrWhiteSpace(station.PointId))
+                {
+                    _logger.LogWarning("Skipping station with empty name or point ID: {Station}",
+                        JsonConvert.SerializeObject(station));
+                    continue;
+                }
+
+                if (_enqueuedStations.Contains(station.NameOfPoint))
+                {
+                    _logger.LogDebug("Station {StationName} with PointId {PointId} already enqueued, skipping",
+                        station.NameOfPoint, station.PointId);
+                    continue;
+                }
+
+                _queueProcessor.Enqueue(station);
+                _enqueuedStations.Add(station.NameOfPoint);
+            }
         }
         catch (Exception e)
         {
@@ -210,6 +236,40 @@ public class StationAnalyzerService : IHostedService
 
                     _logger.LogInformation("Fetching OSM data for station {StationName}", station.NameOfPoint);
                     var osmData = await _osmApiClient.GetSignalBoxByNameAsync(station.NameOfPoint);
+
+                    if (osmData == null)
+                    {
+                        var altName = station.NameOfPoint
+                            .Replace("Much.", "Muchowiec ")
+                            .Replace("M.", "Muchowiec ")
+                            .Replace("M ", "Muchowiec ")
+                            .Replace("P.", "Południowa ")
+                            .Replace("P ", "Południowa ")
+                            .Replace("Tow ", "Towarowa ")
+                            .Replace("Tow.", "Towarowa ")
+                            .Replace("Gł.", "Główny ")
+                            .Replace("Dąbr.", "Dąbrowa ")
+                            .Replace("Górn.", "Górnicza ")
+                            .Replace("Maz.", "Mazowiecki ")
+                            .Replace("Zach.", "Zachodnia ")
+                            .Replace("Wsch.", "Wschodnia ")
+                            .Replace("Kr.", "Kraków ")
+                            .Replace("Żakow.", "Żakowice ")
+                            .Replace("Zakow.", "Zakowice ")
+                            .Replace("Kam.", "Kamienna ")
+                            .Replace("Roz.", "Rozdroże ")
+                            .Replace(".", "")
+                            .Replace("  ", " ") // Normalize spaces
+                            .Trim();
+
+                        if (altName != station.NameOfPoint)
+                        {
+                            _logger.LogInformation("Trying alternative name {AltName} for station {StationName}",
+                                altName, station.NameOfPoint);
+
+                            osmData = await _osmApiClient.GetSignalBoxByNameAsync(altName);
+                        }
+                    }
 
                     if (osmData != null)
                     {
@@ -260,6 +320,7 @@ public class StationAnalyzerService : IHostedService
                         _notFoundStations.Add(station.NameOfPoint);
                         _logger.LogWarning("No OSM data found for station {StationName}",
                             station.NameOfPoint);
+                        SaveNotFoundStations();
                     }
                 }
                 catch (Exception ex)
@@ -311,6 +372,8 @@ public class StationAnalyzerService : IHostedService
                     var notFoundJson = File.ReadAllText(NotFoundStationsFilePath);
                     _notFoundStations.UnionWith(JsonConvert.DeserializeObject<HashSet<string>>(notFoundJson) ?? []);
                 }
+
+                NotFoundCountGauge.Set(_notFoundStations.Count);
             }
             catch (Exception ex)
             {
@@ -330,18 +393,32 @@ public class StationAnalyzerService : IHostedService
                     Directory.CreateDirectory(DataDirectory);
 
                 var json = JsonConvert.SerializeObject(_stations, Formatting.Indented);
-                File.WriteAllText(StationsFilePath, json);
+                var tempFilePath = StationsFilePath + ".tmp";
+                File.WriteAllText(tempFilePath, json);
+                File.Move(tempFilePath, StationsFilePath, true);
                 StationCountGauge.Set(_stations.Count);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to save stations to file {FilePath}", StationsFilePath);
             }
+        }
+    }
 
+    private void SaveNotFoundStations()
+    {
+        lock (_lock)
+        {
             try
             {
+                if (!Directory.Exists(DataDirectory))
+                    Directory.CreateDirectory(DataDirectory);
+
                 var notFoundJson = JsonConvert.SerializeObject(_notFoundStations, Formatting.Indented);
-                File.WriteAllText(NotFoundStationsFilePath, notFoundJson);
+                var tempFilePath = NotFoundStationsFilePath + ".tmp";
+                File.WriteAllText(tempFilePath, notFoundJson);
+                File.Move(tempFilePath, NotFoundStationsFilePath, true);
+                NotFoundCountGauge.Set(_notFoundStations.Count);
             }
             catch (Exception ex)
             {
