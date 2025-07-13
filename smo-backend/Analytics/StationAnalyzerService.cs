@@ -13,6 +13,7 @@ public class StationAnalyzerService : IHostedService
 {
     private static readonly string DataDirectory = Path.Combine(AppContext.BaseDirectory, "data", "stations");
     private static readonly string StationsFilePath = Path.Combine(DataDirectory, "stations.json");
+    private static readonly string NotFoundStationsFilePath = Path.Combine(DataDirectory, "not-found-stations.json");
 
     private static readonly Gauge StationCountGauge = Metrics
         .CreateGauge("smo_known_station_count", "Number of known stations loaded from the data file");
@@ -21,16 +22,18 @@ public class StationAnalyzerService : IHostedService
         .CreateGauge("smo_station_timetable_analyzer_queue_length", "Length of the station timetable analyzer queue");
 
     private readonly Lock _lock = new();
-    private List<Station> _stations = [];
-
-    private TimedFunction? _autoSaveFunction;
-
-    private readonly QueueProcessor<TimetableEntry> _queueProcessor;
 
     private readonly ILogger<StationAnalyzerService> _logger;
+
+    private readonly HashSet<string> _notFoundStations = [];
+    private readonly OsmApiClient _osmApiClient;
+
+    private readonly QueueProcessor<TimetableEntry> _queueProcessor;
     private readonly StationDataService _stationDataService;
     private readonly TimetableDataService _timetableDataService;
-    private readonly OsmApiClient _osmApiClient;
+
+    private TimedFunction? _autoSaveFunction;
+    private List<Station> _stations = [];
 
     /// <summary>
     /// Service to analyze and manage station data.
@@ -177,8 +180,6 @@ public class StationAnalyzerService : IHostedService
         }
     }
 
-    private readonly HashSet<string> _notFoundStations = [];
-
     private async Task ProcessStation(TimetableEntry station)
     {
         Station? existingStation;
@@ -281,19 +282,41 @@ public class StationAnalyzerService : IHostedService
             if (!Directory.Exists(DataDirectory))
                 Directory.CreateDirectory(DataDirectory);
 
-            if (File.Exists(StationsFilePath))
+            try
             {
-                var json = File.ReadAllText(StationsFilePath);
-                _stations = JsonConvert.DeserializeObject<List<Station>>(json) ?? [];
+                if (File.Exists(StationsFilePath))
+                {
+                    var json = File.ReadAllText(StationsFilePath);
+                    _stations = JsonConvert.DeserializeObject<List<Station>>(json) ?? [];
+                }
+                else
+                {
+                    _stations = [];
+                }
             }
-            else
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to load stations from file {FilePath}", StationsFilePath);
                 _stations = [];
             }
 
             _stations = _stations.DistinctBy(s => s.Name).ToList();
 
             StationCountGauge.Set(_stations.Count);
+
+            try
+            {
+                if (File.Exists(NotFoundStationsFilePath))
+                {
+                    var notFoundJson = File.ReadAllText(NotFoundStationsFilePath);
+                    _notFoundStations.UnionWith(JsonConvert.DeserializeObject<HashSet<string>>(notFoundJson) ?? []);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load not found stations from file {FilePath}",
+                    NotFoundStationsFilePath);
+            }
         }
     }
 
@@ -313,6 +336,17 @@ public class StationAnalyzerService : IHostedService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to save stations to file {FilePath}", StationsFilePath);
+            }
+
+            try
+            {
+                var notFoundJson = JsonConvert.SerializeObject(_notFoundStations, Formatting.Indented);
+                File.WriteAllText(NotFoundStationsFilePath, notFoundJson);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save not found stations to file {FilePath}",
+                    NotFoundStationsFilePath);
             }
         }
     }

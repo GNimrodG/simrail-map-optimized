@@ -2,6 +2,8 @@
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
+using Newtonsoft.Json;
+using Npgsql;
 using Prometheus;
 using SMOBackend.Data;
 using SMOBackend.Models;
@@ -9,6 +11,8 @@ using SMOBackend.Models.Entity;
 using SMOBackend.Models.Trains;
 using SMOBackend.Services;
 using SMOBackend.Utils;
+
+// ReSharper disable FormatStringProblem
 
 namespace SMOBackend.Analytics;
 
@@ -176,32 +180,61 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         using var scope = _scopeFactory.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-        // optimized query to get all signals with their connections
         const string sql = """
-                           SELECT signals.name,
-                                  ST_X(signals.location) as longitude,
-                                  ST_Y(signals.location) as latitude,
-                                  extra,
-                                  accuracy,
-                                  type,
-                                  role,
-                                  prev_finalized,
-                                  next_finalized,
-                                  prev_regex,
-                                  next_regex,
-                                  ARRAY_TO_STRING(ARRAY_AGG(DISTINCT (p.prev || ':' || COALESCE(p.vmax::varchar, ''))), ',') as prev_signals,
-                                  ARRAY_TO_STRING(ARRAY_AGG(DISTINCT (n.next || ':' || COALESCE(n.vmax::varchar, ''))), ',') as next_signals
-                           FROM signals
-                                    LEFT JOIN signal_connections p ON signals.name = p.next
-                                    LEFT JOIN signal_connections n ON signals.name = n.prev
-                           GROUP BY signals.name
+                           SELECT s.name,
+                                  ST_X(s.location) as longitude,
+                                  ST_Y(s.location) as latitude,
+                                  s.extra,
+                                  s.accuracy,
+                                  s.type,
+                                  s.role,
+                                  s.prev_finalized,
+                                  s.next_finalized,
+                                  s.prev_regex,
+                                  s.next_regex,
+                                  COALESCE(
+                                      json_agg(
+                                          json_build_object('name', p.prev, 'vmax', p.vmax)
+                                      ) FILTER (WHERE p.prev IS NOT NULL),
+                                      '[]'::json
+                                  ) as prev_signals,
+                                  COALESCE(
+                                      json_agg(
+                                          json_build_object('name', n.next, 'vmax', n.vmax)
+                                      ) FILTER (WHERE n.next IS NOT NULL),
+                                      '[]'::json
+                                  ) as next_signals
+                           FROM signals s
+                           LEFT JOIN signal_connections p ON s.name = p.next
+                           LEFT JOIN signal_connections n ON s.name = n.prev
+                           GROUP BY s.name, s.location, s.extra, s.accuracy, s.type, s.role, 
+                                    s.prev_finalized, s.next_finalized, s.prev_regex, s.next_regex
+                           ORDER BY s.name
                            """;
 
-        return (await context.Database
-                .SqlQueryRaw<SignalProjection>(sql)
-                .ToListAsync())
-            .Select(s => s.ToSignalStatus()) // Convert to SignalStatus locally
-            .ToArray();
+        var results = await context.Database
+            .SqlQueryRaw<OptimizedSignalStatusProjection>(sql)
+            .ToListAsync();
+
+        return results.Select(r => new SignalStatus
+        {
+            Name = r.Name,
+            Extra = r.Extra,
+            Accuracy = r.Accuracy,
+            Type = r.Type,
+            Role = r.Role,
+            PrevFinalized = r.PrevFinalized,
+            NextFinalized = r.NextFinalized,
+            PrevRegex = r.PrevRegex,
+            NextRegex = r.NextRegex,
+            Location = new(r.Longitude, r.Latitude) { SRID = 4326 },
+            PrevSignals = JsonConvert.DeserializeObject<List<SignalConnectionData>>(r.PrevSignals)
+                ?.Select(c => new SignalStatus.SignalConnection(c.Name, c.Vmax))
+                .ToArray() ?? [],
+            NextSignals = JsonConvert.DeserializeObject<List<SignalConnectionData>>(r.NextSignals)
+                ?.Select(c => new SignalStatus.SignalConnection(c.Name, c.Vmax))
+                .ToArray() ?? []
+        }).ToArray();
     }
 
 
@@ -420,6 +453,60 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         _logger.LogInformation("Signals updated successfully");
     }
 
+    private static async Task<Dictionary<string, MinimalSignalData>> GetRelevantSignalsOptimized(
+        string[] relevantSignalNames, SmoContext context)
+    {
+        if (relevantSignalNames.Length == 0)
+            return new();
+
+        const string sql = """
+                           SELECT s.name, s.accuracy, s.type, s.prev_finalized, s.next_finalized, 
+                                  s.prev_regex, s.next_regex,
+                                  COALESCE(
+                                      json_agg(
+                                          json_build_object('name', pc.prev, 'vmax', pc.vmax)
+                                      ) FILTER (WHERE pc.prev IS NOT NULL), 
+                                      '[]'::json
+                                  ) as prev_connections,
+                                  COALESCE(
+                                      json_agg(
+                                          json_build_object('name', nc.next, 'vmax', nc.vmax)
+                                      ) FILTER (WHERE nc.next IS NOT NULL), 
+                                      '[]'::json
+                                  ) as next_connections
+                           FROM signals s
+                           LEFT JOIN signal_connections pc ON s.name = pc.next
+                           LEFT JOIN signal_connections nc ON s.name = nc.prev
+                           WHERE s.name = ANY(@signalNames)
+                           GROUP BY s.name, s.accuracy, s.type, s.prev_finalized, s.next_finalized, 
+                                    s.prev_regex, s.next_regex
+                           """;
+
+        var signalData = await context.Database
+            .SqlQueryRaw<OptimizedSignalProjection>(sql,
+                new NpgsqlParameter("@signalNames", relevantSignalNames))
+            .ToListAsync();
+
+        return signalData.ToDictionary(
+            s => s.Name,
+            s => new MinimalSignalData(
+                s.Name,
+                s.Accuracy,
+                s.Type,
+                s.PrevFinalized,
+                s.NextFinalized,
+                s.PrevRegex,
+                s.NextRegex,
+                JsonConvert.DeserializeObject<List<SignalConnectionData>>(s.PrevConnections)
+                    ?.Select(c => new MinimalSignalData.SignalConnection(c.Name, c.Vmax))
+                    .ToList() ?? [],
+                JsonConvert.DeserializeObject<List<SignalConnectionData>>(s.NextConnections)
+                    ?.Select(c => new MinimalSignalData.SignalConnection(c.Name, c.Vmax))
+                    .ToList() ?? []
+            )
+        );
+    }
+
     private async Task ProcessTrainData(Dictionary<string, Train[]> trains)
     {
         var runCount = ++_runCount;
@@ -450,36 +537,9 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         using var scope = _scopeFactory.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-        var signals = (await
-                context.Signals
-                    .AsNoTracking()
-                    .Where(s => relevantSignals.Contains(s.Name))
-                    .Select(signal => new
-                    {
-                        signal.Name,
-                        signal.Accuracy,
-                        signal.Type,
-                        signal.PrevFinalized,
-                        signal.NextFinalized,
-                        signal.PrevRegex,
-                        signal.NextRegex,
-                        PrevSignalConnections = signal.PrevSignalConnections.Select(c => new { c.Prev, c.VMAX }),
-                        NextSignalConnections = signal.NextSignalConnections.Select(c => new { c.Next, c.VMAX })
-                    })
-                    .ToListAsync())
-            .Select(s => new MinimalSignalData(
-                s.Name,
-                s.Accuracy,
-                s.Type,
-                s.PrevFinalized,
-                s.NextFinalized,
-                s.PrevRegex,
-                s.NextRegex,
-                s.PrevSignalConnections.Select(c => new MinimalSignalData.SignalConnection(c.Prev, c.VMAX)).ToList(),
-                s.NextSignalConnections.Select(c => new MinimalSignalData.SignalConnection(c.Next, c.VMAX)).ToList()))
-            .ToList();
-
-        var signalLookup = signals.ToDictionary(s => s.Name);
+        // Use the optimized query method instead of the old EF query
+        var signalLookup = await GetRelevantSignalsOptimized(relevantSignals, context);
+        var signals = signalLookup.Values.ToList();
 
         // Important: as these are all the trains in every server, one signal can change multiple times
         foreach (var train in allTrains)
@@ -981,50 +1041,6 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         DateTime TimeStamp,
         double Speed);
 
-    public class SignalProjection
-    {
-        public string Name { get; set; } = string.Empty;
-        public double Longitude { get; set; }
-        public double Latitude { get; set; }
-        public string Extra { get; set; } = string.Empty;
-        public double Accuracy { get; set; }
-        public string? Type { get; set; }
-        public string? Role { get; set; }
-        public bool PrevFinalized { get; set; }
-        public bool NextFinalized { get; set; }
-        public string? PrevRegex { get; set; }
-        public string? NextRegex { get; set; }
-        public string PrevSignals { get; set; } = string.Empty;
-        public string NextSignals { get; set; } = string.Empty;
-
-        public SignalStatus ToSignalStatus()
-        {
-            return new()
-            {
-                Name = Name,
-                Extra = Extra,
-                Accuracy = Accuracy,
-                Type = Type,
-                Role = Role,
-                PrevFinalized = PrevFinalized,
-                NextFinalized = NextFinalized,
-                PrevRegex = PrevRegex,
-                NextRegex = NextRegex,
-                Location = new(Longitude, Latitude) { SRID = 4326 },
-                PrevSignals = PrevSignals
-                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(s => new SignalStatus.SignalConnection(s.Split(':')[0],
-                        short.TryParse(s.Split(':')[1], out var vmax) ? vmax : null))
-                    .ToArray(),
-                NextSignals = NextSignals
-                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(s => new SignalStatus.SignalConnection(s.Split(':')[0],
-                        short.TryParse(s.Split(':')[1], out var vmax) ? vmax : null))
-                    .ToArray()
-            };
-        }
-    }
-
     private class MinimalSignalData(
         string name,
         double accuracy,
@@ -1079,5 +1095,44 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         }
 
         public record SignalConnection(string Signal, short? Vmax);
+    }
+
+    // ReSharper disable once ClassNeverInstantiated.Local
+    private sealed class OptimizedSignalProjection
+    {
+        public required string Name { get; init; }
+        public required double Accuracy { get; init; }
+        public required string? Type { get; init; }
+        public required bool PrevFinalized { get; init; }
+        public required bool NextFinalized { get; init; }
+        public required string? PrevRegex { get; init; }
+        public required string? NextRegex { get; init; }
+        public required string PrevConnections { get; init; }
+        public required string NextConnections { get; init; }
+    }
+
+    // ReSharper disable once ClassNeverInstantiated.Local
+    private sealed class OptimizedSignalStatusProjection
+    {
+        public required string Name { get; init; }
+        public required double Longitude { get; init; }
+        public required double Latitude { get; init; }
+        public required string Extra { get; init; }
+        public required double Accuracy { get; init; }
+        public required string? Type { get; init; }
+        public required string? Role { get; init; }
+        public required bool PrevFinalized { get; init; }
+        public required bool NextFinalized { get; init; }
+        public required string? PrevRegex { get; init; }
+        public required string? NextRegex { get; init; }
+        public required string PrevSignals { get; init; }
+        public required string NextSignals { get; init; }
+    }
+
+    // This can remain a struct since it's only used for JSON deserialization
+    private readonly struct SignalConnectionData
+    {
+        public required string Name { get; init; }
+        public required short? Vmax { get; init; }
     }
 }

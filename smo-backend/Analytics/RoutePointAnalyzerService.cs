@@ -21,7 +21,7 @@ namespace SMOBackend.Analytics;
 /// <param name="RunId">The run identifier</param>
 /// <param name="TrainId">The train identifier</param>
 /// <param name="Count">The number of route points in this group</param>
-public record RoutePointGroup(string RouteId, string RunId, string TrainId, int Count);
+public record RoutePointGroup(string RouteId, string RunId, string TrainId);
 
 /// <summary>
 /// Service for analyzing route points with optimized performance for high-throughput scenarios.
@@ -49,7 +49,7 @@ public class RoutePointAnalyzerService : IHostedService
     /// <summary>
     ///     Maximum degree of parallelism for train data processing.
     /// </summary>
-    private static readonly int MaxConcurrency = Math.Min(Environment.ProcessorCount * 2, 20);
+    private static readonly int MaxConcurrency = Math.Min(Environment.ProcessorCount * 2, 4);
 
     /// <summary>
     ///     Prometheus gauge for monitoring route point queue size.
@@ -241,7 +241,7 @@ public class RoutePointAnalyzerService : IHostedService
 
             // Convert to records after materialization
             var routePointGroupRecords = routePointGroups
-                .Select(g => new RoutePointGroup(g.RouteId, g.RunId, g.TrainId, g.Count))
+                .Select(g => new RoutePointGroup(g.RouteId, g.RunId, g.TrainId))
                 .ToList();
 
             // Filter out active trains and process in batches
@@ -529,7 +529,7 @@ public class RoutePointAnalyzerService : IHostedService
         var tasks = new List<Task>();
 
         // Process trains in parallel with controlled concurrency
-        foreach (var trainBatch in trainsWithLocation.Chunk(100)) // Process in chunks of 100
+        foreach (var trainBatch in trainsWithLocation.Chunk(50))
         {
             await semaphore.WaitAsync();
 
@@ -667,8 +667,8 @@ public class RoutePointAnalyzerService : IHostedService
                                $6
                            ) as distance
                            FROM route_points
-                           WHERE route_id = $2 
-                             AND run_id = $3 
+                           WHERE route_id = $2
+                             AND run_id = $3
                              AND train_id = $4
                              AND created_at > $5
                            """;
@@ -705,8 +705,8 @@ public class RoutePointAnalyzerService : IHostedService
         command.Parameters.Add(p6);
 
         await context.Database.OpenConnectionAsync();
-
         await using var reader = await command.ExecuteReaderAsync();
+
         if (await reader.ReadAsync())
             return reader.GetDouble(0);
 
@@ -728,7 +728,11 @@ public class RoutePointAnalyzerService : IHostedService
             // Optimized query with better indexing hints
             const string sql = """
                                WITH valid_runs AS (
-                                   SELECT route_id, train_id, run_id, MAX(created_at) as latest
+                                   SELECT 
+                                       route_id, 
+                                       train_id, 
+                                       run_id, 
+                                       MAX(created_at) as latest
                                    FROM route_points 
                                    WHERE route_id = @trainNoLocal
                                    GROUP BY route_id, train_id, run_id
@@ -737,16 +741,20 @@ public class RoutePointAnalyzerService : IHostedService
                                    LIMIT 10
                                ),
                                route_coords AS (
-                                   SELECT rp.route_id, rp.train_id, rp.run_id, 
-                                          ST_X(rp.point) as x, ST_Y(rp.point) as y
+                                   SELECT 
+                                       rp.route_id, 
+                                       rp.train_id, 
+                                       rp.run_id, 
+                                       ST_X(rp.point) as x,
+                                       ST_Y(rp.point) as y,
+                                       rp.created_at
                                    FROM route_points rp
                                    INNER JOIN valid_runs vr ON rp.route_id = vr.route_id 
                                                            AND rp.train_id = vr.train_id 
                                                            AND rp.run_id = vr.run_id
                                    ORDER BY rp.run_id, rp.created_at
                                )
-                               SELECT route_id, train_id, run_id, 
-                                      ST_AsText(ST_MakeLine(ST_Point(x, y) ORDER BY created_at)) as line_wkt
+                               SELECT ST_AsText(ST_MakeLine(ST_Point(x, y) ORDER BY created_at)) as line_wkt
                                FROM route_coords
                                GROUP BY route_id, train_id, run_id
                                """;
@@ -804,7 +812,7 @@ public class RoutePointAnalyzerService : IHostedService
         {
             return await GetFilteredRouteLines(
                 "WHERE next_signal = @signalId",
-                new("@signalId", signalId),
+                [new("@signalId", signalId)],
                 maxLines);
         }
         catch (Exception ex)
@@ -823,8 +831,7 @@ public class RoutePointAnalyzerService : IHostedService
         {
             return await GetFilteredRouteLines(
                 "WHERE prev_signal = @prevSignalId AND next_signal = @nextSignalId",
-                new("@prevSignalId", prevSignalId),
-                new("@nextSignalId", nextSignalId),
+                [new("@prevSignalId", prevSignalId), new("@nextSignalId", nextSignalId)],
                 maxLines);
         }
         catch (Exception ex)
@@ -838,7 +845,7 @@ public class RoutePointAnalyzerService : IHostedService
     /// <summary>
     /// Optimized helper method using raw SQL for better performance.
     /// </summary>
-    private async Task<string[]> GetFilteredRouteLines(string whereClause, NpgsqlParameter parameter, int maxLines)
+    private async Task<string[]> GetFilteredRouteLines(string whereClause, NpgsqlParameter[] parameters, int maxLines)
     {
         using var scope = _scopeFactory.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
@@ -864,49 +871,12 @@ public class RoutePointAnalyzerService : IHostedService
                    LIMIT @maxLines
                    """;
 
-        var parameters = new List<NpgsqlParameter> { parameter, new("@maxLines", maxLines) };
+        var allParams = new List<NpgsqlParameter>();
+        allParams.AddRange(parameters);
+        allParams.Add(new("@maxLines", maxLines));
 
         var results = await context.Database
-            .SqlQueryRaw<string>(sql, parameters.ToArray())
-            .ToArrayAsync();
-
-        return results;
-    }
-
-    /// <summary>
-    ///     Overload for multiple parameters.
-    /// </summary>
-    private async Task<string[]> GetFilteredRouteLines(string whereClause, NpgsqlParameter parameter1,
-        NpgsqlParameter parameter2, int maxLines)
-    {
-        using var scope = _scopeFactory.CreateScope();
-        await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
-
-        var sql = $"""
-                   WITH filtered_points AS (
-                       SELECT train_id, run_id, point, created_at
-                       FROM route_points
-                       {whereClause}
-                       ORDER BY created_at
-                   ),
-                   grouped_lines AS (
-                       SELECT train_id, run_id, 
-                              ST_AsText(ST_MakeLine(point ORDER BY created_at)) as line_wkt,
-                              COUNT(*) as point_count
-                       FROM filtered_points
-                       GROUP BY train_id, run_id
-                       HAVING COUNT(*) > 2
-                   )
-                   SELECT line_wkt
-                   FROM grouped_lines
-                   ORDER BY point_count DESC
-                   LIMIT @maxLines
-                   """;
-
-        var parameters = new[] { parameter1, parameter2, new NpgsqlParameter("@maxLines", maxLines) };
-
-        var results = await context.Database
-            .SqlQueryRaw<string>(sql, parameters)
+            .SqlQueryRaw<string>(sql, allParams.ToArray())
             .ToArrayAsync();
 
         return results;
