@@ -230,9 +230,11 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             Location = new(r.Longitude, r.Latitude) { SRID = 4326 },
             PrevSignals = JsonConvert.DeserializeObject<List<SignalConnectionData>>(r.PrevSignals)
                 ?.Select(c => new SignalStatus.SignalConnection(c.Name, c.Vmax))
+                .DistinctBy(x => x.Name)
                 .ToArray() ?? [],
             NextSignals = JsonConvert.DeserializeObject<List<SignalConnectionData>>(r.NextSignals)
                 ?.Select(c => new SignalStatus.SignalConnection(c.Name, c.Vmax))
+                .DistinctBy(x => x.Name)
                 .ToArray() ?? []
         }).ToArray();
     }
