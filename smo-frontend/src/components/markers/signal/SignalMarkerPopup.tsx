@@ -3,15 +3,15 @@ import ChipDelete from "@mui/joy/ChipDelete";
 import Stack from "@mui/joy/Stack";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
-import {type FunctionComponent, useCallback, useContext, useMemo, useState, useTransition} from "react";
-import {Trans, useTranslation} from "react-i18next";
-import {useMap} from "react-leaflet";
+import { type FunctionComponent, useCallback, useContext, useMemo, useState, useTransition } from "react";
+import { Trans, useTranslation } from "react-i18next";
+import { useMap } from "react-leaflet";
 
-import {dataProvider} from "../../../utils/data-manager.ts";
-import {findStationForSignal, goToStation} from "../../../utils/geom-utils.ts";
-import MapLinesContext, {MapLineData} from "../../../utils/map-lines-context.ts";
-import {SignalStatus, Train} from "../../../utils/types.ts";
-import {getDistanceColorForSignal, getSpeedColorForSignal} from "../../../utils/ui.ts";
+import { dataProvider } from "../../../utils/data-manager.ts";
+import { findStationForSignal, goToStation } from "../../../utils/geom-utils.ts";
+import MapLinesContext, { MapLineData } from "../../../utils/map-lines-context.ts";
+import { SignalStatus, Train } from "../../../utils/types.ts";
+import { getCoordsFromLineString, getDistanceColorForSignal, getSpeedColorForSignal } from "../../../utils/ui.ts";
 import Loading from "../../Loading.tsx";
 
 export interface SignalMarkerPopupProps {
@@ -27,7 +27,7 @@ const SPEED_COLORS: Record<number, string> = {
   130: "#00FF00", // green
   100: "#FFFF00", // yellow
   60: "#FFA500", // orange
-    50: "#FFD700", // orange-light
+  50: "#FFD700", // orange-light
   40: "#FF0000", // red
   20: "#FFFFFF", // white
 };
@@ -69,7 +69,7 @@ const SignalMarkerPopup: FunctionComponent<SignalMarkerPopupProps> = ({
   const { t } = useTranslation("translation", { keyPrefix: "SignalMarker" });
   const { mapLines, setMapLines } = useContext(MapLinesContext);
   const [isPending, startTransition] = useTransition();
-    const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const trainsAhead = useMemo(
     () =>
@@ -81,283 +81,280 @@ const SignalMarkerPopup: FunctionComponent<SignalMarkerPopupProps> = ({
     [signal.TrainsAhead, _trainsAhead],
   );
 
-    const showSignalLines = useCallback(
-        async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-            setIsLoading(true);
-            const lines: MapLineData["lines"] = [];
-            let i = 0;
+  const showSignalLines = useCallback(
+    async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+      setIsLoading(true);
+      const lines: MapLineData["lines"] = [];
+      let i = 0;
 
-            if (!e.shiftKey) {
-                for (const nextSignal of signal.NextSignals) {
-                    const nextSignalData = dataProvider.signalsData$.value.find((s) => s.Name === nextSignal.Name);
-                    if (nextSignalData) {
-                        lines.push({
-                            label: `${signal.Name} -> ${nextSignal.Name} (${nextSignal.Vmax != null ? (nextSignal.Vmax === 32767 ? "VMAX" : nextSignal.Vmax + " km/h") : "?"})`,
-                            color: NEXT_COLOR,
-                            color2: (nextSignal.Vmax && SPEED_COLORS[nextSignal.Vmax]) || undefined,
-                            coords: [
-                                [signal.Location.Y, signal.Location.X],
-                                [nextSignalData.Location.Y, nextSignalData.Location.X],
-                            ],
-                            index: i++,
-                        });
-                    }
+      if (!e.shiftKey) {
+        for (const nextSignal of signal.NextSignals) {
+          const nextSignalData = dataProvider.signalsData$.value.find((s) => s.Name === nextSignal.Name);
+          if (nextSignalData) {
+            lines.push({
+              label: `${signal.Name} -> ${nextSignal.Name} (${nextSignal.Vmax != null ? (nextSignal.Vmax === 32767 ? "VMAX" : nextSignal.Vmax + " km/h") : "?"})`,
+              color: NEXT_COLOR,
+              color2: (nextSignal.Vmax && SPEED_COLORS[nextSignal.Vmax]) || undefined,
+              coords: [
+                [signal.Location.Y, signal.Location.X],
+                [nextSignalData.Location.Y, nextSignalData.Location.X],
+              ],
+              index: i++,
+            });
+          }
+        }
+
+        for (const prevSignal of signal.PrevSignals) {
+          const prevSignalData = dataProvider.signalsData$.value.find((s) => s.Name === prevSignal.Name);
+          if (prevSignalData) {
+            lines.push({
+              label: `${prevSignal.Name} -> ${signal.Name} (${prevSignal.Vmax != null ? (prevSignal.Vmax === 32767 ? "VMAX" : prevSignal.Vmax + " km/h") : "?"})`,
+              color: PREV_COLOR,
+              color2: (prevSignal.Vmax && SPEED_COLORS[prevSignal.Vmax]) || undefined,
+              coords: [
+                [signal.Location.Y, signal.Location.X],
+                [prevSignalData.Location.Y, prevSignalData.Location.X],
+              ],
+              index: i++,
+            });
+          }
+        }
+
+        setMapLines({ signal: signal.Name, lines });
+      }
+
+      if (!e.altKey) {
+        try {
+          for (const prevSignal of signal.PrevSignals) {
+            const prevSignalData = dataProvider.signalsData$.value.find((s) => s.Name === prevSignal.Name);
+            const signalLines = await dataProvider.getLinesForSignalConnection(prevSignal.Name, signal.Name);
+            if (signalLines && prevSignalData) {
+              lines.push(
+                ...signalLines.map((line, j) => {
+                  const coords = [
+                    [prevSignalData.Location.Y, prevSignalData.Location.X] as [number, number],
+                    ...getCoordsFromLineString(line),
+                    [signal.Location.Y, signal.Location.X] as [number, number],
+                  ];
+
+                  return {
+                    color: PREV_COLOR,
+                    color2: (prevSignal.Vmax && SPEED_COLORS[prevSignal.Vmax]) || undefined,
+                    coords,
+                    index: i++,
+                    width: 3,
+                    label:
+                      j === 0
+                        ? `${prevSignal.Name} -> ${signal.Name} (${prevSignal.Vmax != null ? (prevSignal.Vmax === 32767 ? "VMAX" : prevSignal.Vmax + " km/h") : "?"})`
+                        : undefined,
+                  };
+                }),
+              );
+            }
+          }
+        } catch (e) {
+          console.warn(`Failed to get lines for signal ${signal.Name}`, e);
+        }
+
+        try {
+          for (const nextSignal of signal.NextSignals) {
+            const nextSignalData = dataProvider.signalsData$.value.find((s) => s.Name === nextSignal.Name);
+            const signalLines = await dataProvider.getLinesForSignalConnection(signal.Name, nextSignal.Name);
+            if (signalLines && nextSignalData) {
+              lines.push(
+                ...signalLines.map((line, j) => {
+                  const coords = [
+                    [signal.Location.Y, signal.Location.X] as [number, number],
+                    ...getCoordsFromLineString(line),
+                    [nextSignalData.Location.Y, nextSignalData.Location.X] as [number, number],
+                  ];
+
+                  return {
+                    color: NEXT_COLOR,
+                    color2: (nextSignal.Vmax && SPEED_COLORS[nextSignal.Vmax]) || undefined,
+                    coords,
+                    index: i++,
+                    width: 3,
+                    label:
+                      j === 0
+                        ? `${signal.Name} -> ${nextSignal.Name} (${nextSignal.Vmax != null ? (nextSignal.Vmax === 32767 ? "VMAX" : nextSignal.Vmax + " km/h") : "?"})`
+                        : undefined,
+                  };
+                }),
+              );
+            }
+          }
+        } catch (e) {
+          console.warn(`Failed to get lines for signal connections from ${signal.Name}`, e);
+        }
+
+        setMapLines({ signal: signal.Name, lines: [...lines] });
+      }
+
+      setIsLoading(false);
+    },
+    [signal.Location.Y, signal.Location.X, signal.Name, signal.NextSignals, signal.PrevSignals, setMapLines],
+  );
+
+  const showSignalLinesFurther = useCallback(
+    async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+      try {
+        setIsLoading(true);
+        const MAX_LAYER = 20;
+        const MAX_STACK_SIZE = 10;
+        const lines: MapLineData["lines"] = [];
+        let counter = 0;
+
+        // Next signals
+        {
+          let stack = [signal];
+          let newStack: SignalStatus[] = [];
+          let layer = 0;
+
+          while (stack.length > 0 && layer < MAX_LAYER) {
+            for (const signal of stack) {
+              for (const nextSignal of signal.NextSignals) {
+                const prevSignalData = dataProvider.signalsData$.value.find((s) => s.Name === nextSignal.Name);
+                if (prevSignalData) {
+                  const color = darkenColor(
+                    layer % 2 === 0 ? NEXT_COLOR : NEXT_FURTHER_COLOR,
+                    (layer / MAX_LAYER) * 100,
+                  );
+                  const color2 = (nextSignal.Vmax && SPEED_COLORS[nextSignal.Vmax]) || undefined;
+
+                  lines.push({
+                    label: `${signal.Name} -> ${nextSignal.Name} (${nextSignal.Vmax != null ? (nextSignal.Vmax === 32767 ? "VMAX" : nextSignal.Vmax + " km/h") : "?"})`,
+                    color,
+                    color2,
+                    coords: [
+                      [signal.Location.Y, signal.Location.X],
+                      [prevSignalData.Location.Y, prevSignalData.Location.X],
+                    ],
+                    index: counter++,
+                  });
+
+                  const signalLines = await dataProvider.getLinesForSignalConnection(signal.Name, nextSignal.Name);
+                  if (signalLines) {
+                    lines.push(
+                      ...signalLines.map((line, i) => {
+                        const coords = [
+                          [signal.Location.Y, signal.Location.X] as [number, number],
+                          ...getCoordsFromLineString(line),
+                          [prevSignalData.Location.Y, prevSignalData.Location.X] as [number, number],
+                        ];
+
+                        return {
+                          color,
+                          color2,
+                          coords,
+                          index: counter++,
+                          width: 3,
+                          label:
+                            i === 0
+                              ? `${signal.Name} -> ${nextSignal.Name} (${nextSignal.Vmax != null ? (nextSignal.Vmax === 32767 ? "VMAX" : nextSignal.Vmax + " km/h") : "?"})`
+                              : undefined,
+                        };
+                      }),
+                    );
+                  }
+
+                  if (newStack.length < MAX_STACK_SIZE) {
+                    newStack.push(prevSignalData);
+                  }
                 }
-
-                for (const prevSignal of signal.PrevSignals) {
-                    const prevSignalData = dataProvider.signalsData$.value.find((s) => s.Name === prevSignal.Name);
-                    if (prevSignalData) {
-                        lines.push({
-                            label: `${prevSignal.Name} -> ${signal.Name} (${prevSignal.Vmax != null ? (prevSignal.Vmax === 32767 ? "VMAX" : prevSignal.Vmax + " km/h") : "?"})`,
-                            color: PREV_COLOR,
-                            color2: (prevSignal.Vmax && SPEED_COLORS[prevSignal.Vmax]) || undefined,
-                            coords: [
-                                [signal.Location.Y, signal.Location.X],
-                                [prevSignalData.Location.Y, prevSignalData.Location.X],
-                            ],
-                            index: i++,
-                        });
-                    }
-                }
-
-                setMapLines({signal: signal.Name, lines});
+              }
             }
 
-            if (!e.altKey) {
-                try {
-                    for (const prevSignal of signal.PrevSignals) {
-                        const signalLines = await dataProvider.getLinesForSignalConnection(prevSignal.Name, signal.Name);
-                        if (signalLines) {
-                            lines.push(
-                                ...signalLines.map((line, j) => {
-                                    const coords = line
-                                        .replace("LINESTRING (", "")
-                                        .replace(")", "")
-                                        .split(", ")
-                                        .map((coord) => coord.split(" ").map(Number).toReversed()) as [number, number][];
+            stack = newStack;
+            newStack = [];
+            layer++;
+          }
+        }
 
-                                    coords.push([signal.Location.Y, signal.Location.X] as [number, number]);
+        // Previous signals
+        {
+          let stack = [signal];
+          let newStack: SignalStatus[] = [];
+          let layer = 0;
 
-                                    return {
-                                        color: PREV_COLOR,
-                                        color2: (prevSignal.Vmax && SPEED_COLORS[prevSignal.Vmax]) || undefined,
-                                        coords,
-                                        index: i++,
-                                        width: 3,
-                                        label:
-                                            j === 0
-                                                ? `${prevSignal.Name} -> ${signal.Name} (${prevSignal.Vmax != null ? (prevSignal.Vmax === 32767 ? "VMAX" : prevSignal.Vmax + " km/h") : "?"})`
-                                                : undefined,
-                                    };
-                                }),
-                            );
-                        }
+          while (stack.length > 0 && layer < MAX_LAYER) {
+            for (const signal of stack) {
+              for (const prevSignal of signal.PrevSignals) {
+                const prevSignalData = dataProvider.signalsData$.value.find((s) => s.Name === prevSignal.Name);
+                if (prevSignalData) {
+                  const color = darkenColor(
+                    layer % 2 === 0 ? PREV_COLOR : PREV_FURTHER_COLOR,
+                    (layer / MAX_LAYER) * 100,
+                  );
+
+                  const color2 = (prevSignal.Vmax && SPEED_COLORS[prevSignal.Vmax]) || undefined;
+
+                  if (!e.shiftKey) {
+                    lines.push({
+                      label: `${prevSignal.Name} -> ${signal.Name} (${prevSignal.Vmax != null ? (prevSignal.Vmax === 32767 ? "VMAX" : prevSignal.Vmax + " km/h") : "?"})`,
+                      color,
+                      color2,
+                      coords: [
+                        [signal.Location.Y, signal.Location.X],
+                        [prevSignalData.Location.Y, prevSignalData.Location.X],
+                      ],
+                      index: counter++,
+                    });
+                  }
+
+                  if (!e.altKey) {
+                    const signalLines = await dataProvider.getLinesForSignalConnection(
+                      prevSignalData.Name,
+                      signal.Name,
+                    );
+
+                    if (signalLines) {
+                      lines.push(
+                        ...signalLines.map((line, i) => {
+                          const coords = [
+                            [signal.Location.Y, signal.Location.X] as [number, number],
+                            ...getCoordsFromLineString(line),
+                            [prevSignalData.Location.Y, prevSignalData.Location.X] as [number, number],
+                          ];
+
+                          return {
+                            color,
+                            color2,
+                            coords,
+                            index: counter++,
+                            width: 3,
+                            label:
+                              i === 0
+                                ? `${prevSignal.Name} -> ${signal.Name} (${prevSignal.Vmax != null ? (prevSignal.Vmax === 32767 ? "VMAX" : prevSignal.Vmax + " km/h") : "?"})`
+                                : undefined,
+                          };
+                        }),
+                      );
                     }
-                } catch (e) {
-                    console.warn(`Failed to get lines for signal ${signal.Name}`, e);
+                  }
+
+                  if (newStack.length < MAX_STACK_SIZE) {
+                    newStack.push(prevSignalData);
+                  }
                 }
-
-                try {
-                    for (const nextSignal of signal.NextSignals) {
-                        const signalLines = await dataProvider.getLinesForSignalConnection(signal.Name, nextSignal.Name);
-                        if (signalLines) {
-                            lines.push(
-                                ...signalLines.map((line, j) => {
-                                    const coords = [
-                                        [signal.Location.Y, signal.Location.X] as [number, number],
-                                        ...(line
-                                            .replace("LINESTRING (", "")
-                                            .replace(")", "")
-                                            .split(", ")
-                                            .map((coord) => coord.split(" ").map(Number).toReversed()) as [number, number][]),
-                                    ];
-
-                                    return {
-                                        color: NEXT_COLOR,
-                                        color2: (nextSignal.Vmax && SPEED_COLORS[nextSignal.Vmax]) || undefined,
-                                        coords,
-                                        index: i++,
-                                        width: 3,
-                                        label:
-                                            j === 0
-                                                ? `${signal.Name} -> ${nextSignal.Name} (${nextSignal.Vmax != null ? (nextSignal.Vmax === 32767 ? "VMAX" : nextSignal.Vmax + " km/h") : "?"})`
-                                                : undefined,
-                                    };
-                                }),
-                            );
-                        }
-                    }
-                } catch (e) {
-                    console.warn(`Failed to get lines for signal connections from ${signal.Name}`, e);
-                }
-
-                setMapLines({signal: signal.Name, lines: [...lines]});
+              }
             }
 
-            setIsLoading(false);
-        },
-        [signal.Location.Y, signal.Location.X, signal.Name, signal.NextSignals, signal.PrevSignals, setMapLines],
-    );
+            stack = newStack;
+            newStack = [];
+            layer++;
+          }
+        }
 
-    const showSignalLinesFurther = useCallback(
-        async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-            try {
-                setIsLoading(true);
-                const MAX_LAYER = 20;
-                const MAX_STACK_SIZE = 10;
-                const lines: MapLineData["lines"] = [];
-                let counter = 0;
-
-                // Next signals
-                {
-                    let stack = [signal];
-                    let newStack: SignalStatus[] = [];
-                    let layer = 0;
-
-                    while (stack.length > 0 && layer < MAX_LAYER) {
-                        for (const signal of stack) {
-                            for (const nextSignal of signal.NextSignals) {
-                                const prevSignalData = dataProvider.signalsData$.value.find((s) => s.Name === nextSignal.Name);
-                                if (prevSignalData) {
-                                    const color = darkenColor(
-                                        layer % 2 === 0 ? NEXT_COLOR : NEXT_FURTHER_COLOR,
-                                        (layer / MAX_LAYER) * 100,
-                                    );
-                                    const color2 = (nextSignal.Vmax && SPEED_COLORS[nextSignal.Vmax]) || undefined;
-
-                                    lines.push({
-                                        label: `${signal.Name} -> ${nextSignal.Name} (${nextSignal.Vmax != null ? (nextSignal.Vmax === 32767 ? "VMAX" : nextSignal.Vmax + " km/h") : "?"})`,
-                                        color,
-                                        color2,
-                                        coords: [
-                                            [signal.Location.Y, signal.Location.X],
-                                            [prevSignalData.Location.Y, prevSignalData.Location.X],
-                                        ],
-                                        index: counter++,
-                                    });
-
-                                    const signalLines = await dataProvider.getLinesForSignalConnection(signal.Name, nextSignal.Name);
-                                    if (signalLines) {
-                                        lines.push(
-                                            ...signalLines.map((line, i) => {
-                                                const coords = line
-                                                    .replace("LINESTRING (", "")
-                                                    .replace(")", "")
-                                                    .split(", ")
-                                                    .map((coord) => coord.split(" ").map(Number).toReversed()) as [number, number][];
-
-                                                return {
-                                                    color,
-                                                    color2,
-                                                    coords,
-                                                    index: counter++,
-                                                    width: 3,
-                                                    label:
-                                                        i === 0
-                                                            ? `${signal.Name} -> ${nextSignal.Name} (${nextSignal.Vmax != null ? (nextSignal.Vmax === 32767 ? "VMAX" : nextSignal.Vmax + " km/h") : "?"})`
-                                                            : undefined,
-                                                };
-                                            }),
-                                        );
-                                    }
-
-                                    if (newStack.length < MAX_STACK_SIZE) {
-                                        newStack.push(prevSignalData);
-                                    }
-                                }
-                            }
-                        }
-
-                        stack = newStack;
-                        newStack = [];
-                        layer++;
-                    }
-                }
-
-                // Previous signals
-                {
-                    let stack = [signal];
-                    let newStack: SignalStatus[] = [];
-                    let layer = 0;
-
-                    while (stack.length > 0 && layer < MAX_LAYER) {
-                        for (const signal of stack) {
-                            for (const prevSignal of signal.PrevSignals) {
-                                const prevSignalData = dataProvider.signalsData$.value.find((s) => s.Name === prevSignal.Name);
-                                if (prevSignalData) {
-                                    const color = darkenColor(
-                                        layer % 2 === 0 ? PREV_COLOR : PREV_FURTHER_COLOR,
-                                        (layer / MAX_LAYER) * 100,
-                                    );
-
-                                    const color2 = (prevSignal.Vmax && SPEED_COLORS[prevSignal.Vmax]) || undefined;
-
-                                    if (!e.shiftKey) {
-                                        lines.push({
-                                            label: `${prevSignal.Name} -> ${signal.Name} (${prevSignal.Vmax != null ? (prevSignal.Vmax === 32767 ? "VMAX" : prevSignal.Vmax + " km/h") : "?"})`,
-                                            color,
-                                            color2,
-                                            coords: [
-                                                [signal.Location.Y, signal.Location.X],
-                                                [prevSignalData.Location.Y, prevSignalData.Location.X],
-                                            ],
-                                            index: counter++,
-                                        });
-                                    }
-
-                                    if (!e.altKey) {
-                                        const signalLines = await dataProvider.getLinesForSignalConnection(
-                                            prevSignalData.Name,
-                                            signal.Name,
-                                        );
-
-                                        if (signalLines) {
-                                            lines.push(
-                                                ...signalLines.map((line, i) => {
-                                                    const coords = line
-                                                        .replace("LINESTRING (", "")
-                                                        .replace(")", "")
-                                                        .split(", ")
-                                                        .map((coord) => coord.split(" ").map(Number).toReversed()) as [number, number][];
-
-                                                    return {
-                                                        color,
-                                                        color2,
-                                                        coords,
-                                                        index: counter++,
-                                                        width: 3,
-                                                        label:
-                                                            i === 0
-                                                                ? `${prevSignal.Name} -> ${signal.Name} (${prevSignal.Vmax != null ? (prevSignal.Vmax === 32767 ? "VMAX" : prevSignal.Vmax + " km/h") : "?"})`
-                                                                : undefined,
-                                                    };
-                                                }),
-                                            );
-                                        }
-                                    }
-
-                                    if (newStack.length < MAX_STACK_SIZE) {
-                                        newStack.push(prevSignalData);
-                                    }
-                                }
-                            }
-                        }
-
-                        stack = newStack;
-                        newStack = [];
-                        layer++;
-                    }
-                }
-
-                setMapLines({signal: signal.Name, lines});
-                setIsLoading(false);
-            } catch (e) {
-                console.warn(`Failed to get further lines for signal ${signal.Name}`, e);
-                setIsLoading(false);
-            }
-        },
-        [setMapLines, signal],
-    );
+        setMapLines({ signal: signal.Name, lines });
+        setIsLoading(false);
+      } catch (e) {
+        console.warn(`Failed to get further lines for signal ${signal.Name}`, e);
+        setIsLoading(false);
+      }
+    },
+    [setMapLines, signal],
+  );
 
   const station = useMemo(() => findStationForSignal(signal.Name), [signal.Name]);
 
@@ -417,7 +414,7 @@ const SignalMarkerPopup: FunctionComponent<SignalMarkerPopupProps> = ({
 
   return (
     <>
-        {(isPending || isLoading) && <Loading color="warning"/>}
+      {(isPending || isLoading) && <Loading color="warning" />}
       <Stack alignItems="center" spacing={1}>
         <Typography level="h3">{signal.Name}</Typography>
         {!!trains?.length && (
@@ -582,24 +579,24 @@ const SignalMarkerPopup: FunctionComponent<SignalMarkerPopupProps> = ({
                     </Typography>
                   </>
                 }>
-                  <Chip
-                      onClick={(e) =>
-                          startTransition(() => {
-                              showSignalLines(e);
-                          })
-                      }
-                      disabled={isPending || isLoading}>
-                      {t("ShowSignalLines")}
-                  </Chip>
+                <Chip
+                  onClick={(e) =>
+                    startTransition(() => {
+                      showSignalLines(e);
+                    })
+                  }
+                  disabled={isPending || isLoading}>
+                  {t("ShowSignalLines")}
+                </Chip>
               </Tooltip>
               <Tooltip color="danger" title={t("ShowSignalLinesFurther.Title")}>
-                  <Chip
-                      onClick={(e) =>
-                          startTransition(() => {
-                              showSignalLinesFurther(e);
-                          })
-                      }
-                      disabled={isPending || isLoading}>
+                <Chip
+                  onClick={(e) =>
+                    startTransition(() => {
+                      showSignalLinesFurther(e);
+                    })
+                  }
+                  disabled={isPending || isLoading}>
                   {t("ShowSignalLinesFurther.Description")}
                 </Chip>
               </Tooltip>

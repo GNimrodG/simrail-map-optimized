@@ -192,23 +192,21 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                                   s.next_finalized,
                                   s.prev_regex,
                                   s.next_regex,
-                                  COALESCE(
-                                      json_agg(
-                                          json_build_object('name', p.prev, 'vmax', p.vmax)
-                                      ) FILTER (WHERE p.prev IS NOT NULL),
-                                      '[]'::json
-                                  ) as prev_signals,
-                                  COALESCE(
-                                      json_agg(
-                                          json_build_object('name', n.next, 'vmax', n.vmax)
-                                      ) FILTER (WHERE n.next IS NOT NULL),
-                                      '[]'::json
-                                  ) as next_signals
+                                  COALESCE(prev_agg.prev_signals, '[]'::json) as prev_signals,
+                                  COALESCE(next_agg.next_signals, '[]'::json) as next_signals
                            FROM signals s
-                           LEFT JOIN signal_connections p ON s.name = p.next
-                           LEFT JOIN signal_connections n ON s.name = n.prev
-                           GROUP BY s.name, s.location, s.extra, s.accuracy, s.type, s.role, 
-                                    s.prev_finalized, s.next_finalized, s.prev_regex, s.next_regex
+                                    LEFT JOIN (
+                               SELECT next,
+                                      json_agg(json_build_object('name', prev, 'vmax', vmax)) as prev_signals
+                               FROM (SELECT DISTINCT next, prev, vmax FROM signal_connections) p
+                               GROUP BY next
+                           ) prev_agg ON s.name = prev_agg.next
+                                    LEFT JOIN (
+                               SELECT prev,
+                                      json_agg(json_build_object('name', next, 'vmax', vmax)) as next_signals
+                               FROM (SELECT DISTINCT prev, next, vmax FROM signal_connections) n
+                               GROUP BY prev
+                           ) next_agg ON s.name = next_agg.prev
                            ORDER BY s.name
                            """;
 

@@ -45,3 +45,11 @@ export function normalizeString(str: string): string {
     .replaceAll("ó", "o")
     .replaceAll("ś", "s");
 }
+
+export function getCoordsFromLineString(line: string): [number, number][] {
+  return line
+    .replace(/LINESTRING\s?\(/, "")
+    .replace(")", "")
+    .split(",")
+    .map((coord) => coord.split(" ").map(Number).toReversed()) as [number, number][];
+}
