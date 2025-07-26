@@ -557,7 +557,8 @@
       "Koluszki PZS R145",
       "Koluszki PZS R154",
       "Koluszki Bęzel.R154"
-    ]
+    ],
+    "IgnoredStations": ["Wągry", "Żakowice", "Chrusty Nowe"]
   },
   {
     "Name": "Łódź Widzew",

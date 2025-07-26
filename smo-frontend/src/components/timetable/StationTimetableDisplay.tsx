@@ -137,6 +137,11 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
         </thead>
         <tbody>
           {relevantTimetable.map((entry) => {
+            const localStationNames = new Set([
+              entry.stationName,
+              ...(entry.subStationEntries?.map((subEntry) => subEntry.stationName) ?? []),
+            ]);
+
             const train = dataProvider.trainsData$.value.find((x) => x.TrainNoLocal === entry.trainNoLocal);
             const trainDelays = train ? dataProvider.getDelaysForTrainSync(train.Id) : null;
             const lastDelay = Object.values(trainDelays ?? {}).slice(-1)[0] ?? null;
@@ -144,14 +149,15 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
             const passedBasedOnDepartureTime = isPastStation(entry, currentTime);
             const passedEarly = train && !passedBasedOnDepartureTime && departureDelay && departureDelay <= -60;
 
-            const isPrevStationTheNextStation =
-              train?.TrainData.VDDelayedTimetableIndex === entry.index - 1 && !trainDelays?.[entry.index - 1];
-            const isCurrentStationTheNextStation = isTrainAtPrevStation(train, entry, trainDelays);
-
             const isInsideStation =
-              isCurrentStationTheNextStation &&
               !!train?.TrainData.SignalInFront &&
-              findStationForSignal(train.TrainData.SignalInFront.split("@")[0])?.Name === entry.stationName;
+              localStationNames.has(findStationForSignal(train.TrainData.SignalInFront.split("@")[0])?.Name ?? "");
+
+            const isCurrentStationTheNextStation = isTrainAtPrevStation(train, entry, trainDelays);
+            const isPrevStationTheNextStation =
+              !isCurrentStationTheNextStation &&
+              train?.TrainData.VDDelayedTimetableIndex === entry.index - 1 &&
+              !trainDelays?.[entry.index - 1];
 
             const past =
               !isInsideStation &&
@@ -386,10 +392,13 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                 {/* Line */}
                 <td>
                   <Typography fontFamily="monospace" level="body-sm" sx={{ color: "inherit" }}>
-                    {}
-                    {[entry.line, ...(entry.subStationEntries?.map((subEntry) => subEntry.line) ?? [])]
-                      .filter((x, i, arr) => arr.indexOf(x) === i)
-                      .join(";")}
+                    <Stack>
+                      {[entry.line, ...(entry.subStationEntries?.map((subEntry) => subEntry.line) ?? [])]
+                        .filter((x, i, arr) => arr.indexOf(x) === i)
+                        .map((line, index) => (
+                          <span key={line + index}>{line}</span>
+                        ))}
+                    </Stack>
                   </Typography>
                 </td>
                 {/* Stop */}
