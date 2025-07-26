@@ -74,7 +74,14 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/dz3.jpg",
     "DispatchedBy": [],
     "Id": "6456644df5f64a4c09852a47",
-    "SubStations": ["Dąbrowa Górnicza Ząbkowice DZA", "Dąbrowa Górnicza Ząbkowice GTB"]
+    "SubStations": ["Dąbrowa Górnicza Ząbkowice DZA", "Dąbrowa Górnicza Ząbkowice GTB"],
+    "IgnoredStations": [
+      "Dąbrowa Górnicza Pogoria",
+      "Dąbrowa Górnicza Gołonóg",
+      "Dąbrowa Górnicza Sikorka",
+      "Chruszczobród",
+      "Wiesiółka"
+    ]
   },
   {
     "Name": "Dorota",
