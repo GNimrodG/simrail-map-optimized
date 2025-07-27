@@ -393,11 +393,25 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                 <td>
                   <Typography fontFamily="monospace" level="body-sm" sx={{ color: "inherit" }}>
                     <Stack>
-                      {[entry.line, ...(entry.subStationEntries?.map((subEntry) => subEntry.line) ?? [])]
-                        .filter((x, i, arr) => arr.indexOf(x) === i)
-                        .map((line, index) => (
-                          <span key={line + index}>{line}</span>
-                        ))}
+                      {[entry.line, ...(entry.subStationEntries?.map((subEntry) => subEntry.line) ?? [])].map(
+                        (line, index, arr) => (
+                          <>
+                            <Typography
+                              key={line + index}
+                              fontFamily="monospace"
+                              level="body-sm"
+                              textAlign="center"
+                              sx={{ color: "inherit" }}>
+                              {line}
+                            </Typography>
+                            {index < arr.length - 1 && (
+                              <Divider sx={{ width: "80%", margin: "0 auto" }}>
+                                <ArrowDownIcon />
+                              </Divider>
+                            )}
+                          </>
+                        ),
+                      )}
                     </Stack>
                   </Typography>
                 </td>

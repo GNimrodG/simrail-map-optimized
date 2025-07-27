@@ -118,7 +118,8 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/gr3.jpg",
     "DispatchedBy": [],
     "Id": "63f9f6c5b7b329ce5055892d",
-    "SubStations": ["Grodzisk Maz. R58", "Grodzisk Mazowiecki R64"]
+    "SubStations": ["Grodzisk Maz. R58", "Grodzisk Mazowiecki R64"],
+    "IgnoredStations": ["Milanówek", "Brwinów", "Parzniew", "Jaktorów", "Międzyborów"]
   },
   {
     "Name": "Idzikowice",
