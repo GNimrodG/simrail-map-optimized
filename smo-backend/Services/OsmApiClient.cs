@@ -16,7 +16,7 @@ public class OsmApiClient : IDisposable
     private readonly ILogger<OsmApiClient> _logger;
 
     // Cache for pending requests
-    private readonly ConcurrentDictionary<string, TaskCompletionSource<OSMWay?>> _pendingRequests = new();
+    private readonly ConcurrentDictionary<string, TaskCompletionSource<OSMType?>> _pendingRequests = new();
     private readonly Lock _timerLock = new();
     private volatile bool _timerScheduled;
 
@@ -44,7 +44,7 @@ public class OsmApiClient : IDisposable
     /// </summary>
     /// <param name="name">The name of the signal box to search for</param>
     /// <returns>The OSM way representing the signal box, or null if not found</returns>
-    public async Task<OSMWay?> GetSignalBoxByNameAsync(string name)
+    public async Task<OSMType?> GetSignalBoxByNameAsync(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
             return null;
@@ -77,7 +77,7 @@ public class OsmApiClient : IDisposable
             return;
 
         // Get all pending requests
-        var requestsToProcess = new Dictionary<string, TaskCompletionSource<OSMWay?>>();
+        var requestsToProcess = new Dictionary<string, TaskCompletionSource<OSMType?>>();
         while (!_pendingRequests.IsEmpty)
         {
             foreach (var kvp in _pendingRequests)
@@ -103,11 +103,10 @@ public class OsmApiClient : IDisposable
             var queryBuilder = new StringBuilder();
             queryBuilder.Append("[out:json];(");
 
-            foreach (var name in requestsToProcess.Keys)
+            foreach (var escapedName in requestsToProcess.Keys.Select(name => name.Replace("\"", "\\\"")))
             {
-                // Escape quotes in name for Overpass query
-                var escapedName = name.Replace("\"", "\\\"");
-                queryBuilder.Append($"way[\"name\"~\"{escapedName}\"][\"railway\"=\"signal_box\"];");
+                queryBuilder.Append(
+                    $"way[\"name\"~\"{escapedName}\"][\"railway\"=\"signal_box\"];node[\"name\"~\"{escapedName}\"][\"railway:ref\"][\"railway\"!=\"halt\"];");
             }
 
             queryBuilder.Append(");out center;");
@@ -121,7 +120,9 @@ public class OsmApiClient : IDisposable
 
             if (response.IsSuccessStatusCode)
             {
-                var osmResponse = await response.Content.ReadFromJsonAsync<OSMResponse>();
+                using var processingCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+                var osmResponse =
+                    await response.Content.ReadFromJsonAsync<OSMResponse>(processingCts.Token);
                 var elements = osmResponse?.Elements ?? [];
 
                 // Match results back to requests
@@ -132,7 +133,7 @@ public class OsmApiClient : IDisposable
                         e.Tags.TryGetValue("name", out var elementName) &&
                         elementName.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
 
-                    OSMWay? bestMatch = null;
+                    OSMType? bestMatch = null;
                     if (matchingElements.Count > 0)
                     {
                         // If multiple matches, pick the closest one (shortest name or exact match)
@@ -141,6 +142,7 @@ public class OsmApiClient : IDisposable
                                 e.Tags["name"].Equals(name, StringComparison.OrdinalIgnoreCase)
                                     ? 0
                                     : 1) // Exact matches first
+                            .ThenBy(e => e.Type == "way" ? 0 : 1) // Prioritize ways over nodes
                             .ThenBy(e => e.Tags["name"].Length) // Then shortest names
                             .ThenBy(e =>
                                 LevenshteinDistance(name.ToLowerInvariant(),

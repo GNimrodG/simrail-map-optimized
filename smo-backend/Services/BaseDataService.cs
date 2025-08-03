@@ -60,6 +60,7 @@ public abstract class BaseDataService<T>(
     /// <inheritdoc />
     public virtual Task StartAsync(CancellationToken cancellationToken)
     {
+        Thread.CurrentThread.Name = serviceId;
         logger.BeginScope("[{ServiceId}]", serviceId);
         logger.LogInformation("Starting {ServiceId} service with {FetchInterval}s interval", serviceId,
             GetFetchInterval().TotalSeconds);

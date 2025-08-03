@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Prometheus;
 using SMOBackend.Models;
+using SMOBackend.Models.OSM;
 using SMOBackend.Services;
 using SMOBackend.Utils;
 
@@ -294,6 +295,10 @@ public class StationAnalyzerService : IHostedService
                                     $"https://commons.wikimedia.org/wiki/Special:Redirect/file/{osmData.Tags["wikimedia_commons"]}";
                             }
 
+                            var (latitude, longitude) = osmData is OSMWay way
+                                ? (way.Center.Lat, way.Center.Lon)
+                                : ((osmData as OSMNode)?.Lat ?? 0.0, (osmData as OSMNode)?.Lon ?? 0.0);
+
                             // Create a new station if it doesn't exist
                             var newStation = new Station
                             {
@@ -304,8 +309,8 @@ public class StationAnalyzerService : IHostedService
                                 MainImageUrl = string.IsNullOrWhiteSpace(mainImageUrl) ? null : mainImageUrl,
                                 AdditionalImage1Url = null,
                                 AdditionalImage2Url = null,
-                                Latitude = osmData.Center.Lat,
-                                Longitude = osmData.Center.Lon,
+                                Latitude = latitude,
+                                Longitude = longitude,
                                 PointId = station.PointId,
                             };
 

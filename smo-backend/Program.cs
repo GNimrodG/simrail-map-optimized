@@ -190,25 +190,25 @@ var steamApiKey = Environment.GetEnvironmentVariable("STEAM_API_KEY")
 
 builder.Services.AddSingleton(new SteamApiClient(steamApiKey));
 
-// Data services
-builder.Services.AddHostedServiceSingleton<ServerDataService>();
-builder.Services.AddHostedServiceSingleton<TrainDataService>();
-builder.Services.AddHostedServiceSingleton<TrainPositionDataService>();
-builder.Services.AddHostedServiceSingleton<StationDataService>();
-builder.Services.AddHostedServiceSingleton<TimeDataService>();
-builder.Services.AddHostedServiceSingleton<TimetableDataService>();
+// Data services - High Priority (critical for application functionality)
+builder.Services.AddHighPriorityHostedService<ServerDataService>();
+builder.Services.AddHighPriorityHostedService<TrainDataService>();
+builder.Services.AddHighPriorityHostedService<TrainPositionDataService>();
+builder.Services.AddHighPriorityHostedService<StationDataService>();
+builder.Services.AddHighPriorityHostedService<TimeDataService>();
+builder.Services.AddHighPriorityHostedService<TimetableDataService>();
 
-// Analytic services
-builder.Services.AddHostedServiceSingleton<SignalAnalyzerService>();
-builder.Services.AddHostedServiceSingleton<TrainDelayAnalyzerService>();
-builder.Services.AddHostedServiceSingleton<TimetableAnalyzerService>();
-builder.Services.AddHostedServiceSingleton<RoutePointAnalyzerService>();
-builder.Services.AddHostedServiceSingleton<ServerRestartAnalyzerService>();
-builder.Services.AddHostedServiceSingleton<StationAnalyzerService>();
+// Analytic services - Low Priority (background processing)
+builder.Services.AddLowPriorityHostedService<SignalAnalyzerService>();
+builder.Services.AddLowPriorityHostedService<TrainDelayAnalyzerService>();
+builder.Services.AddLowPriorityHostedService<TimetableAnalyzerService>();
+builder.Services.AddLowPriorityHostedService<RoutePointAnalyzerService>();
+builder.Services.AddLowPriorityHostedService<ServerRestartAnalyzerService>();
+builder.Services.AddLowPriorityHostedService<StationAnalyzerService>();
 
-// Client services
+// Client services - Normal Priority
 builder.Services.AddSingleton<ClientManagerService>();
-builder.Services.AddHostedService<ClientDataSenderService>();
+builder.Services.AddNormalPriorityHostedService<ClientDataSenderService>();
 
 builder.Services.UseHttpClientMetrics();
 builder.Services.AddSystemMetrics(false);
