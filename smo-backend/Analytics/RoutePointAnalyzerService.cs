@@ -39,7 +39,7 @@ public class RoutePointAnalyzerService : IHostedService
     /// <summary>
     ///     Minimum distance between route points in meters to avoid duplicate entries.
     /// </summary>
-    private const double MinDistance = 100;
+    private const double MinDistance = 200;
 
     /// <summary>
     ///     Maximum batch size for database operations to optimize memory usage and performance.
