@@ -164,22 +164,41 @@ if (string.IsNullOrWhiteSpace(connectionString))
     );
 
 builder.Services.AddDbContextPool<SmoContext>(options =>
-    options
-        .UseNpgsql(
-            connectionString,
-            o => o.UseNetTopologySuite().ConfigureDataSource(dso => dso.Name = "smo-backend")
-        )
-        .EnableSensitiveDataLogging(builder.Environment.IsDevelopment())
-        .UseMemoryCache(
-            new MemoryCache(
-                new MemoryCacheOptions
-                {
-                    SizeLimit = 1024 * 1024 * 1024, // 1 GB
-                }
+        options
+            .UseNpgsql(
+                connectionString,
+                o => o.UseNetTopologySuite()
             )
-        )
-        .UseSnakeCaseNamingConvention()
-);
+            .EnableSensitiveDataLogging(builder.Environment.IsDevelopment())
+            .UseMemoryCache(
+                new MemoryCache(
+                    new MemoryCacheOptions
+                    {
+                        SizeLimit = 1024 * 1024 * 1024 // 1 GB
+                    }
+                )
+            )
+            .UseSnakeCaseNamingConvention()
+            // Optimize EF Core for high-throughput scenarios
+            .EnableServiceProviderCaching(),
+    200); // Increase context pool size
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = Environment.GetEnvironmentVariable("REDIS_URL") ?? "localhost:6379";
+    options.InstanceName = "smo-backend";
+});
+
+builder.Services.AddMemoryCache(options =>
+{
+    options.SizeLimit = 512 * 1024 * 1024; // 512 MB for in-memory caching
+});
+
+// Add the multi-level caching service
+builder.Services.AddSingleton<CachingService>();
+
+// Add database optimization service
+builder.Services.AddHostedService<DatabaseOptimizationService>();
 
 builder.Services.AddSingleton<SimrailApiClient>();
 builder.Services.AddSingleton<OsmApiClient>();
