@@ -12,6 +12,7 @@
 - [Installation](#installation)
   - [Frontend](#frontend)
   - [Backend](#backend)
+- [Environment variables](#environment-variables)
 - [Contributing](#contributing)
 - [License](#license)
 - [Authors](#authors)
@@ -55,14 +56,62 @@ To run the backend you need a PostGIS database running, you can use an external 
 
 You can also open the solution in Visual Studio 2022 or JetBrains Rider for a more integrated development experience.
 
-#### Required Environment Variables
+## Environment variables
 
-The application uses the following environment variables:
+Backend supports configuring behavior via environment variables (values in parentheses are defaults).
 
-- `DATABASE_URL` or `ConnectionStrings:DefaultConnection`: PostgreSQL connection string with PostGIS extension
-- `STEAM_API_KEY`: Optional Steam API key for player stats
-- `ADMIN_PASSWORD`: Password for administrative API endpoints
-- `FRONTEND_URL`: URL of the frontend for CORS configuration (defaults to https://smo.data-unknown.com and http://localhost:5173 for local development)
+Core and hosting
+
+- `DATABASE_URL`: PostgreSQL connection string (overrides `ConnectionStrings:DefaultConnection`)
+- `FRONTEND_URL`: CORS origin for the frontend (`https://smo.data-unknown.com`)
+- `ASPNETCORE_ENVIRONMENT`: Standard .NET environment (`Development`/`Production`)
+- `ADMIN_PASSWORD`: Enables protected admin endpoints when set
+- `STEAM_API_KEY`: Optional Steam API key for player stats (`""`)
+
+Performance and memory
+
+- `DB_CONTEXT_POOL_SIZE`: EF Core DbContext pool size (`32`)
+- `EF_MEMORY_CACHE_SIZE_MB`: EF internal memory cache size in MB (`64`)
+
+Service polling intervals
+
+- `{SERVICE}_REFRESH_INTERVAL`: Polling interval per service. Accepts TimeSpan (e.g. `00:00:05`) or seconds (e.g. `5`).
+  Services:
+    - `SERVER_REFRESH_INTERVAL` (default `00:00:30`)
+    - `TRAIN_REFRESH_INTERVAL` (default `00:00:05`)
+    - `TRAIN-POS_REFRESH_INTERVAL` (default `00:00:01`)
+    - `TIMETABLE_REFRESH_INTERVAL` (default `01:00:00` = 1 hour)
+    - `TIME_REFRESH_INTERVAL` (default `00:05:00` = 5 minutes)
+    - `STATION_REFRESH_INTERVAL` (default `00:00:05`)
+
+Signal analyzer
+
+- `SIGNAL_BUFFER_DISTANCE_BETWEEN`: Extra buffer (meters) in movement validation (`50`)
+- `SIGNAL_MIN_DISTANCE_BETWEEN`: Min distance between signals (meters) (`200`)
+- `SIGNAL_MIN_DISTANCE`: Distance threshold to treat a train as at a signal (meters) (`100`)
+- `TRAIN_CACHE_MAX_ENTRIES`: Capacity of in-memory train->last-signal cache (`-1` = unlimited)
+- `TRAIN_PASSED_CACHE_MAX_ENTRIES`: Capacity of passed-signal cache (`-1` = unlimited)
+- `TRAIN_PREV_CACHE_MAX_ENTRIES`: Capacity of prev-signal data cache (`-1` = unlimited)
+
+Station analyzer
+
+- `STATION_ANALYZER_DISABLED`: Disable the station analyzer (`false`)
+- `STATION_ANALYZER_QUEUE_MAX`: Max queued station tasks (`-1` = unlimited)
+
+Route point analyzer
+
+- `ROUTE_POINT_ANALYZER_DISABLED`: Disable the route point analyzer (`false`)
+- `ROUTE_POINT_ANALYZER_ALLOWED_SERVERS`: Comma-separated whitelist of server codes (empty = all)
+- `ROUTE_POINT_CLEANUP_INTERVAL_HOURS`: Hours before old route lines are removed (`48`)
+- `ROUTE_POINT_MAX_BATCH_SIZE`: Batch size for DB inserts (`500`)
+- `ROUTE_POINT_MAX_CONCURRENCY`: Parallelism for processing (`min(4, 2x CPU)`)
+- `ROUTE_POINT_MIN_DISTANCE_METERS`: Min distance between points on a route (`100.0`)
+
+Notes
+
+- All `{SERVICE}_REFRESH_INTERVAL` values can be specified as "HH:MM:SS" or as integer seconds.
+- When `DATABASE_URL` is not set, `ConnectionStrings:DefaultConnection` from appsettings is used.
+- `FRONTEND_URL` augments the built-in localhost origins in development.
 
 #### Database Migrations
 

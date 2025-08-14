@@ -38,35 +38,29 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         .CreateGauge("smo_signals_with_multiple_trains", "The count of trains pointing to the same signal", "server",
             "signal");
 
-    private readonly int _bufferDistanceBetweenPositions =
-        Environment.GetEnvironmentVariable("SIGNAL_BUFFER_DISTANCE_BETWEEN") is { } bufferDistance
-            ? int.Parse(bufferDistance)
-            : 50;
+    private readonly int _bufferDistanceBetweenPositions = StdUtils.GetEnvVar("SIGNAL_BUFFER_DISTANCE_BETWEEN", 50);
 
     private readonly ILogger<SignalAnalyzerService> _logger;
 
-    private readonly int _minDistanceBetweenSignals =
-        Environment.GetEnvironmentVariable("SIGNAL_MIN_DISTANCE_BETWEEN") is { } minDistance
-            ? int.Parse(minDistance)
-            : 200;
+    private readonly int _minDistanceBetweenSignals = StdUtils.GetEnvVar("SIGNAL_MIN_DISTANCE_BETWEEN", 200);
 
-    private readonly int _minDistanceToSignal =
-        Environment.GetEnvironmentVariable("SIGNAL_MIN_DISTANCE") is { } minDistance
-            ? int.Parse(minDistance)
-            : 100;
+    private readonly int _minDistanceToSignal = StdUtils.GetEnvVar("SIGNAL_MIN_DISTANCE", 100);
 
     private readonly QueueProcessor<Dictionary<string, Train[]>> _queueProcessor;
     private readonly IServiceScopeFactory _scopeFactory;
+
+    private readonly int _trainCacheMaxEntries = StdUtils.GetEnvVar("TRAIN_CACHE_MAX_ENTRIES", -1);
     private readonly TrainDataService _trainDataService;
 
-    private readonly TtlCache<string, string> _trainLastSignalCache =
-        new(TimeSpan.FromSeconds(30), "TrainLastSignalCache");
+    private readonly TtlCache<string, string> _trainLastSignalCache;
 
-    private readonly TtlCache<string, string> _trainPassedSignalCache =
-        new(TimeSpan.FromMinutes(5), "TrainPassedSignalCache");
+    private readonly int _trainPassedCacheMaxEntries = StdUtils.GetEnvVar("TRAIN_PASSED_CACHE_MAX_ENTRIES", -1);
 
-    private readonly TtlCache<string, TrainPrevSignalData> _trainPrevSignalCache = new(TimeSpan.FromSeconds(30),
-        "TrainPrevSignalCache");
+    private readonly TtlCache<string, string> _trainPassedSignalCache;
+
+    private readonly int _trainPrevCacheMaxEntries = StdUtils.GetEnvVar("TRAIN_PREV_CACHE_MAX_ENTRIES", -1);
+
+    private readonly TtlCache<string, TrainPrevSignalData> _trainPrevSignalCache;
 
     private byte _runCount;
 
@@ -83,6 +77,10 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
         _queueProcessor =
             new(logger, ProcessTrainData, SignalAnalyzerQueueGauge);
+
+        _trainLastSignalCache = new(TimeSpan.FromSeconds(30), "TrainLastSignalCache", _trainCacheMaxEntries);
+        _trainPassedSignalCache = new(TimeSpan.FromMinutes(5), "TrainPassedSignalCache", _trainPassedCacheMaxEntries);
+        _trainPrevSignalCache = new(TimeSpan.FromSeconds(30), "TrainPrevSignalCache", _trainPrevCacheMaxEntries);
     }
 
     /// <inheritdoc />

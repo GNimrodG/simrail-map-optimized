@@ -8,7 +8,8 @@
       "applicationUrl": "http://localhost:3000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ADMIN_PASSWORD": "admin"
+        "ADMIN_PASSWORD": "admin",
+        "REDIS_URL": "192.168.60.100:6379"
       }
     },
     "https": {

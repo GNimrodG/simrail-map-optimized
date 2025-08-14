@@ -15,21 +15,25 @@ public class TtlCache<TKey, TValue> : IDisposable
 {
     private readonly MemoryCache _cache = new(new MemoryCacheOptions());
     private readonly Timer? _gaugeUpdateTimer;
+    private readonly Queue<TKey> _insertionOrder = new();
 
     private readonly string _instanceName;
+    private readonly int? _maxEntries;
+    private readonly Lock _orderLock = new();
     private readonly TimeSpan? _ttl;
     private bool _disposed;
 
     /// <summary>
     ///     A simple in-memory cache with a time-to-live (TTL) for each entry.
     /// </summary>
-    public TtlCache(TimeSpan? ttl, string? name = null)
+    public TtlCache(TimeSpan? ttl, string? name = null, int? maxEntries = null)
     {
         _ttl = ttl;
         _instanceName = name ?? $"{typeof(TKey).Name}_{typeof(TValue).Name}";
-        
+        _maxEntries = maxEntries;
+
         if (_ttl == null) return;
-        
+
         _gaugeUpdateTimer = new(_ttl.Value.TotalMilliseconds);
         _gaugeUpdateTimer.Elapsed += (_, _) => CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
         _gaugeUpdateTimer.AutoReset = true;
@@ -77,6 +81,11 @@ public class TtlCache<TKey, TValue> : IDisposable
         _gaugeUpdateTimer?.Stop();
         _gaugeUpdateTimer?.Dispose();
         _cache.Dispose();
+        lock (_orderLock)
+        {
+            _insertionOrder.Clear();
+        }
+
         KeyAdded = null;
         CacheSizeGauge.RemoveLabelled(_instanceName);
         GC.SuppressFinalize(this);
@@ -87,12 +96,36 @@ public class TtlCache<TKey, TValue> : IDisposable
     /// </summary>
     public event EventHandler<TKey>? KeyAdded;
 
+    private void EnforceCapacity()
+    {
+        if (_maxEntries is not { } limit) return;
+        lock (_orderLock)
+        {
+            while (_cache.Count > limit && _insertionOrder.Count > 0)
+            {
+                var oldestKey = _insertionOrder.Dequeue();
+                _cache.Remove(oldestKey);
+            }
+        }
+
+        CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
+    }
+
     private void _add(TKey key, TValue value)
     {
+        // Track insertion order only if this is a new key
+        if (!_cache.TryGetValue(key, out _))
+            lock (_orderLock)
+            {
+                _insertionOrder.Enqueue(key);
+            }
+
         _cache.Set(key, value, new MemoryCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = _ttl
         });
+
+        EnforceCapacity();
     }
 
     /// <inheritdoc cref="Dictionary{TKey,TValue}.Add"/>
@@ -135,6 +168,11 @@ public class TtlCache<TKey, TValue> : IDisposable
         foreach (var key in _cache.Keys)
         {
             _cache.Remove(key);
+        }
+
+        lock (_orderLock)
+        {
+            _insertionOrder.Clear();
         }
 
         CacheSizeGauge.WithLabels(_instanceName).Set(0);

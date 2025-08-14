@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SMOBackend.Data;
 using SMOBackend.Models;
+using SMOBackend.Utils;
 
 namespace SMOBackend.Controllers;
 
@@ -14,8 +15,8 @@ namespace SMOBackend.Controllers;
 public class SignalsController(SmoContext context) : Controller
 {
     private static bool ValidatePassword(string? password) =>
-        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ADMIN_PASSWORD")) &&
-        Environment.GetEnvironmentVariable("ADMIN_PASSWORD") == password;
+        !string.IsNullOrWhiteSpace(StdUtils.GetEnvVar("ADMIN_PASSWORD", "")) &&
+        StdUtils.GetEnvVar("ADMIN_PASSWORD", "") == password;
 
     /// <summary>
     /// Get all signals.
@@ -55,7 +56,7 @@ public class SignalsController(SmoContext context) : Controller
 
         if (signal == null)
             return NotFound($"Signal {signalName} not found.");
-        
+
         if (signal.NextSignalConnections.Count == 0)
             return BadRequest($"Signal {signalName} has no next signals to finalize.");
 
@@ -149,7 +150,7 @@ public class SignalsController(SmoContext context) : Controller
 
         if (signal == null)
             return NotFound($"Signal {signalName} not found.");
-        
+
         if (signal.PrevSignalConnections.Count == 0)
             return BadRequest($"Signal {signalName} has no previous signals to finalize.");
 

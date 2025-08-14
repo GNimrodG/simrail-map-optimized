@@ -148,8 +148,7 @@ public class RoutePointAnalyzerService : IHostedService
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        if (string.Equals(Environment.GetEnvironmentVariable("ROUTE_POINT_ANALYZER_DISABLED"), "true",
-                StringComparison.OrdinalIgnoreCase))
+        if (StdUtils.GetEnvVar("ROUTE_POINT_ANALYZER_DISABLED", false))
         {
             _logger.LogInformation(
                 "Route point analyzer service is disabled (unset ROUTE_POINT_ANALYZER_DISABLED=true to enable)");
@@ -159,7 +158,7 @@ public class RoutePointAnalyzerService : IHostedService
         _logger.LogInformation("Starting route point analyzer service...");
 
         // Initialize allowed servers from environment variable
-        var allowedServersEnv = Environment.GetEnvironmentVariable("ROUTE_POINT_ANALYZER_ALLOWED_SERVERS");
+        var allowedServersEnv = StdUtils.GetEnvVar("ROUTE_POINT_ANALYZER_ALLOWED_SERVERS", "");
         if (!string.IsNullOrEmpty(allowedServersEnv))
         {
             _allowedServers = new(allowedServersEnv.Split(',').Select(s => s.Trim()));

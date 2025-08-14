@@ -4,6 +4,7 @@ using SMOBackend.Analytics;
 using SMOBackend.Models;
 using SMOBackend.Models.Trains;
 using SMOBackend.Services;
+using SMOBackend.Utils;
 
 // ReSharper disable RouteTemplates.ParameterTypeCanBeMadeStricter
 
@@ -27,8 +28,8 @@ public class StatusController(
 ) : ControllerBase
 {
     private static bool ValidatePassword(string? password) =>
-        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ADMIN_PASSWORD")) &&
-        Environment.GetEnvironmentVariable("ADMIN_PASSWORD") == password;
+        !string.IsNullOrWhiteSpace(StdUtils.GetEnvVar("ADMIN_PASSWORD", "")) &&
+        StdUtils.GetEnvVar("ADMIN_PASSWORD", "") == password;
 
     /// <summary>
     /// Get the status of the server

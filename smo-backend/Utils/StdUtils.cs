@@ -82,6 +82,27 @@ internal static class StdUtils
         }
     }
 
+    /// <summary>
+    ///     Reads a duration environment variable. Accepts either TimeSpan format (e.g., 00:00:05) or integer seconds (e.g.,
+    ///     5).
+    /// </summary>
+    public static TimeSpan GetEnvVarDuration(string name, TimeSpan defaultValue)
+    {
+        var raw = Environment.GetEnvironmentVariable(name);
+        if (string.IsNullOrWhiteSpace(raw)) return defaultValue;
+
+        if (TimeSpan.TryParse(raw, out var ts))
+            return ts;
+
+        if (int.TryParse(raw, out var seconds) && seconds >= 0)
+            return TimeSpan.FromSeconds(seconds);
+
+        if (double.TryParse(raw, out var dblSeconds) && dblSeconds >= 0)
+            return TimeSpan.FromSeconds(dblSeconds);
+
+        return defaultValue;
+    }
+
     public class TrainTypeCodeConverter : JsonConverter<SimplifiedTimetableEntry.TrainTypeCode>
     {
         public override void WriteJson(JsonWriter writer, SimplifiedTimetableEntry.TrainTypeCode value,

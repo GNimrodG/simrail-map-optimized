@@ -26,6 +26,7 @@ public class StationAnalyzerService : IHostedService
         .CreateGauge("smo_station_timetable_analyzer_queue_length", "Length of the station timetable analyzer queue");
 
     private readonly HashSet<string> _enqueuedStations = [];
+    private readonly Lock _enqueuedStationsLock = new();
 
     private readonly Lock _lock = new();
 
@@ -53,18 +54,18 @@ public class StationAnalyzerService : IHostedService
         _stationDataService = stationDataService;
         _timetableDataService = timetableDataService;
         _osmApiClient = osmApiClient;
+        var maxQueueSize = StdUtils.GetEnvVar("STATION_ANALYZER_QUEUE_MAX", -1);
         _queueProcessor = new(logger,
             ProcessStation,
             StationTimetableAnalyzerQueueGauge,
             5,
-            -1);
+            maxQueueSize);
     }
 
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        if (string.Equals(Environment.GetEnvironmentVariable("STATION_ANALYZER_DISABLED"), "true",
-                StringComparison.OrdinalIgnoreCase))
+        if (StdUtils.GetEnvVar("STATION_ANALYZER_DISABLED", false))
         {
             _logger.LogInformation(
                 "Station analyzer service is disabled (unset STATION_ANALYZER_DISABLED=true to enable)");
@@ -198,7 +199,13 @@ public class StationAnalyzerService : IHostedService
                     continue;
                 }
 
-                if (_enqueuedStations.Contains(station.NameOfPoint))
+                var alreadyEnqueued = false;
+                lock (_enqueuedStationsLock)
+                {
+                    if (!_enqueuedStations.Add(station.NameOfPoint)) alreadyEnqueued = true;
+                }
+
+                if (alreadyEnqueued)
                 {
                     _logger.LogDebug("Station {StationName} with PointId {PointId} already enqueued, skipping",
                         station.NameOfPoint, station.PointId);
@@ -206,7 +213,6 @@ public class StationAnalyzerService : IHostedService
                 }
 
                 _queueProcessor.Enqueue(station);
-                _enqueuedStations.Add(station.NameOfPoint);
             }
         }
         catch (Exception e)
@@ -217,136 +223,142 @@ public class StationAnalyzerService : IHostedService
 
     private async Task ProcessStation(TimetableEntry station)
     {
-        Station? existingStation;
-
-        lock (_lock)
+        try
         {
-            existingStation = _stations.FirstOrDefault(s => s.Name == station.NameOfPoint)
-                              ?? _stations.FirstOrDefault(s => s.Prefix.StartsWith(station.PointId + "_"));
-        }
+            Station? existingStation;
 
-        switch (existingStation)
-        {
-            case { PointId: null }:
-                // Update existing station with PointId if it was null
-                existingStation.PointId = station.PointId;
-                _logger.LogInformation("Set point id {PointId} for station {StationName} with ID {StationId}",
-                    station.PointId, existingStation.Name, existingStation.Id);
-                break;
-            case null:
-                try
-                {
-                    if (_notFoundStations.Contains(station.NameOfPoint))
+            lock (_lock)
+            {
+                existingStation = _stations.FirstOrDefault(s => s.Name == station.NameOfPoint)
+                                  ?? _stations.FirstOrDefault(s => s.Prefix.StartsWith(station.PointId + "_"));
+            }
+
+            switch (existingStation)
+            {
+                case { PointId: null }:
+                    // Update existing station with PointId if it was null
+                    existingStation.PointId = station.PointId;
+                    _logger.LogInformation("Set point id {PointId} for station {StationName} with ID {StationId}",
+                        station.PointId, existingStation.Name, existingStation.Id);
+                    break;
+                case null:
+                    try
                     {
-                        _logger.LogWarning("Skipping station {StationName} as it was previously not found",
-                            station.NameOfPoint);
-                        return;
-                    }
-
-                    _logger.LogInformation("Fetching OSM data for station {StationName}", station.NameOfPoint);
-                    var osmData = await _osmApiClient.GetSignalBoxByNameAsync(station.NameOfPoint);
-
-                    if (osmData == null)
-                    {
-                        var altName = station.NameOfPoint
-                            .Replace("Much.", "Muchowiec ")
-                            .Replace("M.", "Muchowiec ")
-                            .Replace("M ", "Muchowiec ")
-                            .Replace("P.", "Południowa ")
-                            .Replace("P ", "Południowa ")
-                            .Replace("Tow ", "Towarowa ")
-                            .Replace("Tow.", "Towarowa ")
-                            .Replace("Gł.", "Główny ")
-                            .Replace("Dąbr.", "Dąbrowa ")
-                            .Replace("Górn.", "Górnicza ")
-                            .Replace("Maz.", "Mazowiecki ")
-                            .Replace("Zach.", "Zachodnia ")
-                            .Replace("Wsch.", "Wschodnia ")
-                            .Replace("Kr.", "Kraków ")
-                            .Replace("Żakow.", "Żakowice ")
-                            .Replace("Zakow.", "Zakowice ")
-                            .Replace("Kam.", "Kamienna ")
-                            .Replace("Roz.", "Rozdroże ")
-                            .Replace(".", "")
-                            .Replace("  ", " ") // Normalize spaces
-                            .Trim();
-
-                        if (altName != station.NameOfPoint)
+                        if (_notFoundStations.Contains(station.NameOfPoint))
                         {
-                            _logger.LogInformation("Trying alternative name {AltName} for station {StationName}",
-                                altName, station.NameOfPoint);
+                            _logger.LogWarning("Skipping station {StationName} as it was previously not found",
+                                station.NameOfPoint);
+                            return;
+                        }
 
-                            osmData = await _osmApiClient.GetSignalBoxByNameAsync(altName);
+                        _logger.LogInformation("Fetching OSM data for station {StationName}", station.NameOfPoint);
+                        var osmData = await _osmApiClient.GetSignalBoxByNameAsync(station.NameOfPoint);
+
+                        if (osmData == null)
+                        {
+                            var altName = station.NameOfPoint
+                                .Replace("Much.", "Muchowiec ")
+                                .Replace("M.", "Muchowiec ")
+                                .Replace("M ", "Muchowiec ")
+                                .Replace("P.", "Południowa ")
+                                .Replace("P ", "Południowa ")
+                                .Replace("Tow ", "Towarowa ")
+                                .Replace("Tow.", "Towarowa ")
+                                .Replace("Gł.", "Główny ")
+                                .Replace("Dąbr.", "Dąbrowa ")
+                                .Replace("Górn.", "Górnicza ")
+                                .Replace("Maz.", "Mazowiecki ")
+                                .Replace("Zach.", "Zachodnia ")
+                                .Replace("Wsch.", "Wschodnia ")
+                                .Replace("Kr.", "Kraków ")
+                                .Replace("Żakow.", "Żakowice ")
+                                .Replace("Zakow.", "Zakowice ")
+                                .Replace("Kam.", "Kamienna ")
+                                .Replace("Roz.", "Rozdroże ")
+                                .Replace(".", "")
+                                .Replace("  ", " ") // Normalize spaces
+                                .Trim();
+
+                            if (altName != station.NameOfPoint)
+                            {
+                                _logger.LogInformation("Trying alternative name {AltName} for station {StationName}",
+                                    altName, station.NameOfPoint);
+
+                                osmData = await _osmApiClient.GetSignalBoxByNameAsync(altName);
+                            }
+                        }
+
+                        if (osmData != null)
+                        {
+                            lock (_lock)
+                            {
+                                var railwayRef = osmData.Tags.GetValueOrDefault("railway:ref", string.Empty);
+
+                                if (string.IsNullOrWhiteSpace(railwayRef) &&
+                                    osmData.Tags.TryGetValue("name", out var value) &&
+                                    value != station.NameOfPoint)
+                                    railwayRef = value.Replace(station.NameOfPoint, string.Empty).Trim();
+
+                                var prefix = $"{station.PointId}_{railwayRef}";
+                                var mainImageUrl = string.Empty;
+
+                                if (osmData.Tags.TryGetValue("wikimedia_commons", out var tagValue) &&
+                                    tagValue.StartsWith("File:"))
+                                    mainImageUrl =
+                                        $"https://commons.wikimedia.org/wiki/Special:Redirect/file/{osmData.Tags["wikimedia_commons"]}";
+
+                                var (latitude, longitude) = osmData is OSMWay way
+                                    ? (way.Center.Lat, way.Center.Lon)
+                                    : ((osmData as OSMNode)?.Lat ?? 0.0, (osmData as OSMNode)?.Lon ?? 0.0);
+
+                                // Create a new station if it doesn't exist
+                                var newStation = new Station
+                                {
+                                    Id = Guid.NewGuid().ToString(),
+                                    Name = station.NameOfPoint,
+                                    Prefix = prefix,
+                                    DifficultyLevel = -1,
+                                    MainImageUrl = string.IsNullOrWhiteSpace(mainImageUrl) ? null : mainImageUrl,
+                                    AdditionalImage1Url = null,
+                                    AdditionalImage2Url = null,
+                                    Latitude = latitude,
+                                    Longitude = longitude,
+                                    PointId = station.PointId
+                                };
+
+                                _stations.Add(newStation);
+                                _logger.LogInformation(
+                                    "Added new station {StationName} with ID {StationId}",
+                                    newStation.Name, newStation.Id);
+                            }
+                        }
+                        else
+                        {
+                            _notFoundStations.Add(station.NameOfPoint);
+                            _logger.LogWarning("No OSM data found for station {StationName}",
+                                station.NameOfPoint);
+                            SaveNotFoundStations();
                         }
                     }
-
-                    if (osmData != null)
+                    catch (Exception ex)
                     {
-                        lock (_lock)
-                        {
-                            var railwayRef = osmData.Tags.GetValueOrDefault("railway:ref", string.Empty);
-
-                            if (string.IsNullOrWhiteSpace(railwayRef) &&
-                                osmData.Tags.TryGetValue("name", out var value) &&
-                                value != station.NameOfPoint)
-                            {
-                                railwayRef = value.Replace(station.NameOfPoint, string.Empty).Trim();
-                            }
-
-                            var prefix = $"{station.PointId}_{railwayRef}";
-                            var mainImageUrl = string.Empty;
-
-                            if (osmData.Tags.TryGetValue("wikimedia_commons", out var tagValue) &&
-                                tagValue.StartsWith("File:"))
-                            {
-                                mainImageUrl =
-                                    $"https://commons.wikimedia.org/wiki/Special:Redirect/file/{osmData.Tags["wikimedia_commons"]}";
-                            }
-
-                            var (latitude, longitude) = osmData is OSMWay way
-                                ? (way.Center.Lat, way.Center.Lon)
-                                : ((osmData as OSMNode)?.Lat ?? 0.0, (osmData as OSMNode)?.Lon ?? 0.0);
-
-                            // Create a new station if it doesn't exist
-                            var newStation = new Station
-                            {
-                                Id = Guid.NewGuid().ToString(),
-                                Name = station.NameOfPoint,
-                                Prefix = prefix,
-                                DifficultyLevel = -1,
-                                MainImageUrl = string.IsNullOrWhiteSpace(mainImageUrl) ? null : mainImageUrl,
-                                AdditionalImage1Url = null,
-                                AdditionalImage2Url = null,
-                                Latitude = latitude,
-                                Longitude = longitude,
-                                PointId = station.PointId,
-                            };
-
-                            _stations.Add(newStation);
-                            _logger.LogInformation(
-                                "Added new station {StationName} with ID {StationId}",
-                                newStation.Name, newStation.Id);
-                        }
-                    }
-                    else
-                    {
-                        _notFoundStations.Add(station.NameOfPoint);
-                        _logger.LogWarning("No OSM data found for station {StationName}",
+                        _logger.LogError(ex,
+                            "Error fetching OSM data for station {StationName}",
                             station.NameOfPoint);
-                        SaveNotFoundStations();
                     }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex,
-                        "Error fetching OSM data for station {StationName}",
-                        station.NameOfPoint);
-                }
 
-                break;
+                    break;
+            }
+
+            SaveStations();
         }
-
-        SaveStations();
+        finally
+        {
+            lock (_enqueuedStationsLock)
+            {
+                _enqueuedStations.Remove(station.NameOfPoint);
+            }
+        }
     }
 
     private void LoadStations()

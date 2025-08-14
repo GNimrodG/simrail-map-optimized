@@ -47,14 +47,7 @@ public abstract class BaseDataService<T>(
     /// <inheritdoc />
     public TimeSpan GetFetchInterval()
     {
-        var envSetting = Environment.GetEnvironmentVariable($"{serviceId}_REFRESH_INTERVAL");
-        if (string.IsNullOrEmpty(envSetting)) return FetchInterval;
-
-        if (int.TryParse(envSetting, out var intervalInSeconds))
-            return TimeSpan.FromSeconds(intervalInSeconds);
-
-
-        return TimeSpan.TryParse(envSetting, out var interval) ? interval : FetchInterval;
+        return StdUtils.GetEnvVarDuration($"{serviceId}_REFRESH_INTERVAL", FetchInterval);
     }
 
     /// <inheritdoc />

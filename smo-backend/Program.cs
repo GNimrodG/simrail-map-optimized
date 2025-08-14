@@ -27,8 +27,7 @@ builder.Services.AddCors(options =>
                 .WithOrigins(
                     "http://localhost:5173",
                     "http://locahost:4173",
-                    Environment.GetEnvironmentVariable("FRONTEND_URL")
-                    ?? "https://smo.data-unknown.com"
+                    StdUtils.GetEnvVar("FRONTEND_URL", "https://smo.data-unknown.com")
                 )
                 .SetPreflightMaxAge(TimeSpan.FromHours(2))
     ); // Maximum value most browsers support
@@ -62,7 +61,7 @@ builder.Services.AddOpenApi(options =>
                 Url = new("https://github.com/GNimrodG/simrail-map-optimized/blob/master/LICENSE"),
             };
 
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
+            if (StdUtils.GetEnvVar("ASPNETCORE_ENVIRONMENT", "") != "Development")
                 doc.Servers = new List<OpenApiServer>();
 
             doc.Servers.Add(
@@ -154,39 +153,43 @@ builder.Services.AddLogging(loggingBuilder =>
     });
 });
 
-var connectionString =
-    Environment.GetEnvironmentVariable("DATABASE_URL")
-    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+var envConn = StdUtils.GetEnvVar("DATABASE_URL", "");
+var connectionString = string.IsNullOrWhiteSpace(envConn)
+    ? builder.Configuration.GetConnectionString("DefaultConnection")
+    : envConn;
 
 if (string.IsNullOrWhiteSpace(connectionString))
     throw new InvalidOperationException(
         "No connection string provided. Set DATABASE_URL or DefaultConnection."
     );
 
+// Limit DbContext pool size for smaller memory footprint
+var dbContextPoolSize = StdUtils.GetEnvVar("DB_CONTEXT_POOL_SIZE", 32);
+if (dbContextPoolSize <= 0) dbContextPoolSize = 32;
+
+// Configure a small EF memory cache (note: size units require entry sizes to be set to be enforced)
+var efCacheSizeMb = StdUtils.GetEnvVar("EF_MEMORY_CACHE_SIZE_MB", 64);
+if (efCacheSizeMb <= 0) efCacheSizeMb = 64;
+var efCache = new MemoryCache(new MemoryCacheOptions
+{
+    SizeLimit = efCacheSizeMb * 1024L * 1024L
+});
+
 builder.Services.AddDbContextPool<SmoContext>(options =>
-    options
-        .UseNpgsql(
-            connectionString,
-            o => o.UseNetTopologySuite().ConfigureDataSource(dso => dso.Name = "smo-backend")
-        )
-        .EnableSensitiveDataLogging(builder.Environment.IsDevelopment())
-        .UseMemoryCache(
-            new MemoryCache(
-                new MemoryCacheOptions
-                {
-                    SizeLimit = 1024 * 1024 * 1024, // 1 GB
-                }
+        options
+            .UseNpgsql(
+                connectionString,
+                o => o.UseNetTopologySuite().ConfigureDataSource(dso => dso.Name = "smo-backend")
             )
-        )
-        .UseSnakeCaseNamingConvention()
-);
+            .EnableSensitiveDataLogging(builder.Environment.IsDevelopment())
+            .UseMemoryCache(efCache)
+            .UseSnakeCaseNamingConvention()
+    , dbContextPoolSize);
 
 builder.Services.AddSingleton<SimrailApiClient>();
 builder.Services.AddSingleton<OsmApiClient>();
 
-var steamApiKey = Environment.GetEnvironmentVariable("STEAM_API_KEY")
-                  ?? builder.Configuration.GetValue<string>("SteamApiKey")
-                  ?? "";
+var steamApiKey = StdUtils.GetEnvVar("STEAM_API_KEY", "");
 
 builder.Services.AddSingleton(new SteamApiClient(steamApiKey));
 
