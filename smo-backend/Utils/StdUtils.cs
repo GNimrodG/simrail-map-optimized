@@ -7,7 +7,7 @@ using SMOBackend.Models;
 
 namespace SMOBackend.Utils;
 
-internal static class Utils
+internal static class StdUtils
 {
     public const int SignalNameLength = 15;
 
@@ -57,6 +57,29 @@ internal static class Utils
     internal static void RemoveLabelledByPredicate(this Gauge gauge, Func<string[], bool> predicate)
     {
         foreach (var labelValues in gauge.GetAllLabelValues().Where(predicate)) gauge.RemoveLabelled(labelValues);
+    }
+
+    /// <summary>
+    ///     Reads an environment variable and returns the value as the specified type, with a default fallback.
+    /// </summary>
+    /// <typeparam name="T">The type to convert the environment variable value to</typeparam>
+    /// <param name="name">The name of the environment variable</param>
+    /// <param name="defaultValue">The default value to return if the environment variable is not set</param>
+    /// <returns>The value of the environment variable as the specified type</returns>
+    public static T GetEnvVar<T>(string name, T defaultValue)
+    {
+        var value = Environment.GetEnvironmentVariable(name);
+
+        if (string.IsNullOrEmpty(value)) return defaultValue;
+
+        try
+        {
+            return (T)Convert.ChangeType(value, typeof(T));
+        }
+        catch
+        {
+            return defaultValue;
+        }
     }
 
     public class TrainTypeCodeConverter : JsonConverter<SimplifiedTimetableEntry.TrainTypeCode>

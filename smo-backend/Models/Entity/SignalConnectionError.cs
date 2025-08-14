@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using SMOBackend.Utils;
 
 namespace SMOBackend.Models.Entity;
 
@@ -24,10 +25,10 @@ public class SignalConnectionError : BaseEntity
         UpdatedAt = DateTime.UtcNow;
     }
 
-    [MaxLength(Utils.Utils.SignalNameLength)] public string Prev { get; set; }
+    [MaxLength(StdUtils.SignalNameLength)] public string Prev { get; set; }
 
-    [MaxLength(Utils.Utils.SignalNameLength)] public string Next { get; set; }
-    
+    [MaxLength(StdUtils.SignalNameLength)] public string Next { get; set; }
+
     public short VMAX { get; set; }
 
     [MaxLength(500)] public string Error { get; set; }

@@ -20,7 +20,6 @@ namespace SMOBackend.Analytics;
 /// <param name="RouteId">The route identifier</param>
 /// <param name="RunId">The run identifier</param>
 /// <param name="TrainId">The train identifier</param>
-/// <param name="Count">The number of route points in this group</param>
 public record RoutePointGroup(string RouteId, string RunId, string TrainId);
 
 /// <summary>
@@ -31,26 +30,6 @@ public record RoutePointGroup(string RouteId, string RunId, string TrainId);
 /// </remarks>
 public class RoutePointAnalyzerService : IHostedService
 {
-    /// <summary>
-    ///     Cleanup interval for old route lines in hours.
-    /// </summary>
-    private const int CleanupIntervalHours = 48;
-
-    /// <summary>
-    ///     Minimum distance between route points in meters to avoid duplicate entries.
-    /// </summary>
-    private const double MinDistance = 200;
-
-    /// <summary>
-    ///     Maximum batch size for database operations to optimize memory usage and performance.
-    /// </summary>
-    private const int MaxBatchSize = 1000;
-
-    /// <summary>
-    ///     Maximum degree of parallelism for train data processing.
-    /// </summary>
-    private static readonly int MaxConcurrency = Math.Min(Environment.ProcessorCount * 2, 4);
-
     /// <summary>
     ///     Prometheus gauge for monitoring route point queue size.
     /// </summary>
@@ -75,9 +54,43 @@ public class RoutePointAnalyzerService : IHostedService
     private readonly ConcurrentDictionary<string, DateTime> _activeTrainCache = new();
 
     /// <summary>
+    ///     Cleanup interval for old route lines in hours.
+    /// </summary>
+    /// <remarks>
+    ///     This value can be configured via the environment variable ROUTE_POINT_CLEANUP_INTERVAL_HOURS. Defaults to 48 hours.
+    /// </remarks>
+    private readonly int _cleanupIntervalHours = StdUtils.GetEnvVar("ROUTE_POINT_CLEANUP_INTERVAL_HOURS", 48);
+
+    /// <summary>
     ///     Logger instance for this service.
     /// </summary>
     private readonly ILogger<RoutePointAnalyzerService> _logger;
+
+    /// <summary>
+    ///     Maximum batch size for database operations to optimize memory usage and performance.
+    /// </summary>
+    /// <remarks>
+    ///     This value can be configured via the environment variable ROUTE_POINT_MAX_BATCH_SIZE. Defaults to 500.
+    /// </remarks>
+    private readonly int _maxBatchSize = StdUtils.GetEnvVar("ROUTE_POINT_MAX_BATCH_SIZE", 500);
+
+    /// <summary>
+    ///     Maximum degree of parallelism for train data processing.
+    /// </summary>
+    /// <remarks>
+    ///     This value can be configured via the environment variable ROUTE_POINT_MAX_CONCURRENCY. Defaults to 4 or double the
+    ///     number of CPU cores, whichever is lower.
+    /// </remarks>
+    private readonly int _maxConcurrency =
+        StdUtils.GetEnvVar("ROUTE_POINT_MAX_CONCURRENCY", Math.Min(Environment.ProcessorCount * 2, 4));
+
+    /// <summary>
+    ///     Minimum distance between route points in meters to avoid duplicate entries.
+    /// </summary>
+    /// <remarks>
+    ///     This value can be configured via the environment variable ROUTE_POINT_MIN_DISTANCE_METERS. Defaults to 100 meters.
+    /// </remarks>
+    private readonly double _minDistance = StdUtils.GetEnvVar("ROUTE_POINT_MIN_DISTANCE_METERS", 100.0);
 
     /// <summary>
     ///     Queue processor for handling train data asynchronously.
@@ -324,7 +337,7 @@ public class RoutePointAnalyzerService : IHostedService
 
             if (points.Count <= 1) continue;
 
-            var segments = SplitPointsAtGaps(points, MinDistance * 2);
+            var segments = SplitPointsAtGaps(points, _minDistance * 2);
 
             if (segments.Count is <= 1 or > 999) continue;
 
@@ -426,10 +439,10 @@ public class RoutePointAnalyzerService : IHostedService
     }
 
     /// <summary>
-    /// Cleans up line routes older than <see cref="CleanupIntervalHours"/> hours.
+    /// Cleans up line routes older than the configured cleanup interval hours.
     /// </summary>
     /// <remarks>
-    /// This method runs every 24 hours and removes line routes older than <see cref="CleanupIntervalHours"/>.
+    /// This method runs every 24 hours and removes line routes older than the configured cleanup interval.
     /// Optimized with bulk delete operations.
     /// </remarks>
     private async Task CleanOldLines(CancellationToken cancellationToken)
@@ -445,9 +458,9 @@ public class RoutePointAnalyzerService : IHostedService
                     await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
                     _logger.LogInformation("Removing route lines older than {CleanupIntervalHours} hours...",
-                        CleanupIntervalHours);
+                        _cleanupIntervalHours);
 
-                    var cutoffTime = DateTime.UtcNow.AddHours(-CleanupIntervalHours);
+                    var cutoffTime = DateTime.UtcNow.AddHours(-_cleanupIntervalHours);
 
                     // Use bulk delete with a single SQL statement
                     const string sql = """
@@ -471,7 +484,7 @@ public class RoutePointAnalyzerService : IHostedService
                     if (deletedCount == 0)
                     {
                         _logger.LogInformation("No route lines older than {CleanupIntervalHours} hours found",
-                            CleanupIntervalHours);
+                            _cleanupIntervalHours);
                     }
                     else
                     {
@@ -481,7 +494,7 @@ public class RoutePointAnalyzerService : IHostedService
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     _logger.LogError(ex, "Error cleaning route lines older than {CleanupIntervalHours} hours",
-                        CleanupIntervalHours);
+                        _cleanupIntervalHours);
                 }
             } while (await timer.WaitForNextTickAsync(cancellationToken));
         }
@@ -549,7 +562,7 @@ public class RoutePointAnalyzerService : IHostedService
         var processedCount = 0;
         var discardedCount = 0;
 
-        var semaphore = new SemaphoreSlim(MaxConcurrency, MaxConcurrency);
+        var semaphore = new SemaphoreSlim(_maxConcurrency, _maxConcurrency);
         var tasks = new List<Task>();
 
         // Process trains in parallel with controlled concurrency
@@ -622,7 +635,7 @@ public class RoutePointAnalyzerService : IHostedService
                 var distance = await item.Query;
                 processedCount++;
 
-                if (distance >= MinDistance)
+                if (distance >= _minDistance)
                 {
                     var routePoint = new RoutePoint(item.Train,
                         _signalAnalyzerService.GetTrainPassedSignalName(item.Train.GetTrainId()));
@@ -651,9 +664,9 @@ public class RoutePointAnalyzerService : IHostedService
         await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
         // Process in batches to avoid memory issues
-        for (var i = 0; i < points.Count; i += MaxBatchSize)
+        for (var i = 0; i < points.Count; i += _maxBatchSize)
         {
-            var batch = points.Skip(i).Take(MaxBatchSize).ToList();
+            var batch = points.Skip(i).Take(_maxBatchSize).ToList();
 
             context.ChangeTracker.AutoDetectChangesEnabled = false;
             await context.RoutePoints.AddRangeAsync(batch);
@@ -699,7 +712,7 @@ public class RoutePointAnalyzerService : IHostedService
 
         var pointWkt = point.AsText();
         var cutoffTime = DateTime.UtcNow.AddMinutes(-10); // Only check recent points
-        const double maxDistance = MinDistance * 2; // Use a large enough max distance to ensure we get a valid result
+        var maxDistance = _minDistance * 2; // Use a large enough max distance to ensure we get a valid result
 
         await using var command = context.Database.GetDbConnection().CreateCommand();
         command.CommandText = sql;

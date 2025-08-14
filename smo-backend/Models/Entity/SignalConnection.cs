@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using SMOBackend.Utils;
 
 namespace SMOBackend.Models.Entity;
 
@@ -27,12 +27,12 @@ public class SignalConnection : BaseEntity
             throw new ArgumentOutOfRangeException(nameof(vmax), "VMAX cannot be negative.");
         if (prev == next)
             throw new ArgumentException("Previous and next signals cannot be the same.", nameof(prev));
-        if (prev.Length > Utils.Utils.SignalNameLength)
+        if (prev.Length > StdUtils.SignalNameLength)
             throw new ArgumentException(
-                $"Previous signal name cannot exceed {Utils.Utils.SignalNameLength} characters.",
+                $"Previous signal name cannot exceed {StdUtils.SignalNameLength} characters.",
                 nameof(prev));
-        if (next.Length > Utils.Utils.SignalNameLength)
-            throw new ArgumentException($"Next signal name cannot exceed {Utils.Utils.SignalNameLength} characters.",
+        if (next.Length > StdUtils.SignalNameLength)
+            throw new ArgumentException($"Next signal name cannot exceed {StdUtils.SignalNameLength} characters.",
                 nameof(next));
 
         Prev = prev;
@@ -41,11 +41,9 @@ public class SignalConnection : BaseEntity
         CreatedBy = trainId;
     }
 
-    [MaxLength(Utils.Utils.SignalNameLength)]
-    public string Prev { get; set; }
+    [MaxLength(StdUtils.SignalNameLength)] public string Prev { get; set; }
 
-    [MaxLength(Utils.Utils.SignalNameLength)]
-    public string Next { get; set; }
+    [MaxLength(StdUtils.SignalNameLength)] public string Next { get; set; }
 
     [Column(TypeName = "DOUBLE PRECISION")]
     public float Distance { get; set; }

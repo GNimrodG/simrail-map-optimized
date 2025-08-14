@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using NetTopologySuite.Geometries;
 using Newtonsoft.Json;
 using SMOBackend.Models.Trains;
+using SMOBackend.Utils;
 
 namespace SMOBackend.Models.Entity;
 
@@ -18,9 +19,11 @@ public partial class Signal : BaseEntity
     /// </summary>
     /// <remarks>
     ///     This serves as the primary key for the signal entity.
-    ///     Maximum length is defined by <see cref="Utils.Utils.SignalNameLength" />.
+    ///     Maximum length is defined by <see cref="StdUtils.SignalNameLength" />.
     /// </remarks>
-    [JsonProperty(nameof(Name)), Key, MaxLength(Utils.Utils.SignalNameLength)]
+    [JsonProperty(nameof(Name))]
+    [Key]
+    [MaxLength(StdUtils.SignalNameLength)]
     public string Name { get; set; }
 
     /// <summary>

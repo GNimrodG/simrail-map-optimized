@@ -537,7 +537,6 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         using var scope = _scopeFactory.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-        // Use the optimized query method instead of the old EF query
         var signalLookup = await GetRelevantSignalsOptimized(relevantSignals, context);
         var signals = signalLookup.Values.ToList();
 

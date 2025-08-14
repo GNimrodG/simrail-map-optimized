@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using SMOBackend.Utils;
 
 namespace SMOBackend.Models;
 
@@ -115,7 +116,7 @@ public readonly struct SimplifiedTimetableEntry
     /// <summary>
     /// Represents a train type code, which is a 3-character string.
     /// </summary>
-    [JsonConverter(typeof(Utils.Utils.TrainTypeCodeConverter))]
+    [JsonConverter(typeof(StdUtils.TrainTypeCodeConverter))]
     public readonly struct TrainTypeCode : IEquatable<TrainTypeCode>
     {
         private readonly char _c1;

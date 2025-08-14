@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using SMOBackend.Models.Trains;
+using SMOBackend.Utils;
 
 namespace SMOBackend.Models.Entity;
 
@@ -84,13 +85,13 @@ public class RoutePoint
     /// <summary>
     ///     The next signal that the train will encounter, if any, at this point.
     /// </summary>
-    [MaxLength(Utils.Utils.SignalNameLength)]
+    [MaxLength(StdUtils.SignalNameLength)]
     public string? NextSignal { get; set; }
 
     /// <summary>
     ///     The previous signal that the train passed, if any, at this point.
     /// </summary>
-    [MaxLength(Utils.Utils.SignalNameLength)]
+    [MaxLength(StdUtils.SignalNameLength)]
     public string? PrevSignal { get; set; }
 
     /// <summary>
