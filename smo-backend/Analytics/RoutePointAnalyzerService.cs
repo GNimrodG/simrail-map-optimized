@@ -104,6 +104,8 @@ public class RoutePointAnalyzerService : IHostedService
     /// </summary>
     private readonly TrainDataService _trainDataService;
 
+    private HashSet<string>? _allowedServers;
+
     /// <summary>
     ///     Cancellation token source for coordinating service shutdown.
     /// </summary>
@@ -140,7 +142,24 @@ public class RoutePointAnalyzerService : IHostedService
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
+        if (string.Equals(Environment.GetEnvironmentVariable("ROUTE_POINT_ANALYZER_DISABLED"), "true",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogInformation(
+                "Route point analyzer service is disabled (unset ROUTE_POINT_ANALYZER_DISABLED=true to enable)");
+            return Task.CompletedTask;
+        }
+
         _logger.LogInformation("Starting route point analyzer service...");
+
+        // Initialize allowed servers from environment variable
+        var allowedServersEnv = Environment.GetEnvironmentVariable("ROUTE_POINT_ANALYZER_ALLOWED_SERVERS");
+        if (!string.IsNullOrEmpty(allowedServersEnv))
+        {
+            _allowedServers = new(allowedServersEnv.Split(',').Select(s => s.Trim()));
+            _logger.LogInformation("Allowed servers for route point analyzer: {AllowedServers}",
+                string.Join(", ", _allowedServers));
+        }
 
         _cancellationTokenSource = new();
 
@@ -496,6 +515,11 @@ public class RoutePointAnalyzerService : IHostedService
             var now = DateTime.UtcNow;
             foreach (var train in data.Values.SelectMany(v => v))
                 _activeTrainCache.AddOrUpdate(train.RunId, now, (_, _) => now);
+
+            if (_allowedServers != null)
+                // Filter data to only include allowed servers
+                data = data.Where(kvp => _allowedServers.Contains(kvp.Key))
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
             _queueProcessor.Enqueue(data);
         }

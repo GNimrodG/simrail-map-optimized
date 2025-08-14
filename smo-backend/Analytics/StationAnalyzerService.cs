@@ -63,6 +63,14 @@ public class StationAnalyzerService : IHostedService
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
+        if (string.Equals(Environment.GetEnvironmentVariable("STATION_ANALYZER_DISABLED"), "true",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogInformation(
+                "Station analyzer service is disabled (unset STATION_ANALYZER_DISABLED=true to enable)");
+            return Task.CompletedTask;
+        }
+
         LoadStations();
         lock (_lock)
         {
