@@ -43,8 +43,6 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             ? int.Parse(bufferDistance)
             : 50;
 
-    private readonly CachingService _cachingService;
-
     private readonly ILogger<SignalAnalyzerService> _logger;
 
     private readonly int _minDistanceBetweenSignals =
@@ -77,13 +75,11 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     /// </summary>
     public SignalAnalyzerService(ILogger<SignalAnalyzerService> logger,
         IServiceScopeFactory scopeFactory,
-        TrainDataService trainDataService,
-        CachingService cachingService)
+        TrainDataService trainDataService)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
         _trainDataService = trainDataService;
-        _cachingService = cachingService;
 
         _queueProcessor =
             new(logger, ProcessTrainData, SignalAnalyzerQueueGauge);
@@ -181,91 +177,63 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
     private async Task<SignalStatus[]> GetSignals()
     {
-        // Cache the full signal status snapshot briefly; invalidate after updates
-        const string cacheKey = "signals:status";
-        var dtos = await _cachingService.GetOrSetAsync<SignalStatusCacheDto[]>(
-            cacheKey,
-            async () =>
-            {
-                using var scope = _scopeFactory.CreateScope();
-                await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
+        using var scope = _scopeFactory.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-                const string sql = """
-                                   SELECT s.name,
-                                          ST_X(s.location) as longitude,
-                                          ST_Y(s.location) as latitude,
-                                          s.extra,
-                                          s.accuracy,
-                                          s.type,
-                                          s.role,
-                                          s.prev_finalized,
-                                          s.next_finalized,
-                                          s.prev_regex,
-                                          s.next_regex,
-                                          COALESCE(prev_agg.prev_signals, '[]'::json) as prev_signals,
-                                          COALESCE(next_agg.next_signals, '[]'::json) as next_signals
-                                   FROM signals s
-                                            LEFT JOIN (
-                                       SELECT next,
-                                              json_agg(json_build_object('name', prev, 'vmax', vmax)) as prev_signals
-                                       FROM (SELECT DISTINCT next, prev, vmax FROM signal_connections) p
-                                       GROUP BY next
-                                   ) prev_agg ON s.name = prev_agg.next
-                                            LEFT JOIN (
-                                       SELECT prev,
-                                              json_agg(json_build_object('name', next, 'vmax', vmax)) as next_signals
-                                       FROM (SELECT DISTINCT prev, next, vmax FROM signal_connections) n
-                                       GROUP BY prev
-                                   ) next_agg ON s.name = next_agg.prev
-                                   ORDER BY s.name
-                                   """;
+        const string sql = """
+                           SELECT s.name,
+                                  ST_X(s.location) as longitude,
+                                  ST_Y(s.location) as latitude,
+                                  s.extra,
+                                  s.accuracy,
+                                  s.type,
+                                  s.role,
+                                  s.prev_finalized,
+                                  s.next_finalized,
+                                  s.prev_regex,
+                                  s.next_regex,
+                                  COALESCE(prev_agg.prev_signals, '[]'::json) as prev_signals,
+                                  COALESCE(next_agg.next_signals, '[]'::json) as next_signals
+                           FROM signals s
+                                    LEFT JOIN (
+                               SELECT next,
+                                      json_agg(json_build_object('name', prev, 'vmax', vmax)) as prev_signals
+                               FROM (SELECT DISTINCT next, prev, vmax FROM signal_connections) p
+                               GROUP BY next
+                           ) prev_agg ON s.name = prev_agg.next
+                                    LEFT JOIN (
+                               SELECT prev,
+                                      json_agg(json_build_object('name', next, 'vmax', vmax)) as next_signals
+                               FROM (SELECT DISTINCT prev, next, vmax FROM signal_connections) n
+                               GROUP BY prev
+                           ) next_agg ON s.name = next_agg.prev
+                           ORDER BY s.name
+                           """;
 
-                var results = await context.Database
-                    .SqlQueryRaw<OptimizedSignalStatusProjection>(sql)
-                    .ToListAsync();
+        var results = await context.Database
+            .SqlQueryRaw<OptimizedSignalStatusProjection>(sql)
+            .ToListAsync();
 
-                return results.Select(r => new SignalStatusCacheDto
-                {
-                    Name = r.Name,
-                    Extra = r.Extra,
-                    Accuracy = r.Accuracy,
-                    Type = r.Type,
-                    Role = r.Role,
-                    PrevFinalized = r.PrevFinalized,
-                    NextFinalized = r.NextFinalized,
-                    PrevRegex = r.PrevRegex,
-                    NextRegex = r.NextRegex,
-                    Longitude = r.Longitude,
-                    Latitude = r.Latitude,
-                    PrevSignals = JsonConvert.DeserializeObject<List<SignalConnectionData>>(r.PrevSignals)
-                        ?.Select(c => new SignalStatus.SignalConnection(c.Name, c.Vmax))
-                        .DistinctBy(x => x.Name)
-                        .ToArray() ?? [],
-                    NextSignals = JsonConvert.DeserializeObject<List<SignalConnectionData>>(r.NextSignals)
-                        ?.Select(c => new SignalStatus.SignalConnection(c.Name, c.Vmax))
-                        .DistinctBy(x => x.Name)
-                        .ToArray() ?? []
-                }).ToArray();
-            },
-            TimeSpan.FromSeconds(30),
-            TimeSpan.FromMinutes(2)
-        ) ?? [];
-
-        // Map DTOs back to SignalStatus with geometry for in-process use
-        return dtos.Select(d => new SignalStatus
+        return results.Select(r => new SignalStatus
         {
-            Name = d.Name,
-            Extra = d.Extra,
-            Accuracy = d.Accuracy,
-            Type = d.Type,
-            Role = d.Role,
-            PrevFinalized = d.PrevFinalized,
-            NextFinalized = d.NextFinalized,
-            PrevRegex = d.PrevRegex,
-            NextRegex = d.NextRegex,
-            Location = new(d.Longitude, d.Latitude) { SRID = 4326 },
-            PrevSignals = d.PrevSignals,
-            NextSignals = d.NextSignals
+            Name = r.Name,
+            Extra = r.Extra,
+            Accuracy = r.Accuracy,
+            Type = r.Type,
+            Role = r.Role,
+            PrevFinalized = r.PrevFinalized,
+            NextFinalized = r.NextFinalized,
+            PrevRegex = r.PrevRegex,
+            NextRegex = r.NextRegex,
+            Location = new(r.Longitude, r.Latitude) { SRID = 4326 },
+            PrevSignals = JsonConvert.DeserializeObject<List<SignalConnectionData>>(r.PrevSignals)
+                ?.Select(c => new SignalStatus.SignalConnection(c.Name, c.Vmax))
+                .DistinctBy(x => x.Name)
+                .ToArray() ?? [],
+            NextSignals = JsonConvert.DeserializeObject<List<SignalConnectionData>>(r.NextSignals)
+                ?.Select(c => new SignalStatus.SignalConnection(c.Name, c.Vmax))
+                .DistinctBy(x => x.Name)
+                .ToArray() ?? []
         }).ToArray();
     }
 
@@ -460,8 +428,6 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
         _logger.LogInformation("Checking types and roles of {Count} signals...", count);
 
-        var modifiedNames = new HashSet<string>();
-
         for (var i = 0; i < parcelCount; i++)
         {
             var signals = await context.Signals
@@ -475,13 +441,9 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
             foreach (var signal in signals)
             {
-                var wasTypeNull = signal.Type == null;
                 if (signal.Type == null)
                     signal.UpdateType(null);
                 signal.UpdateRole();
-
-                if (wasTypeNull || context.Entry(signal).State == EntityState.Modified)
-                    modifiedNames.Add(signal.Name);
             }
         }
 
@@ -489,11 +451,6 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             context.ChangeTracker.Entries().Count(x => x.State == EntityState.Modified));
         await context.SaveChangesAsync(cancellationToken);
         _logger.LogInformation("Signals updated successfully");
-
-        // Invalidate relevant caches after update
-        _ = _cachingService.InvalidateAsync("signals:status");
-        foreach (var name in modifiedNames)
-            _ = _cachingService.InvalidateAsync($"signal:min:{name}");
     }
 
     private static async Task<Dictionary<string, MinimalSignalData>> GetRelevantSignalsOptimized(
@@ -550,91 +507,6 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         );
     }
 
-    private async Task<Dictionary<string, MinimalSignalData>> GetRelevantSignalsCached(
-        string[] relevantSignalNames, SmoContext context)
-    {
-        if (relevantSignalNames.Length == 0)
-            return new();
-
-        var distinctNames = relevantSignalNames.Distinct().ToArray();
-        var result = new Dictionary<string, MinimalSignalData>(StringComparer.Ordinal);
-        var missing = new List<string>();
-
-        // Try cache per-signal first
-        foreach (var name in distinctNames)
-        {
-            var cached = await _cachingService.GetOrSetAsync(
-                $"signal:min:{name}",
-                () => Task.FromResult<MinimalSignalData?>(null)!,
-                TimeSpan.FromMinutes(5),
-                TimeSpan.FromMinutes(15));
-
-            if (cached != null)
-                result[name] = cached;
-            else
-                missing.Add(name);
-        }
-
-        if (missing.Count <= 0) return result;
-
-        const string sql = """
-                           SELECT s.name, s.accuracy, s.type, s.prev_finalized, s.next_finalized,
-                                  s.prev_regex, s.next_regex,
-                                  COALESCE(
-                                      json_agg(
-                                          json_build_object('name', pc.prev, 'vmax', pc.vmax)
-                                      ) FILTER (WHERE pc.prev IS NOT NULL),
-                                      '[]'::json
-                                  ) as prev_connections,
-                                  COALESCE(
-                                      json_agg(
-                                          json_build_object('name', nc.next, 'vmax', nc.vmax)
-                                      ) FILTER (WHERE nc.next IS NOT NULL),
-                                      '[]'::json
-                                  ) as next_connections
-                           FROM signals s
-                           LEFT JOIN signal_connections pc ON s.name = pc.next
-                           LEFT JOIN signal_connections nc ON s.name = nc.prev
-                           WHERE s.name = ANY(@signalNames)
-                           GROUP BY s.name, s.accuracy, s.type, s.prev_finalized, s.next_finalized,
-                                    s.prev_regex, s.next_regex
-                           """;
-
-        var signalData = await context.Database
-            .SqlQueryRaw<OptimizedSignalProjection>(sql, new NpgsqlParameter("@signalNames", missing.ToArray()))
-            .ToListAsync();
-
-        foreach (var s in signalData)
-        {
-            var min = new MinimalSignalData(
-                s.Name,
-                s.Accuracy,
-                s.Type,
-                s.PrevFinalized,
-                s.NextFinalized,
-                s.PrevRegex,
-                s.NextRegex,
-                JsonConvert.DeserializeObject<List<SignalConnectionData>>(s.PrevConnections)
-                    ?.Select(c => new MinimalSignalData.SignalConnection(c.Name, c.Vmax))
-                    .ToList() ?? [],
-                JsonConvert.DeserializeObject<List<SignalConnectionData>>(s.NextConnections)
-                    ?.Select(c => new MinimalSignalData.SignalConnection(c.Name, c.Vmax))
-                    .ToList() ?? []
-            );
-
-            result[s.Name] = min;
-
-            // Populate caches
-            _ = _cachingService.GetOrSetAsync(
-                $"signal:min:{s.Name}",
-                () => Task.FromResult<MinimalSignalData?>(min)!,
-                TimeSpan.FromMinutes(5),
-                TimeSpan.FromMinutes(15));
-        }
-
-        return result;
-    }
-
     private async Task ProcessTrainData(Dictionary<string, Train[]> trains)
     {
         var runCount = ++_runCount;
@@ -665,7 +537,8 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         using var scope = _scopeFactory.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-        var signalLookup = await GetRelevantSignalsCached(relevantSignals, context);
+        // Use the optimized query method instead of the old EF query
+        var signalLookup = await GetRelevantSignalsOptimized(relevantSignals, context);
         var signals = signalLookup.Values.ToList();
 
         // Important: as these are all the trains in every server, one signal can change multiple times
@@ -891,19 +764,6 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
             if (foundSignal != null) return foundSignal;
 
-            // Try cached minimal data first
-            var cached = await _cachingService.GetOrSetAsync(
-                $"signal:min:{signalName}",
-                () => Task.FromResult<MinimalSignalData?>(null)!,
-                TimeSpan.FromMinutes(5),
-                TimeSpan.FromMinutes(15));
-            if (cached != null)
-            {
-                signals.Add(cached);
-                signalLookup[cached.Name] = cached;
-                return cached;
-            }
-
             var dbData = await dbContext.Signals
                 .AsNoTracking()
                 .Select(s => new
@@ -939,13 +799,6 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
             signals.Add(foundSignal);
             signalLookup[foundSignal.Name] = foundSignal;
-
-            // Store in cache for subsequent lookups
-            _ = _cachingService.GetOrSetAsync(
-                $"signal:min:{foundSignal.Name}",
-                () => Task.FromResult<MinimalSignalData?>(foundSignal)!,
-                TimeSpan.FromMinutes(5),
-                TimeSpan.FromMinutes(15));
 
             return foundSignal;
         }
@@ -1188,31 +1041,17 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         DateTime TimeStamp,
         double Speed);
 
-    public class MinimalSignalData
+    private class MinimalSignalData(
+        string name,
+        double accuracy,
+        string? type,
+        bool prevFinalized,
+        bool nextFinalized,
+        string? prevRegex,
+        string? nextRegex,
+        List<MinimalSignalData.SignalConnection> prevSignalConnections,
+        List<MinimalSignalData.SignalConnection> nextSignalConnections)
     {
-        [System.Text.Json.Serialization.JsonConstructor]
-        public MinimalSignalData(
-            string name,
-            double accuracy,
-            string? type,
-            bool prevFinalized,
-            bool nextFinalized,
-            string? prevRegex,
-            string? nextRegex,
-            List<SignalConnection> prevSignalConnections,
-            List<SignalConnection> nextSignalConnections)
-        {
-            Name = name;
-            Accuracy = accuracy;
-            Type = type;
-            PrevFinalized = prevFinalized;
-            NextFinalized = nextFinalized;
-            PrevRegex = prevRegex;
-            NextRegex = nextRegex;
-            PrevSignalConnections = prevSignalConnections;
-            NextSignalConnections = nextSignalConnections;
-        }
-
         public MinimalSignalData(Signal signal) : this(
             signal.Name,
             signal.Accuracy,
@@ -1227,15 +1066,16 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             DbSignal = signal;
         }
 
-        public string Name { get; }
-        public double Accuracy { get; set; }
-        public string? Type { get; }
-        public bool PrevFinalized { get; }
-        public bool NextFinalized { get; }
-        public string? PrevRegex { get; }
-        public string? NextRegex { get; }
-        public List<SignalConnection> PrevSignalConnections { get; }
-        public List<SignalConnection> NextSignalConnections { get; }
+
+        public string Name { get; } = name;
+        public double Accuracy { get; set; } = accuracy;
+        public string? Type { get; } = type;
+        public bool PrevFinalized { get; } = prevFinalized;
+        public bool NextFinalized { get; } = nextFinalized;
+        public string? PrevRegex { get; } = prevRegex;
+        public string? NextRegex { get; } = nextRegex;
+        public List<SignalConnection> PrevSignalConnections { get; } = prevSignalConnections;
+        public List<SignalConnection> NextSignalConnections { get; } = nextSignalConnections;
 
         private Signal? DbSignal { get; set; }
 
@@ -1294,27 +1134,5 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     {
         public required string Name { get; init; }
         public required short? Vmax { get; init; }
-    }
-
-    // DTO used only for caching; avoids geometry types to keep JSON simple
-    private sealed class SignalStatusCacheDto
-    {
-        public required string Name { get; init; }
-        public required string Extra { get; init; }
-        public required double Accuracy { get; init; }
-        public required string? Type { get; init; }
-        public required string? Role { get; init; }
-        public required bool PrevFinalized { get; init; }
-        public required bool NextFinalized { get; init; }
-        public required string? PrevRegex { get; init; }
-        public required string? NextRegex { get; init; }
-        public required double Longitude { get; init; }
-        public required double Latitude { get; init; }
-
-        public required SignalStatus.SignalConnection[] PrevSignals { get; init; } =
-            Array.Empty<SignalStatus.SignalConnection>();
-
-        public required SignalStatus.SignalConnection[] NextSignals { get; init; } =
-            Array.Empty<SignalStatus.SignalConnection>();
     }
 }

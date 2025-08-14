@@ -44,12 +44,12 @@ public class RoutePointAnalyzerService : IHostedService
     /// <summary>
     ///     Maximum batch size for database operations to optimize memory usage and performance.
     /// </summary>
-    private const int MaxBatchSize = 500; // Reduced from 1000 to decrease memory pressure
+    private const int MaxBatchSize = 1000;
 
     /// <summary>
     ///     Maximum degree of parallelism for train data processing.
     /// </summary>
-    private static readonly int MaxConcurrency = Math.Min(Environment.ProcessorCount, 2); // Reduced concurrency
+    private static readonly int MaxConcurrency = Math.Min(Environment.ProcessorCount * 2, 4);
 
     /// <summary>
     ///     Prometheus gauge for monitoring route point queue size.
@@ -73,11 +73,6 @@ public class RoutePointAnalyzerService : IHostedService
     ///     Cache for active train run IDs to avoid repeated database queries.
     /// </summary>
     private readonly ConcurrentDictionary<string, DateTime> _activeTrainCache = new();
-
-    /// <summary>
-    ///     Caching service for reducing database load.
-    /// </summary>
-    private readonly CachingService _cachingService;
 
     /// <summary>
     ///     Logger instance for this service.
@@ -125,14 +120,12 @@ public class RoutePointAnalyzerService : IHostedService
     public RoutePointAnalyzerService(ILogger<RoutePointAnalyzerService> logger,
         IServiceScopeFactory scopeFactory,
         TrainDataService trainDataService,
-        SignalAnalyzerService signalAnalyzerService,
-        CachingService cachingService)
+        SignalAnalyzerService signalAnalyzerService)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
         _trainDataService = trainDataService;
         _signalAnalyzerService = signalAnalyzerService;
-        _cachingService = cachingService;
         _cancellationTokenSource = new();
         _queueProcessor = new(logger,
             ProcessTrainData,
@@ -679,7 +672,7 @@ public class RoutePointAnalyzerService : IHostedService
     }
 
     /// <summary>
-    /// Gets the distance to the nearest route point with optimized query and caching.
+    /// Gets the distance to the nearest route point with optimized query.
     /// </summary>
     /// <param name="routeId">The route identifier</param>
     /// <param name="runId">The run identifier</param>
@@ -688,72 +681,60 @@ public class RoutePointAnalyzerService : IHostedService
     /// <returns>A task that returns the distance to the nearest route point in meters</returns>
     private async Task<double> GetNearestPointQuery(string routeId, string runId, string trainId, Point point)
     {
-        // Create a cache key for this distance calculation
-        var cacheKey = $"distance:{routeId}:{runId}:{trainId}:{point.X:F4}:{point.Y:F4}";
+        using var scope = _scopeFactory.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-        return await _cachingService.GetOrSetAsync(
-            cacheKey,
-            async () =>
-            {
-                using var scope = _scopeFactory.CreateScope();
-                await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
+        // Use spatial query to find the nearest point efficiently
+        const string sql = """
+                           SELECT COALESCE(
+                               MIN(ST_Distance(ST_Transform(point, 3857), ST_Transform(ST_GeomFromText($1, 4326), 3857))),
+                               $6
+                           ) as distance
+                           FROM route_points
+                           WHERE route_id = $2
+                             AND run_id = $3
+                             AND train_id = $4
+                             AND created_at > $5
+                           """;
 
-                // Use spatial query to find the nearest point efficiently
-                const string sql = """
-                                   SELECT COALESCE(
-                                       MIN(ST_Distance(ST_Transform(point, 3857), ST_Transform(ST_GeomFromText($1, 4326), 3857))),
-                                       $6
-                                   ) as distance
-                                   FROM route_points
-                                   WHERE route_id = $2
-                                     AND run_id = $3
-                                     AND train_id = $4
-                                     AND created_at > $5
-                                   """;
+        var pointWkt = point.AsText();
+        var cutoffTime = DateTime.UtcNow.AddMinutes(-10); // Only check recent points
+        const double maxDistance = MinDistance * 2; // Use a large enough max distance to ensure we get a valid result
 
-                var pointWkt = point.AsText();
-                var cutoffTime = DateTime.UtcNow.AddMinutes(-10); // Only check recent points
-                const double
-                    maxDistance = MinDistance * 2; // Use a large enough max distance to ensure we get a valid result
+        await using var command = context.Database.GetDbConnection().CreateCommand();
+        command.CommandText = sql;
 
-                await using var command = context.Database.GetDbConnection().CreateCommand();
-                command.CommandText = sql;
+        var p1 = command.CreateParameter();
+        p1.Value = pointWkt;
+        command.Parameters.Add(p1);
 
-                var p1 = command.CreateParameter();
-                p1.Value = pointWkt;
-                command.Parameters.Add(p1);
+        var p2 = command.CreateParameter();
+        p2.Value = routeId;
+        command.Parameters.Add(p2);
 
-                var p2 = command.CreateParameter();
-                p2.Value = routeId;
-                command.Parameters.Add(p2);
+        var p3 = command.CreateParameter();
+        p3.Value = runId;
+        command.Parameters.Add(p3);
 
-                var p3 = command.CreateParameter();
-                p3.Value = runId;
-                command.Parameters.Add(p3);
+        var p4 = command.CreateParameter();
+        p4.Value = trainId;
+        command.Parameters.Add(p4);
 
-                var p4 = command.CreateParameter();
-                p4.Value = trainId;
-                command.Parameters.Add(p4);
+        var p5 = command.CreateParameter();
+        p5.Value = cutoffTime;
+        command.Parameters.Add(p5);
 
-                var p5 = command.CreateParameter();
-                p5.Value = cutoffTime;
-                command.Parameters.Add(p5);
+        var p6 = command.CreateParameter();
+        p6.Value = maxDistance;
+        command.Parameters.Add(p6);
 
-                var p6 = command.CreateParameter();
-                p6.Value = maxDistance;
-                command.Parameters.Add(p6);
+        await context.Database.OpenConnectionAsync();
+        await using var reader = await command.ExecuteReaderAsync();
 
-                await context.Database.OpenConnectionAsync();
-                await using var reader = await command.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+            return reader.GetDouble(0);
 
-                if (await reader.ReadAsync())
-                    return reader.GetDouble(0);
-
-                return maxDistance;
-            },
-            TimeSpan.FromSeconds(30), // Very short cache for distance calculations
-            TimeSpan.FromMinutes(2)
-        );
+        return maxDistance;
     }
 
     /// <summary>
@@ -763,66 +744,56 @@ public class RoutePointAnalyzerService : IHostedService
     /// <returns>An array of WKT representations of the route points</returns>
     public async Task<string[]> GetTrainRoutePoints(string trainNoLocal)
     {
-        var cacheKey = $"train-routes:{trainNoLocal}";
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-        return await _cachingService.GetOrSetAsync(
-            cacheKey,
-            async () =>
-            {
-                try
-                {
-                    using var scope = _scopeFactory.CreateScope();
-                    await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
+            // Optimized query with better indexing hints
+            const string sql = """
+                               WITH valid_runs AS (
+                                   SELECT 
+                                       route_id, 
+                                       train_id, 
+                                       run_id, 
+                                       MAX(created_at) as latest
+                                   FROM route_points 
+                                   WHERE route_id = @trainNoLocal
+                                   GROUP BY route_id, train_id, run_id
+                                   HAVING COUNT(*) > 20
+                                   ORDER BY latest DESC
+                                   LIMIT 10
+                               ),
+                               route_coords AS (
+                                   SELECT 
+                                       rp.route_id, 
+                                       rp.train_id, 
+                                       rp.run_id, 
+                                       ST_X(rp.point) as x,
+                                       ST_Y(rp.point) as y,
+                                       rp.created_at
+                                   FROM route_points rp
+                                   INNER JOIN valid_runs vr ON rp.route_id = vr.route_id 
+                                                           AND rp.train_id = vr.train_id 
+                                                           AND rp.run_id = vr.run_id
+                                   ORDER BY rp.run_id, rp.created_at
+                               )
+                               SELECT ST_AsText(ST_MakeLine(ST_Point(x, y) ORDER BY created_at)) as line_wkt
+                               FROM route_coords
+                               GROUP BY route_id, train_id, run_id
+                               """;
 
-                    // Optimized query with better indexing hints
-                    const string sql = """
-                                       WITH valid_runs AS (
-                                           SELECT 
-                                               route_id, 
-                                               train_id, 
-                                               run_id, 
-                                               MAX(created_at) as latest
-                                           FROM route_points 
-                                           WHERE route_id = @trainNoLocal
-                                           GROUP BY route_id, train_id, run_id
-                                           HAVING COUNT(*) > 20
-                                           ORDER BY latest DESC
-                                           LIMIT 10
-                                       ),
-                                       route_coords AS (
-                                           SELECT 
-                                               rp.route_id, 
-                                               rp.train_id, 
-                                               rp.run_id, 
-                                               ST_X(rp.point) as x,
-                                               ST_Y(rp.point) as y,
-                                               rp.created_at
-                                           FROM route_points rp
-                                           INNER JOIN valid_runs vr ON rp.route_id = vr.route_id 
-                                                                   AND rp.train_id = vr.train_id 
-                                                                   AND rp.run_id = vr.run_id
-                                           ORDER BY rp.run_id, rp.created_at
-                                       )
-                                       SELECT ST_AsText(ST_MakeLine(ST_Point(x, y) ORDER BY created_at)) as line_wkt
-                                       FROM route_coords
-                                       GROUP BY route_id, train_id, run_id
-                                       """;
+            var results = await context.Database
+                .SqlQueryRaw<string>(sql, new NpgsqlParameter("@trainNoLocal", trainNoLocal))
+                .ToArrayAsync();
 
-                    var results = await context.Database
-                        .SqlQueryRaw<string>(sql, new NpgsqlParameter("@trainNoLocal", trainNoLocal))
-                        .ToArrayAsync();
-
-                    return results;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error getting route points for train {TrainNoLocal}", trainNoLocal);
-                    return [];
-                }
-            },
-            TimeSpan.FromMinutes(5),
-            TimeSpan.FromMinutes(15)
-        ) ?? [];
+            return results;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting route points for train {TrainNoLocal}", trainNoLocal);
+            return [];
+        }
     }
 
     /// <summary>

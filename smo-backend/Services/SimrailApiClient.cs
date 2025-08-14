@@ -145,11 +145,6 @@ public class SimrailApiClient : IDisposable
                 _logger.LogInformation("{OperationName} was cancelled", operationName);
                 throw;
             }
-            catch (TaskCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                _logger.LogInformation("{OperationName} was cancelled", operationName);
-                throw;
-            }
 
         // All retries exhausted
         var message = $"All {_maxRetries + 1} attempts failed for {operationName}";

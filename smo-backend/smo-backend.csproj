@@ -22,10 +22,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.8"/>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" Version="9.0.4"/>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite"
+      Version="9.0.4" />
     <PackageReference Include="prometheus-net" Version="8.2.1" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
     <PackageReference Include="prometheus-net.AspNetCore.HealthChecks" Version="8.2.1" />
