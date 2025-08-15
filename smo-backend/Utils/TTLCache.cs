@@ -30,7 +30,7 @@ public class TtlCache<TKey, TValue> : IDisposable
     {
         _ttl = ttl;
         _instanceName = name ?? $"{typeof(TKey).Name}_{typeof(TValue).Name}";
-        _maxEntries = maxEntries;
+        _maxEntries = maxEntries <= 0 ? null : maxEntries;
 
         if (_ttl == null) return;
 
