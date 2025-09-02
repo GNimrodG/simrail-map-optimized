@@ -33,7 +33,7 @@
     "react-cookie-consent": "^9.0.0",
     "react-dom": "^18.2.0",
     "react-error-boundary": "^6.0.0",
-    "react-i18next": "^15.6.1",
+    "react-i18next": "^15.7.1",
     "react-leaflet": "^4.2.1",
     "react-leaflet-custom-control": "^1.4.0",
     "react-window": "^1.8.11",
