@@ -116,10 +116,7 @@ public class TimetableAnalyzerService(
             logger.LogInformation("Processed timetable data for server {ServerCode} in {ElapsedMilliseconds} ms",
                 timetableData.ServerCode, stopwatch.ElapsedMilliseconds);
 
-            await scopeFactory.LogStat(
-                "TIMETABLE-ANALYZE",
-                (int)stopwatch.ElapsedMilliseconds,
-                timetableData.Data.Length);
+            await scopeFactory.LogStat("TIMETABLE-ANALYZE", (int)stopwatch.ElapsedMilliseconds);
         }
         catch (Exception ex)
         {

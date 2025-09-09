@@ -38,6 +38,10 @@ export function getSignalsForStation(station: Station, allowNumPrefix = false): 
 }
 
 export function findStationForSignal(signalName: string) {
+  if (!signalName) {
+    return null;
+  }
+
   const options: Station[] = [];
 
   for (const station of [...dataProvider.unplayableStations$.value, ...dataProvider.stationsData$.value]) {

@@ -166,7 +166,7 @@ public abstract class BaseDataService<T>(
     }
 
     private protected virtual Task WriteStats(int time, CancellationToken stoppingToken) =>
-        scopeFactory.LogStat(serviceId, time, ++RunCount, null, stoppingToken);
+        scopeFactory.LogStat(serviceId, time, stoppingToken);
 
     private protected abstract Task<T> FetchData(CancellationToken stoppingToken);
 

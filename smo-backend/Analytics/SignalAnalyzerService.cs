@@ -622,7 +622,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         foreach (var (serverCode, count) in invalidTrainsPerServer)
             InvalidTrainsHistogram.WithLabels(serverCode).Observe(count);
 
-        context.Stats.Add(new("SIGNALS-PROC", elapsed, allTrains.Count, invalidTrainsSum));
+        context.Stats.Add(new("SIGNALS-PROC", elapsed));
         await context.SaveChangesAsync();
     }
 

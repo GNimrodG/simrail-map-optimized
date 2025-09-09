@@ -116,6 +116,28 @@ public class TrainDelayAnalyzerService(
         logger.LogInformation("Saved last timetable index and train delays to file");
     }
 
+    /// <inheritdoc />
+    public void ClearServerMetrics(string serverCode)
+    {
+        // Clear server punctuality metrics for the offline server
+        ServerPunctualityGauge.RemoveLabelledByPredicate(labels => labels.Length > 0 && labels[0] == serverCode);
+
+
+        // Clear train delay data for all trains from the offline server
+        // Find all train IDs that belong to the offline server
+        var trainIdsToRemove = _trainDelays.Keys.Where(trainId => trainId.Contains($"@{serverCode}-")).ToList();
+
+        // Remove train delays for offline server's trains
+        foreach (var trainId in trainIdsToRemove)
+        {
+            _trainDelays.Remove(trainId);
+            _lastTimetableIndex.Remove(trainId);
+        }
+
+        logger.LogInformation("Cleared {TrainCount} train delay records for offline server {ServerCode}",
+            trainIdsToRemove.Count, serverCode);
+    }
+
     /// <summary>
     /// Get the delays for the specified trains.
     /// </summary>
@@ -176,11 +198,7 @@ public class TrainDelayAnalyzerService(
 
             _isRunning = false;
 
-            await scopeFactory.LogStat(
-                "TRAIN-DELAY",
-                (int)stopwatch.ElapsedMilliseconds,
-                allTrains.Length,
-                _trainDelays.Count);
+            await scopeFactory.LogStat("TRAIN-DELAY", (int)stopwatch.ElapsedMilliseconds);
         }
         catch (Exception ex)
         {
@@ -329,27 +347,5 @@ public class TrainDelayAnalyzerService(
         // Convert to Unix time
         var unixTime = (long)(dateTime - DateTime.UnixEpoch).TotalMilliseconds;
         return unixTime;
-    }
-
-    /// <inheritdoc />
-    public void ClearServerMetrics(string serverCode)
-    {
-        // Clear server punctuality metrics for the offline server
-        ServerPunctualityGauge.RemoveLabelledByPredicate(labels => labels.Length > 0 && labels[0] == serverCode);
-  
-
-        // Clear train delay data for all trains from the offline server
-        // Find all train IDs that belong to the offline server
-        var trainIdsToRemove = _trainDelays.Keys.Where(trainId => trainId.Contains($"@{serverCode}-")).ToList();
-        
-        // Remove train delays for offline server's trains
-        foreach (var trainId in trainIdsToRemove)
-        {
-            _trainDelays.Remove(trainId);
-            _lastTimetableIndex.Remove(trainId);
-        }
-
-        logger.LogInformation("Cleared {TrainCount} train delay records for offline server {ServerCode}", 
-            trainIdsToRemove.Count, serverCode);
     }
 }

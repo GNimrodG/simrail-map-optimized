@@ -607,8 +607,7 @@ public class RoutePointAnalyzerService : IHostedService
             "Processed {AddedPoints} added and {DiscardedPoints} discarded route points in {ElapsedMilliseconds} ms",
             allPointsToAdd.Count, discardedCount, stopwatch.ElapsedMilliseconds);
 
-        await _scopeFactory.LogStat("ROUTEPOINT", (int)stopwatch.ElapsedMilliseconds, allPointsToAdd.Count,
-            discardedCount);
+        await _scopeFactory.LogStat("ROUTEPOINT", (int)stopwatch.ElapsedMilliseconds);
     }
 
     /// <summary>

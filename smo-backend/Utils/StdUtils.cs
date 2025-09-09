@@ -36,12 +36,12 @@ internal static class StdUtils
     }
 
     internal static async Task LogStat(this IServiceScopeFactory scopeFactory,
-        string serviceId, int duration, int count, int? serverCount = null, CancellationToken? stoppingToken = null)
+        string serviceId, int duration, CancellationToken? stoppingToken = null)
     {
         using var scope = scopeFactory.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-        context.Stats.Add(new(serviceId, duration, count, serverCount));
+        context.Stats.Add(new(serviceId, duration));
 
         if (stoppingToken.HasValue)
             await context.SaveChangesAsync(stoppingToken.Value);

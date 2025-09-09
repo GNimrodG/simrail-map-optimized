@@ -18,10 +18,15 @@ public abstract class BaseServerDataService<T>(
     ServerDataService serverDataService)
     : BaseDataService<Dictionary<string, T>>(serviceId, logger, scopeFactory) where T : class?
 {
-    private readonly string _serviceId = serviceId;
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
+    private readonly string _serviceId = serviceId;
 
     private protected virtual TimeSpan DelayBetweenServers => TimeSpan.Zero;
+
+    /// <summary>
+    ///     The latest data received from the service for a specific server.
+    /// </summary>
+    public T? this[string serverCode] => Data?[serverCode];
 
     /// <inheritdoc />
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -79,11 +84,6 @@ public abstract class BaseServerDataService<T>(
     }
 
     /// <summary>
-    /// The latest data received from the service for a specific server.
-    /// </summary>
-    public T? this[string serverCode] => Data?[serverCode];
-
-    /// <summary>
     /// Event that is triggered when new data is received for a specific server.
     /// </summary>
     public event DataReceivedEventHandler<PerServerData<T>>? PerServerDataReceived;
@@ -94,7 +94,7 @@ public abstract class BaseServerDataService<T>(
     protected virtual void OnPerServerDataReceived(PerServerData<T> data) => PerServerDataReceived?.Invoke(data);
 
     private protected override Task WriteStats(int time, CancellationToken stoppingToken) =>
-        _scopeFactory.LogStat(_serviceId, time, ++RunCount, Data?.Count, stoppingToken);
+        _scopeFactory.LogStat(_serviceId, time, stoppingToken);
 
     private protected override async Task<Dictionary<string, T>> FetchData(CancellationToken stoppingToken)
     {

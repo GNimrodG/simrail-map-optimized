@@ -572,7 +572,8 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/lw3.jpg",
     "DispatchedBy": [],
     "Id": "68092e467c23edeccd597f75",
-    "SubStations": ["Łódź Widzew R9", "Łódź Widzew PZS R3"]
+    "SubStations": ["Łódź Widzew R9", "Łódź Widzew PZS R3"],
+    "IgnoredStations": ["Łódź Niciarniana"]
   },
   {
     "Name": "Płyćwia",
@@ -636,7 +637,8 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/zy3.jpg",
     "DispatchedBy": [],
     "Id": "67e7c02d46650199d1e4366a",
-    "SubStations": ["Radziwiłłów Mazowiecki"]
+    "SubStations": ["Radziwiłłów Mazowiecki"],
+    "IgnoredStations": ["Sucha Żyrardowska", "Międzyborów", "Jaktorów", "Jesionka", "Skierniewice Rawka"]
   },
   {
     "Name": "Katowice Tow. KTC",
@@ -1264,7 +1266,8 @@
     "DispatchedBy": [],
     "Latitude": 51.725208,
     "Longitude": 19.494952,
-    "Id": "LCH"
+    "Id": "LCH",
+    "SubStations": ["Łódź Chojny R82"]
   },
   {
     "Name": "Łódź Olechów Łoa",
@@ -1599,5 +1602,31 @@
     "Id": "dc32227e-e68f-4ec0-a1c0-f92d4dee1ed8",
     "PointId": "500",
     "IgnoredStations": ["Świętochłowice"]
+  },
+  {
+    "Name": "Łódź Fabryczna",
+    "Prefix": "2431_ŁF",
+    "DifficultyLevel": -1,
+    "Latitude": 51.7695535,
+    "Longitude": 19.4696108,
+    "DispatchedBy": [],
+    "Id": "a1bd1c3e-43f5-4d77-8b26-4219656a8e9b",
+    "PointId": "2431",
+    "RemoteControlled": null,
+    "SubStations": [],
+    "IgnoredStations": ["Łódź Niciarniana"]
+  },
+  {
+    "Name": "Suchedniów Północny",
+    "Prefix": "4192_SP",
+    "DifficultyLevel": -1,
+    "Latitude": 51.0652814,
+    "Longitude": 20.8491495,
+    "DispatchedBy": [],
+    "Id": "d8eac095-b7f1-46cf-92f4-adfdadeb9012",
+    "PointId": "4192",
+    "RemoteControlled": null,
+    "SubStations": [],
+    "IgnoredStations": []
   }
 ]
