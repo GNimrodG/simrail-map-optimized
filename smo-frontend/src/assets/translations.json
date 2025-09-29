@@ -214,8 +214,8 @@
         "Main": {
           "EC": "EuroCity train",
           "EN": "EuroNight train",
-          "EI": "National express train",
-          "MM": "IInternational limited-stop passenger train",
+          "EI": "National express train (InterCity)",
+          "MM": "International limited-stop passenger train",
           "MP": "Inter-regional limited-stop passenger train",
           "MH": "Inter-regional limited-stop night or sleeper passenger train",
           "MO": "Inter-regional passenger train",
@@ -233,7 +233,7 @@
           "TN": "Non-bulk freight train",
           "TK": "Train for the servicing of stations and sidings",
           "TS": "Empty cars for/after repairs, test trains and other trains",
-          "TH": "Locomotive set",
+          "TH": "Locomotive set (3+ locos)",
           "ZG": "Rescue train",
           "ZN": "Inspection and measurement train",
           "ZU": "Other maintenance train",
@@ -257,8 +257,8 @@
           "S": "Diesel locomotive",
           "P": "Steam locomotive"
         },
-        "MainFormat": "{main} {mod}",
-        "LocomotiveFormat": "{mod} {main}"
+        "Format": "{{main}} {{mod}}",
+        "LocomotiveFormat": "{{mod}} {{main}}"
       },
       "TrainTimetable": {
         "TrainNo": "Train No.",
@@ -553,7 +553,8 @@
           "LSE": "Einzelne Elektrolokomotive für Rangier- oder andere Züge",
           "LSS": "Einzelne Diesellokomotive für Rangier- oder andere Züge"
         },
-        "Format": "{main} {mod}"
+        "Format": "{{main}} {{mod}}",
+        "LocomotiveFormat": "{{mod}} {{main}}"
       },
       "TrainTimetable": {
         "TrainNo": "Zug-Nr.",
@@ -812,7 +813,7 @@
           "RM": "Nemzetközi regionális vonat",
           "RP": "Regionális gyorsvonat",
           "RO": "Személyvonat",
-          "RA": "Regionális expressz vonat",
+          "RA": "Regionális személyvonat",
           "PW": "Üres személyvonat",
           "PX": "Üres személyvonat (segély- vagy próbavonat)",
           "TC": "Nemzetközi intermodális tehervonat",
@@ -836,8 +837,8 @@
           "P": "gőzmozdony vontatással"
         },
         "Locomotive": {
-          "LP": "Önálló személyszállító gőz- vagy villamos mozdony / villamos motorvonat",
-          "LT": "Önálló teherszállító gőz-, dízel- vagy villamos mozdony"
+          "LP": "Önálló személyszállító",
+          "LT": "Önálló teherszállító"
         },
         "LocomotiveModifires": {
           "E": "villamos mozdony",
@@ -852,8 +853,8 @@
           "LSE": "Önálló villamos mozdony tolatáshoz vagy egyéb vonathoz",
           "LSS": "Önálló dízelmozdony tolatáshoz vagy egyéb vonathoz"
         },
-        "Format": "{main} {mod}",
-        "LocomotiveFormat": "{main} {mod}"
+        "Format": "{{main}} {{mod}}",
+        "LocomotiveFormat": "{{main}} {{mod}}"
       },
       "TrainTimetable": {
         "TrainNo": "Vonatszám",
@@ -1150,8 +1151,8 @@
           "THE": "3 veya daha fazla elektrikli lokomotiften oluşan lokomotif treni",
           "THS": "3 veya daha fazla dizel lokomotiften oluşan lokomotif treni"
         },
-        "Format": "{mod} {main}",
-        "LocomotiveFormat": "{main} {mod}"
+        "Format": "{{mod}} {{main}}",
+        "LocomotiveFormat": "{{main}} {{mod}}"
       },
       "TrainTimetable": {
         "TrainNo": "Tren No",
@@ -1402,7 +1403,7 @@
         "Main": {
           "EC": "Pociąg EuroCity",
           "EN": "Pociąg EuroNight",
-          "EI": "Pociąg ekspresowy krajowy",
+          "EI": "Pociąg ekspresowy krajowy (InterCity)",
           "MM": "Pociąg międzynarodowy pośpieszny",
           "MP": "Pociąg międzywojewódzki pośpieszny",
           "MH": "Pociąg międzywojewódzki pośpieszny nocny lub typu hotelowego",
@@ -1421,7 +1422,7 @@
           "TN": "Pociąg do przewozów niemasowych",
           "TK": "Pociąg do obsługi stacji i bocznic",
           "TS": "Próżne wagony z/do naprawy, pociągi próbne oraz pozostałe pociągi",
-          "TH": "Skład lokomotyw",
+          "TH": "Skład lokomotyw (3+ lokomotywy)",
           "ZG": "Pociąg ratunkowy",
           "ZN": "Pociąg pomiarowy/kontrolny",
           "ZU": "Inny pociąg roboczy",
@@ -1445,8 +1446,8 @@
           "S": "Lokomotywą spalinową",
           "P": "Lokomotywą parową"
         },
-        "Format": "{main} {mod}",
-        "LocomotiveFormat": "{mod} {main}"
+        "Format": "{{main}} {{mod}}",
+        "LocomotiveFormat": "{{mod}} {{main}}"
       },
       "TrainTimetable": {
         "TrainNo": "Nr pociągu",

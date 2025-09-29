@@ -33,10 +33,7 @@ const TrainTypeDisplay: FunctionComponent<TrainTypeDisplayProps> = ({ type }) =>
     const mainText = i18n.exists(`TrainTypes.${mainKey}`) ? t(mainKey) : "";
     const modText = mod && i18n.exists(`TrainTypes.${modKey}`) ? t(modKey) : "";
 
-    if (mainText) {
-      const format = i18n.exists(`TrainTypes.${formatKey}`) ? t(formatKey) : "{main} {mod}";
-      title = format.replace("{main}", mainText).replace("{mod}", modText).trim();
-    }
+    if (mainText) title = t(formatKey, { main: mainText, mod: modText });
   }
 
   return (
