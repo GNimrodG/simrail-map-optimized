@@ -1,10 +1,10 @@
-﻿import {readLocalStorageValue} from "@mantine/hooks";
-import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
-import {MessagePackHubProtocol} from "@microsoft/signalr-protocol-msgpack";
+﻿import { readLocalStorageValue } from "@mantine/hooks";
+import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
+import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 import isEqual from "lodash/isEqual";
 import omit from "lodash/omit";
-import {LRUCache} from "lru-cache";
-import {BehaviorSubject, debounceTime, distinctUntilChanged, map, Observable, withLatestFrom} from "rxjs";
+import { LRUCache } from "lru-cache";
+import { BehaviorSubject, debounceTime, distinctUntilChanged, map, Observable, withLatestFrom } from "rxjs";
 
 import UnplayableStations from "../assets/unplayable-stations.json";
 import {
@@ -21,7 +21,7 @@ import {
   Timetable,
   Train,
 } from "../utils/types";
-import {IDataProvider} from "./data-provider.interface";
+import { IDataProvider } from "./data-provider.interface";
 
 export class SignalRDataProvider implements IDataProvider {
   private readonly serverApiUrl: string;
@@ -673,9 +673,9 @@ export class SignalRDataProvider implements IDataProvider {
     // Fetch the lines with the GetLinesForSignalConnection SignalR method
     try {
       const lines = await this.connection.invoke<string[] | null>(
-          "GetLinesForSignalConnection",
-          prevSignal,
-          nextSignal,
+        "GetLinesForSignalConnection",
+        prevSignal,
+        nextSignal,
       );
       if (lines) {
         return lines;
