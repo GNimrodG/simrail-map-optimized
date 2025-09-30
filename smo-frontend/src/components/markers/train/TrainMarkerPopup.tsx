@@ -33,7 +33,6 @@ import SettingCheckbox from "../../settings/SettingCheckbox";
 import SteamProfileDisplay from "../../SteamProfileDisplay";
 import { formatVehicleName, getThumbnailUrl } from "../../utils/general-utils";
 import SignalSpeedDisplay from "../../utils/SignalSpeedDisplay";
-import TrainTypeDisplay from "../../utils/TrainTypeDisplay";
 import CalendarIcon from "../icons/calendar.svg?react";
 import LengthIcon from "../icons/LengthIcon";
 import SpeedIcon from "../icons/SpeedIcon";
@@ -282,7 +281,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           component="div">
           {train.TrainNoLocal}{" "}
           <Box component="span" sx={{ display: "inline-flex", alignItems: "center", ml: 1 }}>
-            (<TrainTypeDisplay type={train.TrainName} />)
+            ({train.TrainName})
           </Box>
         </Typography>
 
