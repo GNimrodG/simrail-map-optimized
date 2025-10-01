@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.13.0",
+    "@emotion/styled": "^11.14.1",
     "@fontsource/inter": "^5.2.0",
     "@mantine/hooks": "^7.17.1",
     "@microsoft/signalr": "^8.0.7",
