@@ -205,6 +205,20 @@ async function executeOsmQuery(query: string, abortSignal?: AbortSignal) {
       return null;
     }
 
+    // Handle network errors
+    if (error instanceof TypeError) {
+      isOsmAvailable$.next(false);
+      console.warn("Network error during OSM query:", error);
+      return null;
+    }
+
+    // Handle too many requests error
+    if (error instanceof Error && error.message.includes("429")) {
+      isOsmAvailable$.next(false);
+      console.warn("Overpass API rate limit exceeded:", error);
+      return null;
+    }
+
     // Re-throw other errors
     throw error;
   }
