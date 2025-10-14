@@ -2,10 +2,7 @@ import "leaflet/dist/leaflet.css";
 
 import { useHotkeys } from "@mantine/hooks";
 import Box from "@mui/joy/Box";
-import Button from "@mui/joy/Button";
-import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
-import Typography from "@mui/joy/Typography";
 import L from "leaflet";
 import { type FunctionComponent, lazy, Suspense, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,6 +12,8 @@ import Control from "react-leaflet-custom-control";
 import useBehaviorSubj from "../hooks/useBehaviorSubj";
 import { useSetting } from "../hooks/useSetting";
 import { dataProvider } from "../utils/data-manager";
+import { goToSignal } from "../utils/geom-utils";
+import MapLinesContext from "../utils/map-lines-context";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import AutoZoomHandler from "./AutoZoom";
@@ -24,6 +23,7 @@ import Loading from "./Loading";
 import LowSpeedWarning from "./LowSpeedWarning";
 import MapTimeDisplay from "./MapTimeDisplay";
 import SearchBar from "./SearchBar";
+import SelectedRouteControl from "./SelectedRouteControl";
 import SelectedTrainInfo from "./SelectedTrainInfo";
 import ServerSelector from "./ServerSelector";
 import SettingsModal from "./settings/SettingsModal";
@@ -42,8 +42,9 @@ const StoppingPointsLayer = lazy(() => import("./layers/StoppingPointsLayer"));
 
 const MainMap: FunctionComponent = () => {
   const { t } = useTranslation();
-  const { setSelectedTrain } = useContext(SelectedTrainContext);
+  const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
+  const { mapLines, setMapLines } = useContext(MapLinesContext);
   const [alternativeTheme] = useSetting("alternativeTheme");
 
   const isConnected = useBehaviorSubj(dataProvider.isConnected$);
@@ -83,6 +84,7 @@ const MainMap: FunctionComponent = () => {
       () => {
         setSelectedRoute(null);
         setSelectedTrain(null);
+        setMapLines(null);
       },
     ],
   ]);
@@ -101,6 +103,29 @@ const MainMap: FunctionComponent = () => {
         .join(" | "),
     [t],
   );
+
+  const panToSignal = (signalName: string) => {
+    if (!map) return;
+
+    const signal = dataProvider.signalsData$.value.find((s) => s.Name === signalName);
+    if (!signal) return;
+
+    setSelectedTrain(selectedTrain ? { ...selectedTrain, follow: false } : null);
+    goToSignal(signal, map);
+  };
+
+  const panToTrain = (trainNo: string) => {
+    if (!map) return;
+
+    const train = dataProvider.trainsData$.value.find((t) => t.TrainNoLocal === trainNo);
+    if (!train) return;
+
+    map.panTo([train.TrainData.Latitude, train.TrainData.Longitude], {
+      animate: true,
+      duration: 1,
+    });
+    setSelectedTrain({ trainNo: train.TrainNoLocal, follow: true, paused: false });
+  };
 
   return (
     <>
@@ -181,25 +206,28 @@ const MainMap: FunctionComponent = () => {
 
         {/* Selected Route */}
         <Control prepend position="bottomright">
-          {selectedRoute && (
-            <Sheet
-              variant="outlined"
-              sx={{
-                p: 1,
-                borderRadius: "var(--joy-radius-sm)",
-              }}>
-              <Stack>
-                <Typography level="body-md">{t("SelectedRoute")}</Typography>
-                <Stack spacing={1} direction="row" alignItems="center">
-                  <Typography level="body-lg" variant="outlined" color="primary">
-                    {selectedRoute}
-                  </Typography>
-                  <Button size="sm" variant="outlined" color="danger" onClick={() => setSelectedRoute(null)}>
-                    {t("Hide")}
-                  </Button>
-                </Stack>
-              </Stack>
-            </Sheet>
+          {(mapLines || selectedRoute) && (
+            <Stack spacing={1} alignItems="flex-end">
+              {selectedRoute && (
+                <SelectedRouteControl
+                  title={t("SelectedRoute")}
+                  value={selectedRoute}
+                  valueColor="primary"
+                  onValueClick={() => panToTrain(selectedRoute)}
+                  onHide={() => setSelectedRoute(null)}
+                />
+              )}
+
+              {mapLines && (
+                <SelectedRouteControl
+                  title={t("SignalMarker.ActiveLinesTitle")}
+                  value={mapLines.signal}
+                  valueColor="success"
+                  onValueClick={() => panToSignal(mapLines.signal)}
+                  onHide={() => setMapLines(null)}
+                />
+              )}
+            </Stack>
           )}
         </Control>
         {/* Layers */}

@@ -129,6 +129,11 @@
         "NextSignals": "Next signals",
         "HideSignalLines": "Hide signal lines",
         "ShowSignalLines": "Show signal lines",
+        "ShowSignalLinesModifiers": {
+          "ConnectionsOnly": "{{base}} (connections only)",
+          "DirectOnly": "{{base}} (direct lines only)"
+        },
+        "ActiveLinesTitle": "Active signal lines",
         "ShowSignalLinesFurther": {
           "Description": "Show signal lines further",
           "Title": "Depending on the number of signals, this can be slow"
@@ -424,6 +429,11 @@
         "NextSignals": "Nächste Signale",
         "HideSignalLines": "Signal-Linien ausblenden",
         "ShowSignalLines": "Signal-Linien anzeigen",
+        "ShowSignalLinesModifiers": {
+          "ConnectionsOnly": "{{base}} (nur Verbindungen)",
+          "DirectOnly": "{{base}} (nur direkte Linien)"
+        },
+        "ActiveLinesTitle": "Aktive Signal-Linien",
         "ShowSignalLinesFurther": {
           "Description": "Signal-Linien weiter entfernt anzeigen",
           "Title": "Abhängig von der Anzahl der Signale kann dies langsam sein"
@@ -720,6 +730,11 @@
         "NextSignals": "Következő jelzők",
         "HideSignalLines": "Jelző vonalak elrejtése",
         "ShowSignalLines": "Jelző vonalak megjelenítése",
+        "ShowSignalLinesModifiers": {
+          "ConnectionsOnly": "{{base}} (csak kapcsolatok)",
+          "DirectOnly": "{{base}} (csak közvetlen vonalak)"
+        },
+        "ActiveLinesTitle": "Aktív jelzővonalak",
         "ShowSignalLinesFurther": {
           "Description": "További jelző vonalak megjelenítése",
           "Title": "A jelzők számától függően ez lassú lehet"
@@ -1020,6 +1035,11 @@
         "NextSignals": "Sonraki sinyaller",
         "HideSignalLines": "Sinyal çizgilerini gizle",
         "ShowSignalLines": "Sinyal çizgilerini göster",
+        "ShowSignalLinesModifiers": {
+          "ConnectionsOnly": "{{base}} (yalnızca bağlantılar)",
+          "DirectOnly": "{{base}} (yalnızca doğrudan hatlar)"
+        },
+        "ActiveLinesTitle": "Aktif sinyal çizgileri",
         "ShowSignalLinesFurther": {
           "Description": "Daha fazla sinyal çizgisi göster",
           "Title": "Sinyal sayısına bağlı olarak bu yavaş olabilir"
@@ -1318,6 +1338,11 @@
         "NextSignals": "Następne sygnały",
         "HideSignalLines": "Ukryj linie sygnałów",
         "ShowSignalLines": "Pokaż linie sygnałów",
+        "ShowSignalLinesModifiers": {
+          "ConnectionsOnly": "{{base}} (tylko połączenia)",
+          "DirectOnly": "{{base}} (tylko linie bezpośrednie)"
+        },
+        "ActiveLinesTitle": "Aktywne linie sygnałów",
         "ShowSignalLinesFurther": {
           "Description": "Pokaż dalsze linie sygnałów",
           "Title": "W zależności od liczby sygnałów, może to być wolne"

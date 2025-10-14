@@ -1,12 +1,12 @@
-import {DivIcon, DivIconOptions, Icon, IconOptions} from "leaflet";
+import { DivIcon, DivIconOptions, Icon, IconOptions } from "leaflet";
 import equals from "lodash/isEqual";
-import {type FunctionComponent, memo, useEffect, useMemo, useState} from "react";
-import {Marker, Popup} from "react-leaflet";
+import { type FunctionComponent, memo, useEffect, useMemo, useState } from "react";
+import { Marker, Popup } from "react-leaflet";
 
 import useBehaviorSubj from "../../../hooks/useBehaviorSubj.ts";
-import {dataProvider} from "../../../utils/data-manager.ts";
-import {SignalStatus} from "../../../utils/types.ts";
-import {getSpeedColorForSignal} from "../../../utils/ui.ts";
+import { dataProvider } from "../../../utils/data-manager.ts";
+import { SignalStatus } from "../../../utils/types.ts";
+import { getSpeedColorForSignal } from "../../../utils/ui.ts";
 import SignalIcon from "../icons/signal.svg?raw";
 import SignalMarkerPopup from "./SignalMarkerPopup.tsx";
 
@@ -143,8 +143,8 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
   const trainsData = useBehaviorSubj(dataProvider.trainsData$);
 
   const trains = useMemo(
-      () => (signal.Trains && trainsData.filter((t) => signal.Trains?.includes(t.TrainNoLocal))) || null,
-      [signal.Trains, trainsData],
+    () => (signal.Trains && trainsData.filter((t) => signal.Trains?.includes(t.TrainNoLocal))) || null,
+    [signal.Trains, trainsData],
   );
 
   useEffect(() => {
