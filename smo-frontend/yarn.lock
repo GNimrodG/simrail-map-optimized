@@ -5725,10 +5725,10 @@ rbush@^3.0.1:
   dependencies:
     quickselect "^2.0.0"
 
-react-compiler-runtime@^19.0.0-beta-ebf51a3-20250411:
-  version "19.0.0-beta-ebf51a3-20250411"
-  resolved "https://registry.yarnpkg.com/react-compiler-runtime/-/react-compiler-runtime-19.0.0-beta-ebf51a3-20250411.tgz#147e49a60f848ea52ee38af0909239bb3850297c"
-  integrity sha512-CetwBv7Wny+4Re6TZRPtVbNMx65CvLNDMkMp2KJ/pRmEc6WLPUoSSBuyY0bML9GPWiO/3LcWQ4iDGKitFU0qng==
+react-compiler-runtime@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/react-compiler-runtime/-/react-compiler-runtime-1.0.0.tgz#ee565c2cd3437a41e7fc31d8ab6c662f6b568fc0"
+  integrity sha512-rRfjYv66HlG8896yPUDONgKzG5BxZD1nV9U6rkm+7VCuvQc903C4MjcoZR4zPw53IKSOX9wMQVpA1IAbRtzQ7w==
 
 react-cookie-consent@^9.0.0:
   version "9.0.0"

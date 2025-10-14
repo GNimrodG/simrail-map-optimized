@@ -144,18 +144,26 @@ export class SignalRDataProvider implements IDataProvider {
         return;
       }
 
-      for (const partialStation of partialStations) {
-        const station = currentStations.find((s) => s.Id === partialStation.Id);
-        if (station) {
-          Object.assign(station, omit(partialStation, "Id"));
-        } else {
-          console.debug("Station not found in current stations", partialStation);
+      const partialStationMap = new Map(partialStations.map((station) => [station.Id, station] as const));
+
+      const updatedStations = [] as Station[];
+
+      for (const station of currentStations) {
+        const partialStation = partialStationMap.get(station.Id);
+
+        if (!partialStation) {
+          console.debug("Station not found in current stations", station.Id);
           this.connection.send("GetStations");
           return;
         }
+
+        updatedStations.push({
+          ...station,
+          ...omit(partialStation, "Id"),
+        });
       }
 
-      this.stationsData$.next(currentStations);
+      this.stationsData$.next(updatedStations);
     });
 
     this.connection.on("TrainsReceived", (trains: Train[]) => this.trainsData$.next(trains));
@@ -168,19 +176,22 @@ export class SignalRDataProvider implements IDataProvider {
         return;
       }
 
+      const partialTrainMap = new Map(partialTrains.map((train) => [train.Id, train] as const));
+
       const updatedTrains = currentTrains.map((train) => {
-        const partialTrain = partialTrains.find((t) => t.Id === train.Id);
-        if (partialTrain) {
-          train = {
-            ...train,
-            Type: partialTrain.Type,
-            TrainData: {
-              ...train.TrainData,
-              ...omit(partialTrain, "Id", "Type"),
-            },
-          };
+        const partialTrain = partialTrainMap.get(train.Id);
+        if (!partialTrain) {
+          return train;
         }
-        return train;
+
+        return {
+          ...train,
+          Type: partialTrain.Type,
+          TrainData: {
+            ...train.TrainData,
+            ...omit(partialTrain, "Id", "Type"),
+          },
+        };
       });
 
       this.trainsData$.next(updatedTrains);
@@ -199,20 +210,30 @@ export class SignalRDataProvider implements IDataProvider {
           return;
         }
 
+        const positionMap = new Map(trainPositions.map((train) => [train.Id, train] as const));
+
         let updatedTrains = currentTrains.map((train) => {
-          const trainPosition = trainPositions.find((t) => t.Id === train.Id);
-          if (trainPosition) {
-            train.TrainData.Latitude = trainPosition.Latitude;
-            train.TrainData.Longitude = trainPosition.Longitude;
-            train.TrainData.Velocity = trainPosition.Velocity;
+          const trainPosition = positionMap.get(train.Id);
+          if (!trainPosition) {
+            return train;
           }
-          return train;
+
+          return {
+            ...train,
+            TrainData: {
+              ...train.TrainData,
+              Latitude: trainPosition.Latitude,
+              Longitude: trainPosition.Longitude,
+              Velocity: trainPosition.Velocity,
+            },
+          };
         });
 
         if (currentTrains.length > trainPositions.length) {
           console.debug(`${currentTrains.length - trainPositions.length} train(s) have despawned`);
           // delete the extra trains that are not in the partialTrains list because they are not in the server anymore
-          updatedTrains = updatedTrains.filter((train) => trainPositions.some((t) => t.Id === train.Id));
+          const activeTrainIds = new Set(positionMap.keys());
+          updatedTrains = updatedTrains.filter((train) => activeTrainIds.has(train.Id));
         }
 
         this.trainsData$.next(updatedTrains);

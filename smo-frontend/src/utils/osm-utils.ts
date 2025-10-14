@@ -186,7 +186,8 @@ async function executeOsmQuery(query: string, abortSignal?: AbortSignal) {
 
     if (!response.ok) {
       isOsmAvailable$.next(false);
-      throw new Error("Overpass API request failed: " + response.statusText);
+      console.warn(`Overpass API error: ${response.status} ${response.statusText}`);
+      return null;
     }
 
     isOsmAvailable$.next(true);
