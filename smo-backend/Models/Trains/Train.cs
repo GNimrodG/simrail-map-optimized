@@ -59,6 +59,13 @@ public class Train : IEntityWithTimestamp
     [JsonConverter(typeof(InterningStringConverter))]
     public required string Type { get; set; }
 
+    /// <summary>
+    /// The train type code (e.g., "TDE", "ROJ", "EIE", etc.) from the timetable.
+    /// </summary>
+    [JsonProperty(nameof(TrainType))]
+    [JsonConverter(typeof(InterningStringConverter))]
+    public string? TrainType { get; set; }
+
     /// <inheritdoc />
     [JsonIgnore]
     public DateTime Timestamp { get; set; }

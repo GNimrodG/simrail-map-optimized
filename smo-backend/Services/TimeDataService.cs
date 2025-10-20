@@ -1,6 +1,6 @@
 ﻿using Prometheus;
-using SMOBackend.Data;
 using SMOBackend.Models;
+using SMOBackend.Utils;
 
 namespace SMOBackend.Services;
 
@@ -24,19 +24,16 @@ public class TimeDataService(
     /// <inheritdoc />
     protected override async Task<TimeData> FetchServerData(string serverCode, CancellationToken stoppingToken)
     {
-        var timezone = await apiClient.GetTimezoneAsync(serverCode, stoppingToken);
+        var timezone = await apiClient.GetTimezoneAsync(serverCode, stoppingToken).NoContext();
 
         if (timezone == null)
-        {
             throw new("Failed to fetch timezone data");
-        }
 
-        var time = await apiClient.GetTimeAsync(serverCode, stoppingToken);
+
+        var time = await apiClient.GetTimeAsync(serverCode, stoppingToken).NoContext();
 
         if (time == null)
-        {
             throw new("Failed to fetch time data");
-        }
 
         return new(time.Value.time, timezone.Value, time.Value.date);
     }

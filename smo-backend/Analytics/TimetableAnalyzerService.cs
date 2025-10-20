@@ -74,7 +74,7 @@ public class TimetableAnalyzerService(
 
         try
         {
-            await _timetableDataCache.SaveToFileAsync(StationTimetableDataFile);
+            await _timetableDataCache.SaveToFileAsync(StationTimetableDataFile).NoContext();
             logger.LogInformation("Saved timetable data to file");
         }
         catch (Exception e)

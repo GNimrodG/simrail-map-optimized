@@ -239,9 +239,9 @@ public class TtlCache<TKey, TValue> : IDisposable
             .ToDictionary(key => (TKey)key, key => _cache.Get(key));
 
         await MessagePackSerializer.SerializeAsync(stream, value,
-            ContractlessStandardResolver.Options);
+            ContractlessStandardResolver.Options).NoContext();
 
-        await stream.FlushAsync();
+        await stream.FlushAsync().NoContext();
 
         stream.Close();
 

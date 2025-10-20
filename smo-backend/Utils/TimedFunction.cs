@@ -45,7 +45,7 @@ public class TimedFunction : IDisposable
                 using var timer = new PeriodicTimer(interval);
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    await timer.WaitForNextTickAsync(cancellationToken);
+                    await timer.WaitForNextTickAsync(cancellationToken).NoContext();
                     action();
                 }
             }

@@ -17,6 +17,7 @@ import MapLinesContext from "../utils/map-lines-context";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import AutoZoomHandler from "./AutoZoom";
+import BackgroundUpdatesNotification from "./BackgroundUpdatesNotification";
 import ErrorBoundary from "./ErrorBoundary";
 import LayerMenu from "./LayerMenu";
 import Loading from "./Loading";
@@ -314,6 +315,7 @@ const MainMap: FunctionComponent = () => {
         )}
 
         <LowSpeedWarning />
+        <BackgroundUpdatesNotification />
         <AutoZoomHandler />
       </MapContainer>
     </>

@@ -21,6 +21,7 @@ import { useSteamProfileData } from "../../../hooks/useSteamProfileData";
 import useSubject from "../../../hooks/useSubject";
 import { useTrainTimetable } from "../../../hooks/useTrainTimetable";
 import { dataProvider } from "../../../utils/data-manager";
+import { calculateLastKnownDelay, calculatePredictedDelay } from "../../../utils/delay-prediction";
 import MapLinesContext from "../../../utils/map-lines-context";
 import SelectedRouteContext from "../../../utils/selected-route-context";
 import SelectedTrainContext from "../../../utils/selected-train-context";
@@ -33,6 +34,7 @@ import SettingCheckbox from "../../settings/SettingCheckbox";
 import SteamProfileDisplay from "../../SteamProfileDisplay";
 import { formatVehicleName, getThumbnailUrl } from "../../utils/general-utils";
 import SignalSpeedDisplay from "../../utils/SignalSpeedDisplay";
+import TrainTypeDisplay from "../../utils/TrainTypeDisplay";
 import CalendarIcon from "../icons/calendar.svg?react";
 import LengthIcon from "../icons/LengthIcon";
 import SpeedIcon from "../icons/SpeedIcon";
@@ -66,7 +68,7 @@ function useTrainDelays(trainId: string) {
 
   const lastDelay = useMemo(() => {
     const sortedDelays = Object.entries(delays).sort(([a], [b]) => Number(a) - Number(b));
-    return sortedDelays.length ? Math.round(sortedDelays[sortedDelays.length - 1][1] / 60) : null;
+    return sortedDelays.length ? Math.round(sortedDelays.at(-1)![1] / 60) : null;
   }, [delays]);
 
   return { delays, lastDelay };
@@ -107,6 +109,21 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
 
   const { delays, lastDelay } = useTrainDelays(train.Id);
 
+  // Calculate the last known delay for prediction at upcoming stations
+  const lastKnownDelay = useMemo(
+    () => calculateLastKnownDelay(delays, trainTimetableIndex),
+    [delays, trainTimetableIndex],
+  );
+
+  // Calculate predicted delay for a station accounting for layover times
+  const getPredictedDelay = useCallback(
+    (stationIndex: number) => {
+      if (!timetable) return null;
+      return calculatePredictedDelay(stationIndex, lastKnownDelay, trainTimetableIndex, timetable);
+    },
+    [lastKnownDelay, trainTimetableIndex, timetable],
+  );
+
   const prevStationDelay = useMemo(
     () => delays[train.TrainData.VDDelayedTimetableIndex - 1],
     [delays, train.TrainData.VDDelayedTimetableIndex],
@@ -131,12 +148,34 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
 
     return {
       first: timetable.TimetableEntries[0],
-      prev: prevIndex !== 0 ? timetable.TimetableEntries[prevIndex] : null,
-      current: currentIndex !== timetable.TimetableEntries.length - 1 ? timetable.TimetableEntries[currentIndex] : null,
+      prev: prevIndex === 0 ? null : timetable.TimetableEntries[prevIndex],
+      current: currentIndex === timetable.TimetableEntries.length - 1 ? null : timetable.TimetableEntries[currentIndex],
       next: nextIndex < timetable.TimetableEntries.length - 1 ? timetable.TimetableEntries[nextIndex] : null,
-      last: timetable.TimetableEntries[timetable.TimetableEntries.length - 1],
+      last: timetable.TimetableEntries.at(-1),
+      currentIndex,
+      nextIndex,
     };
   }, [delays, timetable, train.TrainData.VDDelayedTimetableIndex]);
+
+  // Calculate predicted delays for current and next stations
+  const predictedDelays = useMemo(() => {
+    if (!timetable || !stationData.currentIndex) return { current: null, next: null };
+
+    const currentDelay = delays[stationData.currentIndex];
+    const nextDelay = delays[stationData.nextIndex];
+
+    return {
+      current:
+        currentDelay === undefined && stationData.currentIndex !== undefined
+          ? getPredictedDelay(stationData.currentIndex)
+          : null,
+      next:
+        nextDelay === undefined && stationData.nextIndex !== undefined
+          ? getPredictedDelay(stationData.nextIndex)
+          : null,
+      last: getPredictedDelay(timetable.TimetableEntries.length - 1),
+    };
+  }, [timetable, stationData.currentIndex, stationData.nextIndex, delays, getPredictedDelay]);
 
   const trainSpeed = (
     <Typography level="body-lg" startDecorator={<SpeedIcon />}>
@@ -203,7 +242,10 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         }}>
         <Stack spacing={0.5} direction="row" alignItems="center">
           <Typography level="body-lg" noWrap>
-            {train.TrainNoLocal} ({train.TrainName})
+            {train.TrainNoLocal}{" "}
+            <Box component="span" sx={{ display: "inline-flex", alignItems: "center" }}>
+              (<TrainTypeDisplay type={train.TrainType || train.TrainName} displayName={train.TrainName} hideTooltip />)
+            </Box>
           </Typography>
           {onToggleCollapse && (
             <Box
@@ -281,7 +323,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           component="div">
           {train.TrainNoLocal}{" "}
           <Box component="span" sx={{ display: "inline-flex", alignItems: "center", ml: 1 }}>
-            ({train.TrainName})
+            (<TrainTypeDisplay type={train.TrainType || train.TrainName} displayName={train.TrainName} hideTooltip />)
           </Box>
         </Typography>
 
@@ -383,7 +425,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         )}
       </Stack>
 
-      {train.TrainData.RequiredMapDLCs?.flatMap((x) => x.flatMap((y) => y)).includes(3583200) && (
+      {train.TrainData.RequiredMapDLCs?.flat(2).includes(3583200) && (
         <Typography level="body-lg" color="warning" variant="solid" noWrap>
           Łódź - Warsaw
         </Typography>
@@ -437,11 +479,17 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                     {isTimeTableExpanded ? <CollapseIcon /> : <ExpandIcon />}
                   </StepIndicator>
                 }>
-                <StationDisplay station={stationData.current} mainStation={isTimeTableExpanded} current />
+                <StationDisplay
+                  station={stationData.current}
+                  mainStation={isTimeTableExpanded}
+                  current
+                  delay={predictedDelays.current ?? undefined}
+                  predictedDelay
+                />
               </Step>
               {isTimeTableExpanded && stationData.next && (
                 <Step>
-                  <StationDisplay station={stationData.next} />
+                  <StationDisplay station={stationData.next} delay={predictedDelays.next ?? undefined} predictedDelay />
                 </Step>
               )}
             </>
@@ -463,6 +511,8 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                 station={stationData.last}
                 mainStation
                 current={!!stationData.last && !!stationData.prev && !stationData.current}
+                delay={predictedDelays.last ?? undefined}
+                predictedDelay
               />
             ) : (
               <Typography level="body-md">{train.EndStation}</Typography>
@@ -520,7 +570,18 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
             </ButtonGroup>
           )}
           {showTrainRouteButton &&
-            (selectedRoute !== train.TrainNoLocal ? (
+            (selectedRoute === train.TrainNoLocal ? (
+              <Button
+                size="sm"
+                endDecorator={
+                  <Chip color="danger" variant="solid">
+                    BETA
+                  </Chip>
+                }
+                onClick={handleHideRoute}>
+                {t("HideRoute")}
+              </Button>
+            ) : (
               <Button
                 color="neutral"
                 size="sm"
@@ -531,17 +592,6 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                 }
                 onClick={handleShowRoute}>
                 {t("ShowRoute")}
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                endDecorator={
-                  <Chip color="danger" variant="solid">
-                    BETA
-                  </Chip>
-                }
-                onClick={handleHideRoute}>
-                {t("HideRoute")}
               </Button>
             ))}
         </Stack>

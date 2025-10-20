@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Prometheus;
 using SMOBackend.Data;
@@ -35,18 +37,11 @@ internal static class StdUtils
         };
     }
 
-    internal static async Task LogStat(this IServiceScopeFactory scopeFactory,
+    internal static Task LogStat(this IServiceScopeFactory scopeFactory,
         string serviceId, int duration, CancellationToken? stoppingToken = null)
     {
-        using var scope = scopeFactory.CreateScope();
-        await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
-
-        context.Stats.Add(new(serviceId, duration));
-
-        if (stoppingToken.HasValue)
-            await context.SaveChangesAsync(stoppingToken.Value);
-        else
-            await context.SaveChangesAsync();
+        StatsBuffer.Enqueue(scopeFactory, serviceId, duration, stoppingToken);
+        return Task.CompletedTask;
     }
 
     internal static void Clear(this Gauge gauge)
@@ -74,7 +69,7 @@ internal static class StdUtils
 
         try
         {
-            return (T)Convert.ChangeType(value, typeof(T));
+            return (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
         }
         catch
         {
@@ -91,13 +86,14 @@ internal static class StdUtils
         var raw = Environment.GetEnvironmentVariable(name);
         if (string.IsNullOrWhiteSpace(raw)) return defaultValue;
 
-        if (TimeSpan.TryParse(raw, out var ts))
+        if (TimeSpan.TryParse(raw, CultureInfo.InvariantCulture, out var ts))
             return ts;
 
-        if (int.TryParse(raw, out var seconds) && seconds >= 0)
+        if (int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seconds) && seconds >= 0)
             return TimeSpan.FromSeconds(seconds);
 
-        if (double.TryParse(raw, out var dblSeconds) && dblSeconds >= 0)
+        if (double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var dblSeconds) &&
+            dblSeconds >= 0)
             return TimeSpan.FromSeconds(dblSeconds);
 
         return defaultValue;
@@ -123,4 +119,10 @@ internal static class StdUtils
             throw new JsonSerializationException($"Unexpected token {reader.TokenType} when parsing TrainTypeCode.");
         }
     }
+
+    public static ConfiguredTaskAwaitable NoContext(this Task task) => task.ConfigureAwait(false);
+    
+    public static ConfiguredTaskAwaitable<T> NoContext<T>(this Task<T> task) => task.ConfigureAwait(false);
+    
+    public static ConfiguredValueTaskAwaitable<T> NoContext<T>(this ValueTask<T> task) => task.ConfigureAwait(false);
 }

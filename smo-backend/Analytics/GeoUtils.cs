@@ -82,7 +82,7 @@ public static class GeoUtils
         }
 
         // Add the last original point
-        result.Add(points[points.Count - 1]);
+        result.Add(points[^1]);
         return result;
     }
 

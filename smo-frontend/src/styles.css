@@ -130,9 +130,19 @@
   border-color: var(--joy-palette-primary-600);
 }
 
+.icon.player,
 .icon.bot {
   background-color: var(--joy-palette-background-surface);
+}
+
+.icon.player:has(svg),
+.icon.bot {
   padding: 0.3rem;
+}
+
+.icon.player svg {
+  width: 100%;
+  height: 100%;
 }
 
 .icon.bot svg {

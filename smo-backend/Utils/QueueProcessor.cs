@@ -50,12 +50,12 @@ public class QueueProcessor<T>(
             // Try to acquire the lock non-blocking-ly
             // If we couldn't get the lock, simply return as the data is already in the queue
             // and will be processed when the current processing finishes
-            if (!await _processingLock.WaitAsync(0)) return;
+            if (!await _processingLock.WaitAsync(0).NoContext()) return;
 
             try
             {
                 // Process the queue
-                await ProcessQueuedData();
+                await ProcessQueuedData().NoContext();
                 _processingLock.Release();
             }
             catch (Exception ex)
@@ -89,7 +89,7 @@ public class QueueProcessor<T>(
 
             try
             {
-                await processItem(nextData);
+                await processItem(nextData).NoContext();
             }
             catch (Exception ex)
             {

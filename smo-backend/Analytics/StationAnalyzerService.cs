@@ -252,7 +252,7 @@ public class StationAnalyzerService : IHostedService
                         }
 
                         _logger.LogInformation("Fetching OSM data for station {StationName}", station.NameOfPoint);
-                        var osmData = await _osmApiClient.GetSignalBoxByNameAsync(station.NameOfPoint);
+                        var osmData = await _osmApiClient.GetSignalBoxByNameAsync(station.NameOfPoint).NoContext();
 
                         if (osmData == null)
                         {
@@ -284,7 +284,7 @@ public class StationAnalyzerService : IHostedService
                                 _logger.LogInformation("Trying alternative name {AltName} for station {StationName}",
                                     altName, station.NameOfPoint);
 
-                                osmData = await _osmApiClient.GetSignalBoxByNameAsync(altName);
+                                osmData = await _osmApiClient.GetSignalBoxByNameAsync(altName).NoContext();
                             }
                         }
 

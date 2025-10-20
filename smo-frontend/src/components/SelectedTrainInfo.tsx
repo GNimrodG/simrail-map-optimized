@@ -10,6 +10,7 @@ import { dataProvider } from "../utils/data-manager";
 import MapLinesContext from "../utils/map-lines-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import Loading from "./Loading";
+import { useIsDocumentFocused } from "../hooks/useIsDocumentFocused";
 
 const TrainMarkerPopup = lazy(() => import("./markers/train/TrainMarkerPopup"));
 
@@ -98,16 +99,23 @@ const SelectedTrainInfo: FunctionComponent = () => {
     };
   }, [selectedTrain?.trainNo, selectedTrain?.follow, map, setSelectedTrain]);
 
+  const focused = useIsDocumentFocused();
+  const [reduceBackgroundUpdates] = useSetting("reduceBackgroundUpdates");
+
   // Follow selected train
   useEffect(() => {
     if (selectedTrain?.follow && map) {
       const train = trains.find((train) => train.TrainNoLocal === selectedTrain.trainNo);
       if (train) {
         if (!useAltTracking && !selectedTrain.paused) {
-          map.panTo([train.TrainData.Latitude, train.TrainData.Longitude], {
-            animate: true,
-            duration: 1,
-          });
+          if (reduceBackgroundUpdates && !focused) {
+            map.setView([train.TrainData.Latitude, train.TrainData.Longitude], map.getZoom(), { animate: false });
+          } else {
+            map.panTo([train.TrainData.Latitude, train.TrainData.Longitude], {
+              animate: true,
+              duration: 1,
+            });
+          }
         }
 
         if (showLineToNextSignal && train.TrainData.SignalInFront) {

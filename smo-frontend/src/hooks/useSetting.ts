@@ -31,6 +31,7 @@ const SETTINGS = {
   autoZoom: false,
   autoZoomLimits: [200, 250] as [number, number],
   translateStationNames: false,
+  reduceBackgroundUpdates: true,
 } as const;
 
 export type TSettings = typeof SETTINGS;

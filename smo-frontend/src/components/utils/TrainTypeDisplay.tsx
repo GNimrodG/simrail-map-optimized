@@ -8,9 +8,11 @@ import InfoIcon from "../icons/InfoIcon";
 
 export interface TrainTypeDisplayProps {
   type: string;
+  displayName?: string;
+  hideTooltip?: boolean;
 }
 
-const TrainTypeDisplay: FunctionComponent<TrainTypeDisplayProps> = ({ type }) => {
+const TrainTypeDisplay: FunctionComponent<TrainTypeDisplayProps> = ({ type, displayName, hideTooltip }) => {
   const { t, i18n } = useTranslation("translation", { keyPrefix: "TrainTypes" });
 
   let title: string | undefined;
@@ -36,12 +38,19 @@ const TrainTypeDisplay: FunctionComponent<TrainTypeDisplayProps> = ({ type }) =>
     if (mainText) title = t(formatKey, { main: mainText, mod: modText });
   }
 
+  const actualDisplayName = displayName?.replace(`${type} - `, "").trim();
+
   return (
     <Stack direction="row" spacing={1} alignItems="center">
-      <Box component="span" sx={{ textWrap: "nowrap" }}>
+      <Box component={hideTooltip ? "abbr" : "span"} title={title} aria-label={title} sx={{ textWrap: "nowrap" }}>
         {type}
       </Box>
-      {title && (
+      {!!actualDisplayName && actualDisplayName !== type ? (
+        <Box component="span" sx={{ textWrap: "nowrap" }}>
+          {" - " + actualDisplayName}
+        </Box>
+      ) : null}
+      {!hideTooltip && title && (
         <Tooltip arrow variant="outlined" placement="right" describeChild title={title}>
           <Stack alignItems="center" justifyContent="center">
             <InfoIcon />

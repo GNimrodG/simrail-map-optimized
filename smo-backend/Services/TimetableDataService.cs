@@ -1,5 +1,6 @@
 ﻿using MessagePack;
 using SMOBackend.Models;
+using SMOBackend.Utils;
 
 namespace SMOBackend.Services;
 
@@ -68,16 +69,16 @@ public class TimetableDataService(
                         bufferSize: 4096,
                         useAsync: true);
 
-                    await MessagePackSerializer.SerializeAsync(fileStream, timetable, cancellationToken: token);
+                    await MessagePackSerializer.SerializeAsync(fileStream, timetable, cancellationToken: token).NoContext();
 
-                    await fileStream.FlushAsync(token);
+                    await fileStream.FlushAsync(token).NoContext();
 
                     fileStream.Close();
 
                     // Rename the file to remove the .temp extension with retry logic
                     var finalFilePath = Path.Combine(serverDirectory, $"{serverCode}-{timetable.TrainNoLocal}.bin");
 
-                    await AtomicFileReplaceAsync(tempFilePath, finalFilePath, token);
+                    await AtomicFileReplaceAsync(tempFilePath, finalFilePath, token).NoContext();
                 }
                 catch (Exception ex)
                 {

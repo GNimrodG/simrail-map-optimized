@@ -57,9 +57,9 @@ public class RoutePointAnalyzerService : IHostedService
     ///     Cleanup interval for old route lines in hours.
     /// </summary>
     /// <remarks>
-    ///     This value can be configured via the environment variable ROUTE_POINT_CLEANUP_INTERVAL_HOURS. Defaults to 48 hours.
+    ///     This value can be configured via the environment variable ROUTE_POINT_CLEANUP_INTERVAL_HOURS. Defaults to 72 hours (3 days).
     /// </remarks>
-    private readonly int _cleanupIntervalHours = StdUtils.GetEnvVar("ROUTE_POINT_CLEANUP_INTERVAL_HOURS", 48);
+    private readonly int _cleanupIntervalHours = StdUtils.GetEnvVar("ROUTE_POINT_CLEANUP_INTERVAL_HOURS", 72);
 
     /// <summary>
     ///     Logger instance for this service.

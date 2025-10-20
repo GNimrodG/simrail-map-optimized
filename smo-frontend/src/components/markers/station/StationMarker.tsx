@@ -8,6 +8,7 @@ import { useSetting } from "../../../hooks/useSetting";
 import { useSteamProfileData } from "../../../hooks/useSteamProfileData";
 import { getOsmNodeName } from "../../../utils/osm-utils";
 import { OsmNode, Station } from "../../../utils/types";
+import PersonIcon from "../../icons/person.svg?raw";
 import BotIcon from "../icons/bot.svg?raw";
 import StationMarkerPopup from "./StationMarkerPopup";
 
@@ -24,7 +25,9 @@ const DEFAULT_ICON = new L.DivIcon({
 function getIcon(stationName: string, lng: string, avatar?: string, osmData?: OsmNode | null) {
   if (avatar) {
     return new L.DivIcon({
-      html: `<img src="${avatar}" /><span class="tooltip">${osmData ? getOsmNodeName(osmData, lng) : stationName}</span>`,
+      html: avatar.startsWith("http")
+        ? `<img src="${avatar}" /><span class="tooltip">${osmData ? getOsmNodeName(osmData, lng) : stationName}</span>`
+        : `${PersonIcon}<span class="tooltip">${osmData ? getOsmNodeName(osmData, lng) : stationName}</span>`,
       iconSize: [40, 40],
       popupAnchor: [0, -20],
       className: "icon station player",
@@ -50,8 +53,23 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
   const { userData } = useSteamProfileData(station.DispatchedBy?.[0]?.SteamId);
 
   useEffect(() => {
-    setIcon(getIcon(station.Name, i18n.language, userData?.Avatar, translateStationNames ? osmData : undefined));
-  }, [i18n.language, osmData, station.DispatchedBy, station.Name, translateStationNames, userData?.Avatar]);
+    setIcon(
+      getIcon(
+        station.Name,
+        i18n.language,
+        userData?.Avatar || userData?.PersonaName,
+        translateStationNames ? osmData : undefined,
+      ),
+    );
+  }, [
+    i18n.language,
+    osmData,
+    station.DispatchedBy,
+    station.Name,
+    translateStationNames,
+    userData?.Avatar,
+    userData?.PersonaName,
+  ]);
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [shouldKeepMounted, setShouldKeepMounted] = useState(false);

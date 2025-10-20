@@ -77,12 +77,12 @@ Service polling intervals
 
 - `{SERVICE}_REFRESH_INTERVAL`: Polling interval per service. Accepts TimeSpan (e.g. `00:00:05`) or seconds (e.g. `5`).
   Services:
-    - `SERVER_REFRESH_INTERVAL` (default `00:00:30`)
-    - `TRAIN_REFRESH_INTERVAL` (default `00:00:05`)
-    - `TRAIN-POS_REFRESH_INTERVAL` (default `00:00:01`)
-    - `TIMETABLE_REFRESH_INTERVAL` (default `01:00:00` = 1 hour)
-    - `TIME_REFRESH_INTERVAL` (default `00:05:00` = 5 minutes)
-    - `STATION_REFRESH_INTERVAL` (default `00:00:05`)
+  - `SERVER_REFRESH_INTERVAL` (default `00:00:30`)
+  - `TRAIN_REFRESH_INTERVAL` (default `00:00:05`)
+  - `TRAIN-POS_REFRESH_INTERVAL` (default `00:00:01`)
+  - `TIMETABLE_REFRESH_INTERVAL` (default `01:00:00` = 1 hour)
+  - `TIME_REFRESH_INTERVAL` (default `00:05:00` = 5 minutes)
+  - `STATION_REFRESH_INTERVAL` (default `00:00:05`)
 
 Signal analyzer
 
@@ -102,7 +102,7 @@ Route point analyzer
 
 - `ROUTE_POINT_ANALYZER_DISABLED`: Disable the route point analyzer (`false`)
 - `ROUTE_POINT_ANALYZER_ALLOWED_SERVERS`: Comma-separated whitelist of server codes (empty = all)
-- `ROUTE_POINT_CLEANUP_INTERVAL_HOURS`: Hours before old route lines are removed (`48`)
+- `ROUTE_POINT_CLEANUP_INTERVAL_HOURS`: Hours before old route lines are removed (`72` = 3 days)
 - `ROUTE_POINT_MAX_BATCH_SIZE`: Batch size for DB inserts (`500`)
 - `ROUTE_POINT_MAX_CONCURRENCY`: Parallelism for processing (`min(4, 2x CPU)`)
 - `ROUTE_POINT_MIN_DISTANCE_METERS`: Min distance between points on a route (`100.0`)
@@ -136,6 +136,13 @@ This project is licensed under the AGPL-3.0 license - see the [LICENSE](LICENSE)
 ## Authors
 
 - Nimród Glöckl - [gnimrodg](https://github.com/GNimrodG/)
+
+## Contributors
+
+- [EMREOYUN](https://github.com/EMREOYUN)
+- [AMelonInsideLemon](https://github.com/AMelonInsideLemon)
+
+[Full list of contributors](https://github.com/GNimrodG/simrail-map-optimized/graphs/contributors)
 
 ## Acknowledgments
 

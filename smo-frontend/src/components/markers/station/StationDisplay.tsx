@@ -34,6 +34,10 @@ export interface StationDisplayProps {
    */
   delay?: number;
   /**
+   * Whether the delay is predicted (based on last known delay) rather than actual.
+   */
+  predictedDelay?: boolean;
+  /**
    * Set the station name to green.
    */
   current?: boolean;
@@ -53,6 +57,7 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
   mainStation,
   pastStation,
   delay,
+  predictedDelay,
   current,
   hideTimeUntil,
 }) => {
@@ -68,9 +73,9 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
       arrivalTime.set("month", moment(time).month());
       arrivalTime.set("date", moment(time).date());
       return moment(time).diff(arrivalTime, "m") || null;
-    } else {
-      return null;
     }
+
+    return null;
   });
 
   const shouldCollapse =
@@ -79,39 +84,40 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
       (!station.DepartureTime || station.DepartureTime === station.ArrivalTime)) ||
     (!!station.DepartureTime && (!station.ArrivalTime || station.DepartureTime === station.ArrivalTime));
 
-  const timeColor = !timeUntil ? "neutral" : timeUntil < 0 ? "success" : timeUntil > 15 ? "danger" : "warning";
+  const timeColor = useMemo(() => {
+    if (timeUntil == null || timeUntil === 0) return "neutral"; // on time
+    if (timeUntil < 0) return "success"; // early
+    if (timeUntil > 15) return "danger"; // 15+ minutes late
+    return "warning"; // slight delay (1-15 minutes)
+  }, [timeUntil]);
 
-  const timeUntilDisplay = useMemo(
-    () => (
-      <>
-        {" "}
-        <Tooltip
-          arrow
-          title={
-            !timeUntil
-              ? t("ShouldArrive.Now")
-              : timeUntil < 0
-                ? t("ShouldArrive.Future", {
-                    time: moment.duration({ m: -timeUntil }).humanize(true),
-                  })
-                : t("ShouldArrive.Past", {
-                    time: moment.duration({ m: -timeUntil }).humanize(true),
-                  })
-          }
-          color={timeColor}>
-          <Typography variant="outlined" level="body-xs" color={timeColor}>
-            {timeUntil || 0}'
-          </Typography>
-        </Tooltip>
-      </>
-    ),
-    [timeUntil, timeColor, t],
-  );
+  const timeText = useMemo(() => {
+    if (timeUntil == null || timeUntil === 0) return t("ShouldArrive.Now");
+    if (timeUntil < 0) return t("ShouldArrive.Future", { time: moment.duration({ m: -timeUntil }).humanize(true) });
+    return t("ShouldArrive.Past", { time: moment.duration({ m: -timeUntil }).humanize(true) });
+  }, [timeUntil, t]);
 
   const delayDisplay = useMemo(
     () =>
-      typeof delay === "number" ? <DelayDisplay delay={delay} scheduledDeparture={station.DepartureTime} /> : null,
-    [delay, station.DepartureTime],
+      typeof delay === "number" ? (
+        <DelayDisplay delay={delay} scheduledDeparture={station.DepartureTime} isPredicted={predictedDelay} />
+      ) : null,
+    [delay, station.DepartureTime, predictedDelay],
+  );
+
+  const timeUntilDisplay = useMemo(
+    () =>
+      timeUntil === null || delayDisplay ? null : (
+        <>
+          {" "}
+          <Tooltip arrow title={timeText} color={timeColor}>
+            <Typography variant="outlined" level="body-xs" color={timeColor}>
+              {timeUntil || 0}'
+            </Typography>
+          </Tooltip>
+        </>
+      ),
+    [delayDisplay, timeText, timeColor, timeUntil],
   );
 
   return (
@@ -123,7 +129,6 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
         shouldCollapse={shouldCollapse}
         delayDisplay={delayDisplay}
         timeUntilDisplay={timeUntilDisplay}
-        timeUntil={timeUntil}
       />
       {!shouldCollapse && (
         <StationTimes
@@ -132,7 +137,6 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
           isSmallHeight={isSmallHeight}
           delayDisplay={delayDisplay}
           timeUntilDisplay={timeUntilDisplay}
-          timeUntil={timeUntil}
         />
       )}
     </>
@@ -146,8 +150,7 @@ const StationHeader: FunctionComponent<{
   shouldCollapse: boolean;
   delayDisplay: ReactNode;
   timeUntilDisplay: ReactNode;
-  timeUntil: number | null;
-}> = ({ station, mainStation, current, shouldCollapse, delayDisplay, timeUntilDisplay, timeUntil }) => (
+}> = ({ station, mainStation, current, shouldCollapse, delayDisplay, timeUntilDisplay }) => (
   <Typography level={mainStation ? "body-md" : "body-sm"} color={current ? "success" : undefined}>
     {station.NameOfPoint}
     {station.Track && station.Platform && (
@@ -170,7 +173,7 @@ const StationHeader: FunctionComponent<{
         </Typography>
         {delayDisplay && " "}
         {delayDisplay}
-        {timeUntil !== null && timeUntilDisplay}
+        {timeUntilDisplay}
       </>
     )}
   </Typography>
@@ -182,8 +185,7 @@ const StationTimes: FunctionComponent<{
   isSmallHeight: boolean;
   delayDisplay: ReactNode;
   timeUntilDisplay: ReactNode;
-  timeUntil: number | null;
-}> = ({ station, mainStation, isSmallHeight, delayDisplay, timeUntilDisplay, timeUntil }) => (
+}> = ({ station, mainStation, isSmallHeight, delayDisplay, timeUntilDisplay }) => (
   <Typography level={mainStation ? "body-sm" : "body-xs"}>
     {station.ArrivalTime && <TimeDisplay time={station.ArrivalTime} noSeconds={isSmallHeight} />}
     {station.DepartureTime && station.DepartureTime !== station.ArrivalTime && (
@@ -200,7 +202,7 @@ const StationTimes: FunctionComponent<{
         {delayDisplay}
       </>
     )}
-    {timeUntil !== null && timeUntilDisplay}
+    {timeUntilDisplay}
   </Typography>
 );
 

@@ -9,6 +9,7 @@
 export interface Train {
   TrainNoLocal: string;
   TrainName: string;
+  TrainType: string;
   StartStation: string;
   EndStation: string;
   Vehicles: string[];

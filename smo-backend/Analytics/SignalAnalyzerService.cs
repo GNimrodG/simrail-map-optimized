@@ -88,7 +88,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     {
         _logger.LogInformation("Starting signal analyzer service...");
 
-        await UpdateSignals(cancellationToken);
+        await UpdateSignals(cancellationToken).NoContext();
 
         _trainDataService.DataReceived += OnTrainDataReceived;
     }
@@ -1133,3 +1133,4 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         public required short? Vmax { get; init; }
     }
 }
+

@@ -92,13 +92,13 @@ public class SteamApiClient
         CacheMisses.WithLabels("Summaries").Observe(1);
 
         var url = BaseUrl + GetPlayerSummariesPath + "?key=" + _apiKey + "&steamids=" + steamId;
-        var response = await _httpClient.GetAsync(url);
+        var response = await _httpClient.GetAsync(url).NoContext();
 
         if (response.StatusCode == HttpStatusCode.TooManyRequests)
         {
             // Retry after a delay if rate limit is exceeded
-            await Task.Delay(1000); // Wait for 1 second before retrying
-            response = await _httpClient.GetAsync(url);
+            await Task.Delay(1000).NoContext(); // Wait for 1 second before retrying
+            response = await _httpClient.GetAsync(url).NoContext();
 
             if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 // Handle rate limiting by throwing an exception or returning null
@@ -134,17 +134,13 @@ public class SteamApiClient
         CacheMisses.WithLabels("Stats").Observe(1);
 
         var url = BaseUrl + GetUserStatsForGamePath + "?appid=" + AppId + "&key=" + _apiKey + "&steamid=" + steamId;
-        var response = await _httpClient.GetAsync(url);
+        var response = await _httpClient.GetAsync(url).NoContext();
 
         if (response.StatusCode == HttpStatusCode.TooManyRequests)
         {
             // Retry after a delay if rate limit is exceeded
-            await Task.Delay(1000); // Wait for 1 second before retrying
-            response = await _httpClient.GetAsync(url);
-
-            if (response.StatusCode == HttpStatusCode.TooManyRequests)
-                // Handle rate limiting by throwing an exception or returning null
-                throw new HttpRequestException("Rate limit exceeded while fetching player stats.");
+            await Task.Delay(1000).NoContext(); // Wait for 1 second before retrying
+            response = await _httpClient.GetAsync(url).NoContext();
         }
 
         response.EnsureSuccessStatusCode();

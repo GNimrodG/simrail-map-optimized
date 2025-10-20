@@ -1,4 +1,5 @@
 ﻿using Prometheus;
+using SMOBackend.Analytics;
 using SMOBackend.Models.Trains;
 using SMOBackend.Utils;
 
@@ -11,8 +12,10 @@ public class TrainDataService(
     ILogger<TrainDataService> logger,
     IServiceScopeFactory scopeFactory,
     ServerDataService serverDataService,
-    SimrailApiClient apiClient) : BaseServerDataService<Train[]>("TRAIN", logger, scopeFactory, serverDataService),
-    IServerMetricsCleaner
+    SimrailApiClient apiClient,
+    TrainTypeService trainTypeService)
+    : BaseServerDataService<Train[]>("TRAIN", logger, scopeFactory, serverDataService),
+        IServerMetricsCleaner
 {
     private static readonly Gauge PlayerTrainCountGauge = Metrics
         .CreateGauge("smo_player_train_count", "Number of trains on the server that are controlled by a player",
@@ -22,8 +25,16 @@ public class TrainDataService(
     protected override TimeSpan FetchInterval => TimeSpan.FromSeconds(5);
 
     /// <inheritdoc />
-    protected override Task<Train[]> FetchServerData(string serverCode, CancellationToken stoppingToken) =>
-        apiClient.GetTrainsAsync(serverCode, stoppingToken);
+    protected override async Task<Train[]> FetchServerData(string serverCode, CancellationToken stoppingToken)
+    {
+        var trains = await apiClient.GetTrainsAsync(serverCode, stoppingToken);
+
+        // Populate TrainType for each train
+        foreach (var train in trains)
+            train.TrainType = trainTypeService.GetTrainType(train.TrainNoLocal);
+
+        return trains;
+    }
 
     /// <inheritdoc />
     protected override void OnPerServerDataReceived(PerServerData<Train[]> data)

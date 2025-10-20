@@ -91,6 +91,10 @@
         "translateStationNames": {
           "Label": "Translate station names",
           "Description": "Translate station names to the selected language. This may not work for all stations."
+        },
+        "reduceBackgroundUpdates": {
+          "Label": "Reduce background updates",
+          "Description": "Reduce map update frequency when the browser tab is hidden to improve performance and reduce lag."
         }
       },
       "TrainMakerPopup": {
@@ -167,7 +171,12 @@
         },
         "Delay": "This train departed this station with a delay of {{delay}}.",
         "Early": "This train departed this station {{delay}} early.",
-        "OnTime": "This train departed this station on time."
+        "OnTime": "This train departed this station on time.",
+        "Predicted": {
+          "OnTime": "This train should leave this station on time.",
+          "Early": "This train should leave this station {{delay}} early.",
+          "Delay": "This train should leave this station with at least {{delay}} of delay."
+        }
       },
       "LastDelay": {
         "Delay": "This train is currently has a delay of {{delay}}.",
@@ -214,6 +223,12 @@
         "Title": "Low average train speed",
         "Description": "The average speed of the trains on this server is {{speed}} km/h.",
         "Tooltip": "Tip: You can turn off this warning in the settings."
+      },
+      "BackgroundUpdatesNotification": {
+        "Title": "Performance Mode Active",
+        "Description": "We noticed your tab was in the background. To improve performance and reduce lag, map updates are now throttled when the tab is hidden. This helps keep your browser responsive when you're focused on the game.",
+        "GotIt": "Got it!",
+        "TurnOff": "Turn off"
       },
       "TrainTypes": {
         "Main": {
@@ -391,6 +406,10 @@
         "translateStationNames": {
           "Label": "Bahnhofsnamen übersetzen",
           "Description": "Bahnhofsnamen in die ausgewählte Sprache übersetzen. Dies funktioniert möglicherweise nicht für alle Bahnhöfe."
+        },
+        "reduceBackgroundUpdates": {
+          "Label": "Hintergrund-Updates reduzieren",
+          "Description": "Reduzieren Sie die Aktualisierungsfrequenz der Karte, wenn die Browser-Registerkarte ausgeblendet ist, um die Leistung zu verbessern und Verzögerungen zu reduzieren."
         }
       },
       "TrainMakerPopup": {
@@ -467,7 +486,12 @@
         },
         "Delay": "Dieser Zug hat diesen Bahnhof {{delay}} früher verlassen.",
         "Early": "Dieser Zug hat diesen Bahnhof {{delay}} zu früh verlassen.",
-        "OnTime": "Dieser Zug hat diesen Bahnhof pünktlich verlassen."
+        "OnTime": "Dieser Zug hat diesen Bahnhof pünktlich verlassen.",
+        "Predicted": {
+          "OnTime": "Dieser Zug sollte diesen Bahnhof pünktlich verlassen.",
+          "Early": "Dieser Zug sollte diesen Bahnhof {{delay}} zu früh verlassen.",
+          "Delay": "Dieser Zug sollte diesen Bahnhof mit mindestens {{delay}} Verspätung verlassen."
+        }
       },
       "LastDelay": {
         "Delay": "Dieser Zug hat derzeit eine Verspätung von {{delay}}.",
@@ -514,6 +538,12 @@
         "Title": "Niedrige durchschnittliche Zugsgeschwindigkeit",
         "Description": "Die durchschnittliche Geschwindigkeit der Züge auf diesem Server beträgt {{speed}} km/h.",
         "Tooltip": "Tipp: Diese Warnung kann in den Einstellungen ausgeschaltet werden."
+      },
+      "BackgroundUpdatesNotification": {
+        "Title": "Leistungsmodus aktiv",
+        "Description": "Wir haben bemerkt, dass Ihr Tab im Hintergrund war. Um die Leistung zu verbessern und Verzögerungen zu reduzieren, werden Kartenaktualisierungen gedrosselt, wenn der Tab ausgeblendet ist. Dies hilft, Ihren Browser reaktionsfähig zu halten, wenn Sie sich auf das Spiel konzentrieren.",
+        "GotIt": "Verstanden!",
+        "TurnOff": "Ausschalten"
       },
       "TrainTypes": {
         "Main": {
@@ -692,6 +722,10 @@
         "translateStationNames": {
           "Label": "Állomás nevek fordítása",
           "Description": "Állomás nevek fordítása a kiválasztott nyelvre. Ez nem minden állomásnál működik."
+        },
+        "reduceBackgroundUpdates": {
+          "Label": "Háttérben történő frissítések csökkentése",
+          "Description": "Csökkentse a térkép frissítési gyakoriságát, amikor a böngésző lap rejtve van, a teljesítmény javítása és a késleltetés csökkentése érdekében."
         }
       },
       "TrainMakerPopup": {
@@ -768,7 +802,12 @@
         },
         "Delay": "Ez a vonat {{delay}} késéssel indult el a megállóból.",
         "Early": "Ez a vonat korábban indult el a megállóból ennyi idővel: {{delay}}",
-        "OnTime": "Ez a vonat időben indult el a megállóból."
+        "OnTime": "Ez a vonat időben indult el a megállóból.",
+        "Predicted": {
+          "OnTime": "Ennek a vonatnak időben kellene elindulnia a megállóból.",
+          "Early": "Ennek a vonatnak korábban kellene elindulnia a megállóból ennyi idővel: {{delay}}",
+          "Delay": "Ennek a vonatnak legalább {{delay}} késéssel kellene elindulnia a megállóból."
+        }
       },
       "LastDelay": {
         "Delay": "Ez a vonat jelenleg {{delay}} késésben van.",
@@ -815,6 +854,12 @@
         "Title": "Alacsony átlagos vonatsebesség",
         "Description": "A vonatok átlagos sebessége ezen a szerveren {{speed}} km/h.",
         "Tooltip": "Tipp: Ezt a figyelmeztetést kikapcsolhatja az beállításokban."
+      },
+      "BackgroundUpdatesNotification": {
+        "Title": "Teljesítmény mód aktív",
+        "Description": "Észrevettük, hogy a lap a háttérben volt. A teljesítmény javítása és a késleltetés csökkentése érdekében a térkép frissítései lassulnak, amikor a lap rejtve van. Ez segít a böngésző reagálóképességében, amikor a játékra összpontosít.",
+        "GotIt": "Értem!",
+        "TurnOff": "Kikapcsolás"
       },
       "TrainTypes": {
         "Main": {
@@ -997,6 +1042,10 @@
         "translateStationNames": {
           "Label": "İstasyon adlarını çevir",
           "Description": "İstasyon adlarını seçilen dile çevirir. Bu her istasyon için çalışmayabilir."
+        },
+        "reduceBackgroundUpdates": {
+          "Label": "Arka plan güncellemelerini azalt",
+          "Description": "Tarayıcı sekmesi gizlendiğinde harita güncelleme sıklığını azaltarak performansı artırır ve gecikmeyi azaltır."
         }
       },
       "TrainMakerPopup": {
@@ -1073,7 +1122,12 @@
         },
         "Delay": "Bu tren bu istasyondan {{delay}} gecikmeli ayrıldı.",
         "Early": "Bu tren bu istasyondan {{delay}} erken ayrıldı.",
-        "OnTime": "Bu tren bu istasyondan zamanında ayrıldı."
+        "OnTime": "Bu tren bu istasyondan zamanında ayrıldı.",
+        "Predicted": {
+          "OnTime": "Bu tren bu istasyondan zamanında ayrılmalı.",
+          "Early": "Bu tren bu istasyondan {{delay}} erken ayrılmalı.",
+          "Delay": "Bu tren bu istasyondan en az {{delay}} gecikmeli ayrılmalı."
+        }
       },
       "LastDelay": {
         "Delay": "Bu tren şu anda {{delay}} gecikmeli.",
@@ -1120,6 +1174,12 @@
         "Title": "Düşük ortalama tren hızı",
         "Description": "Bu sunucudaki trenlerin ortalama hızı {{speed}} km/s.",
         "Tooltip": "İpucu: Bu uyarıyı ayarlardan kapatabilirsiniz."
+      },
+      "BackgroundUpdatesNotification": {
+        "Title": "Performans Modu Etkin",
+        "Description": "Sekmenizin arka planda olduğunu fark ettik. Performansı artırmak ve gecikmeyi azaltmak için sekme gizlendiğinde harita güncellemeleri yavaşlatılır. Bu, oyuna odaklandığınızda tarayıcınızın yanıt vermeye devam etmesine yardımcı olur.",
+        "GotIt": "Anladım!",
+        "TurnOff": "Kapat"
       },
       "TrainTypes": {
         "Main": {
@@ -1300,6 +1360,10 @@
         "translateStationNames": {
           "Label": "Tłumacz nazwy stacji",
           "Description": "Tłumaczy nazwy stacji na wybrany język. Może to nie działać dla każdej stacji."
+        },
+        "reduceBackgroundUpdates": {
+          "Label": "Ogranicz aktualizacje w tle",
+          "Description": "Zmniejsz częstotliwość aktualizacji mapy, gdy karta przeglądarki jest ukryta, aby poprawić wydajność i zmniejszyć opóźnienia."
         }
       },
       "TrainMakerPopup": {
@@ -1376,7 +1440,12 @@
         },
         "Delay": "Ten pociąg opuścił tę stację z opóźnieniem {{delay}}.",
         "Early": "Ten pociąg opuścił tę stację {{delay}} wcześniej.",
-        "OnTime": "Ten pociąg opuścił tę stację na czas."
+        "OnTime": "Ten pociąg opuścił tę stację na czas.",
+        "Predicted": {
+          "OnTime": "Ten pociąg powinien opuścić tę stację na czas.",
+          "Early": "Ten pociąg powinien opuścić tę stację {{delay}} wcześniej.",
+          "Delay": "Ten pociąg powinien opuścić tę stację z opóźnieniem co najmniej {{delay}}."
+        }
       },
       "LastDelay": {
         "Delay": "Ten pociąg jest obecnie opóźniony o {{delay}}.",
@@ -1423,6 +1492,12 @@
         "Title": "Niska średnia prędkość pociągów",
         "Description": "Średnia prędkość pociągów na tym serwerze wynosi {{speed}} km/h.",
         "Tooltip": "Wskazówka: Możesz wyłączyć to ostrzeżenie w ustawieniach."
+      },
+      "BackgroundUpdatesNotification": {
+        "Title": "Tryb wydajności aktywny",
+        "Description": "Zauważyliśmy, że Twoja karta była w tle. Aby poprawić wydajność i zmniejszyć opóźnienia, aktualizacje mapy są ograniczane, gdy karta jest ukryta. To pomaga utrzymać responsywność przeglądarki, gdy koncentrujesz się na grze.",
+        "GotIt": "Rozumiem!",
+        "TurnOff": "Wyłącz"
       },
       "TrainTypes": {
         "Main": {

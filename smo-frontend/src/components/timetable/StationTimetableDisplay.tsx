@@ -6,17 +6,18 @@ import { styled } from "@mui/joy/styles";
 import Table from "@mui/joy/Table";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
-import { type FunctionComponent, useContext } from "react";
+import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 import { filter } from "rxjs";
 
 import useSubject from "../../hooks/useSubject";
 import { dataProvider } from "../../utils/data-manager";
+import { calculateLastKnownDelay, calculatePredictedDelay } from "../../utils/delay-prediction";
 import { findStationForSignal } from "../../utils/geom-utils";
 import SelectedTrainContext from "../../utils/selected-train-context";
 import { timeSubj$ } from "../../utils/time";
-import { SimplifiedTimtableEntry, Train } from "../../utils/types";
+import { SimplifiedTimtableEntry, Timetable, Train } from "../../utils/types";
 import { getColorTrainMarker } from "../../utils/ui";
 import ArrowDownIcon from "../icons/arrow-down-solid.svg?react";
 import InfoIcon from "../icons/InfoIcon";
@@ -66,36 +67,56 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
   const { setSelectedTrain } = useContext(SelectedTrainContext);
   const { t } = useTranslation("translation", { keyPrefix: "TrainTimetable" });
   const currentTimeEpoch = useSubject(timeSubjEvery10s$, timeSubj$.value);
-  const currentTimeBuffered = new Date(currentTimeEpoch - BUFFER_TIME);
-  const currentTime = new Date(currentTimeEpoch);
+  const currentTime = useMemo(() => new Date(currentTimeEpoch), [currentTimeEpoch]);
 
-  const relevantTimetable = timetable
-    .filter((entry) => {
-      // Always ignore entries without departure or arrival time
-      if (!entry.departureTime && !entry.arrivalTime) return false;
+  // Cache timetables for trains
+  const [trainTimetables, setTrainTimetables] = useState<Record<string, Timetable>>({});
 
-      // Find the train in the data provider
-      const train = dataProvider.trainsData$.value.find((x) => x.TrainNoLocal === entry.trainNoLocal);
+  // Fetch timetables for visible trains
+  useEffect(() => {
+    const trainNumbers = new Set(timetable.map((entry) => entry.trainNoLocal));
 
-      // If train exists in the system, check if it has passed this station
-      if (train) {
-        // If the train index is greater than this station's index, it means the train has passed
-        return (
-          train.TrainData.VDDelayedTimetableIndex <= entry.index ||
-          entry?.subStationEntries?.some((subEntry) => train.TrainData.VDDelayedTimetableIndex <= subEntry.index)
-        );
+    for (const trainNo of trainNumbers) {
+      if (!trainTimetables[trainNo]) {
+        dataProvider.fetchTimetable(trainNo).then((tt) => {
+          if (tt) {
+            setTrainTimetables((prev) => ({ ...prev, [trainNo]: tt }));
+          }
+        });
       }
+    }
+  }, [timetable, trainTimetables]);
 
-      // For trains not in the system (not currently running), use the time-based filter
-      const departureTime = new Date(entry.departureTime ?? entry.arrivalTime!);
-      return departureTime >= currentTimeBuffered;
-    })
-    .toSorted((a, b) => {
-      const aTime = new Date(a.departureTime ?? "").getTime();
-      const bTime = new Date(b.departureTime ?? "").getTime();
-      return aTime - bTime;
-    })
-    .slice(0, 100); // Limit to 100 entries
+  const relevantTimetable = useMemo(() => {
+    const currentTimeBuffered = new Date(currentTimeEpoch - BUFFER_TIME);
+    return timetable
+      .filter((entry) => {
+        // Always ignore entries without departure or arrival time
+        if (!entry.departureTime && !entry.arrivalTime) return false;
+
+        // Find the train in the data provider
+        const train = dataProvider.trainsData$.value.find((x) => x.TrainNoLocal === entry.trainNoLocal);
+
+        // If train exists in the system, check if it has passed this station
+        if (train) {
+          // If the train index is greater than this station's index, it means the train has passed
+          return (
+            train.TrainData.VDDelayedTimetableIndex <= entry.index ||
+            entry?.subStationEntries?.some((subEntry) => train.TrainData.VDDelayedTimetableIndex <= subEntry.index)
+          );
+        }
+
+        // For trains not in the system (not currently running), use the time-based filter
+        const departureTime = new Date(entry.departureTime ?? entry.arrivalTime!);
+        return departureTime >= currentTimeBuffered;
+      })
+      .toSorted((a, b) => {
+        const aTime = new Date(a.departureTime ?? "").getTime();
+        const bTime = new Date(b.departureTime ?? "").getTime();
+        return aTime - bTime;
+      })
+      .slice(0, 100); // Limit to 100 entries
+  }, [timetable, currentTimeEpoch]);
 
   const panToTrain = (train: Train) => {
     onClose?.();
@@ -144,8 +165,28 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
 
             const train = dataProvider.trainsData$.value.find((x) => x.TrainNoLocal === entry.trainNoLocal);
             const trainDelays = train ? dataProvider.getDelaysForTrainSync(train.Id) : null;
-            const lastDelay = Object.values(trainDelays ?? {}).slice(-1)[0] ?? null;
-            const departureDelay = trainDelays?.[entry.index] ?? null;
+            const trainTimetable = trainTimetables[entry.trainNoLocal];
+
+            // Calculate predicted delay if no actual delay exists
+            let departureDelay = trainDelays?.[entry.index] ?? null;
+            let isPredictedDelay = false;
+
+            if (departureDelay === null && train && trainTimetable && trainDelays) {
+              const lastKnownDelay = calculateLastKnownDelay(trainDelays, train.TrainData.VDDelayedTimetableIndex);
+              const predictedDelay = calculatePredictedDelay(
+                entry.index,
+                lastKnownDelay,
+                train.TrainData.VDDelayedTimetableIndex,
+                trainTimetable,
+              );
+
+              if (predictedDelay !== null && entry.index > train.TrainData.VDDelayedTimetableIndex) {
+                departureDelay = predictedDelay;
+                isPredictedDelay = true;
+              }
+            }
+
+            const lastDelay = Object.values(trainDelays ?? {}).at(-1) ?? null;
             const passedBasedOnDepartureTime = isPastStation(entry, currentTime);
             const passedEarly = train && !passedBasedOnDepartureTime && departureDelay && departureDelay <= -60;
 
@@ -161,7 +202,7 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
 
             const past =
               !isInsideStation &&
-              (departureDelay !== null ||
+              ((departureDelay !== null && !isPredictedDelay) ||
                 (train && train.TrainData.VDDelayedTimetableIndex > entry.index) ||
                 (!train && passedBasedOnDepartureTime));
 
@@ -176,6 +217,11 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
               : [entry.nextStation || t("N/A")];
 
             const shouldLeave = isInsideStation && passedBasedOnDepartureTime;
+
+            const filteredLines = [
+              entry.line,
+              ...(entry.subStationEntries?.map((subEntry) => subEntry.line) ?? []),
+            ].filter((line, index, arr) => index === 0 || line !== arr[index - 1]);
 
             return (
               <FlashingBox
@@ -239,12 +285,12 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                         scrollToStation={entry.stationName}
                       />
                     )}
-                    {passedEarly && (
+                    {!!passedEarly && (
                       <Typography level="body-sm" color="success">
                         {t("PassedEarly")}
                       </Typography>
                     )}
-                    {delayed && (
+                    {!!delayed && (
                       <Typography level="body-sm" color="warning">
                         {t("Delayed")}
                       </Typography>
@@ -308,9 +354,11 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                     {entry.departureTime && (departureDelay || (!past && !!lastDelay)) && (
                       <DelayDisplay
                         delay={departureDelay ?? lastDelay}
-                        scheduledDeparture={departureDelay ? entry.departureTime : null}
-                        translationKey={!departureDelay ? "LastDelay" : undefined}
+                        scheduledDeparture={
+                          isPredictedDelay ? entry.departureTime : departureDelay ? entry.departureTime : null
+                        }
                         alwaysShowTime
+                        isPredicted={isPredictedDelay}
                       />
                     )}
 
@@ -393,25 +441,23 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
                 <td>
                   <Typography fontFamily="monospace" level="body-sm" sx={{ color: "inherit" }}>
                     <Stack>
-                      {[entry.line, ...(entry.subStationEntries?.map((subEntry) => subEntry.line) ?? [])].map(
-                        (line, index, arr) => (
-                          <>
-                            <Typography
-                              key={line + index}
-                              fontFamily="monospace"
-                              level="body-sm"
-                              textAlign="center"
-                              sx={{ color: "inherit" }}>
-                              {line}
-                            </Typography>
-                            {index < arr.length - 1 && (
-                              <Divider sx={{ width: "80%", margin: "0 auto" }}>
-                                <ArrowDownIcon />
-                              </Divider>
-                            )}
-                          </>
-                        ),
-                      )}
+                      {filteredLines.map((line, index, arr) => (
+                        <>
+                          <Typography
+                            key={line + index}
+                            fontFamily="monospace"
+                            level="body-sm"
+                            textAlign="center"
+                            sx={{ color: "inherit" }}>
+                            {line}
+                          </Typography>
+                          {index < arr.length - 1 && (
+                            <Divider sx={{ width: "80%", margin: "0 auto" }}>
+                              <ArrowDownIcon />
+                            </Divider>
+                          )}
+                        </>
+                      ))}
                     </Stack>
                   </Typography>
                 </td>

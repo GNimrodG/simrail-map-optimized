@@ -11,6 +11,7 @@ export interface DelayDisplayProps {
   delay: number | null | undefined;
   translationKey?: string;
   alwaysShowTime?: boolean;
+  isPredicted?: boolean;
 }
 
 function getDelayedDeparture(departureTime: string | null | undefined, delay: number) {
@@ -28,6 +29,7 @@ const DelayDisplay: FunctionComponent<DelayDisplayProps> = ({
   delay,
   translationKey = "StationDisplay",
   alwaysShowTime = false,
+  isPredicted = false,
 }) => {
   const { t } = useTranslation("translation", { keyPrefix: translationKey });
 
@@ -44,16 +46,33 @@ const DelayDisplay: FunctionComponent<DelayDisplayProps> = ({
     typeof delay === "number" && (
       <>
         {!!actualDeparture && (alwaysShowTime || normalizedDelayMinutes >= 1) && (
-          <Typography level="body-sm" color={delayColor}>
+          <Typography
+            level={isPredicted ? "body-xs" : "body-sm"}
+            color={delayColor}
+            sx={{ opacity: isPredicted ? 0.6 : 1 }}>
             <TimeDisplay time={actualDeparture} noSeconds />
           </Typography>
         )}{" "}
         <Tooltip
           arrow
-          title={t(normalizedDelayMinutes === 0 ? "OnTime" : delayMinutes < 0 ? "Early" : "Delay", {
-            delay: moment.duration({ m: normalizedDelayMinutes }).humanize(),
-          })}>
-          <Typography variant="outlined" level="body-xs" color={delayColor}>
+          color={delayColor}
+          title={
+            isPredicted
+              ? t(
+                  normalizedDelayMinutes === 0
+                    ? "Predicted.OnTime"
+                    : delayMinutes < 0
+                      ? "Predicted.Early"
+                      : "Predicted.Delay",
+                  {
+                    delay: moment.duration({ m: normalizedDelayMinutes }).humanize(),
+                  },
+                )
+              : t(normalizedDelayMinutes === 0 ? "OnTime" : delayMinutes < 0 ? "Early" : "Delay", {
+                  delay: moment.duration({ m: normalizedDelayMinutes }).humanize(),
+                })
+          }>
+          <Typography variant={isPredicted ? "soft" : "outlined"} level="body-xs" color={delayColor}>
             {delayMinutes > 0 ? "+" : ""}
             {delayMinutes}'
           </Typography>

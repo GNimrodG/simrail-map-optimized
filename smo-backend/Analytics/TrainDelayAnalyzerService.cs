@@ -71,7 +71,7 @@ public class TrainDelayAnalyzerService(
         logger.LogInformation("Timetable data service started");
 
         logger.LogInformation("Waiting for time data...");
-        await timeDataService.FirstDataReceived;
+        await timeDataService.FirstDataReceived.NoContext();
         logger.LogInformation("Time data is now available, starting train delay analyzer...");
 
         trainDataService.DataReceived += AnalyzeTrains;
@@ -106,13 +106,17 @@ public class TrainDelayAnalyzerService(
     public async Task StopAsync(CancellationToken cancellationToken)
     {
         trainDataService.DataReceived -= AnalyzeTrains;
-        await _lastCancellationTokenSource?.CancelAsync()!;
-        _lastCancellationTokenSource?.Dispose();
+        if (_lastCancellationTokenSource != null)
+        {
+            await _lastCancellationTokenSource.CancelAsync().NoContext();
+            _lastCancellationTokenSource.Dispose();
+        }
+
         logger.LogInformation("Train delay analyzer stopped");
 
         logger.LogInformation("Saving last timetable index and train delays to file...");
-        await _lastTimetableIndex.SaveToFileAsync(LastTimetableIndexFile);
-        await _trainDelays.SaveToFileAsync(TrainDelaysFile);
+        await _lastTimetableIndex.SaveToFileAsync(LastTimetableIndexFile).NoContext();
+        await _trainDelays.SaveToFileAsync(TrainDelaysFile).NoContext();
         logger.LogInformation("Saved last timetable index and train delays to file");
     }
 

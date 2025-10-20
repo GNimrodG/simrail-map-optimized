@@ -200,6 +200,7 @@ builder.Services.AddHighPriorityHostedService<TrainPositionDataService>();
 builder.Services.AddHighPriorityHostedService<StationDataService>();
 builder.Services.AddHighPriorityHostedService<TimeDataService>();
 builder.Services.AddHighPriorityHostedService<TimetableDataService>();
+builder.Services.AddHighPriorityHostedService<TrainTypeService>();
 
 // Analytic services - Low Priority (background processing)
 builder.Services.AddLowPriorityHostedService<SignalAnalyzerService>();
