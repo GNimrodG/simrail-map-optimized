@@ -188,7 +188,8 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
 
             const lastDelay = Object.values(trainDelays ?? {}).at(-1) ?? null;
             const passedBasedOnDepartureTime = isPastStation(entry, currentTime);
-            const passedEarly = train && !passedBasedOnDepartureTime && departureDelay && departureDelay <= -60;
+            const passedEarly =
+              train && !passedBasedOnDepartureTime && departureDelay && departureDelay <= -60 && !isPredictedDelay;
 
             const isInsideStation =
               !!train?.TrainData.SignalInFront &&
