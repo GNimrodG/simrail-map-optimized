@@ -11,6 +11,5 @@ export function usePrevious<T>(value: T, ignoreFalsy = false): [value: T | undef
     }
   }, [value, ignoreFalsy]);
 
-  // eslint-disable-next-line react-compiler/react-compiler
   return [ref.current, refTime.current];
 }

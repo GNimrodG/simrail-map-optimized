@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Marvin.Cache.Headers;
 using Microsoft.AspNetCore.Mvc;
 using SMOBackend.Analytics;
 using SMOBackend.Models;
@@ -152,6 +153,8 @@ public class StatusController(
     /// <param name="serverCode">The server code</param>
     /// <param name="trainNoLocal">The local train number</param>
     [HttpGet("{serverCode}/trains/{trainNoLocal:int:min(1000)}/timetable")]
+    [HttpCacheExpiration(CacheLocation = CacheLocation.Public, MaxAge = 3600)] // 1 hour, same as TimetableDataService.FetchInterval
+    [HttpCacheValidation(MustRevalidate = false, ProxyRevalidate = true)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(NotFoundError))]
     public async Task<ActionResult<Timetable>> GetTrainTimetable(string serverCode, string trainNoLocal)

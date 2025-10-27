@@ -95,7 +95,28 @@
         "reduceBackgroundUpdates": {
           "Label": "Reduce background updates",
           "Description": "Reduce map update frequency when the browser tab is hidden to improve performance and reduce lag."
+        },
+        "stationTimetableDefaultViewMode": {
+          "Label": "Default timetable view",
+          "Description": "Choose how the station timetable opens by default.",
+          "Options": {
+            "table": "Table view",
+            "cards": "Card view",
+            "grouped": "Grouped view",
+            "lastUsed": "Last used"
+          }
         }
+      },
+      "ServerTrainList": {
+        "Title": "All trains - {{server}}",
+        "SearchPlaceholder": "Search trains (by number, name, type, start/end station, vehicles...)",
+        "ButtonTooltip": "Open train list",
+        "PlayerControlled": "Player",
+        "AIControlled": "AI",
+        "PanToTrain": "Pan to train",
+        "TimetableUnavailable": "Timetable data unavailable",
+        "EmptyState": "No trains found",
+        "ConsistLabel": "Consist: {{summary}}"
       },
       "TrainMakerPopup": {
         "NextSignal": "Next Signal:",
@@ -289,8 +310,8 @@
         "To": "To",
         "Line": "Line",
         "Stop": "Stop",
-        "PassedEarly": "(Left early)",
-        "Delayed": "(Delayed)",
+        "PassedEarly": "Left early",
+        "Delayed": "Delayed",
         "PrevStationIsNext": {
           "Short": "PREV",
           "Full": "The next station for this train is {{stationName}}."
@@ -301,10 +322,16 @@
         },
         "InsideStation": {
           "Short": "HERE",
-          "Full": "This train is currently inside the station."
+          "Full": "This train is currently inside the station.",
+          "ShortGlobal": "AT STATION"
         },
         "N/A": "N/A",
-        "PanToTrain": "Go to train"
+        "PanToTrain": "Go to train",
+        "NextStationLabel": "Next station",
+        "PrevStationLabel": "Previous station",
+        "MoreTrains": "+{{count}} more train",
+        "MoreTrains_other": "+{{count}} more trains",
+        "BidirectionalRoute": "Bidirectional route"
       },
       "PrivacyPolicy": {
         "Title": "Privacy Policy",
@@ -410,7 +437,28 @@
         "reduceBackgroundUpdates": {
           "Label": "Hintergrund-Updates reduzieren",
           "Description": "Reduzieren Sie die Aktualisierungsfrequenz der Karte, wenn die Browser-Registerkarte ausgeblendet ist, um die Leistung zu verbessern und Verzögerungen zu reduzieren."
+        },
+        "stationTimetableDefaultViewMode": {
+          "Label": "Standardfahrplanansicht",
+          "Description": "Wählen Sie, wie der Stationsfahrplan standardmäßig geöffnet wird.",
+          "Options": {
+            "table": "Tabellenansicht",
+            "cards": "Kartenansicht",
+            "grouped": "Gruppierte Ansicht",
+            "lastUsed": "Zuletzt verwendet"
+          }
         }
+      },
+      "ServerTrainList": {
+        "Title": "Alle Züge - {{server}}",
+        "SearchPlaceholder": "Züge suchen (nach Nummer, Name, Typ, Start-/Endbahnhof, Fahrzeuge...)",
+        "ButtonTooltip": "Zugliste öffnen",
+        "PlayerControlled": "Spieler",
+        "AIControlled": "KI",
+        "PanToTrain": "Zum Zug springen",
+        "TimetableUnavailable": "Fahrplandaten nicht verfügbar",
+        "EmptyState": "Keine Züge gefunden",
+        "ConsistLabel": "Zuggarnitur: {{summary}}"
       },
       "TrainMakerPopup": {
         "NextSignal": "Nächstes Signal:",
@@ -605,8 +653,8 @@
         "To": "Nach",
         "Line": "Linie",
         "Stop": "Halt",
-        "PassedEarly": "(Zu früh)",
-        "Delayed": "(Verspätet)",
+        "PassedEarly": "Zu früh",
+        "Delayed": "Verspätet",
         "PrevStationIsNext": {
           "Short": "ZUV",
           "Full": "Die nächste Station für diesen Zug ist {{stationName}}."
@@ -617,10 +665,16 @@
         },
         "InsideStation": {
           "Short": "HIER",
-          "Full": "Dieser Zug befindet sich derzeit im Bahnhof."
+          "Full": "Dieser Zug befindet sich derzeit im Bahnhof.",
+          "ShortGlobal": "IM BAHNHOF"
         },
         "N/A": "k.A.",
-        "PanToTrain": "Zum Zug gehen"
+        "PanToTrain": "Zum Zug gehen",
+        "NextStationLabel": "Nächste Station",
+        "PrevStationLabel": "Vorherige Station",
+        "MoreTrains": "+{{count}} weiterer Zug",
+        "MoreTrains_other": "+{{count}} weitere Züge",
+        "BidirectionalRoute": "Bidirektionale Route"
       },
       "PrivacyPolicy": {
         "Title": "Datenschutzrichtlinie",
@@ -726,7 +780,28 @@
         "reduceBackgroundUpdates": {
           "Label": "Háttérben történő frissítések csökkentése",
           "Description": "Csökkentse a térkép frissítési gyakoriságát, amikor a böngésző lap rejtve van, a teljesítmény javítása és a késleltetés csökkentése érdekében."
+        },
+        "stationTimetableDefaultViewMode": {
+          "Label": "Alapértelmezett menetrend nézet",
+          "Description": "Válaszd ki, hogyan jelenjen meg alapból az állomási menetrend.",
+          "Options": {
+            "table": "Táblázatos nézet",
+            "cards": "Kártyanézet",
+            "grouped": "Csoportosított nézet",
+            "lastUsed": "Utoljára használt"
+          }
         }
+      },
+      "ServerTrainList": {
+        "Title": "Összes vonat - {{server}}",
+        "SearchPlaceholder": "Vonatok keresése (szám, név, típus, induló/érkező állomás, járművek szerint...)",
+        "ButtonTooltip": "Vonatlista megnyitása",
+        "PlayerControlled": "Játékos",
+        "AIControlled": "AI",
+        "PanToTrain": "Ugrás a vonatra",
+        "TimetableUnavailable": "Menetrendi adat nem érhető el",
+        "EmptyState": "Nem található vonat",
+        "ConsistLabel": "Vonatösszeállítás: {{summary}}"
       },
       "TrainMakerPopup": {
         "NextSignal": "Következő jelző:",
@@ -925,8 +1000,8 @@
         "To": "Hova",
         "Line": "Vonal",
         "Stop": "Várakozás",
-        "PassedEarly": "(Elhaladt)",
-        "Delayed": "(Késik)",
+        "PassedEarly": "Elhaladt",
+        "Delayed": "Késik",
         "PrevStationIsNext": {
           "Short": "ELŐZŐ",
           "Full": "A következő állomás: {{stationName}}."
@@ -937,10 +1012,16 @@
         },
         "InsideStation": {
           "Short": "ITT",
-          "Full": "Ez a vonat jelenleg az állomáson tartózkodik."
+          "Full": "Ez a vonat jelenleg az állomáson tartózkodik.",
+          "ShortGlobal": "ÁLLOMÁSON"
         },
         "N/A": "n/a",
-        "PanToTrain": "Vonathoz navigálás"
+        "PanToTrain": "Vonathoz navigálás",
+        "NextStationLabel": "Következő állomás",
+        "PrevStationLabel": "Előző állomás",
+        "MoreTrains": "+{{count}} további vonat",
+        "MoreTrains_other": "+{{count}} további vonat",
+        "BidirectionalRoute": "Kétirányú útvonal"
       },
       "PrivacyPolicy": {
         "Title": "Adatvédelmi irányelvek",
@@ -1046,7 +1127,28 @@
         "reduceBackgroundUpdates": {
           "Label": "Arka plan güncellemelerini azalt",
           "Description": "Tarayıcı sekmesi gizlendiğinde harita güncelleme sıklığını azaltarak performansı artırır ve gecikmeyi azaltır."
+        },
+        "stationTimetableDefaultViewMode": {
+          "Label": "Varsayılan zaman çizelgesi görünümü",
+          "Description": "İstasyon zaman çizelgesi varsayılan olarak nasıl açılsın?",
+          "Options": {
+            "table": "Tablo görünümü",
+            "cards": "Kart görünümü",
+            "grouped": "Gruplandırılmış görünüm",
+            "lastUsed": "Son kullanılan"
+          }
         }
+      },
+      "ServerTrainList": {
+        "Title": "Tüm trenler - {{server}}",
+        "SearchPlaceholder": "Tren arayın (numara, ad, tür, kalkış/varış istasyonu, araçlar...)",
+        "ButtonTooltip": "Tren listesini aç",
+        "PlayerControlled": "Oyuncu",
+        "AIControlled": "Yapay zeka",
+        "PanToTrain": "Trene git",
+        "TimetableUnavailable": "Sefer verisi mevcut değil",
+        "EmptyState": "Tren bulunamadı",
+        "ConsistLabel": "Tren yapısı: {{summary}}"
       },
       "TrainMakerPopup": {
         "NextSignal": "Bir Sonraki Sinyal:",
@@ -1243,8 +1345,8 @@
         "To": "Nereye",
         "Line": "Hat",
         "Stop": "Durur",
-        "PassedEarly": "(Erken)",
-        "Delayed": "(Gecikme)",
+        "PassedEarly": "Erken",
+        "Delayed": "Gecikme",
         "PrevStationIsNext": {
           "Short": "ÖNC",
           "Full": "Bu trenin bir sonraki durağı {{stationName}}."
@@ -1255,10 +1357,16 @@
         },
         "InsideStation": {
           "Short": "İÇERİ",
-          "Full": "Bu tren şu anda istasyonda."
+          "Full": "Bu tren şu anda istasyonda.",
+          "ShortGlobal": "İSTASYON"
         },
         "N/A": "n/a",
-        "PanToTrain": "Trene git"
+        "PanToTrain": "Trene git",
+        "NextStationLabel": "Sonraki İstasyon",
+        "PrevStationLabel": "Önceki İstasyon",
+        "MoreTrains": "+{{count}} tren daha",
+        "MoreTrains_other": "+{{count}} tren daha",
+        "BidirectionalRoute": "Çift yönlü rota"
       },
       "PrivacyPolicy": {
         "Title": "Gizlilik Politikası",
@@ -1364,7 +1472,28 @@
         "reduceBackgroundUpdates": {
           "Label": "Ogranicz aktualizacje w tle",
           "Description": "Zmniejsz częstotliwość aktualizacji mapy, gdy karta przeglądarki jest ukryta, aby poprawić wydajność i zmniejszyć opóźnienia."
+        },
+        "stationTimetableDefaultViewMode": {
+          "Label": "Domyślny widok rozkładu",
+          "Description": "Wybierz, jak domyślnie otwierać rozkład stacji.",
+          "Options": {
+            "table": "Widok tabeli",
+            "cards": "Widok kart",
+            "grouped": "Widok grupowany",
+            "lastUsed": "Ostatnio używany"
+          }
         }
+      },
+      "ServerTrainList": {
+        "Title": "Wszystkie pociągi - {{server}}",
+        "SearchPlaceholder": "Szukaj pociągów (po numerze, nazwie, typie, stacji początkowej/końcowej, pojazdach...)",
+        "ButtonTooltip": "Otwórz listę pociągów",
+        "PlayerControlled": "Gracz",
+        "AIControlled": "SI",
+        "PanToTrain": "Przejdź do pociągu",
+        "TimetableUnavailable": "Brak danych rozkładu jazdy",
+        "EmptyState": "Nie znaleziono pociągów",
+        "ConsistLabel": "Skład: {{summary}}"
       },
       "TrainMakerPopup": {
         "NextSignal": "Następny Sygnał:",
@@ -1558,8 +1687,8 @@
         "To": "Do",
         "Line": "Linia",
         "Stop": "Postój",
-        "PassedEarly": "(Za wcześnie)",
-        "Delayed": "(Opóźniony)",
+        "PassedEarly": "Za wcześnie",
+        "Delayed": "Opóźniony",
         "PrevStationIsNext": {
           "Short": "POP",
           "Full": "Następna stacja to {{stationName}}."
@@ -1570,10 +1699,16 @@
         },
         "InsideStation": {
           "Short": "W STACJI",
-          "Full": "Pociąg znajduje się w stacji."
+          "Full": "Pociąg znajduje się w stacji.",
+          "ShortGlobal": "STACJA"
         },
         "N/A": "n/d",
-        "PanToTrain": "Przejdź do pociągu"
+        "PanToTrain": "Przejdź do pociągu",
+        "NextStationLabel": "Następna Stacja",
+        "PrevStationLabel": "Poprzednia Stacja",
+        "MoreTrains": "+{{count}} pociąg więcej",
+        "MoreTrains_other": "+{{count}} pociągów więcej",
+        "BidirectionalRoute": "Trasa dwukierunkowa"
       },
       "PrivacyPolicy": {
         "Title": "Polityka Prywatności",

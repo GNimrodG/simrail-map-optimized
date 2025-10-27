@@ -29,6 +29,7 @@ import SelectedTrainInfo from "./SelectedTrainInfo";
 import ServerSelector from "./ServerSelector";
 import SettingsModal from "./settings/SettingsModal";
 import StatsDisplay from "./StatsDisplay";
+import ServerTrainListModal from "./trains/ServerTrainListModal";
 import RefreshableTileLayer from "./utils/RefreshableTileLayer";
 import ThemeToggle from "./utils/ThemeToggle";
 
@@ -201,6 +202,8 @@ const MainMap: FunctionComponent = () => {
           <LayerMenu visibleLayers={visibleLayers} setVisibleLayers={setVisibleLayers} />
 
           <ThemeToggle />
+
+          <ServerTrainListModal />
 
           <SettingsModal />
         </Stack>

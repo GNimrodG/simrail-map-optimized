@@ -27,11 +27,14 @@ export class SignalRDataProvider implements IDataProvider {
   private readonly serverApiUrl: string;
   private readonly connection: HubConnection;
 
+  getSelectedServer(): string {
+    return readLocalStorageValue({ key: "selectedServer" }) || this.defaultServer;
+  }
+
   private onConnected() {
     this.isConnected$.next(true);
     console.log("Connected to server as", this.connection.connectionId);
-    const selectedServer = readLocalStorageValue({ key: "selectedServer" }) || this.defaultServer;
-    this.connection.send("SwitchServer", selectedServer);
+    this.connection.send("SwitchServer", this.getSelectedServer());
   }
 
   private connectToSignalR() {
@@ -80,6 +83,11 @@ export class SignalRDataProvider implements IDataProvider {
 
     this.connection.on("ServerSwitched", (serverCode: string) => {
       console.log("Switched to server", serverCode);
+    });
+
+    this.serverData$.subscribe((servers) => {
+      const selectedServerCode = this.getSelectedServer();
+      this.selectedServerData$.next(servers.find((s) => s.ServerCode === selectedServerCode) || null);
     });
 
     this.connection.on("ServersReceived", (servers: ServerStatus[]) => this.serverData$.next(servers));
@@ -418,6 +426,7 @@ export class SignalRDataProvider implements IDataProvider {
   }
 
   serverData$ = new BehaviorSubject<ServerStatus[]>([]);
+  selectedServerData$ = new BehaviorSubject<ServerStatus | null>(null);
 
   stationsData$ = new BehaviorSubject<Station[]>([]);
   unplayableStations$ = new BehaviorSubject<Station[]>([]);

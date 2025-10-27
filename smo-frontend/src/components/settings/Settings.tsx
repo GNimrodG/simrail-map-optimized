@@ -8,13 +8,23 @@ import Typography from "@mui/joy/Typography";
 import { type FunctionComponent } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useSetting } from "../../hooks/useSetting";
 import { SUPPORTED_LANGUAGES } from "../../i18n";
 import LayerOpacitySlider from "./LayerOpacitySlider";
 import SettingCheckbox from "./SettingCheckbox";
 import SettingSlider from "./SettingSlider";
 
+const TIMETABLE_VIEW_MODE_OPTIONS = ["table", "cards", "grouped", "lastUsed"] as const;
+
+const isTimetableViewModeOption = (value: string): value is (typeof TIMETABLE_VIEW_MODE_OPTIONS)[number] =>
+  (TIMETABLE_VIEW_MODE_OPTIONS as readonly string[]).includes(value);
+
 const Settings: FunctionComponent = () => {
   const { t, i18n } = useTranslation("translation", { keyPrefix: "Settings" });
+  const [defaultTimetableViewMode, setDefaultTimetableViewMode] = useSetting("stationTimetableDefaultViewMode");
+  const timetableViewSelectValue = isTimetableViewModeOption(defaultTimetableViewMode)
+    ? defaultTimetableViewMode
+    : "table";
 
   return (
     <Sheet
@@ -75,6 +85,23 @@ const Settings: FunctionComponent = () => {
           <SettingCheckbox settingKey="reduceBackgroundUpdates" />
           <SettingSlider settingKey="autoZoomLimits" min={100} max={300} step={1} minDistance={20} />
           <SettingCheckbox settingKey="translateStationNames" />
+          <Stack spacing={0.5}>
+            <Typography level="title-sm">{t("stationTimetableDefaultViewMode.Label")}</Typography>
+            <Select
+              size="sm"
+              value={timetableViewSelectValue}
+              onChange={(_event, value) => setDefaultTimetableViewMode(value!)}>
+              <Option value="table">{t("stationTimetableDefaultViewMode.Options.table")}</Option>
+              <Option value="cards">{t("stationTimetableDefaultViewMode.Options.cards")}</Option>
+              <Option value="grouped">{t("stationTimetableDefaultViewMode.Options.grouped")}</Option>
+              <Option value="lastUsed">{t("stationTimetableDefaultViewMode.Options.lastUsed")}</Option>
+            </Select>
+            {t("stationTimetableDefaultViewMode.Description") && (
+              <Typography level="body-xs" sx={{ color: "neutral.500" }}>
+                {t("stationTimetableDefaultViewMode.Description")}
+              </Typography>
+            )}
+          </Stack>
         </Stack>
       </Stack>
 

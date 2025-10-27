@@ -1,4 +1,4 @@
-﻿import {BehaviorSubject, Observable} from "rxjs";
+﻿import { BehaviorSubject, Observable } from "rxjs";
 
 import {
   ServerStatus,
@@ -18,6 +18,8 @@ export interface IDataProvider {
   selectServer(serverCode: string): void;
 
   serverData$: BehaviorSubject<ServerStatus[]>;
+
+  selectedServerData$: BehaviorSubject<ServerStatus | null>;
 
   stationsData$: BehaviorSubject<Station[]>;
   unplayableStations$: BehaviorSubject<Station[]>;

@@ -348,28 +348,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           variant="outlined"
           placement="right"
           describeChild
-          title={
-            <Box
-              sx={{
-                maxHeight: "90vh",
-                overflowY: "auto",
-                position: "relative",
-              }}>
-              <Typography
-                level="body-lg"
-                textAlign="center"
-                sx={{
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 1,
-                  backgroundColor: theme.palette.background.surface,
-                  boxShadow: `0px 4px 10px ${theme.palette.background.surface}`,
-                }}>
-                {t("Consist")}
-              </Typography>
-              <TrainConsistDisplay consist={train.Vehicles} />
-            </Box>
-          }>
+          title={<TrainConsistDisplay consist={train.Vehicles} />}>
           <Stack alignItems="center" justifyContent="center">
             <InfoIcon />
           </Stack>

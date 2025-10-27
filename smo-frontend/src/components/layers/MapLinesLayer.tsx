@@ -1,6 +1,6 @@
-import {useHotkeys} from "@mantine/hooks";
-import {Fragment, type FunctionComponent, useContext} from "react";
-import {LayerGroup, Polyline, Tooltip} from "react-leaflet";
+import { useHotkeys } from "@mantine/hooks";
+import { Fragment, type FunctionComponent, useContext } from "react";
+import { LayerGroup, Polyline, Tooltip } from "react-leaflet";
 
 import MapLinesContext from "../../utils/map-lines-context";
 
@@ -59,9 +59,9 @@ const MapLinesLayer: FunctionComponent = () => {
             weight={line.width || 5}
             pane="mapLinesPane">
             {line.label && (
-                <Tooltip permanent direction="center">
-                  {line.label}
-                </Tooltip>
+              <Tooltip permanent direction="center">
+                {line.label}
+              </Tooltip>
             )}
           </Polyline>
         </Fragment>

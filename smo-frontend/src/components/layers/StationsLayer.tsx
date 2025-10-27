@@ -52,7 +52,9 @@ const StationsLayer: FunctionComponent = () => {
 
   return (
     <LayerGroup pane="stationsPane">
-      {visibleStations?.map((station) => <StationMarker key={"station_" + station.Id} station={station} />)}
+      {visibleStations?.map((station) => (
+        <StationMarker key={"station_" + station.Id} station={station} />
+      ))}
     </LayerGroup>
   );
 };

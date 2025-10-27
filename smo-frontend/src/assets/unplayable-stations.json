@@ -36,7 +36,7 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/dg3.jpg",
     "DispatchedBy": [],
     "Id": "6408760173983b991bbfcedb",
-    "IgnoredStations": ["Będzin Ksawera", "Dąbrowa Górnicza Gołonóg"]
+    "IgnoredStations": ["Będzin Ksawera", "Dąbrowa Górnicza Gołonóg", "Dąbrowa Górnicza Pogoria", "Będzin Miasto"]
   },
   {
     "Name": "Dąbrowa Górnicza Huta Katowice",
@@ -132,7 +132,7 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/Id3.jpg",
     "DispatchedBy": [],
     "Id": "64086a7673983b991bbfced3",
-    "SubStations": ["Idzikowice Roz.18"]
+    "SubStations": ["Idzikowice Roz.12", "Idzikowice Roz.18"]
   },
   {
     "Name": "Juliusz",
@@ -207,7 +207,8 @@
     "AdditionalImage1Url": "https://api.simrail.eu:8083/Thumbnails/Stations/koz2.jpg",
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/koz3.jpg",
     "DispatchedBy": [],
-    "Id": "677a5c8c850d69a7bdcd0002"
+    "Id": "677a5c8c850d69a7bdcd0002",
+    "SubStations": []
   },
   {
     "Name": "Kraków Batowice",
@@ -282,7 +283,7 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/mi3.jpg",
     "DispatchedBy": [],
     "Id": "675330d44337b38ac4027545",
-    "IgnoredStations": ["Kamieńczyce", "Szczepanowice", "Smroków", "Pstroszyce", "Dziadówki"]
+    "IgnoredStations": ["Kamieńczyce", "Szczepanowice", "Smroków", "Pstroszyce", "Dziadówki", "Tunel R13"]
   },
   {
     "Name": "Niedźwiedź",
@@ -398,7 +399,8 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/sg3.jpg",
     "DispatchedBy": [],
     "Id": "6408737d73983b991bbfced9",
-    "SubStations": ["Sosnowiec Gł. pzs R52"]
+    "SubStations": ["Sosnowiec Gł. pzs R52"],
+    "IgnoredStations": ["Katowice Szopienice Południowe"]
   },
   {
     "Name": "Sosnowiec Kazimierz",
@@ -450,7 +452,8 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/st3.jpg",
     "DispatchedBy": [],
     "Id": "664c8eae266957c3158393e7",
-    "SubStations": ["Biała Rawska"]
+    "SubStations": ["Biała Rawska"],
+    "IgnoredStations": ["Idzikowice Roz.12", "Idzikowice Roz.18"]
   },
   {
     "Name": "Szeligi",
@@ -475,7 +478,8 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/tl3.jpg",
     "DispatchedBy": [],
     "Id": "660ee6ba6a5a9b314b232f6d",
-    "SubStations": ["Tunel R13"]
+    "SubStations": ["Tunel R13"],
+    "IgnoredStations": ["Dziadówki"]
   },
   {
     "Name": "Warszawa Włochy",
@@ -525,7 +529,8 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/zw3.jpg",
     "DispatchedBy": [],
     "Id": "6408787873983b991bbfcedf",
-    "SubStations": ["Zawiercie GT"]
+    "SubStations": ["Zawiercie GT"],
+    "IgnoredStations": ["Zawiercie Borowe Pole", "Myszków Mrzygłód", "Myszków Światowit"]
   },
   {
     "Name": "Gałkówek",
@@ -538,7 +543,8 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/ga3.jpg",
     "DispatchedBy": [],
     "Id": "67ffcf2c6c70787a33c81313",
-    "SubStations": ["Łódź Andrzejów"]
+    "SubStations": ["Łódź Andrzejów"],
+    "IgnoredStations": ["Justynów", "Bedoń"]
   },
   {
     "Name": "Koluszki",
@@ -586,7 +592,14 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/pl3.jpg",
     "DispatchedBy": [],
     "Id": "67ff81a66c70787a33c81311",
-    "SubStations": ["Płyćwia GT"]
+    "IgnoredStations": [
+      "Płyćwia GT",
+      "Przyłęk Duży",
+      "Krosnowa",
+      "Lipce Reymontowskie",
+      "Maków",
+      "Dąbrowice Skierniewickie"
+    ]
   },
   {
     "Name": "Rogów",
@@ -598,7 +611,8 @@
     "AdditionalImage1Url": "https://api.simrail.eu:8083/Thumbnails/Stations/rg2.jpg",
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/rg3.jpg",
     "DispatchedBy": [],
-    "Id": "67ff7a906c70787a33c8130f"
+    "Id": "67ff7a906c70787a33c8130f",
+    "IgnoredStations": ["Przyłęk Duży", "Krosnowa", "Lipce Reymontowskie", "Wągry", "Koluszki R59"]
   },
   {
     "Name": "Skierniewice",
@@ -611,7 +625,8 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/sk3.jpg",
     "DispatchedBy": [],
     "Id": "6800d6ada9642b0182713780",
-    "SubStations": ["Skierniewice M PZS", "Skierniewice S PZS", "Skierniewice P PZS", "Skierniewice GT 201-208"]
+    "SubStations": ["Skierniewice M PZS", "Skierniewice S PZS", "Skierniewice P PZS", "Skierniewice GT 201-208"],
+    "IgnoredStations": ["Dąbrowice Skierniewickie", "Maków", "Skierniewice Rawka"]
   },
   {
     "Name": "Żakowice Południowe",
@@ -779,7 +794,8 @@
     "Latitude": 50.59304492206253,
     "Longitude": 19.88301571264459,
     "Id": "Sp",
-    "RemoteControlled": "Str"
+    "RemoteControlled": "Str",
+    "IgnoredStations": ["Starzyny R5"]
   },
   {
     "Name": "Marków",
@@ -808,7 +824,7 @@
     "Latitude": 52.220588,
     "Longitude": 20.963494,
     "Id": "WZD",
-    "SubStations": ["Warszawa Zach. R19"]
+    "SubStations": ["Warszawa Zach. R19", "Warszawa Zach. R10"]
   },
   {
     "Name": "Warszawa Centralna",
@@ -818,7 +834,7 @@
     "Latitude": 52.22812,
     "Longitude": 21.00163,
     "Id": "WDC",
-    "SubStations": ["Warszawa Zach. R19"]
+    "IgnoredStations": ["Warszawa Zach. R19", "Warszawa Zach. R10"]
   },
   {
     "Name": "Warszawa Wschodnia",
@@ -1049,7 +1065,8 @@
     "Latitude": 52.00498622740066,
     "Longitude": 20.303921397971767,
     "Id": "RM",
-    "RemoteControlled": "Zr"
+    "RemoteControlled": "Zr",
+    "IgnoredStations": ["Skierniewice Rawka", "Jesionka", "Sucha Żyrardowska"]
   },
   {
     "Name": "Warszawa Główna Towarowa",
@@ -1165,7 +1182,8 @@
     "Latitude": 51.744022,
     "Longitude": 19.610301,
     "Id": "2422_LA",
-    "RemoteControlled": "G"
+    "RemoteControlled": "G",
+    "IgnoredStations": ["Bedoń", "Justynów"]
   },
   {
     "Name": "Słotwiny",

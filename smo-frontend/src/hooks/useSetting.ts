@@ -32,6 +32,7 @@ const SETTINGS = {
   autoZoomLimits: [200, 250] as [number, number],
   translateStationNames: false,
   reduceBackgroundUpdates: true,
+  stationTimetableDefaultViewMode: "table" as "table" | "cards" | "grouped" | "lastUsed",
 } as const;
 
 export type TSettings = typeof SETTINGS;

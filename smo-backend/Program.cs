@@ -33,6 +33,8 @@ builder.Services.AddCors(options =>
     ); // Maximum value most browsers support
 });
 
+builder.Services.AddHttpCacheHeaders();
+
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>
     {

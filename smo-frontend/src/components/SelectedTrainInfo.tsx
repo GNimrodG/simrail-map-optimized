@@ -4,13 +4,13 @@ import { useMap } from "react-leaflet";
 import { debounceTime, fromEvent, throttleTime } from "rxjs";
 
 import useBehaviorSubj from "../hooks/useBehaviorSubj";
+import { useIsDocumentFocused } from "../hooks/useIsDocumentFocused";
 import { useSetting } from "../hooks/useSetting";
 import { useSteamProfileData } from "../hooks/useSteamProfileData";
 import { dataProvider } from "../utils/data-manager";
 import MapLinesContext from "../utils/map-lines-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import Loading from "./Loading";
-import { useIsDocumentFocused } from "../hooks/useIsDocumentFocused";
 
 const TrainMarkerPopup = lazy(() => import("./markers/train/TrainMarkerPopup"));
 

@@ -67,17 +67,34 @@ export function calculatePredictedDelay(
     if (entry.ArrivalTime && entry.DepartureTime) {
       const arrivalTime = new Date(entry.ArrivalTime).getTime();
       const departureTime = new Date(entry.DepartureTime).getTime();
-      const layoverSeconds = (departureTime - arrivalTime) / 1000;
+      const plannedLayoverSeconds = (departureTime - arrivalTime) / 1000;
 
-      if (layoverSeconds > 0) {
-        // If train is early (negative delay) and there's a layover, reset to on-time
-        // because the train would wait during the layover
-        if (currentDelay < 0) {
+      if (plannedLayoverSeconds > 0) {
+        // Calculate the actual arrival time with current delay
+        const actualArrivalTime = arrivalTime + currentDelay * 1000;
+
+        // Calculate effective layover: time between actual arrival and scheduled departure
+        const effectiveLayoverSeconds = (departureTime - actualArrivalTime) / 1000;
+
+        if (effectiveLayoverSeconds <= 0) {
+          // If delayed arrival is after scheduled departure, the train misses the layover entirely
+          // Check if we're past the scheduled departure time
+          const currentTime = timeSubj$.value;
+          if (currentTime > departureTime) {
+            // We're past the scheduled departure, calculate delay based on current time
+            const currentTimeDelay = (currentTime - departureTime) / 1000;
+            // Use whichever delay is larger (current time based or propagated delay)
+            currentDelay = Math.max(currentDelay, currentTimeDelay);
+          }
+          // Otherwise, no recovery time is available, so delay remains unchanged
+        } else if (currentDelay < 0) {
+          // If train is early (negative delay) and there's a layover, reset to on-time
+          // because the train would wait during the layover
           currentDelay = 0;
         } else {
-          // For delayed trains, reduce the delay by the layover time
+          // For delayed trains, reduce the delay by the effective layover time
           // but never below 0 (can't make up more time than the delay)
-          currentDelay = Math.max(currentDelay - layoverSeconds, 0);
+          currentDelay = Math.max(currentDelay - effectiveLayoverSeconds, 0);
         }
       }
     }

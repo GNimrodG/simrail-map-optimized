@@ -15,7 +15,7 @@ import { initReactI18next } from "react-i18next";
 import { isSentryLoaded$ } from "./utils/data-manager";
 
 // check if all the language have their moment locale imported
-SUPPORTED_LANGUAGES.forEach((lng) => {
+for (const lng of SUPPORTED_LANGUAGES) {
   if (!moment.locales().includes(lng)) {
     console.warn("Moment locale is missing for", lng);
     if (isSentryLoaded$.getValue()) {
@@ -31,7 +31,7 @@ SUPPORTED_LANGUAGES.forEach((lng) => {
         });
     }
   }
-});
+}
 
 i18n
   // detect user language
