@@ -2,6 +2,7 @@
 import Chip from "@mui/joy/Chip";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
+import moment from "moment";
 import { type FunctionComponent, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
@@ -23,6 +24,7 @@ import StationTimetableTableView from "./StationTimetableTableView";
 export interface StationTimetableDisplayProps {
   timetable: SimplifiedTimtableEntry[];
   onClose?: () => void;
+  isCollapsed?: boolean;
 }
 
 const BUFFER_TIME = 30 * 60 * 1000; // 30 minutes in milliseconds
@@ -64,7 +66,11 @@ function isTrainAtPrevStation(
   );
 }
 
-const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> = ({ timetable, onClose }) => {
+const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> = ({
+  timetable,
+  onClose,
+  isCollapsed,
+}) => {
   const map = useMap();
   const { setSelectedTrain } = useContext(SelectedTrainContext);
   const { t: tSettings } = useTranslation("translation", {
@@ -187,7 +193,8 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
         !!train?.TrainData.SignalInFront &&
         train.TrainData.DistanceToSignalInFront < 2000 &&
         localStationNames.has(findStationForSignal(train.TrainData.SignalInFront.split("@")[0])?.Name ?? "") &&
-        train.TrainData.VDDelayedTimetableIndex >= minIndex;
+        (train.TrainData.VDDelayedTimetableIndex >= minIndex ||
+          indexes.includes(train.TrainData.VDDelayedTimetableIndex));
 
       const isCurrentStationTheNextStation =
         isTrainAtPrevStation(train, entry, trainDelays) ||
@@ -224,7 +231,11 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
         (line, index, arr) => index === 0 || line !== arr[index - 1],
       );
 
-      const shouldLeave = isInsideStation && passedBasedOnDepartureTime && !!train && train.TrainData.Velocity < 5;
+      const shouldLeave =
+        isInsideStation &&
+        isPastStation(entry, moment(currentTime).add(1, "minute").toDate()) &&
+        !!train &&
+        train.TrainData.SignalInFrontSpeed === 0;
 
       return {
         entry,
@@ -307,7 +318,7 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
           <StationTimetableCardsView entryStates={entryStates} onPanToTrain={panToTrain} />
         )}
         {activeViewMode === "grouped" && (
-          <StationTimetableGroupedView entryStates={entryStates} onPanToTrain={panToTrain} />
+          <StationTimetableGroupedView entryStates={entryStates} onPanToTrain={panToTrain} isCollapsed={isCollapsed} />
         )}
       </Sheet>
     </Stack>

@@ -4,7 +4,7 @@ import Stack from "@mui/joy/Stack";
 import { styled } from "@mui/joy/styles";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
-import { type FunctionComponent, useMemo, useState } from "react";
+import { type FunctionComponent, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Train } from "../../utils/types";
@@ -24,6 +24,7 @@ import TrainTimetableModal from "./TrainTimetableModal";
 export interface StationTimetableGroupedViewProps {
   entryStates: EntryRenderState[];
   onPanToTrain: (train: Train) => void;
+  isCollapsed?: boolean;
 }
 
 const FlashingCard = styled(Sheet, { shouldForwardProp: (p) => p !== "shouldLeave" })<{
@@ -45,40 +46,32 @@ const FlashingCard = styled(Sheet, { shouldForwardProp: (p) => p !== "shouldLeav
 interface GroupedEntries {
   stationKey: string;
   displayStation: string;
-  prevStationLine: number[] | null;
   nextStationLine: number[] | null;
   entries: EntryRenderState[];
-  reverseRouteKey?: string; // Key of the reverse route (B->A when this is A->B)
 }
 
 const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedViewProps> = ({
   entryStates,
   onPanToTrain,
+  isCollapsed,
 }) => {
   const { t } = useTranslation("translation", { keyPrefix: "TrainTimetable" });
-  const [hoveredRouteKey, setHoveredRouteKey] = useState<string | null>(null);
 
   const groupedEntries = useMemo(() => {
     const groups = new Map<string, GroupedEntries>();
 
     for (const state of entryStates) {
-      // Get the previous station (first one in the list) and next station (last one in the list)
-      const prevStation = state.prevStations.at(0) ?? t("N/A");
+      // Get the next station (last one in the list)
       const nextStation = state.nextStations.at(-1) ?? t("N/A");
-      const stationKey = `${prevStation};${nextStation}`;
+      const stationKey = nextStation;
 
       // Get line numbers from the timetable
-      let prevStationLine: number | null = null;
       let nextStationLine: number | null = null;
 
       if (state.trainTimetable) {
         const currentIndex = state.trainTimetable.TimetableEntries.findIndex(
           (e) => e.NameForPerson === state.entry.stationName,
         );
-
-        if (currentIndex > 0) {
-          prevStationLine = state.trainTimetable.TimetableEntries[currentIndex - 1].Line;
-        }
 
         if (currentIndex >= 0 && currentIndex < state.trainTimetable.TimetableEntries.length - 1) {
           nextStationLine = state.trainTimetable.TimetableEntries[currentIndex + 1].Line;
@@ -88,19 +81,13 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
       if (!groups.has(stationKey)) {
         groups.set(stationKey, {
           stationKey,
-          displayStation: stationKey,
-          prevStationLine: prevStationLine ? [prevStationLine] : null,
+          displayStation: nextStation,
           nextStationLine: nextStationLine ? [nextStationLine] : null,
           entries: [],
         });
       }
 
       groups.get(stationKey)!.entries.push(state);
-
-      if (prevStationLine !== null && !groups.get(stationKey)!.prevStationLine?.includes(prevStationLine)) {
-        groups.get(stationKey)!.prevStationLine ||= [];
-        groups.get(stationKey)!.prevStationLine!.push(prevStationLine);
-      }
 
       if (nextStationLine !== null && !groups.get(stationKey)!.nextStationLine?.includes(nextStationLine)) {
         groups.get(stationKey)!.nextStationLine ||= [];
@@ -117,37 +104,8 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
       });
     }
 
-    // Detect reverse routes and mark them
-    for (const group of groups.values()) {
-      const [prevStation, nextStation] = group.displayStation.split(";");
-      const reverseKey = `${nextStation};${prevStation}`;
-      if (groups.has(reverseKey)) {
-        group.reverseRouteKey = reverseKey;
-      }
-    }
-
-    // Convert to array and sort to keep bidirectional routes together
-    const groupArray = Array.from(groups.values());
-    const processed = new Set<string>();
-    const sorted: GroupedEntries[] = [];
-
-    for (const group of groupArray) {
-      if (processed.has(group.stationKey)) continue;
-
-      sorted.push(group);
-      processed.add(group.stationKey);
-
-      // If there's a reverse route, add it immediately after
-      if (group.reverseRouteKey && !processed.has(group.reverseRouteKey)) {
-        const reverseGroup = groups.get(group.reverseRouteKey);
-        if (reverseGroup) {
-          sorted.push(reverseGroup);
-          processed.add(group.reverseRouteKey);
-        }
-      }
-    }
-
-    return sorted;
+    // Convert to array and sort by station name
+    return Array.from(groups.values()).sort((a, b) => a.displayStation.localeCompare(b.displayStation));
   }, [entryStates, t]);
 
   return (
@@ -160,7 +118,10 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
             : {
                 sm: "1fr",
                 md: "repeat(2, 1fr)",
-                xl: groupedEntries.length === 3 || groupedEntries.length > 4 ? "repeat(3, 1fr)" : "repeat(2, 1fr)",
+                xl:
+                  isCollapsed || groupedEntries.length === 3 || groupedEntries.length > 4
+                    ? "repeat(3, 1fr)"
+                    : "repeat(2, 1fr)",
               },
         gap: 2,
       }}>
@@ -169,11 +130,6 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
         const visibleEntries = group.entries.slice(0, maxEntries);
         const hiddenCount = group.entries.length - visibleEntries.length;
 
-        // Split the display station to get prev and next
-        const [prevStation, nextStation] = group.displayStation.split(";");
-
-        const isHovered = hoveredRouteKey === group.stationKey || hoveredRouteKey === group.reverseRouteKey;
-
         return (
           <Stack key={group.stationKey} spacing={1}>
             <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
@@ -181,8 +137,6 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
                 direction="row"
                 spacing={0.5}
                 alignItems="center"
-                onMouseEnter={() => setHoveredRouteKey(group.stationKey)}
-                onMouseLeave={() => setHoveredRouteKey(null)}
                 sx={{
                   position: "sticky",
                   top: 0,
@@ -191,26 +145,10 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
                   py: 0.5,
                   px: 1,
                   borderRadius: "sm",
-                  transition: "all 0.2s",
-                  cursor: group.reverseRouteKey ? "pointer" : "default",
-                  ...(group.reverseRouteKey && {
-                    borderWidth: 1,
-                    borderStyle: "solid",
-                    borderColor: isHovered ? "primary.solidBg" : "primary.outlinedBorder",
-                    bgcolor: isHovered ? "primary.softBg" : "background.surface",
-                  }),
                 }}>
-                <Typography level="h4">
-                  {prevStation}
-                  {!!group.prevStationLine?.length && (
-                    <Typography component="span" level="body-sm" sx={{ ml: 0.5, color: "neutral.500" }}>
-                      ({group.prevStationLine.sort((a, b) => a - b).join(", ")})
-                    </Typography>
-                  )}
-                </Typography>
                 <ArrowRightIcon style={{ width: 16, height: 16 }} />
                 <Typography level="h4">
-                  {nextStation}
+                  {group.displayStation}
                   {!!group.nextStationLine?.length && (
                     <Typography component="span" level="body-sm" sx={{ ml: 0.5, color: "neutral.500" }}>
                       ({group.nextStationLine.sort((a, b) => a - b).join(", ")})
@@ -221,13 +159,6 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
               <Chip size="sm" variant="soft">
                 {group.entries.length}
               </Chip>
-              {group.reverseRouteKey && (
-                <Tooltip title={t("BidirectionalRoute")} arrow>
-                  <Chip size="sm" variant="outlined" color="primary" sx={{ fontSize: "0.75rem" }}>
-                    ⇄
-                  </Chip>
-                </Tooltip>
-              )}
             </Stack>
             <Stack spacing={0.75}>
               {visibleEntries.map((state) => {

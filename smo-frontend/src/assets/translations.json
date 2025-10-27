@@ -251,6 +251,12 @@
         "GotIt": "Got it!",
         "TurnOff": "Turn off"
       },
+      "VersionCheck": {
+        "UpdateAvailable": "Update Available",
+        "UpdateMessage": "A new version is available. Current: {{current}}, Latest: {{latest}}. Please refresh to get the latest version.",
+        "RefreshNow": "Refresh Now",
+        "RefreshDescription": "Refreshing the page will load the latest version of the application. If you experience any issues after refreshing, try clearing your browser cache."
+      },
       "TrainTypes": {
         "Main": {
           "EC": "EuroCity train",
@@ -592,6 +598,12 @@
         "Description": "Wir haben bemerkt, dass Ihr Tab im Hintergrund war. Um die Leistung zu verbessern und Verzögerungen zu reduzieren, werden Kartenaktualisierungen gedrosselt, wenn der Tab ausgeblendet ist. Dies hilft, Ihren Browser reaktionsfähig zu halten, wenn Sie sich auf das Spiel konzentrieren.",
         "GotIt": "Verstanden!",
         "TurnOff": "Ausschalten"
+      },
+      "VersionCheck": {
+        "UpdateAvailable": "Update verfügbar",
+        "UpdateMessage": "Eine neue Version ist verfügbar. Aktuell: {{current}}, Neueste: {{latest}}. Bitte aktualisieren Sie, um die neueste Version zu erhalten.",
+        "RefreshNow": "Jetzt aktualisieren",
+        "RefreshDescription": "Das Aktualisieren der Seite lädt die neueste Version der Anwendung. Wenn Sie nach dem Aktualisieren Probleme haben, versuchen Sie, den Cache Ihres Browsers zu leeren."
       },
       "TrainTypes": {
         "Main": {
@@ -935,6 +947,12 @@
         "Description": "Észrevettük, hogy a lap a háttérben volt. A teljesítmény javítása és a késleltetés csökkentése érdekében a térkép frissítései lassulnak, amikor a lap rejtve van. Ez segít a böngésző reagálóképességében, amikor a játékra összpontosít.",
         "GotIt": "Értem!",
         "TurnOff": "Kikapcsolás"
+      },
+      "VersionCheck": {
+        "UpdateAvailable": "Frissítés elérhető",
+        "UpdateMessage": "Új verzió érhető el. Jelenlegi: {{current}}, Legújabb: {{latest}}. Kérjük, frissítsen a legújabb verzió megszerzéséhez.",
+        "RefreshNow": "Frissítés most",
+        "RefreshDescription": "Az oldal frissítésével a legújabb verziót tölti be. Ha frissítés után problémái vannak, próbálja meg törölni a böngésző gyorsítótárát."
       },
       "TrainTypes": {
         "Main": {
@@ -1283,6 +1301,12 @@
         "GotIt": "Anladım!",
         "TurnOff": "Kapat"
       },
+      "VersionCheck": {
+        "UpdateAvailable": "Güncelleme Mevcut",
+        "UpdateMessage": "Yeni bir sürüm mevcut. Mevcut: {{current}}, En son: {{latest}}. Lütfen en son sürümü almak için yenileyin.",
+        "RefreshNow": "Şimdi Yenile",
+        "RefreshDescription": "Sayfayı yenileyerek en son sürümü yüklersiniz. Yenileme sonrası sorun yaşarsanız, tarayıcı önbelleğinizi temizlemeyi deneyin."
+      },
       "TrainTypes": {
         "Main": {
           "EC": "EuroCity treni",
@@ -1627,6 +1651,12 @@
         "Description": "Zauważyliśmy, że Twoja karta była w tle. Aby poprawić wydajność i zmniejszyć opóźnienia, aktualizacje mapy są ograniczane, gdy karta jest ukryta. To pomaga utrzymać responsywność przeglądarki, gdy koncentrujesz się na grze.",
         "GotIt": "Rozumiem!",
         "TurnOff": "Wyłącz"
+      },
+      "VersionCheck": {
+        "UpdateAvailable": "Dostępna aktualizacja",
+        "UpdateMessage": "Dostępna jest nowa wersja. Obecna: {{current}}, Najnowsza: {{latest}}. Odśwież stronę, aby uzyskać najnowszą wersję.",
+        "RefreshNow": "Odśwież teraz",
+        "RefreshDescription": "Odświeżenie strony załaduje najnowszą wersję aplikacji. Jeśli po odświeżeniu wystąpią jakiekolwiek problemy, spróbuj wyczyścić pamięć podręczną przeglądarki."
       },
       "TrainTypes": {
         "Main": {

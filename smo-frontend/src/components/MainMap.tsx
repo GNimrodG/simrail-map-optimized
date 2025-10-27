@@ -16,6 +16,7 @@ import { goToSignal } from "../utils/geom-utils";
 import MapLinesContext from "../utils/map-lines-context";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
+import { VERSION } from "../version";
 import AutoZoomHandler from "./AutoZoom";
 import BackgroundUpdatesNotification from "./BackgroundUpdatesNotification";
 import ErrorBoundary from "./ErrorBoundary";
@@ -32,6 +33,7 @@ import StatsDisplay from "./StatsDisplay";
 import ServerTrainListModal from "./trains/ServerTrainListModal";
 import RefreshableTileLayer from "./utils/RefreshableTileLayer";
 import ThemeToggle from "./utils/ThemeToggle";
+import VersionCheck from "./VersionCheck";
 
 const ActiveSignalsLayer = lazy(() => import("./layers/ActiveSignalsLayer"));
 const MapLinesLayer = lazy(() => import("./layers/MapLinesLayer"));
@@ -95,7 +97,7 @@ const MainMap: FunctionComponent = () => {
     () =>
       [
         '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-        '<a href="https://github.com/GNimrodG/simrail-map-optimized" target="_blank">GitHub</a>',
+        `<a href="https://github.com/GNimrodG/simrail-map-optimized" target="_blank">GitHub</a> (v${VERSION})`,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).feedback && `<a onclick="window.feedback()" href="#">${t("BugReport")}</a>`,
         `<a href="/privacy-policy.html" target="_blank">${t("PrivacyPolicy.Title")}</a>`,
@@ -132,6 +134,7 @@ const MainMap: FunctionComponent = () => {
   return (
     <>
       {!isConnected && <Loading />}
+      <VersionCheck />
       <MapContainer
         ref={setMap}
         center={[51.015482, 19.572143]}

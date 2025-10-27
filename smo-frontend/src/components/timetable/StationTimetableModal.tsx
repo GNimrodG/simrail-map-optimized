@@ -189,7 +189,9 @@ const StationTimetableModal: FunctionComponent<StationTimetableModalProps> = ({
           />
         </DialogTitle>
 
-        {open && filteredTimetable && <StationTimetableDisplay timetable={filteredTimetable} onClose={onClose} />}
+        {open && filteredTimetable && (
+          <StationTimetableDisplay timetable={filteredTimetable} onClose={onClose} isCollapsed={isCollapsed} />
+        )}
       </ModalDialog>
     </Modal>
   );
