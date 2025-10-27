@@ -5,6 +5,7 @@ import ReactCookieConsent, { getCookieConsentValue } from "react-cookie-consent"
 import { Trans, useTranslation } from "react-i18next";
 
 import { isSentryLoaded$ } from "../utils/data-manager";
+import { VERSION } from "../version";
 
 function initializeSentry() {
   if (isSentryLoaded$.getValue()) return;
@@ -40,6 +41,7 @@ function initializeSentry() {
         }),
         feedbackIntegration,
       ],
+      release: VERSION,
       // Performance Monitoring
       tracesSampleRate: 1.0, //  Capture 100% of the transactions
       // Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
