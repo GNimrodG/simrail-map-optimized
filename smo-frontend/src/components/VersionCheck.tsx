@@ -16,6 +16,24 @@ const VersionCheck: FunctionComponent = () => {
   }
 
   const handleRefresh = () => {
+    // Unregister service workers to avoid caching issues
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+
+    // Clear caches
+    if (globalThis.caches) {
+      globalThis.caches.keys().then((names) => {
+        for (const name of names) {
+          globalThis.caches.delete(name);
+        }
+      });
+    }
+
     globalThis.location.reload();
   };
 
