@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SHOULD_PUSH: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' && secrets.DOCKER_REGISTRY_USERNAME != '' }}
+      DEPLOYMENT_WEBHOOK_URL: ${{ secrets.DEPLOYMENT_WEBHOOK_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,12 +56,18 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
+
       # webhook to trigger deployment
-      - name: Deploy
-        env:
-          DEPLOYMENT_WEBHOOK_URL: ${{ secrets.DEPLOYMENT_WEBHOOK_URL }}
+      # only trigger on new tags and if the DEPLOYMENT_WEBHOOK_URL secret is set
+      - name: Bypass Cloudflare for GitHub Action
         continue-on-error: true
-        # only trigger on new tags and if the DEPLOYMENT_WEBHOOK_URL secret is set
+        if: env.SHOULD_PUSH == 'true' && env.DEPLOYMENT_WEBHOOK_URL != ''
+        uses: xiaotianxt/bypass-cloudflare-for-github-action@v1.1.1
+        with:
+          cf_zone_id: ${{ secrets.CF_ZONE_ID }}
+          cf_api_token: ${{ secrets.CF_API_TOKEN }}
+      - name: Deploy
+        continue-on-error: true
         if: env.SHOULD_PUSH == 'true' && env.DEPLOYMENT_WEBHOOK_URL != ''
         uses: wei/curl@v1
         with:
