@@ -4,11 +4,13 @@ import IconButton from "@mui/joy/IconButton";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
+import { SUPPORTED_LANGUAGES } from "../i18n";
 import Loading from "./Loading";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const feedbackFn = (window as any).feedback || (() => console.error("Feedback function not found"));
+const feedbackFn = (globalThis as any).feedback || (() => console.error("Feedback function not found"));
 
 export interface ErrorFallbackProps {
   error: unknown;
@@ -18,6 +20,7 @@ export interface ErrorFallbackProps {
 const prevErrors: string[] = [];
 
 const ErrorFallbackRender: FunctionComponent<ErrorFallbackProps> = ({ error, resetErrorBoundary }) => {
+  const { t } = useTranslation();
   console.error("Error boundary has been triggered: ", error);
   const headerRef = useRef<HTMLElement>(null);
   const [hide, setHide] = useState(false);
@@ -108,7 +111,7 @@ const ErrorFallbackRender: FunctionComponent<ErrorFallbackProps> = ({ error, res
             <Button
               color="primary"
               onClick={() => {
-                window.location.reload();
+                globalThis.location.reload();
               }}
               sx={{ mt: 2 }}>
               Reload the page
@@ -172,8 +175,11 @@ const ErrorFallbackRender: FunctionComponent<ErrorFallbackProps> = ({ error, res
                 If you have translated the page using the browser's built-in translation, please try disabling it.
               </Typography>
               <Typography level="body-md" color="warning">
-                There are already built-in translations for German, Hungarian, Turkish and Polish in the{" "}
-                <strong>Settings</strong>.
+                There are already built-in translations for{" "}
+                {SUPPORTED_LANGUAGES.slice(0, -1)
+                  .map((lng) => t("Settings.LanguageName", { lng }))
+                  .join(", ")}{" "}
+                and {t("Settings.LanguageName", { lng: SUPPORTED_LANGUAGES.at(-1) })} in the <strong>Settings</strong>.
               </Typography>
             </>
           )}

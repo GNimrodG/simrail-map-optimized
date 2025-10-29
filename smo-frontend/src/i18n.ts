@@ -6,6 +6,8 @@ import "moment/dist/locale/de";
 import "moment/dist/locale/hu";
 import "moment/dist/locale/tr";
 import "moment/dist/locale/pl";
+import "moment/dist/locale/ru";
+import "moment/dist/locale/uk";
 
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
