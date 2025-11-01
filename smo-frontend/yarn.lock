@@ -6577,10 +6577,10 @@ util-deprecate@~1.0.1:
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
   integrity sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==
 
-vite-plugin-pwa@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/vite-plugin-pwa/-/vite-plugin-pwa-1.0.1.tgz#fec0cc65ffd592bb9ca8374176bd9a2aeaafe97b"
-  integrity sha512-STyUomQbydj7vGamtgQYIJI0YsUZ3T4pJLGBQDQPhzMse6aGSncmEN21OV35PrFsmCvmtiH+Nu1JS1ke4RqBjQ==
+vite-plugin-pwa@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/vite-plugin-pwa/-/vite-plugin-pwa-1.1.0.tgz#3c08c638be084abda48fac977eac3e9cbcfb0d96"
+  integrity sha512-VsSpdubPzXhHWVINcSx6uHRMpOHVHQcHsef1QgkOlEoaIDAlssFEW88LBq1a59BuokAhsh2kUDJbaX1bZv4Bjw==
   dependencies:
     debug "^4.3.6"
     pretty-bytes "^6.1.1"
