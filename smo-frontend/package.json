@@ -15,7 +15,7 @@
     "@emotion/styled": "^11.14.1",
     "@fontsource/inter": "^5.2.0",
     "@mantine/hooks": "^7.17.1",
-    "@microsoft/signalr": "^8.0.7",
+    "@microsoft/signalr": "^9.0.6",
     "@microsoft/signalr-protocol-msgpack": "^8.0.7",
     "@mui/joy": "^5.0.0-beta.51",
     "@sentry/react": "^10.0.0",
