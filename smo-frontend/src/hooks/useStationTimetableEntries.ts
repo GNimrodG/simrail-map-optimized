@@ -31,7 +31,9 @@ const useStationTimetableEntries = (mainStation: string) => {
       if (validSubStationEntries.length === 0) return processedEntries;
 
       const mainStationMap = new Map<string, SimplifiedTimtableEntry>();
-      processedEntries.forEach((entry) => mainStationMap.set(entry.trainNoLocal, entry));
+      for (const entry of processedEntries) {
+        mainStationMap.set(entry.trainNoLocal, entry);
+      }
 
       validSubStationEntries.sort((a, b) => a.trainNoLocal.localeCompare(b.trainNoLocal) || b.index - a.index);
 
@@ -71,16 +73,34 @@ const useStationTimetableEntries = (mainStation: string) => {
         // Update station connections
         if (prevStations.length > 0) {
           const existingPrev = mainStationEntry.previousStation || "";
-          mainStationEntry.previousStation = [...prevStations, existingPrev]
-            .filter((x) => !!x && !ignoredStations.includes(x))
-            .join(",\n");
+          const uniquePrev = [...new Set([existingPrev, ...prevStations])];
+
+          let filteredPrev = uniquePrev.filter(
+            // filter out stopping points
+            (x) => !!x && !ignoredStations.includes(x) && UnplayableStations.some((station) => station.Name === x),
+          );
+
+          if (filteredPrev.length === 0) {
+            filteredPrev = uniquePrev.filter((x) => !!x && !ignoredStations.includes(x));
+          }
+
+          mainStationEntry.previousStation = filteredPrev.join(",\n");
         }
 
         if (nextStations.length > 0) {
           const existingNext = mainStationEntry.nextStation || "";
-          mainStationEntry.nextStation = [existingNext, ...nextStations]
-            .filter((x) => !!x && !ignoredStations.includes(x))
-            .join(",\n");
+          const uniqueNext = [...new Set([existingNext, ...nextStations])];
+
+          let filteredNext = uniqueNext.filter(
+            // filter out stopping points
+            (x) => !!x && !ignoredStations.includes(x) && UnplayableStations.some((station) => station.Name === x),
+          );
+
+          if (filteredNext.length === 0) {
+            filteredNext = uniqueNext.filter((x) => !!x && !ignoredStations.includes(x));
+          }
+
+          mainStationEntry.nextStation = filteredNext.join(",\n");
         }
 
         // Remove subStationEntries if they are ignored

@@ -1,3 +1,4 @@
+import { useMediaQuery } from "@mantine/hooks";
 import Chip from "@mui/joy/Chip";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
@@ -7,6 +8,8 @@ import Typography from "@mui/joy/Typography";
 import { type FunctionComponent, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import UnplayableStations from "../../assets/unplayable-stations.json";
+import { useSetting } from "../../hooks/useSetting";
 import { Train } from "../../utils/types";
 import { getColorTrainMarker } from "../../utils/ui";
 import ArrowRightIcon from "../icons/arrow-right-solid.svg?react";
@@ -46,6 +49,7 @@ const FlashingCard = styled(Sheet, { shouldForwardProp: (p) => p !== "shouldLeav
 interface GroupedEntries {
   stationKey: string;
   displayStation: string;
+  stationPrefix: string | null;
   nextStationLine: number[] | null;
   entries: EntryRenderState[];
 }
@@ -56,14 +60,23 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
   isCollapsed,
 }) => {
   const { t } = useTranslation("translation", { keyPrefix: "TrainTimetable" });
+  const [groupByLineNumber] = useSetting("groupTimetableByLineNumber");
+  const [maxEntriesDefault] = useSetting("timetableGroupedMaxEntriesDefault");
+  const [maxEntriesSmall] = useSetting("timetableGroupedMaxEntriesSmall");
+  const [maxEntriesLarge] = useSetting("timetableGroupedMaxEntriesLarge");
+  const [hidePassed] = useSetting("timetableGroupedHidePassed");
 
   const groupedEntries = useMemo(() => {
     const groups = new Map<string, GroupedEntries>();
 
     for (const state of entryStates) {
+      // Skip passed trains if setting is enabled
+      if (hidePassed && state.past) {
+        continue;
+      }
+
       // Get the next station (last one in the list)
       const nextStation = state.nextStations.at(-1) ?? t("N/A");
-      const stationKey = nextStation;
 
       // Get line numbers from the timetable
       let nextStationLine: number | null = null;
@@ -78,10 +91,15 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
         }
       }
 
+      // Create station key: if grouping by line number, include it in the key
+      const stationKey =
+        groupByLineNumber && nextStationLine !== null ? `${nextStation}-${nextStationLine}` : nextStation;
+
       if (!groups.has(stationKey)) {
         groups.set(stationKey, {
           stationKey,
           displayStation: nextStation,
+          stationPrefix: UnplayableStations.find((station) => station.Name === nextStation)?.Prefix || null,
           nextStationLine: nextStationLine ? [nextStationLine] : null,
           entries: [],
         });
@@ -105,8 +123,14 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
     }
 
     // Convert to array and sort by station name
-    return Array.from(groups.values()).sort((a, b) => a.displayStation.localeCompare(b.displayStation));
-  }, [entryStates, t]);
+    return Array.from(groups.values()).sort(
+      (a, b) =>
+        a.displayStation.localeCompare(b.displayStation) -
+        (a.entries.length < 10 || b.entries.length < 10 ? a.entries.length - b.entries.length : 0), // Move groups with few entries to the end
+    );
+  }, [entryStates, t, groupByLineNumber, hidePassed]);
+
+  const isXlHeight = useMediaQuery("(min-height: 1000px)");
 
   return (
     <Stack
@@ -119,14 +143,20 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
                 sm: "1fr",
                 md: "repeat(2, 1fr)",
                 xl:
-                  isCollapsed || groupedEntries.length === 3 || groupedEntries.length > 4
+                  groupedEntries.length !== 2 &&
+                  (isCollapsed || groupedEntries.length === 3 || groupedEntries.length > 4)
                     ? "repeat(3, 1fr)"
                     : "repeat(2, 1fr)",
               },
         gap: 2,
       }}>
       {groupedEntries.map((group) => {
-        const maxEntries = groupedEntries.length <= 2 ? 20 : 5;
+        const maxEntries =
+          groupedEntries.length <= 2
+            ? maxEntriesDefault
+            : isXlHeight && !isCollapsed
+              ? maxEntriesLarge
+              : maxEntriesSmall;
         const visibleEntries = group.entries.slice(0, maxEntries);
         const hiddenCount = group.entries.length - visibleEntries.length;
 
@@ -149,6 +179,11 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
                 <ArrowRightIcon style={{ width: 16, height: 16 }} />
                 <Typography level="h4">
                   {group.displayStation}
+                  {group.stationPrefix && (
+                    <Typography component="span" level="body-sm" sx={{ ml: 0.5, color: "neutral.500" }}>
+                      {group.stationPrefix}
+                    </Typography>
+                  )}
                   {!!group.nextStationLine?.length && (
                     <Typography component="span" level="body-sm" sx={{ ml: 0.5, color: "neutral.500" }}>
                       ({group.nextStationLine.sort((a, b) => a - b).join(", ")})
@@ -295,6 +330,17 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
                           hideTimeUntil={past}
                           scrollToStation={entry.stationName}
                         />
+                      )}
+                      {(group.nextStationLine?.length ?? 0) > 1 && !!entry.line && (
+                        <Tooltip
+                          title={t("LineNumberTooltip", { line: entry.line })}
+                          arrow
+                          color="neutral"
+                          variant="outlined">
+                          <Chip size="sm" variant="outlined" color="neutral">
+                            {t("LineNumber", { line: entry.line })}
+                          </Chip>
+                        </Tooltip>
                       )}
                     </Stack>
                     <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap>

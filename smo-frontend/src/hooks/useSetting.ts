@@ -33,9 +33,17 @@ const SETTINGS = {
   translateStationNames: false,
   reduceBackgroundUpdates: true,
   stationTimetableDefaultViewMode: "table" as "table" | "cards" | "grouped" | "lastUsed",
+  groupTimetableByLineNumber: false,
+  timetableGroupedMaxEntriesDefault: 50,
+  timetableGroupedMaxEntriesSmall: 5,
+  timetableGroupedMaxEntriesLarge: 10,
+  timetableGroupedHidePassed: false,
 } as const;
 
 export type TSettings = typeof SETTINGS;
+
+// Export all settings keys for use in other hooks
+export const ALL_SETTINGS_KEYS = Object.keys(SETTINGS) as Array<keyof typeof SETTINGS>;
 
 // Cleans up to the base type
 type CleanType<Base> = Base extends true

@@ -491,7 +491,8 @@
     "AdditionalImage1Url": "https://api.simrail.eu:8083/Thumbnails/Stations/wl2.jpg",
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/wl3.jpg",
     "DispatchedBy": [],
-    "Id": "6803c7d65dfb1a84d7f92ff3"
+    "Id": "6803c7d65dfb1a84d7f92ff3",
+    "IgnoredStations": ["Warszawa Ursus Północny", "Warszawa Ursus", "Warszawa Ursus Niedźwiadek", "Piastów"]
   },
   {
     "Name": "Włoszczowa Północ",
@@ -756,7 +757,8 @@
     "DispatchedBy": [],
     "Latitude": 50.26578,
     "Longitude": 19.17415,
-    "Id": "SDn"
+    "Id": "SDn",
+    "IgnoredStations": ["Sosnowiec Porąbka"]
   },
   {
     "Name": "Myszków",
@@ -1423,6 +1425,18 @@
     "DispatchedBy": [],
     "Id": "d8eac095-b7f1-46cf-92f4-adfdadeb9012",
     "PointId": "4192",
+    "SubStations": [],
+    "IgnoredStations": []
+  },
+  {
+    "Name": "Bełchów",
+    "Prefix": "113_Be",
+    "DifficultyLevel": -1,
+    "Latitude": 52.0231443,
+    "Longitude": 20.0357737,
+    "DispatchedBy": [],
+    "Id": "ee9b026b-8eb3-4c19-8292-f0d2e5840481",
+    "PointId": "113",
     "SubStations": [],
     "IgnoredStations": []
   }

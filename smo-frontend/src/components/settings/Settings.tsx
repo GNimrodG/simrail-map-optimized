@@ -1,4 +1,5 @@
 import Box from "@mui/joy/Box";
+import Divider from "@mui/joy/Divider";
 import ModalClose from "@mui/joy/ModalClose";
 import Option from "@mui/joy/Option";
 import Select from "@mui/joy/Select";
@@ -74,6 +75,8 @@ const Settings: FunctionComponent = () => {
         </Stack>
       </Stack>
 
+      <Divider sx={{ mt: 2 }} />
+
       <Stack direction="column" spacing={0.5}>
         <Typography sx={{ pt: 2 }} level="h4">
           {t("General")}
@@ -85,6 +88,16 @@ const Settings: FunctionComponent = () => {
           <SettingCheckbox settingKey="reduceBackgroundUpdates" />
           <SettingSlider settingKey="autoZoomLimits" min={100} max={300} step={1} minDistance={20} />
           <SettingCheckbox settingKey="translateStationNames" />
+        </Stack>
+      </Stack>
+
+      <Divider sx={{ mt: 2 }} />
+
+      <Stack direction="column" spacing={0.5}>
+        <Typography sx={{ pt: 2 }} level="h4">
+          {t("Timetable")}
+        </Typography>
+        <Stack direction="column" spacing={1}>
           <Stack spacing={0.5}>
             <Typography level="title-sm">{t("stationTimetableDefaultViewMode.Label")}</Typography>
             <Select
@@ -102,8 +115,19 @@ const Settings: FunctionComponent = () => {
               </Typography>
             )}
           </Stack>
+          <SettingCheckbox settingKey="groupTimetableByLineNumber" />
+
+          <Typography sx={{ pt: 1 }} level="body-lg">
+            {t("GroupedView")}
+          </Typography>
+          <SettingCheckbox settingKey="timetableGroupedHidePassed" />
+          <SettingSlider settingKey="timetableGroupedMaxEntriesDefault" min={5} max={50} step={5} />
+          <SettingSlider settingKey="timetableGroupedMaxEntriesSmall" min={1} max={20} step={1} />
+          <SettingSlider settingKey="timetableGroupedMaxEntriesLarge" min={5} max={50} step={5} />
         </Stack>
       </Stack>
+
+      <Divider sx={{ mt: 2 }} />
 
       <Stack direction="column" spacing={0.5}>
         <Typography sx={{ pt: 2 }} level="h4">
@@ -123,6 +147,8 @@ const Settings: FunctionComponent = () => {
           <LayerOpacitySlider layerId="stoppingpoints" layerType="Overlay" />
         </Stack>
       </Stack>
+
+      <Divider sx={{ mt: 2 }} />
 
       <Stack direction="column" spacing={0.5}>
         <Typography sx={{ pt: 2 }} level="h4">
@@ -144,6 +170,8 @@ const Settings: FunctionComponent = () => {
           </Stack>
         </Stack>
       </Stack>
+
+      <Divider sx={{ mt: 2 }} />
 
       <Stack direction="column" spacing={0.5}>
         <Typography sx={{ pt: 2 }} level="h4">

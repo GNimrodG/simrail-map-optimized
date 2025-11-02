@@ -50,6 +50,8 @@
         "passiveSignalOpacity": {
           "Label": "Passive signal layer opacity"
         },
+        "Timetable": "Station Timetable",
+        "GroupedView": "Grouped View",
         "TrainWindow": "Train Window",
         "expandScheduleDefault": {
           "Label": "Expand schedule by default"
@@ -105,6 +107,26 @@
             "grouped": "Grouped view",
             "lastUsed": "Last used"
           }
+        },
+        "groupTimetableByLineNumber": {
+          "Label": "Group timetable by line number",
+          "Description": "When enabled, trains with the same destination but different line numbers will be shown in separate groups in the grouped view."
+        },
+        "timetableGroupedHidePassed": {
+          "Label": "Hide passed trains",
+          "Description": "When enabled, trains that have already departed will be hidden in the grouped view."
+        },
+        "timetableGroupedMaxEntriesDefault": {
+          "Label": "Max entries (1-2 groups)",
+          "Description": "Maximum number of trains to show per group when there are only 1-2 destination groups."
+        },
+        "timetableGroupedMaxEntriesSmall": {
+          "Label": "Max entries (small screens)",
+          "Description": "Maximum number of trains to show per group on smaller screens or with many groups."
+        },
+        "timetableGroupedMaxEntriesLarge": {
+          "Label": "Max entries (large screens)",
+          "Description": "Maximum number of trains to show per group on larger screens with expanded view."
         }
       },
       "ServerTrainList": {
@@ -337,7 +359,9 @@
         "PrevStationLabel": "Previous station",
         "MoreTrains": "+{{count}} more train",
         "MoreTrains_other": "+{{count}} more trains",
-        "BidirectionalRoute": "Bidirectional route"
+        "BidirectionalRoute": "Bidirectional route",
+        "LineNumber": "LK {{line}}",
+        "LineNumberTooltip": "Line number: #{{line}}"
       },
       "PrivacyPolicy": {
         "Title": "Privacy Policy",
@@ -398,6 +422,8 @@
         "passiveSignalOpacity": {
           "Label": "Deckkraft der passiven Signal-Ebene"
         },
+        "Timetable": "Stationsfahrplan",
+        "GroupedView": "Gruppierte Ansicht",
         "TrainWindow": "Zugfenster",
         "expandScheduleDefault": {
           "Label": "Fahrplan automatisch erweitern"
@@ -453,6 +479,26 @@
             "grouped": "Gruppierte Ansicht",
             "lastUsed": "Zuletzt verwendet"
           }
+        },
+        "groupTimetableByLineNumber": {
+          "Label": "Fahrplan nach Liniennummer gruppieren",
+          "Description": "Wenn aktiviert, werden Züge mit demselben Ziel, aber unterschiedlichen Liniennummern in separaten Gruppen in der gruppierten Ansicht angezeigt."
+        },
+        "timetableGroupedHidePassed": {
+          "Label": "Abgefahrene Züge ausblenden",
+          "Description": "Wenn aktiviert, werden Züge, die bereits abgefahren sind, in der gruppierten Ansicht ausgeblendet."
+        },
+        "timetableGroupedMaxEntriesDefault": {
+          "Label": "Max. Einträge (1-2 Gruppen)",
+          "Description": "Maximale Anzahl von Zügen pro Gruppe, wenn nur 1-2 Zielgruppen vorhanden sind."
+        },
+        "timetableGroupedMaxEntriesSmall": {
+          "Label": "Max. Einträge (kleine Bildschirme)",
+          "Description": "Maximale Anzahl von Zügen pro Gruppe auf kleineren Bildschirmen oder bei vielen Gruppen."
+        },
+        "timetableGroupedMaxEntriesLarge": {
+          "Label": "Max. Einträge (große Bildschirme)",
+          "Description": "Maximale Anzahl von Zügen pro Gruppe auf größeren Bildschirmen mit erweiterter Ansicht."
         }
       },
       "ServerTrainList": {
@@ -686,7 +732,9 @@
         "PrevStationLabel": "Vorherige Station",
         "MoreTrains": "+{{count}} weiterer Zug",
         "MoreTrains_other": "+{{count}} weitere Züge",
-        "BidirectionalRoute": "Bidirektionale Route"
+        "BidirectionalRoute": "Bidirektionale Route",
+        "LineNumber": "LK {{line}}",
+        "LineNumberTooltip": "Liniennummer: #{{line}}"
       },
       "PrivacyPolicy": {
         "Title": "Datenschutzrichtlinie",
@@ -747,6 +795,8 @@
         "passiveSignalOpacity": {
           "Label": "Passzív jelző réteg átlátszósága"
         },
+        "Timetable": "Állomási menetrend",
+        "GroupedView": "Csoportosított nézet",
         "TrainWindow": "Vonat ablak",
         "expandScheduleDefault": {
           "Label": "Menetrend alapértelmezett lenyitása"
@@ -802,6 +852,26 @@
             "grouped": "Csoportosított nézet",
             "lastUsed": "Utoljára használt"
           }
+        },
+        "groupTimetableByLineNumber": {
+          "Label": "Menetrend csoportosítása vonalszám szerint",
+          "Description": "Ha engedélyezve van, az azonos céllal, de különböző vonalszámokkal rendelkező vonatok külön csoportokban jelennek meg a csoportosított nézetben."
+        },
+        "timetableGroupedHidePassed": {
+          "Label": "Elhaladt vonatok elrejtése",
+          "Description": "Ha engedélyezve van, a már elhaladt vonatok el lesznek rejtve a csoportosított nézetben."
+        },
+        "timetableGroupedMaxEntriesDefault": {
+          "Label": "Max. bejegyzések (1-2 csoport)",
+          "Description": "Csoportonként megjelenített vonatok maximális száma, ha csak 1-2 célcsoport van."
+        },
+        "timetableGroupedMaxEntriesSmall": {
+          "Label": "Max. bejegyzések (kis képernyők)",
+          "Description": "Csoportonként megjelenített vonatok maximális száma kisebb képernyőkön vagy sok csoport esetén."
+        },
+        "timetableGroupedMaxEntriesLarge": {
+          "Label": "Max. bejegyzések (nagy képernyők)",
+          "Description": "Csoportonként megjelenített vonatok maximális száma nagyobb képernyőkön kibővített nézetben."
         }
       },
       "ServerTrainList": {
@@ -1039,7 +1109,9 @@
         "PrevStationLabel": "Előző állomás",
         "MoreTrains": "+{{count}} további vonat",
         "MoreTrains_other": "+{{count}} további vonat",
-        "BidirectionalRoute": "Kétirányú útvonal"
+        "BidirectionalRoute": "Kétirányú útvonal",
+        "LineNumber": "LK {{line}}",
+        "LineNumberTooltip": "Vonal száma: {{line}}"
       },
       "PrivacyPolicy": {
         "Title": "Adatvédelmi irányelvek",
@@ -1100,6 +1172,8 @@
         "passiveSignalOpacity": {
           "Label": "Pasif sinyal katmanı opaklığı"
         },
+        "Timetable": "İstasyon Zaman Çizelgesi",
+        "GroupedView": "Gruplandırılmış Görünüm",
         "TrainWindow": "Tren Penceresi",
         "expandScheduleDefault": {
           "Label": "Varsayılan olarak programı genişlet"
@@ -1155,6 +1229,26 @@
             "grouped": "Gruplandırılmış görünüm",
             "lastUsed": "Son kullanılan"
           }
+        },
+        "groupTimetableByLineNumber": {
+          "Label": "Zaman çizelgesini hat numarasına göre gruplandır",
+          "Description": "Etkinleştirildiğinde, aynı hedefe sahip ancak farklı hat numaralarına sahip trenler, gruplandırılmış görünümde ayrı gruplarda gösterilir."
+        },
+        "timetableGroupedHidePassed": {
+          "Label": "Geçmiş trenleri gizle",
+          "Description": "Etkinleştirildiğinde, zaten kalkmış olan trenler gruplandırılmış görünümde gizlenecektir."
+        },
+        "timetableGroupedMaxEntriesDefault": {
+          "Label": "Maks. giriş (1-2 grup)",
+          "Description": "Yalnızca 1-2 hedef grup olduğunda grup başına gösterilecek maksimum tren sayısı."
+        },
+        "timetableGroupedMaxEntriesSmall": {
+          "Label": "Maks. giriş (küçük ekranlar)",
+          "Description": "Daha küçük ekranlarda veya çok sayıda grup olduğunda grup başına gösterilecek maksimum tren sayısı."
+        },
+        "timetableGroupedMaxEntriesLarge": {
+          "Label": "Maks. giriş (büyük ekranlar)",
+          "Description": "Genişletilmiş görünümle daha büyük ekranlarda grup başına gösterilecek maksimum tren sayısı."
         }
       },
       "ServerTrainList": {
@@ -1390,7 +1484,9 @@
         "PrevStationLabel": "Önceki İstasyon",
         "MoreTrains": "+{{count}} tren daha",
         "MoreTrains_other": "+{{count}} tren daha",
-        "BidirectionalRoute": "Çift yönlü rota"
+        "BidirectionalRoute": "Çift yönlü rota",
+        "LineNumber": "LK {{line}}",
+        "LineNumberTooltip": "Hat numarası: {{line}}"
       },
       "PrivacyPolicy": {
         "Title": "Gizlilik Politikası",
@@ -1451,6 +1547,8 @@
         "passiveSignalOpacity": {
           "Label": "Przezroczystość pasywnej warstwy sygnałów"
         },
+        "Timetable": "Rozkład Stacji",
+        "GroupedView": "Widok Grupowany",
         "TrainWindow": "Okno Pociągu",
         "expandScheduleDefault": {
           "Label": "Domyślnie rozwijaj rozkład jazdy"
@@ -1506,6 +1604,26 @@
             "grouped": "Widok grupowany",
             "lastUsed": "Ostatnio używany"
           }
+        },
+        "groupTimetableByLineNumber": {
+          "Label": "Grupuj rozkład według numeru linii",
+          "Description": "Po włączeniu pociągi o tym samym celu, ale różnych numerach linii będą wyświetlane w oddzielnych grupach w widoku grupowanym."
+        },
+        "timetableGroupedHidePassed": {
+          "Label": "Ukryj pociągi, które odjechały",
+          "Description": "Po włączeniu pociągi, które już odjechały, będą ukryte w widoku grupowanym."
+        },
+        "timetableGroupedMaxEntriesDefault": {
+          "Label": "Maks. wpisów (1-2 grupy)",
+          "Description": "Maksymalna liczba pociągów wyświetlanych na grupę, gdy są tylko 1-2 grupy docelowe."
+        },
+        "timetableGroupedMaxEntriesSmall": {
+          "Label": "Maks. wpisów (małe ekrany)",
+          "Description": "Maksymalna liczba pociągów wyświetlanych na grupę na mniejszych ekranach lub z wieloma grupami."
+        },
+        "timetableGroupedMaxEntriesLarge": {
+          "Label": "Maks. wpisów (duże ekrany)",
+          "Description": "Maksymalna liczba pociągów wyświetlanych na grupę na większych ekranach z rozwiniętym widokiem."
         }
       },
       "ServerTrainList": {
@@ -1738,7 +1856,9 @@
         "PrevStationLabel": "Poprzednia Stacja",
         "MoreTrains": "+{{count}} pociąg więcej",
         "MoreTrains_other": "+{{count}} pociągów więcej",
-        "BidirectionalRoute": "Trasa dwukierunkowa"
+        "BidirectionalRoute": "Trasa dwukierunkowa",
+        "LineNumber": "LK {{line}}",
+        "LineNumberTooltip": "Numer linii: {{line}}"
       },
       "PrivacyPolicy": {
         "Title": "Polityka Prywatności",
@@ -1799,6 +1919,8 @@
         "passiveSignalOpacity": {
           "Label": "Непрозрачность слоя пассивных сигналов"
         },
+        "Timetable": "Расписание станции",
+        "GroupedView": "Групповой вид",
         "TrainWindow": "Окно поезда",
         "expandScheduleDefault": {
           "Label": "Раскрывать расписание по умолчанию"
@@ -1854,6 +1976,26 @@
             "grouped": "Групповой вид",
             "lastUsed": "Последний использованный"
           }
+        },
+        "groupTimetableByLineNumber": {
+          "Label": "Группировать расписание по номеру линии",
+          "Description": "При включении поезда с одинаковым пунктом назначения, но разными номерами линий будут отображаться в отдельных группах в групповом виде."
+        },
+        "timetableGroupedHidePassed": {
+          "Label": "Скрыть ушедшие поезда",
+          "Description": "При включении поезда, которые уже отправились, будут скрыты в групповом виде."
+        },
+        "timetableGroupedMaxEntriesDefault": {
+          "Label": "Макс. записей (1-2 группы)",
+          "Description": "Максимальное количество поездов, отображаемых на группу, когда есть только 1-2 группы назначения."
+        },
+        "timetableGroupedMaxEntriesSmall": {
+          "Label": "Макс. записей (маленькие экраны)",
+          "Description": "Максимальное количество поездов, отображаемых на группу на меньших экранах или с большим количеством групп."
+        },
+        "timetableGroupedMaxEntriesLarge": {
+          "Label": "Макс. записей (большие экраны)",
+          "Description": "Максимальное количество поездов, отображаемых на группу на больших экранах с развёрнутым видом."
         }
       },
       "ServerTrainList": {
@@ -2086,7 +2228,9 @@
         "PrevStationLabel": "Предыдущая станция",
         "MoreTrains": "+ещё {{count}} поезд",
         "MoreTrains_other": "+ещё {{count}} поездов",
-        "BidirectionalRoute": "Двунаправленный маршрут"
+        "BidirectionalRoute": "Двунаправленный маршрут",
+        "LineNumber": "ЛК {{line}}",
+        "LineNumberTooltip": "Номер линии: {{line}}"
       },
       "PrivacyPolicy": {
         "Title": "Политика конфиденциальности",
@@ -2147,6 +2291,8 @@
         "passiveSignalOpacity": {
           "Label": "Непрозорість шару пасивних сигналів"
         },
+        "Timetable": "Розклад станції",
+        "GroupedView": "Груповий вигляд",
         "TrainWindow": "Вікно поїзда",
         "expandScheduleDefault": {
           "Label": "Розгортати розклад за замовчуванням"
@@ -2202,6 +2348,26 @@
             "grouped": "Груповий вигляд",
             "lastUsed": "Останній використаний"
           }
+        },
+        "groupTimetableByLineNumber": {
+          "Label": "Групувати розклад за номером лінії",
+          "Description": "При увімкненні поїзди з однаковим пунктом призначення, але різними номерами ліній відображатимуться в окремих групах у груповому вигляді."
+        },
+        "timetableGroupedHidePassed": {
+          "Label": "Сховати поїзди, що відправилися",
+          "Description": "При увімкненні поїзди, які вже відправилися, будуть приховані в груповому вигляді."
+        },
+        "timetableGroupedMaxEntriesDefault": {
+          "Label": "Макс. записів (1-2 групи)",
+          "Description": "Максимальна кількість поїздів, що відображаються на групу, коли є лише 1-2 групи призначення."
+        },
+        "timetableGroupedMaxEntriesSmall": {
+          "Label": "Макс. записів (малі екрани)",
+          "Description": "Максимальна кількість поїздів, що відображаються на групу на менших екранах або з великою кількістю груп."
+        },
+        "timetableGroupedMaxEntriesLarge": {
+          "Label": "Макс. записів (великі екрани)",
+          "Description": "Максимальна кількість поїздів, що відображаються на групу на великих екранах з розгорнутим виглядом."
         }
       },
       "ServerTrainList": {
@@ -2434,7 +2600,9 @@
         "PrevStationLabel": "Попередня станція",
         "MoreTrains": "+ще {{count}} поїзд",
         "MoreTrains_other": "+ще {{count}} поїздів",
-        "BidirectionalRoute": "Двонапрямний маршрут"
+        "BidirectionalRoute": "Двонапрямний маршрут",
+        "LineNumber": "ЛК {{line}}",
+        "LineNumberTooltip": "Номер лінії: {{line}}"
       },
       "PrivacyPolicy": {
         "Title": "Політика конфіденційності",
