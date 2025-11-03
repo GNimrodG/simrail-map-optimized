@@ -299,6 +299,9 @@ public class RoutePointAnalyzerService : IHostedService
 
                     await context.RoutePoints.AddRangeAsync(pointsToAdd, cancellationToken);
                     await context.SaveChangesAsync(cancellationToken);
+
+                    // Clear the ChangeTracker to release memory
+                    context.ChangeTracker.Clear();
                 }
 
                 splitCounter += batchSplitCount;

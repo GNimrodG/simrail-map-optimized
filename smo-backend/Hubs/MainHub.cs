@@ -38,17 +38,35 @@ public class MainHub(
     }
 
     /// <inheritdoc />
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
         clientManagerService.OnClientDisconnected(Context.ConnectionId);
 
-        if (clientManagerService.SelectedServers.Remove(Context.ConnectionId, out var serverCode))
+        string? serverCode;
+        lock (clientManagerService.SelectedServers)
         {
-            ServerClientsGauge.WithLabels(serverCode)
-                .Set(clientManagerService.SelectedServers.Count(x => x.Value == serverCode));
+            clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out serverCode);
         }
 
-        return Task.CompletedTask;
+        if (serverCode != null)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, serverCode);
+
+            // Now update metrics with lock
+            lock (clientManagerService.SelectedServers)
+            {
+                // Remove from SelectedServers dictionary
+                clientManagerService.SelectedServers.Remove(Context.ConnectionId);
+
+                // Update gauge
+                var count = clientManagerService.SelectedServers.Count(x => x.Value == serverCode);
+                if (count > 0)
+                    ServerClientsGauge.WithLabels(serverCode).Set(count);
+                else
+                    // Remove the label if no clients are connected to this server
+                    ServerClientsGauge.RemoveLabelled(serverCode);
+            }
+        }
     }
 
     /// <summary>
@@ -57,10 +75,14 @@ public class MainHub(
     /// <param name="serverCode">The server code to switch to.</param>
     public async Task SwitchServer(string serverCode)
     {
-        if (clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out var currentServerCode))
+        string? currentServerCode;
+        lock (clientManagerService.SelectedServers)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, currentServerCode);
+            clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out currentServerCode);
         }
+
+        if (currentServerCode != null)
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, currentServerCode);
 
         await Groups.AddToGroupAsync(Context.ConnectionId, serverCode);
 
@@ -117,7 +139,11 @@ public class MainHub(
     /// <returns>The timetable for the train, or null if not found.</returns>
     public async Task<Timetable?> GetTimetable(string trainNoLocal)
     {
-        var serverCode = clientManagerService.SelectedServers[Context.ConnectionId];
+        string serverCode;
+        lock (clientManagerService.SelectedServers)
+        {
+            serverCode = clientManagerService.SelectedServers[Context.ConnectionId];
+        }
 
         for (var attempt = 1; attempt <= 3; attempt++)
         {
@@ -152,11 +178,15 @@ public class MainHub(
     {
         try
         {
-            if (!clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out var serverCode))
+            string? serverCode;
+            lock (clientManagerService.SelectedServers)
             {
-                logger.LogWarning("Client {ConnectionId} tried to get stations without a selected server",
-                    Context.ConnectionId);
-                return;
+                if (!clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out serverCode))
+                {
+                    logger.LogWarning("Client {ConnectionId} tried to get stations without a selected server",
+                        Context.ConnectionId);
+                    return;
+                }
             }
 
             var stations = stationDataService[serverCode];
@@ -178,11 +208,15 @@ public class MainHub(
     {
         try
         {
-            if (!clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out var serverCode))
+            string? serverCode;
+            lock (clientManagerService.SelectedServers)
             {
-                logger.LogWarning("Client {ConnectionId} tried to get trains without a selected server",
-                    Context.ConnectionId);
-                return;
+                if (!clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out serverCode))
+                {
+                    logger.LogWarning("Client {ConnectionId} tried to get trains without a selected server",
+                        Context.ConnectionId);
+                    return;
+                }
             }
 
             var trains = trainDataService[serverCode];
@@ -204,11 +238,15 @@ public class MainHub(
     {
         try
         {
-            if (!clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out var serverCode))
+            string? serverCode;
+            lock (clientManagerService.SelectedServers)
             {
-                logger.LogWarning("Client {ConnectionId} tried to get signals without a selected server",
-                    Context.ConnectionId);
-                return;
+                if (!clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out serverCode))
+                {
+                    logger.LogWarning("Client {ConnectionId} tried to get signals without a selected server",
+                        Context.ConnectionId);
+                    return;
+                }
             }
 
             var trains = trainDataService[serverCode];

@@ -227,10 +227,12 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             PrevSignals = JsonConvert.DeserializeObject<List<SignalConnectionData>>(r.PrevSignals)
                 ?.Select(c => new SignalStatus.SignalConnection(c.Name, c.Vmax))
                 .DistinctBy(x => x.Name)
+                .OrderBy(x => x.Name)
                 .ToArray() ?? [],
             NextSignals = JsonConvert.DeserializeObject<List<SignalConnectionData>>(r.NextSignals)
                 ?.Select(c => new SignalStatus.SignalConnection(c.Name, c.Vmax))
                 .DistinctBy(x => x.Name)
+                .OrderBy(x => x.Name)
                 .ToArray() ?? []
         }).ToArray();
     }
@@ -448,6 +450,10 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         _logger.LogInformation("Saving {Count} updated signals...",
             context.ChangeTracker.Entries().Count(x => x.State == EntityState.Modified));
         await context.SaveChangesAsync(cancellationToken);
+
+        // Clear the ChangeTracker to release memory
+        context.ChangeTracker.Clear();
+
         _logger.LogInformation("Signals updated successfully");
     }
 
@@ -1133,4 +1139,3 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         public required short? Vmax { get; init; }
     }
 }
-

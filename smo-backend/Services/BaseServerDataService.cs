@@ -43,30 +43,40 @@ public abstract class BaseServerDataService<T>(
             if (data.Length == 0 || Data == null)
                 return;
 
+            var tasks = new List<Task>();
+
             foreach (var server in data)
             {
                 if (Data.ContainsKey(server.ServerCode)) continue;
 
                 logger.LogInformation("Fetching data for new server: {ServerCode}", server.ServerCode);
                 var serverCode = server.ServerCode;
-                await FetchServerData(serverCode, CancellationToken.None)
-                    .ContinueWith(t =>
+
+                var task = Task.Run(async () =>
+                {
+                    try
                     {
-                        var serverData = t.Result;
-                        Data[serverCode] = serverData;
+                        var serverData = await FetchServerData(serverCode, CancellationToken.None).NoContext();
+                        lock (Data)
+                        {
+                            Data[serverCode] = serverData;
+                        }
+
                         OnPerServerDataReceived(new(serverCode, serverData));
-                    }, TaskContinuationOptions.OnlyOnRanToCompletion)
-                    .ContinueWith(t =>
+                        logger.LogInformation("Data fetched for server: {ServerCode}", serverCode);
+                    }
+                    catch (Exception ex)
                     {
-                        if (t.IsFaulted)
-                        {
-                            logger.LogError(t.Exception, "Error fetching data for server: {ServerCode}", serverCode);
-                        }
-                        else
-                        {
-                            logger.LogInformation("Data fetched for server: {ServerCode}", serverCode);
-                        }
-                    });
+                        logger.LogError(ex, "Error fetching data for server: {ServerCode}", serverCode);
+                    }
+                });
+
+                tasks.Add(task);
+            }
+
+            if (tasks.Count > 0)
+            {
+                await Task.WhenAll(tasks);
             }
         }
         catch (Exception e)

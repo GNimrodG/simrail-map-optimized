@@ -48,6 +48,10 @@ public class SteamApiClient
     private readonly TtlCache<string, PlayerSummariesResponse> _playerSummariesCache =
         new(TimeSpan.FromHours(3), "PlayerSummariesCache");
 
+    private readonly Lock _statsSaveLock = new();
+
+    private readonly Lock _summariesSaveLock = new();
+
     /// <summary>
     ///     A client for interacting with the Steam API to retrieve player summaries and statistics.
     /// </summary>
@@ -71,9 +75,20 @@ public class SteamApiClient
             // ignore errors when loading cache files
         }
 
-        _playerSummariesCache.KeyAdded +=
-            (sender, e) => _ = _playerSummariesCache.SaveToFileAsync(PlayerSummaryCacheFile);
-        _playerStatsCache.KeyAdded += (sender, e) => _ = _playerStatsCache.SaveToFileAsync(PlayerStatsCacheFile);
+        _playerSummariesCache.KeyAdded += (_, _) =>
+        {
+            lock (_summariesSaveLock)
+            {
+                _playerSummariesCache.SaveToFileAsync(PlayerSummaryCacheFile).NoContext();
+            }
+        };
+        _playerStatsCache.KeyAdded += (_, _) =>
+        {
+            lock (_statsSaveLock)
+            {
+                _playerStatsCache.SaveToFileAsync(PlayerStatsCacheFile).NoContext();
+            }
+        };
     }
 
     public bool IsAvailable => !string.IsNullOrEmpty(_apiKey);

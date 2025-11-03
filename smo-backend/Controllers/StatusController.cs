@@ -39,11 +39,14 @@ public class StatusController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<StatusResponse> GetStatus()
     {
-        return Ok(new StatusResponse(clientManagerService.ConnectionCount,
-            serverDataService.Data?.ToDictionary(server => server.ServerCode,
-                server => clientManagerService.SelectedServers.Count(x => x.Value == server.ServerCode)),
-            serverDataService.Data
-        ));
+        lock (clientManagerService.SelectedServers)
+        {
+            return Ok(new StatusResponse(clientManagerService.ConnectionCount,
+                serverDataService.Data?.ToDictionary(server => server.ServerCode,
+                    server => clientManagerService.SelectedServers.Count(x => x.Value == server.ServerCode)),
+                serverDataService.Data
+            ));
+        }
     }
 
     /// <summary>
@@ -153,7 +156,8 @@ public class StatusController(
     /// <param name="serverCode">The server code</param>
     /// <param name="trainNoLocal">The local train number</param>
     [HttpGet("{serverCode}/trains/{trainNoLocal:int:min(1000)}/timetable")]
-    [HttpCacheExpiration(CacheLocation = CacheLocation.Public, MaxAge = 3600)] // 1 hour, same as TimetableDataService.FetchInterval
+    [HttpCacheExpiration(CacheLocation = CacheLocation.Public,
+        MaxAge = 3600)] // 1 hour, same as TimetableDataService.FetchInterval
     [HttpCacheValidation(MustRevalidate = false, ProxyRevalidate = true)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(NotFoundError))]

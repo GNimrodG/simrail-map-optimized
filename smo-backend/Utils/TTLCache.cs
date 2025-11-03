@@ -106,6 +106,19 @@ public class TtlCache<TKey, TValue> : IDisposable
                 var oldestKey = _insertionOrder.Dequeue();
                 _cache.Remove(oldestKey);
             }
+
+            // Clean up the insertion order queue by removing keys that are no longer in cache
+            // This prevents memory leak when items expire naturally via TTL
+            if (_insertionOrder.Count > _cache.Count * 2)
+            {
+                var validKeys = new Queue<TKey>(_cache.Count);
+                while (_insertionOrder.TryDequeue(out var key))
+                    if (_cache.TryGetValue(key, out _))
+                        validKeys.Enqueue(key);
+
+                _insertionOrder.Clear();
+                foreach (var key in validKeys) _insertionOrder.Enqueue(key);
+            }
         }
 
         CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
