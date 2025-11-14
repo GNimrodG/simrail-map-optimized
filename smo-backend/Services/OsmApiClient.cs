@@ -136,18 +136,31 @@ public class OsmApiClient : IDisposable
                     OSMType? bestMatch = null;
                     if (matchingElements.Count > 0)
                     {
-                        // If multiple matches, pick the closest one (shortest name or exact match)
+                        // First try to find a way with railway=signal_box (most specific)
                         bestMatch = matchingElements
-                            .OrderBy(e =>
-                                e.Tags["name"].Equals(name, StringComparison.OrdinalIgnoreCase)
-                                    ? 0
-                                    : 1) // Exact matches first
-                            .ThenBy(e => e.Type == "way" ? 0 : 1) // Prioritize ways over nodes
-                            .ThenBy(e => e.Tags["name"].Length) // Then shortest names
-                            .ThenBy(e =>
-                                LevenshteinDistance(name.ToLowerInvariant(),
-                                    e.Tags["name"].ToLowerInvariant())) // Then by edit distance
-                            .First();
+                                        .Where(e => e.Type == "way" &&
+                                                    e.Tags.TryGetValue("railway", out var railwayTag) && railwayTag == "signal_box" &&
+                                                    e.Tags.TryGetValue("building", out var buildingTag) && buildingTag == "yes")
+                                        .OrderBy(e =>
+                                            e.Tags["name"].Equals(name, StringComparison.OrdinalIgnoreCase)
+                                                ? 0
+                                                : 1) // Exact matches first
+                                        .ThenBy(e =>
+                                            LevenshteinDistance(name.ToLowerInvariant(),
+                                                e.Tags["name"].ToLowerInvariant())) // Then by edit distance
+                                        .FirstOrDefault() ??
+                                    // If multiple matches, pick the closest one (shortest name or exact match)
+                                    matchingElements
+                                        .OrderBy(e =>
+                                            e.Tags["name"].Equals(name, StringComparison.OrdinalIgnoreCase)
+                                                ? 0
+                                                : 1) // Exact matches first
+                                        .ThenBy(e => e.Type == "way" ? 0 : 1) // Prioritize ways over nodes
+                                        .ThenBy(e => e.Tags["name"].Length) // Then shortest names
+                                        .ThenBy(e =>
+                                            LevenshteinDistance(name.ToLowerInvariant(),
+                                                e.Tags["name"].ToLowerInvariant())) // Then by edit distance
+                                        .First();
                     }
 
                     tcs.SetResult(bestMatch);

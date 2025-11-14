@@ -9,6 +9,7 @@ import { fetchRailwayHaltsWithoutRef } from "../../utils/osm-utils";
 import { OsmNode } from "../../utils/types";
 import StoppingPointMarker from "../markers/stopping-points/StoppingPointMarker";
 
+const BUFFER_FACTOR = 0.2; // 20% buffer for map bounds
 const MIN_ZOOM = 12; // Minimum zoom level to show stopping points
 
 // Cache key generation helper
@@ -36,8 +37,8 @@ function getVisibleStoppingPoints(map: L.Map, fetchedHalts: OsmNode[]): OsmNode[
     if (!allStoppingPoints.length) return [];
 
     // Add buffer to bounds (about 20% expansion) to prevent disappearing on edges
-    const bufferLat = (mapBounds.getNorth() - mapBounds.getSouth()) * 0.2;
-    const bufferLng = (mapBounds.getEast() - mapBounds.getWest()) * 0.2;
+    const bufferLat = (mapBounds.getNorth() - mapBounds.getSouth()) * BUFFER_FACTOR;
+    const bufferLng = (mapBounds.getEast() - mapBounds.getWest()) * BUFFER_FACTOR;
 
     // Extract bounds values with buffer for smoother transitions
     const north = mapBounds.getNorth() + bufferLat;

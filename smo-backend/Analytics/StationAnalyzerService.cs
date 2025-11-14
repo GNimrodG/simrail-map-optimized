@@ -276,6 +276,7 @@ public class StationAnalyzerService : IHostedService
                                 .Replace("Kam.", "Kamienna ")
                                 .Replace("Roz.", "Rozdroże ")
                                 .Replace(".", "")
+                                .Replace("APO", "")
                                 .Replace("  ", " ") // Normalize spaces
                                 .Trim();
 
