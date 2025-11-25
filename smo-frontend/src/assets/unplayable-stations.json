@@ -1573,14 +1573,14 @@
   },
   {
     "Name": "Zgierz",
-    "Prefix": "Zg",
+    "Prefix": "5311_Zg",
     "DifficultyLevel": -1,
     "Latitude": 51.8443992,
     "Longitude": 19.4213819,
     "MainImageUrl": "https://s3.eu-central-1.amazonaws.com/forum.simrail.eu/monthly_2025_09/Zgierz_5.thumb.png.a96ed4f975872ecb14d4c56ef723d83e.png",
     "DispatchedBy": [],
-    "Id": "Zg",
-    "PointId": null,
+    "Id": "5311_Zg",
+    "PointId": 5311,
     "SubStations": [],
     "IgnoredStations": []
   },
