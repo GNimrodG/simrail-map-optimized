@@ -1329,9 +1329,9 @@
   integrity sha512-J4yDIIthosAsRZ5CPYP/jQvUAQtlZTTD/4suA08/FEnlxqW3sKS9iAhgsa9VYLZ6vDHn/ixJgIqRQPotoBjxIw==
 
 "@fontsource/inter@^5.2.0":
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/@fontsource/inter/-/inter-5.2.0.tgz#e768d7e4909b7a4d4a0694a0677344a9d307f513"
-  integrity sha512-DBexeU5YIEGJQWPI193NNdSaFN3xerUfTBD5k8LfdXyqlU8y1SRCqB145lHjoVa4lBK1iAabHudMbtAk5QxTnA==
+  version "5.2.8"
+  resolved "https://registry.yarnpkg.com/@fontsource/inter/-/inter-5.2.8.tgz#10c95d877d972c7de5bd4592309d42fb6a5e1a5b"
+  integrity sha512-P6r5WnJoKiNVV+zvW2xM13gNdFhAEpQ9dQJHt3naLvfg+LkF2ldgSLiF4T41lf1SQCM9QmkqPTn4TH568IRagg==
 
 "@humanwhocodes/config-array@^0.11.14":
   version "0.11.14"
