@@ -953,7 +953,7 @@
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.28.2.tgz#2ae5a9d51cc583bd1f5673b3bb70d6d819682473"
   integrity sha512-KHp2IflsnGywDjBWDkR9iEqiWSpc8GIi0lgTT3mOElT0PP1tG26P4tmFI2YvAdzgq9RGyoHZQEIEdZy6Ec5xCA==
 
-"@babel/runtime@^7.23.9":
+"@babel/runtime@^7.23.9", "@babel/runtime@^7.28.4":
   version "7.28.4"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.28.4.tgz#a70226016fabe25c5783b2f22d3e1c9bc5ca3326"
   integrity sha512-Q/N6JNWvIvPnLDvjlE1OUBLPQHH6l3CltCEsHIujp45zQUSSh8K+gHnaEX45yAT1nyngnINhvWtzN+Nb9D8RAQ==
@@ -4939,11 +4939,11 @@ i18next-browser-languagedetector@^8.0.0:
     "@babel/runtime" "^7.23.2"
 
 i18next@^25.5.3:
-  version "25.5.3"
-  resolved "https://registry.yarnpkg.com/i18next/-/i18next-25.5.3.tgz#23a63f4aeb0a61cacf148a8d2bd83693d1e5e335"
-  integrity sha512-joFqorDeQ6YpIXni944upwnuHBf5IoPMuqAchGVeQLdWC2JOjxgM9V8UGLhNIIH/Q8QleRxIi0BSRQehSrDLcg==
+  version "25.7.0"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-25.7.0.tgz#16b41186e2da38b44e8bd14c9b0ef4c0fee6ca49"
+  integrity sha512-cpUOqkVTQe3/uCVtpfpC3J1Ejn1y8KiVbqVEW4WW6Yr8wMYw+Wvb2/+lL4e1sM9AbzKTYXyYkn8zCRlTf5XTcA==
   dependencies:
-    "@babel/runtime" "^7.27.6"
+    "@babel/runtime" "^7.28.4"
 
 idb@^7.0.1:
   version "7.1.1"
