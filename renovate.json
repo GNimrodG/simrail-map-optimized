@@ -30,5 +30,6 @@
       ],
       "automerge": true
     }
-  ]
+  ],
+  "prHourlyLimit": 5
 }
