@@ -33,7 +33,7 @@
     <PackageReference Include="prometheus-net.SystemMetrics" Version="3.1.0" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.11.0" />
     <PackageReference Include="Sentry.AspNetCore" Version="5.16.2"/>
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.0.1" />
   </ItemGroup>
 
 </Project>
