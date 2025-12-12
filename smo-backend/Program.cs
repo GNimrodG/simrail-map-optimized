@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Newtonsoft.Json;
 using Prometheus;
 using Prometheus.SystemMetrics;
@@ -64,9 +63,11 @@ builder.Services.AddOpenApi(options =>
             };
 
             if (StdUtils.GetEnvVar("ASPNETCORE_ENVIRONMENT", "") != "Development")
-                doc.Servers = new List<OpenApiServer>();
+            {
+                doc.Servers?.Clear();
+            }
 
-            doc.Servers.Add(
+            doc.Servers?.Add(
                 new()
                 {
                     Url = "https://api.smo.data-unknown.com",
@@ -74,74 +75,72 @@ builder.Services.AddOpenApi(options =>
                 }
             );
 
+            // Add Monitoring tag to the document
+            doc.Tags ??= new HashSet<OpenApiTag>();
+            var monitoringTag = new OpenApiTag { Name = "Monitoring", Description = "Health and metrics endpoints" };
+            doc.Tags.Add(monitoringTag);
+
             // Add metrics endpoint to OpenAPI documentation
             var metricsPath = new OpenApiPathItem();
-            metricsPath.AddOperation(
-                OperationType.Get,
-                new()
+            metricsPath.AddOperation(HttpMethod.Get, new()
+            {
+                Tags = new HashSet<OpenApiTagReference> { new("Monitoring", doc) },
+                Summary = "Get Prometheus metrics",
+                Description = "Returns all Prometheus metrics in text format",
+                Responses = new()
                 {
-                    Tags = [new() { Name = "Monitoring" }],
-                    Summary = "Get Prometheus metrics",
-                    Description = "Returns all Prometheus metrics in text format",
-                    Responses = new()
+                    ["200"] = new OpenApiResponse
                     {
-                        ["200"] = new()
+                        Description = "Prometheus metrics in text format",
+                        Content = new Dictionary<string, OpenApiMediaType>
                         {
-                            Description = "Prometheus metrics in text format",
-                            Content = new Dictionary<string, OpenApiMediaType>
+                            ["text/plain"] = new()
                             {
-                                ["text/plain"] = new()
+                                Schema = new OpenApiSchema
                                 {
-                                    Schema = new()
-                                    {
-                                        Type = "string",
-                                        Example = new OpenApiString(
-                                            "# HELP smo_train_count Number of trains\n# TYPE smo_train_count gauge\nsmo_train_count{server=\"int1\"} 0\n"
-                                        ),
-                                    }
+                                    Type = JsonSchemaType.String,
+                                    Example =
+                                        "# HELP smo_train_count Number of trains\n# TYPE smo_train_count gauge\nsmo_train_count{server=\"int1\"} 0\n"
                                 }
                             }
                         }
                     }
                 }
-            );
+            });
             doc.Paths["/metrics"] = metricsPath;
 
             // Add health check endpoint to OpenAPI documentation
             var healthPath = new OpenApiPathItem();
-            healthPath.AddOperation(
-                OperationType.Get,
-                new()
+            healthPath.AddOperation(HttpMethod.Get, new()
+            {
+                Tags = new HashSet<OpenApiTagReference> { new("Monitoring", doc) },
+                Summary = "Get health check",
+                Description = "Returns the health status of the application",
+                Responses = new()
                 {
-                    Tags = [new() { Name = "Monitoring" }],
-                    Summary = "Get health check",
-                    Description = "Returns the health status of the application",
-                    Responses = new()
+                    ["200"] = new OpenApiResponse
                     {
-                        ["200"] = new()
+                        Description = "Health check response",
+                        Content = new Dictionary<string, OpenApiMediaType>
                         {
-                            Description = "Health check response",
-                            Content = new Dictionary<string, OpenApiMediaType>
+                            ["text/plain"] = new()
                             {
-                                ["text/plain"] = new()
+                                Schema = new OpenApiSchema
                                 {
-                                    Schema = new()
-                                    {
-                                        Type = "string",
-                                        Example = new OpenApiString("Healthy"),
-                                    }
+                                    Type = JsonSchemaType.String,
+                                    Example = "Healthy"
                                 }
                             }
                         }
                     }
                 }
-            );
+            });
             doc.Paths["/health"] = healthPath;
 
             return Task.CompletedTask;
         }
     );
-});
+}).AddSwaggerGenNewtonsoftSupport();
 
 builder.Services.AddSignalR().AddMessagePackProtocol();
 
