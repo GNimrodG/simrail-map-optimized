@@ -62,7 +62,7 @@ jobs:
       - name: Bypass Cloudflare for GitHub Action
         continue-on-error: true
         if: env.SHOULD_PUSH == 'true' && env.DEPLOYMENT_WEBHOOK_URL != ''
-        uses: xiaotianxt/bypass-cloudflare-for-github-action@v2.0.1
+        uses: xiaotianxt/bypass-cloudflare-for-github-action@v2.1.0
         with:
           cf_account_id: ${{ secrets.CF_ACCOUNT_ID }}
           cf_zone_id: ${{ secrets.CF_ZONE_ID }}
