@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Text;
 using SMOBackend.Models.OSM;
 
-namespace SMOBackend.Services;
+namespace SMOBackend.Services.ApiClients;
 
 /// <summary>
 /// Client for interacting with the OpenStreetMap Overpass API with request batching and caching

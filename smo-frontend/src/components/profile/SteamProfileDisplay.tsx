@@ -4,10 +4,10 @@ import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent } from "react";
 
-import { SteamProfileResponse } from "../utils/types";
+import { UserProfileResponse } from "../../utils/types";
 
 export interface SteamProfileDisplayProps {
-  profile: SteamProfileResponse;
+  profile: UserProfileResponse;
   steamId: string;
 }
 

@@ -1,6 +1,7 @@
 ﻿using Prometheus;
 using SMOBackend.Analytics;
 using SMOBackend.Models.Trains;
+using SMOBackend.Services.ApiClients;
 using SMOBackend.Utils;
 
 namespace SMOBackend.Services;
@@ -42,7 +43,7 @@ public class TrainDataService(
         base.OnPerServerDataReceived(data);
 
         PlayerTrainCountGauge.WithLabels(data.ServerCode)
-            .Set(data.Data.Count(train => train.TrainData.ControlledBySteamID != null));
+            .Set(data.Data.Count(train => train.Type == "user"));
     }
 
     /// <inheritdoc />

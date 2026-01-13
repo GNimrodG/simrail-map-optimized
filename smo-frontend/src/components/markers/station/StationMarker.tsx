@@ -5,7 +5,7 @@ import { Marker, Popup } from "react-leaflet";
 
 import { useOsmData } from "../../../hooks/useOsmData";
 import { useSetting } from "../../../hooks/useSetting";
-import { useSteamProfileData } from "../../../hooks/useSteamProfileData";
+import { useProfileData } from "../../../hooks/useProfileData";
 import { getOsmNodeName } from "../../../utils/osm-utils";
 import { OsmNode, Station } from "../../../utils/types";
 import PersonIcon from "../../icons/person.svg?raw";
@@ -25,7 +25,7 @@ const DEFAULT_ICON = new L.DivIcon({
 function getIcon(stationName: string, lng: string, avatar?: string, osmData?: OsmNode | null) {
   if (avatar) {
     return new L.DivIcon({
-      html: avatar.startsWith("http")
+      html: avatar.toString().startsWith("http")
         ? `<img src="${avatar}" /><span class="tooltip">${osmData ? getOsmNodeName(osmData, lng) : stationName}</span>`
         : `${PersonIcon}<span class="tooltip">${osmData ? getOsmNodeName(osmData, lng) : stationName}</span>`,
       iconSize: [40, 40],
@@ -50,14 +50,14 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
   const osmData = useOsmData(station.Name, station.Prefix);
   const [translateStationNames] = useSetting("translateStationNames");
 
-  const { userData } = useSteamProfileData(station.DispatchedBy?.[0]?.SteamId);
+  const { userData } = useProfileData(station.DispatchedBy?.[0]?.SteamId, station.DispatchedBy?.[0]?.XboxId);
 
   useEffect(() => {
     setIcon(
       getIcon(
         station.Name,
         i18n.language,
-        userData?.Avatar || userData?.PersonaName,
+        userData?.Avatar || userData?.PersonaName || station.DispatchedBy?.[0]?.XboxId || undefined,
         translateStationNames ? osmData : undefined,
       ),
     );
@@ -69,6 +69,7 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
     translateStationNames,
     userData?.Avatar,
     userData?.PersonaName,
+    station.DispatchedBy?.[0]?.XboxId,
   ]);
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);

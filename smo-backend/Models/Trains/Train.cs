@@ -53,7 +53,7 @@ public class Train : IEntityWithTimestamp
     public required string Id { get; set; }
 
     /// <summary>
-    /// The type of the train, either "bot" or "player".
+    /// The type of the train, either "bot" or "user".
     /// </summary>
     [JsonProperty(nameof(Type))]
     [JsonConverter(typeof(InterningStringConverter))]
@@ -107,6 +107,10 @@ public class Train : IEntityWithTimestamp
         /// <inheritdoc cref="TrainData.ControlledBySteamID"/>
         [JsonProperty("ControlledBySteamID")]
         public string? ControlledBySteamId { get; set; }
+        
+        /// <inheritdoc cref="TrainData.ControlledByXboxID"/>
+        [JsonProperty("ControlledByXboxID")]
+        public string? ControlledByXboxId { get; set; }
 
         /// <inheritdoc cref="TrainData.InBorderStationArea"/>
         public bool InBorderStationArea { get; set; }
@@ -138,6 +142,7 @@ public class Train : IEntityWithTimestamp
             DistanceToSignalInFront = train.TrainData.DistanceToSignalInFront;
             SignalInFrontSpeed = train.TrainData.SignalInFrontSpeed;
             ControlledBySteamId = train.TrainData.ControlledBySteamID;
+            ControlledByXboxId = train.TrainData.ControlledByXboxID;
             InBorderStationArea = train.TrainData.InBorderStationArea;
             Latitude = train.TrainData.Latitude;
             Longitude = train.TrainData.Longitude;

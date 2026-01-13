@@ -10,4 +10,6 @@ public class StationDispatcher
     public required string ServerCode { get; set; }
 
     [JsonProperty(nameof(SteamId))] public required string SteamId { get; set; }
+    
+    [JsonProperty(nameof(XboxId))] public required ulong? XboxId { get; set; }
 }

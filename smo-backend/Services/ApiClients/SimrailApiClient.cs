@@ -4,7 +4,7 @@ using SMOBackend.Models;
 using SMOBackend.Models.Entity;
 using SMOBackend.Models.Trains;
 
-namespace SMOBackend.Services;
+namespace SMOBackend.Services.ApiClients;
 
 /// <summary>
 ///     Response wrapper that includes Age header information for cache alignment

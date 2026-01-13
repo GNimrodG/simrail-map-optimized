@@ -32,13 +32,14 @@ import _wikiLinks from "../../../assets/wiki-links.json";
 import useStationTimetableEntries from "../../../hooks/useStationTimetableEntries";
 import { dataProvider } from "../../../utils/data-manager";
 import { getSignalsForStation, getStationGeometry, goToSignal } from "../../../utils/geom-utils";
-import { OsmNode, Station, SteamProfileResponse } from "../../../utils/types";
+import { OsmNode, Station, UserProfileResponse } from "../../../utils/types";
 import InfoIcon from "../../icons/InfoIcon";
 import Loading from "../../Loading";
-import SteamProfileDisplay from "../../SteamProfileDisplay";
+import SteamProfileDisplay from "../../profile/SteamProfileDisplay";
 import StationTimetableModal from "../../timetable/StationTimetableModal";
 import SignalSpeedDisplay from "../../utils/SignalSpeedDisplay";
 import RemoteControlStationDisplay from "./RemoteControlStationDisplay";
+import XboxProfileDisplay from "../../profile/XboxProfileDisplay";
 
 const StationLayout = lazy(() => import("../../StationLayout"));
 
@@ -56,7 +57,7 @@ const WikiLinks = _wikiLinks as Record<string, string>;
 
 export interface StationMarkerPopupProps {
   station: Station;
-  userData: SteamProfileResponse | null;
+  userData: UserProfileResponse | null;
   onClosePopup: () => void;
   onShouldKeepMounted?: (shouldKeepMounted: boolean) => void;
   stationOsmData: OsmNode | null;
@@ -199,11 +200,11 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
                     <tbody>
                       {signals
                         .toSorted((a, b) => {
-                          const nameA = RegExp(/(.+?\D+)(\d+)$/).exec(a.Name);
-                          const nameB = RegExp(/(.+?\D+)(\d+)$/).exec(b.Name);
+                          const nameA = new RegExp(/(.+?\D+)(\d+)$/).exec(a.Name);
+                          const nameB = new RegExp(/(.+?\D+)(\d+)$/).exec(b.Name);
                           if (nameA && nameB) {
                             if (nameA[1] === nameB[1]) {
-                              return parseInt(nameA[2], 10) - parseInt(nameB[2], 10);
+                              return Number.parseInt(nameA[2], 10) - Number.parseInt(nameB[2], 10);
                             }
                             return nameA[1].localeCompare(nameB[1]);
                           }
@@ -243,9 +244,13 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
           )}
         </Stack>
 
-        {userData && station.DispatchedBy?.[0]?.SteamId && (
-          <SteamProfileDisplay profile={userData} steamId={station.DispatchedBy[0].SteamId} />
-        )}
+        {userData &&
+          station.DispatchedBy?.[0]?.SteamId &&
+          (station.DispatchedBy?.[0]?.SteamId === "null" ? (
+            <XboxProfileDisplay profile={userData} xboxId={station.DispatchedBy[0].XboxId!} />
+          ) : (
+            <SteamProfileDisplay profile={userData} steamId={station.DispatchedBy[0].SteamId} />
+          ))}
 
         {!!layoutDefs && (
           <Button

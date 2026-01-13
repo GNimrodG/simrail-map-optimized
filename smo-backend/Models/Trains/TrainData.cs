@@ -19,6 +19,12 @@ public class TrainData : BaseTrainData
     /// </summary>
     [JsonProperty(nameof(ControlledBySteamID))]
     public string? ControlledBySteamID { get; set; }
+    
+    /// <summary>
+    /// The Xbox ID of the player controlling the train.
+    /// </summary>
+    [JsonProperty(nameof(ControlledByXboxID))]
+    public string? ControlledByXboxID { get; set; }
 
     /// <summary>
     /// Whether the train is in the playable area of the map.

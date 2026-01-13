@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Prometheus;
 using SMOBackend.Data;
 using SMOBackend.Models;
+using SMOBackend.Services.ApiClients;
 using SMOBackend.Utils;
 
 namespace SMOBackend.Services;

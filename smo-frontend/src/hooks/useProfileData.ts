@@ -1,23 +1,25 @@
 import { useEffect, useState } from "react";
 
 import { dataProvider } from "../utils/data-manager";
-import { SteamProfileResponse } from "../utils/types";
+import { UserProfileResponse } from "../utils/types";
 
 /**
- * Custom hook to fetch Steam profile data asynchronously
- * @param steamId - The Steam ID to fetch profile data for
+ * Custom hook to fetch Steam or Xbox profile data asynchronously
+ * @param steamId - The Steam ID to fetch profile data for. If not provided, {@link xboxId} will be used instead (for Xbox profiles).
+ * @param xboxId - The Xbox ID to fetch profile data for when a Steam ID is not available.
  * @param providedUserData - Optional pre-existing user data to use instead of fetching
  * @returns Object containing userData and loading state
  */
-export function useSteamProfileData(
+export function useProfileData(
   steamId: string | null | undefined,
-  providedUserData?: SteamProfileResponse | null,
+  xboxId?: string | null | undefined,
+  providedUserData?: UserProfileResponse | null,
 ) {
-  const [userData, setUserData] = useState<SteamProfileResponse | null>(providedUserData || null);
+  const [userData, setUserData] = useState<UserProfileResponse | null>(providedUserData || null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!steamId || providedUserData) {
+    if ((!steamId && !xboxId) || providedUserData) {
       setUserData(providedUserData || null);
       return;
     }
@@ -25,11 +27,15 @@ export function useSteamProfileData(
     const abortController = new AbortController();
     setLoading(true);
 
-    dataProvider
-      .getSteamProfileData(steamId)
+    (!!steamId && steamId !== "null"
+      ? dataProvider.getSteamProfileData(steamId)
+      : xboxId
+        ? dataProvider.getXboxProfileData(xboxId)
+        : Promise.resolve(null)
+    )
       .then((data) => {
         if (!abortController.signal.aborted) {
-          setUserData(data ?? { PersonaName: steamId, Avatar: "" });
+          setUserData(data ?? { PersonaName: steamId ?? xboxId ?? "", Avatar: "" });
         }
       })
       .catch((e) => {
@@ -47,7 +53,7 @@ export function useSteamProfileData(
     return () => {
       abortController.abort();
     };
-  }, [steamId, providedUserData]);
+  }, [steamId, xboxId, providedUserData]);
 
   return { userData, loading };
 }

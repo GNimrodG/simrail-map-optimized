@@ -17,7 +17,7 @@ import { type FunctionComponent, useCallback, useContext, useMemo, useState } fr
 import { useTranslation } from "react-i18next";
 
 import { useSetting } from "../../../hooks/useSetting";
-import { useSteamProfileData } from "../../../hooks/useSteamProfileData";
+import { useProfileData } from "../../../hooks/useProfileData";
 import useSubject from "../../../hooks/useSubject";
 import { useTrainTimetable } from "../../../hooks/useTrainTimetable";
 import { dataProvider } from "../../../utils/data-manager";
@@ -25,13 +25,13 @@ import { calculateLastKnownDelay, calculatePredictedDelay } from "../../../utils
 import MapLinesContext from "../../../utils/map-lines-context";
 import SelectedRouteContext from "../../../utils/selected-route-context";
 import SelectedTrainContext from "../../../utils/selected-train-context";
-import { SteamProfileResponse, Train } from "../../../utils/types";
+import { UserProfileResponse, Train } from "../../../utils/types";
 import { getColorTrainMarker, getDistanceColorForSignal } from "../../../utils/ui";
 import CollapseIcon from "../../icons/CollapseIcon";
 import ExpandIcon from "../../icons/ExpandIcon";
 import InfoIcon from "../../icons/InfoIcon";
 import SettingCheckbox from "../../settings/SettingCheckbox";
-import SteamProfileDisplay from "../../SteamProfileDisplay";
+import SteamProfileDisplay from "../../profile/SteamProfileDisplay";
 import { formatVehicleName, getThumbnailUrl } from "../../utils/general-utils";
 import SignalSpeedDisplay from "../../utils/SignalSpeedDisplay";
 import TrainTypeDisplay from "../../utils/TrainTypeDisplay";
@@ -42,10 +42,11 @@ import WeightIcon from "../icons/WeightIcon";
 import StationDisplay from "../station/StationDisplay";
 import TrainConsistDisplay from "./TrainConsistDisplay";
 import TrainScheduleDisplay from "./TrainScheduleDisplay";
+import XboxProfileDisplay from "../../profile/XboxProfileDisplay";
 
 export interface TrainMarkerPopupProps {
   train: Train;
-  userData?: SteamProfileResponse | null;
+  userData?: UserProfileResponse | null;
   showTrainRouteButton?: boolean;
   onToggleCollapse?: () => void;
   isCollapsed?: boolean;
@@ -129,7 +130,11 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
     [delays, train.TrainData.VDDelayedTimetableIndex],
   );
 
-  const { userData } = useSteamProfileData(train.TrainData.ControlledBySteamID, _userData);
+  const { userData } = useProfileData(
+    train.TrainData.ControlledBySteamID,
+    train.TrainData.ControlledByXboxID,
+    _userData,
+  );
 
   const stationData = useMemo(() => {
     if (!timetable) return { first: null, prev: null, current: null, next: null, last: null };
@@ -510,9 +515,12 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
 
       {signalInfo}
 
-      {userData && train.TrainData.ControlledBySteamID && (
-        <SteamProfileDisplay profile={userData} steamId={train.TrainData.ControlledBySteamID} />
-      )}
+      {userData &&
+        (train.TrainData.ControlledBySteamID ? (
+          <SteamProfileDisplay profile={userData} steamId={train.TrainData.ControlledBySteamID} />
+        ) : (
+          <XboxProfileDisplay profile={userData} xboxId={train.TrainData.ControlledByXboxID!} />
+        ))}
 
       {!hideButtons && (
         <Stack spacing={1} sx={{ width: "100%" }}>

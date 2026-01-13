@@ -5,7 +5,7 @@ import {
   SignalStatus,
   SimplifiedTimtableEntry,
   Station,
-  SteamProfileResponse,
+  UserProfileResponse,
   SteamProfileStats,
   TimeData,
   Timetable,
@@ -62,6 +62,7 @@ export interface IDataProvider {
    */
   getLinesForSignalConnection(prevSignal: string, nextSignal: string): Promise<string[] | null>;
 
-  getSteamProfileData(steamId: string): Promise<SteamProfileResponse | null>;
+  getSteamProfileData(steamId: string): Promise<UserProfileResponse | null>;
   getSteamProfileStats(steamId: string): Promise<SteamProfileStats | null>;
+  getXboxProfileData(xboxId: string): Promise<UserProfileResponse | null>;
 }

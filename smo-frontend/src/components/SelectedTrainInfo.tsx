@@ -6,7 +6,7 @@ import { debounceTime, fromEvent, throttleTime } from "rxjs";
 import useBehaviorSubj from "../hooks/useBehaviorSubj";
 import { useIsDocumentFocused } from "../hooks/useIsDocumentFocused";
 import { useSetting } from "../hooks/useSetting";
-import { useSteamProfileData } from "../hooks/useSteamProfileData";
+import { useProfileData } from "../hooks/useProfileData";
 import { dataProvider } from "../utils/data-manager";
 import MapLinesContext from "../utils/map-lines-context";
 import SelectedTrainContext from "../utils/selected-train-context";
@@ -34,7 +34,10 @@ const SelectedTrainInfo: FunctionComponent = () => {
     return train;
   }, [selectedTrain, trains]);
 
-  const { userData: selectedTrainUserData } = useSteamProfileData(selectedTrainData?.TrainData.ControlledBySteamID);
+  const { userData: selectedTrainUserData } = useProfileData(
+    selectedTrainData?.TrainData.ControlledBySteamID,
+    selectedTrainData?.TrainData.ControlledByXboxID,
+  );
 
   // Pause following when dragging the map and resume after a delay
   useEffect(() => {

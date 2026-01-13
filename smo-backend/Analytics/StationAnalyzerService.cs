@@ -3,6 +3,7 @@ using Prometheus;
 using SMOBackend.Models;
 using SMOBackend.Models.OSM;
 using SMOBackend.Services;
+using SMOBackend.Services.ApiClients;
 using SMOBackend.Utils;
 
 namespace SMOBackend.Analytics;

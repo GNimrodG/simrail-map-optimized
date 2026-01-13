@@ -4,6 +4,7 @@ using SMOBackend.Analytics;
 using SMOBackend.Models;
 using SMOBackend.Models.Steam;
 using SMOBackend.Services;
+using SMOBackend.Services.ApiClients;
 
 namespace SMOBackend.Hubs;
 
@@ -22,7 +23,8 @@ public class MainHub(
     RoutePointAnalyzerService routePointAnalyzerService,
     ServerRestartAnalyzerService serverRestartAnalyzerService,
     ClientManagerService clientManagerService,
-    SteamApiClient steamApiClient)
+    SteamApiClient steamApiClient,
+    XblIoApiClient xboxApiClient)
     : Hub
 {
     private static readonly Gauge ServerClientsGauge = Metrics
@@ -339,6 +341,47 @@ public class MainHub(
         {
             logger.LogError(e, "Error sending Steam stats to client");
             await Clients.Caller.SendAsync("SteamStatsError", new { steamId, error = e.Message });
+            return null;
+        }
+    }
+    
+    /// <summary>
+    ///     Gets the Xbox profile data for a given XUID.
+    /// </summary>
+    /// <param name="xuid">The XUID to fetch profile data for.</param>
+    /// <returns></returns>
+    public async Task<XboxProfileData?> GetXboxProfileData(ulong xuid)
+    {
+        try
+        {
+            if (!xboxApiClient.IsAvailable)
+            {
+                logger.LogWarning("Xbox API client is not configured, cannot fetch profile data");
+                await Clients.Caller.SendAsync("XboxProfileDataUnavailable");
+                return null;
+            }
+
+            try
+            {
+                var profileData = await xboxApiClient.GetPlayerProfileData(xuid);
+
+                if (profileData != null)
+                    return profileData;
+
+                logger.LogWarning("No profile data found for XUID {Xuid}", xuid);
+                return null;
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error fetching Xbox profile data for {Xuid}", xuid);
+                await Clients.Caller.SendAsync("XboxProfileDataError", new { xuid, error = e.Message });
+                return null;
+            }
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error sending Xbox profile data to client");
+            await Clients.Caller.SendAsync("XboxProfileDataError", new { xuid, error = e.Message });
             return null;
         }
     }

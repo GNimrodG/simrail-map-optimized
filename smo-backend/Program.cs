@@ -10,6 +10,7 @@ using SMOBackend.Data;
 using SMOBackend.HealthChecks;
 using SMOBackend.Hubs;
 using SMOBackend.Services;
+using SMOBackend.Services.ApiClients;
 using SMOBackend.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -193,6 +194,10 @@ builder.Services.AddSingleton<OsmApiClient>();
 var steamApiKey = StdUtils.GetEnvVar("STEAM_API_KEY", "");
 
 builder.Services.AddSingleton(new SteamApiClient(steamApiKey));
+
+var xblIoApiKey = StdUtils.GetEnvVar("XBLIO_API_KEY", "");
+
+builder.Services.AddSingleton(new XblIoApiClient(xblIoApiKey));
 
 // Data services - High Priority (critical for application functionality)
 builder.Services.AddHighPriorityHostedService<ServerDataService>();

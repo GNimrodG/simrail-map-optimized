@@ -15,7 +15,7 @@ import {
   SignalStatusData,
   SimplifiedTimtableEntry,
   Station,
-  SteamProfileResponse,
+  UserProfileResponse,
   SteamProfileStats,
   TimeData,
   Timetable,
@@ -286,13 +286,23 @@ export class SignalRDataProvider implements IDataProvider {
     this.connection.on("SteamProfileDataUnavailable", () => {
       if (this.steamDataUnavailable) return;
       console.warn("Steam profile data is unavailable");
-      this.profileDataCache.clear();
       this.steamDataUnavailable = true;
+    });
+
+    this.connection.on("XboxProfileDataUnavailable", () => {
+      if (this.xboxDataUnavailable) return;
+      console.warn("Xbox profile data is unavailable");
+      this.xboxDataUnavailable = true;
     });
 
     this.connection.on("SteamProfileDataError", ({ steamId, error }: { steamId: string; error: string }) => {
       console.error(`Failed to fetch steam profile data for ${steamId}:`, error);
       this.profileDataCache.delete(steamId);
+    });
+
+    this.connection.on("XboxProfileDataError", ({ xuid, error }: { xuid: string; error: string }) => {
+      console.error(`Failed to fetch xbox profile data for ${xuid}:`, error);
+      this.profileDataCache.delete(xuid);
     });
 
     this.connection.on("SteamStatsError", ({ steamId, error }: { steamId: string; error: string }) => {
@@ -304,13 +314,14 @@ export class SignalRDataProvider implements IDataProvider {
   }
 
   private steamDataUnavailable = false;
+  private xboxDataUnavailable = false;
 
-  private readonly profileDataCache = new LRUCache<string, Promise<SteamProfileResponse | null>>({
+  private readonly profileDataCache = new LRUCache<string, Promise<UserProfileResponse | null>>({
     max: 100,
     ttl: 1000 * 60 * 60 * 3, // 3 hours
   });
 
-  getSteamProfileData(steamId: string): Promise<SteamProfileResponse | null> {
+  getSteamProfileData(steamId: string): Promise<UserProfileResponse | null> {
     if (!steamId) {
       return Promise.resolve(null);
     }
@@ -319,41 +330,47 @@ export class SignalRDataProvider implements IDataProvider {
       return Promise.resolve({ PersonaName: steamId, Avatar: "" });
     }
 
-    const cached = this.profileDataCache.get(steamId);
+    const cacheKey = "steam:" + steamId;
+
+    const cached = this.profileDataCache.get(cacheKey);
 
     if (cached) {
       return cached;
     }
 
-    const promise = new Promise<SteamProfileResponse | null>((resolve) => {
+    const promise = new Promise<UserProfileResponse | null>((resolve) => {
+      const timeout = setTimeout(() => {
+        console.warn("Steam profile data fetch timed out for", steamId);
+        if (this.profileDataCache.has(cacheKey)) {
+          resolve(null);
+          this.profileDataCache.delete(cacheKey);
+        }
+      }, 30000); // 30 seconds timeout
+
       this.connection
         .invoke("GetSteamProfileData", steamId)
-        .then((data: SteamProfileResponse | null) => {
+        .then((data: UserProfileResponse | null) => {
+          clearTimeout(timeout);
+
           if (data) {
-            this.profileDataCache.set(steamId, Promise.resolve(data));
+            this.profileDataCache.set(cacheKey, Promise.resolve(data));
             resolve(data);
           } else {
             console.warn("Failed to fetch steam profile data for", steamId);
             resolve(null);
-            this.profileDataCache.delete(steamId);
+            this.profileDataCache.delete(cacheKey);
           }
         })
         .catch((error) => {
+          clearTimeout(timeout);
+
           console.error("Error fetching steam profile data for", steamId, error);
           resolve(null);
-          this.profileDataCache.delete(steamId);
+          this.profileDataCache.delete(cacheKey);
         });
-
-      setTimeout(() => {
-        console.warn("Steam profile data fetch timed out for", steamId);
-        if (this.profileDataCache.has(steamId)) {
-          resolve(null);
-          this.profileDataCache.delete(steamId);
-        }
-      }, 30000); // 30 seconds timeout
     });
 
-    this.profileDataCache.set(steamId, promise);
+    this.profileDataCache.set(cacheKey, promise);
 
     return promise;
   }
@@ -405,6 +422,60 @@ export class SignalRDataProvider implements IDataProvider {
     });
 
     this.profileStatsCache.set(steamId, promise);
+
+    return promise;
+  }
+
+  getXboxProfileData(xboxId: string): Promise<UserProfileResponse | null> {
+    if (!xboxId) {
+      return Promise.resolve(null);
+    }
+
+    if (this.xboxDataUnavailable) {
+      return Promise.resolve({ PersonaName: xboxId, Avatar: "" });
+    }
+
+    const cacheKey = "xbox:" + xboxId;
+
+    const cached = this.profileDataCache.get(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    const promise = new Promise<UserProfileResponse | null>((resolve) => {
+      const timeout = setTimeout(() => {
+        console.warn("Xbox profile data fetch timed out for", xboxId);
+        if (this.profileDataCache.has(cacheKey)) {
+          resolve(null);
+          this.profileDataCache.delete(cacheKey);
+        }
+      }, 30000); // 30 seconds timeout
+
+      this.connection
+        .invoke("GetXboxProfileData", xboxId)
+        .then((data: UserProfileResponse | null) => {
+          clearTimeout(timeout);
+
+          if (data) {
+            this.profileDataCache.set(cacheKey, Promise.resolve(data));
+            resolve(data);
+          } else {
+            console.warn("Failed to fetch xbox profile data for", xboxId);
+            resolve(null);
+            this.profileDataCache.delete(cacheKey);
+          }
+        })
+        .catch((error) => {
+          clearTimeout(timeout);
+
+          console.error("Error fetching xbox profile data for", xboxId, error);
+          resolve(null);
+          this.profileDataCache.delete(cacheKey);
+        });
+    });
+
+    this.profileDataCache.set(cacheKey, promise);
 
     return promise;
   }

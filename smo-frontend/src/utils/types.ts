@@ -25,7 +25,8 @@ export interface TrainData {
   DistanceToSignalInFront: number;
   SignalInFrontSpeed: number;
 
-  ControlledBySteamID: string;
+  ControlledBySteamID: string | null;
+  ControlledByXboxID: string | null;
   InBorderStationArea: boolean;
   Latitude: number;
   Longitude: number;
@@ -41,7 +42,8 @@ export interface PartialTrainData {
   SignalInFront: string;
   DistanceToSignalInFront: number;
   SignalInFrontSpeed: number;
-  ControlledBySteamID: string;
+  ControlledBySteamID: string | null;
+  ControlledByXboxID: string | null;
   InBorderStationArea: boolean;
   Latitude: number;
   Longitude: number;
@@ -62,7 +64,9 @@ export interface Station {
     | [
         {
           ServerCode: string;
+          // Note: SteamId uses "null" as a string for null values
           SteamId: string;
+          XboxId: string | null;
         },
       ]
     | never[];
@@ -78,6 +82,7 @@ export interface PartialStation {
     {
       ServerCode: string;
       SteamId: string;
+      XboxId: string | null;
     },
   ];
 }
@@ -183,7 +188,7 @@ export interface OsmNode {
   tags: Record<CommonOsmTags, string>;
 }
 
-export interface SteamProfileResponse {
+export interface UserProfileResponse {
   Avatar: string;
   PersonaName: string;
 }

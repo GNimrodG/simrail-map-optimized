@@ -1,4 +1,6 @@
-﻿namespace SMOBackend.Services;
+﻿using SMOBackend.Services.ApiClients;
+
+namespace SMOBackend.Services;
 
 /// <summary>
 ///     Base class for data services that fetch time-aligned data.

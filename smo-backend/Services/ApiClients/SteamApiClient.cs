@@ -4,7 +4,7 @@ using Prometheus;
 using SMOBackend.Models.Steam;
 using SMOBackend.Utils;
 
-namespace SMOBackend.Services;
+namespace SMOBackend.Services.ApiClients;
 
 /// <summary>
 ///     A client for interacting with the Steam API to retrieve player summaries and statistics.
@@ -18,7 +18,6 @@ public class SteamApiClient
     private static readonly string DataDirectory = Path.Combine(AppContext.BaseDirectory, "data", "steam");
     private static readonly string PlayerSummaryCacheFile = Path.Combine(DataDirectory, "player-summaries-cache.bin");
     private static readonly string PlayerStatsCacheFile = Path.Combine(DataDirectory, "player-stats-cache.bin");
-
 
     private static readonly Summary CacheHits = Metrics
         .CreateSummary("steam_api_cache_hits", "Number of cache hits (1-minute sliding window)",
@@ -82,6 +81,7 @@ public class SteamApiClient
                 _playerSummariesCache.SaveToFileAsync(PlayerSummaryCacheFile).NoContext();
             }
         };
+        
         _playerStatsCache.KeyAdded += (_, _) =>
         {
             lock (_statsSaveLock)
@@ -91,6 +91,9 @@ public class SteamApiClient
         };
     }
 
+    /// <summary>
+    ///     Indicates whether the Steam API client is available (i.e., has a valid API key).
+    /// </summary>
     public bool IsAvailable => !string.IsNullOrEmpty(_apiKey);
 
     /// <summary>
@@ -98,10 +101,13 @@ public class SteamApiClient
     /// </summary>
     public async Task<PlayerSummariesResponse?> GetPlayerSummaries(string steamId)
     {
-        if (_playerSummariesCache.TryGetValue(steamId, out var cachedResponse))
+        lock (_summariesSaveLock)
         {
-            CacheHits.WithLabels("Summaries").Observe(1);
-            return cachedResponse;
+            if (_playerSummariesCache.TryGetValue(steamId, out var cachedResponse))
+            {
+                CacheHits.WithLabels("Summaries").Observe(1);
+                return cachedResponse;
+            }
         }
 
         CacheMisses.WithLabels("Summaries").Observe(1);
@@ -131,7 +137,9 @@ public class SteamApiClient
         if (data?.Response.Players == null || data.Response.Players.Length == 0)
             return null;
 
-        _playerSummariesCache.Set(steamId, data);
+        lock (_summariesSaveLock)
+            _playerSummariesCache.Set(steamId, data);
+
         return data;
     }
 
@@ -140,10 +148,13 @@ public class SteamApiClient
     /// </summary>
     public async Task<PlayerStatsResponse?> GetPlayerStats(string steamId)
     {
-        if (_playerStatsCache.TryGetValue(steamId, out var cachedResponse))
+        lock (_statsSaveLock)
         {
-            CacheHits.WithLabels("Stats").Observe(1);
-            return cachedResponse;
+            if (_playerStatsCache.TryGetValue(steamId, out var cachedResponse))
+            {
+                CacheHits.WithLabels("Stats").Observe(1);
+                return cachedResponse;
+            }
         }
 
         CacheMisses.WithLabels("Stats").Observe(1);
@@ -169,7 +180,9 @@ public class SteamApiClient
         if (data?.PlayerStats == null)
             return null;
 
-        _playerStatsCache.Set(steamId, data);
+        lock (_statsSaveLock)
+            _playerStatsCache.Set(steamId, data);
+
         return data;
     }
 }

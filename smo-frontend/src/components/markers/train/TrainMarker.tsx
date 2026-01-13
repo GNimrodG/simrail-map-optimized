@@ -4,7 +4,7 @@ import { Marker, Popup, useMap } from "react-leaflet";
 
 import { useIsDocumentFocused } from "../../../hooks/useIsDocumentFocused";
 import { useSetting } from "../../../hooks/useSetting";
-import { useSteamProfileData } from "../../../hooks/useSteamProfileData";
+import { useProfileData } from "../../../hooks/useProfileData";
 import SelectedTrainContext from "../../../utils/selected-train-context";
 import { Train } from "../../../utils/types";
 import { getColorTrainMarker } from "../../../utils/ui";
@@ -55,7 +55,7 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
   const map = useMap();
   const focused = useIsDocumentFocused();
   const { selectedTrain } = useContext(SelectedTrainContext);
-  const { userData } = useSteamProfileData(train.TrainData.ControlledBySteamID);
+  const { userData } = useProfileData(train.TrainData.ControlledBySteamID, train.TrainData.ControlledByXboxID);
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(DEFAULT_ICON);
   const [useAltTracking] = useSetting("useAltTracking");
   const [disableSlidingMarkers] = useSetting("disableSlidingMarkers");
@@ -81,7 +81,7 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
         trainMarkerColor,
         train.TrainData.InBorderStationArea,
         isSelected,
-        userData?.Avatar || userData?.PersonaName,
+        userData?.Avatar || userData?.PersonaName || train.TrainData.ControlledByXboxID || undefined,
       ),
     );
   }, [
@@ -91,6 +91,7 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
     trainMarkerColor,
     userData?.Avatar,
     userData?.PersonaName,
+    train.TrainData.ControlledByXboxID,
   ]);
 
   useEffect(() => {

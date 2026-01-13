@@ -1,5 +1,6 @@
 ﻿using Prometheus;
 using SMOBackend.Models;
+using SMOBackend.Services.ApiClients;
 
 namespace SMOBackend.Services;
 
