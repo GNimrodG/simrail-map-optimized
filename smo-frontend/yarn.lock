@@ -5797,9 +5797,9 @@ react-compiler-runtime@^1.0.0:
   integrity sha512-rRfjYv66HlG8896yPUDONgKzG5BxZD1nV9U6rkm+7VCuvQc903C4MjcoZR4zPw53IKSOX9wMQVpA1IAbRtzQ7w==
 
 react-cookie-consent@^10.0.0:
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/react-cookie-consent/-/react-cookie-consent-10.0.0.tgz#5f75189bcdf41f6b5f12d835b0d25d84e794e61d"
-  integrity sha512-VHbS1phMZ+r898KH7aJY/CfWKOXsHYr9W7Z+GuksH90K72iY9HJBMMYPcNNo32BwPOQBJV/dj34bPy2oBlfQWA==
+  version "10.0.1"
+  resolved "https://registry.yarnpkg.com/react-cookie-consent/-/react-cookie-consent-10.0.1.tgz#d2f41197f4df36cbfeb16130565a661e375d420f"
+  integrity sha512-qgU7Kr+x9/feKZxaIJbMT+R/xD1lnAQy9MzD4yLooVrkhoUR7XFc8Xv8M+GDQYcjoYh6uszslLGo1k+eU2VLtw==
   dependencies:
     js-cookie "^3.0.5"
 
