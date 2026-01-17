@@ -1438,29 +1438,18 @@
   resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-8.3.12.tgz#8cedb8e5a51dc1274f73c7147cfcd3763bec03c2"
   integrity sha512-lMMDzDewd3lUNtJCAHDj3g8On9X5aBl4q6EBwgOixKQSby9RG9ASEpK8oYHundHTm9tzo3MDeXWV/z32oSQWuw==
 
-"@microsoft/signalr-protocol-msgpack@^8.0.7":
-  version "8.0.17"
-  resolved "https://registry.yarnpkg.com/@microsoft/signalr-protocol-msgpack/-/signalr-protocol-msgpack-8.0.17.tgz#490106f7ef94dc6a82fbf658a4d9e44ea2fb2733"
-  integrity sha512-mT7jhnK7r/KdXLnhXvXuA156nIVFwQnurOg4rbat5YTb+ribtmNVBni6XQl16pfWLGCF+VC0e+f8NJzZGJCGiA==
+"@microsoft/signalr-protocol-msgpack@^10.0.0":
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/@microsoft/signalr-protocol-msgpack/-/signalr-protocol-msgpack-10.0.0.tgz#ac9eff3545149551d73b4fd19b8737c36b8b32dc"
+  integrity sha512-N4h4BD+y9kw/iszpDaDaIRJpxaRSA5uBtveM6HUIwmwkeJIPOoMrPNvmj77UrjZHAsbVwa/acLiWnPDfffO3yQ==
   dependencies:
-    "@microsoft/signalr" ">=8.0.17"
+    "@microsoft/signalr" ">=10.0.0"
     "@msgpack/msgpack" "^2.7.0"
 
-"@microsoft/signalr@>=8.0.17":
+"@microsoft/signalr@>=10.0.0", "@microsoft/signalr@^10.0.0":
   version "10.0.0"
   resolved "https://registry.yarnpkg.com/@microsoft/signalr/-/signalr-10.0.0.tgz#465837ced767af7f7cc05988ea95afe8bb58d493"
   integrity sha512-0BRqz/uCx3JdrOqiqgFhih/+hfTERaUfCZXFB52uMaZJrKaPRzHzMuqVsJC/V3pt7NozcNXGspjKiQEK+X7P2w==
-  dependencies:
-    abort-controller "^3.0.0"
-    eventsource "^2.0.2"
-    fetch-cookie "^2.0.3"
-    node-fetch "^2.6.7"
-    ws "^7.5.10"
-
-"@microsoft/signalr@^9.0.6":
-  version "9.0.6"
-  resolved "https://registry.yarnpkg.com/@microsoft/signalr/-/signalr-9.0.6.tgz#67dd074941c2ec2b857f607504c920a0c6274e27"
-  integrity sha512-DrhgzFWI9JE4RPTsHYRxh4yr+OhnwKz8bnJe7eIi7mLLjqhJpEb62CiUy/YbFvLqLzcGzlzz1QWgVAW0zyipMQ==
   dependencies:
     abort-controller "^3.0.0"
     eventsource "^2.0.2"
