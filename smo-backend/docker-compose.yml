@@ -16,7 +16,7 @@ services:
       timeout: 5s
       retries: 3
   db:
-    image: postgis/postgis:17-3.4
+    image: postgis/postgis:17-3.5
     environment:
       POSTGRES_USER: smo
       POSTGRES_PASSWORD: smo
