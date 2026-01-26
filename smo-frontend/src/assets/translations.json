@@ -203,6 +203,7 @@
         }
       },
       "StationDisplay": {
+        "MaxSpeed": "Max Speed",
         "StopType": {
           "CommercialStop": "Stop",
           "NoncommercialStop": "Operational stop"
@@ -575,6 +576,7 @@
         }
       },
       "StationDisplay": {
+        "MaxSpeed": "Max. Geschwindigkeit",
         "StopType": {
           "CommercialStop": "Halt",
           "NoncommercialStop": "Betriebshalt"
@@ -948,6 +950,7 @@
         }
       },
       "StationDisplay": {
+        "MaxSpeed": "Max. sebesség",
         "StopType": {
           "CommercialStop": "Megálló",
           "NoncommercialStop": "Technikai megálló"
@@ -1325,6 +1328,7 @@
         }
       },
       "StationDisplay": {
+        "MaxSpeed": "Max. Hız",
         "StopType": {
           "CommercialStop": "Durur",
           "NoncommercialStop": "Teknik duruş"
@@ -1700,6 +1704,7 @@
         }
       },
       "StationDisplay": {
+        "MaxSpeed": "Prędkość max.",
         "StopType": {
           "CommercialStop": "Postój",
           "NoncommercialStop": "Postój techniczny"
@@ -2072,6 +2077,7 @@
         }
       },
       "StationDisplay": {
+        "MaxSpeed": "Макс. скорость",
         "StopType": {
           "CommercialStop": "Остановка",
           "NoncommercialStop": "Техническая остановка"
@@ -2444,6 +2450,7 @@
         }
       },
       "StationDisplay": {
+        "MaxSpeed": "Макс. швидкість",
         "StopType": {
           "CommercialStop": "Зупинка",
           "NoncommercialStop": "Технічна зупинка"

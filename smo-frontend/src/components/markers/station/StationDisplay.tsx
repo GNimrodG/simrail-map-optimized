@@ -15,6 +15,8 @@ import DelayDisplay from "../../utils/DelayDisplay";
 import StopTypeDisplay from "../../utils/StopTypeDisplay";
 import TimeDiffDisplay from "../../utils/TimeDiffDisplay";
 import TimeDisplay from "../../utils/TimeDisplay";
+import SpeedIcon from "../icons/SpeedIcon";
+import { TFunction } from "i18next";
 
 export interface StationDisplayProps {
   /**
@@ -129,6 +131,7 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
         shouldCollapse={shouldCollapse}
         delayDisplay={delayDisplay}
         timeUntilDisplay={timeUntilDisplay}
+        t={t}
       />
       {!shouldCollapse && (
         <StationTimes
@@ -150,8 +153,12 @@ const StationHeader: FunctionComponent<{
   shouldCollapse: boolean;
   delayDisplay: ReactNode;
   timeUntilDisplay: ReactNode;
-}> = ({ station, mainStation, current, shouldCollapse, delayDisplay, timeUntilDisplay }) => (
-  <Typography level={mainStation ? "body-md" : "body-sm"} color={current ? "success" : undefined}>
+  t: TFunction<"translation", "StationDisplay">;
+}> = ({ station, mainStation, current, shouldCollapse, delayDisplay, timeUntilDisplay, t }) => (
+  <Typography
+    level={mainStation ? "body-md" : "body-sm"}
+    color={current ? "success" : undefined}
+    sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
     {station.NameOfPoint}
     {station.Track && station.Platform && (
       <Typography level={mainStation ? "body-sm" : "body-xs"}>
@@ -163,6 +170,20 @@ const StationHeader: FunctionComponent<{
       <>
         {" "}
         <StopTypeDisplay stopType={station.StopType} />
+      </>
+    )}
+    {station.MaxSpeed > 0 && (
+      <>
+        {" "}
+        <Tooltip arrow title={t("MaxSpeed")}>
+          <Typography
+            level="body-xs"
+            variant="outlined"
+            sx={{ display: "inline-flex", alignItems: "center", gap: 0.25 }}>
+            <SpeedIcon />
+            {station.MaxSpeed}
+          </Typography>
+        </Tooltip>
       </>
     )}
     {shouldCollapse && (

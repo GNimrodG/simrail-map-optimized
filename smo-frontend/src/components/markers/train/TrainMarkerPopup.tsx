@@ -182,11 +182,29 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
     };
   }, [timetable, stationData.currentIndex, stationData.nextIndex, delays, getPredictedDelay]);
 
+  const prevStation = stationData?.prev || stationData?.first;
+
   const trainSpeed = (
-    <Typography level="body-lg" startDecorator={<SpeedIcon />}>
+    <Typography
+      level="body-lg"
+      startDecorator={<SpeedIcon />}
+      sx={{ display: "inline-flex", alignItems: "center", gap: 0.25, flexDirection: "column" }}>
       <Typography color={getColorTrainMarker(train.TrainData.Velocity)}>
         {Math.round(train.TrainData.Velocity)} km/h
       </Typography>
+      {prevStation && prevStation.MaxSpeed > 0 && (
+        <Typography
+          level="body-sm"
+          color={
+            train.TrainData.Velocity > prevStation.MaxSpeed + 3
+              ? "danger"
+              : train.TrainData.Velocity > prevStation.MaxSpeed
+                ? "warning"
+                : "neutral"
+          }>
+          VMAX: {prevStation.MaxSpeed} km/h
+        </Typography>
+      )}
     </Typography>
   );
 
@@ -361,13 +379,19 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
       </Stack>
 
       <Stack sx={{ width: "100%" }} direction="row" justifyContent="space-around" alignItems="center">
-        {trainSpeed}
+        <Box sx={{ minWidth: 0, flexShrink: 1 }}>{trainSpeed}</Box>
         {timetable && (
           <Stack sx={{ width: "55%" }} spacing={1} direction="row" justifyContent="space-between" alignItems="center">
-            <Typography level="body-md" startDecorator={<LengthIcon />}>
+            <Typography
+              level="body-md"
+              startDecorator={<LengthIcon />}
+              sx={{ display: "inline-flex", alignItems: "center", gap: 0.25, flexDirection: "column" }}>
               {timetable.TrainLength}m
             </Typography>
-            <Typography level="body-md" startDecorator={<WeightIcon />}>
+            <Typography
+              level="body-md"
+              startDecorator={<WeightIcon />}
+              sx={{ display: "inline-flex", alignItems: "center", gap: 0.25, flexDirection: "column" }}>
               {timetable.TrainWeight}t
             </Typography>
             <Tooltip

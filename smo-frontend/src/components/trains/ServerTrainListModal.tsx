@@ -434,6 +434,20 @@ const ServerTrainListModal: FunctionComponent = () => {
                       </Chip>
                     );
 
+                    const prevTimetableEntry =
+                      timetable?.TimetableEntries?.[Math.max(train.TrainData.VDDelayedTimetableIndex - 1, 0)] ?? null;
+                    const maxSpeedChip = (prevTimetableEntry?.MaxSpeed || 0) > 0 && (
+                      <Chip
+                        key="max-speed"
+                        size="sm"
+                        variant="soft"
+                        startDecorator={<SpeedIcon />}
+                        color={getColorTrainMarker(prevTimetableEntry!.MaxSpeed)}>
+                        {"VMAX: "}
+                        {prevTimetableEntry!.MaxSpeed} km/h
+                      </Chip>
+                    );
+
                     const controlChip = (
                       <Chip
                         key="control"
@@ -561,7 +575,9 @@ const ServerTrainListModal: FunctionComponent = () => {
                           </Stack>
                         </Stack>
 
-                        {(infoChips.length > 0 || speedChip || controlChip || signalChip) && <Divider />}
+                        {(infoChips.length > 0 || maxSpeedChip || speedChip || controlChip || signalChip) && (
+                          <Divider />
+                        )}
 
                         <Stack
                           direction={{ xs: "column", sm: "row" }}
@@ -582,6 +598,7 @@ const ServerTrainListModal: FunctionComponent = () => {
                             {signalChip}
                             {controlChip}
                             {speedChip}
+                            {maxSpeedChip}
                           </Stack>
                         </Stack>
 
