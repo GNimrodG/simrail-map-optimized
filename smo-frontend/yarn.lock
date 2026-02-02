@@ -53,20 +53,20 @@
   resolved "https://registry.yarnpkg.com/@babel/compat-data/-/compat-data-7.29.0.tgz#00d03e8c0ac24dd9be942c5370990cbe1f17d88d"
   integrity sha512-T1NCJqT/j9+cn8fvkt7jtwbLBfLC/1y1c7NtCeXFRgzGTsafi68MRv8yzkYSapBnFA6L3U2VSc02ciDzoAJhJg==
 
-"@babel/core@^7.18.5":
-  version "7.28.6"
-  resolved "https://registry.yarnpkg.com/@babel/core/-/core-7.28.6.tgz#531bf883a1126e53501ba46eb3bb414047af507f"
-  integrity sha512-H3mcG6ZDLTlYfaSNi0iOKkigqMFvkTKlGUYlD8GW7nNOYRrevuA46iTypPyv+06V3fEmvvazfntkBU34L0azAw==
+"@babel/core@^7.18.5", "@babel/core@^7.29.0":
+  version "7.29.0"
+  resolved "https://registry.yarnpkg.com/@babel/core/-/core-7.29.0.tgz#5286ad785df7f79d656e88ce86e650d16ca5f322"
+  integrity sha512-CGOfOJqWjg2qW/Mb6zNsDm+u5vFQ8DxXfbM09z69p5Z6+mE1ikP2jUXw+j42Pf1XTYED2Rni5f95npYeuwMDQA==
   dependencies:
-    "@babel/code-frame" "^7.28.6"
-    "@babel/generator" "^7.28.6"
+    "@babel/code-frame" "^7.29.0"
+    "@babel/generator" "^7.29.0"
     "@babel/helper-compilation-targets" "^7.28.6"
     "@babel/helper-module-transforms" "^7.28.6"
     "@babel/helpers" "^7.28.6"
-    "@babel/parser" "^7.28.6"
+    "@babel/parser" "^7.29.0"
     "@babel/template" "^7.28.6"
-    "@babel/traverse" "^7.28.6"
-    "@babel/types" "^7.28.6"
+    "@babel/traverse" "^7.29.0"
+    "@babel/types" "^7.29.0"
     "@jridgewell/remapping" "^2.3.5"
     convert-source-map "^2.0.0"
     debug "^4.1.0"
@@ -88,27 +88,6 @@
     "@babel/template" "^7.27.2"
     "@babel/traverse" "^7.28.5"
     "@babel/types" "^7.28.5"
-    "@jridgewell/remapping" "^2.3.5"
-    convert-source-map "^2.0.0"
-    debug "^4.1.0"
-    gensync "^1.0.0-beta.2"
-    json5 "^2.2.3"
-    semver "^6.3.1"
-
-"@babel/core@^7.29.0":
-  version "7.29.0"
-  resolved "https://registry.yarnpkg.com/@babel/core/-/core-7.29.0.tgz#5286ad785df7f79d656e88ce86e650d16ca5f322"
-  integrity sha512-CGOfOJqWjg2qW/Mb6zNsDm+u5vFQ8DxXfbM09z69p5Z6+mE1ikP2jUXw+j42Pf1XTYED2Rni5f95npYeuwMDQA==
-  dependencies:
-    "@babel/code-frame" "^7.29.0"
-    "@babel/generator" "^7.29.0"
-    "@babel/helper-compilation-targets" "^7.28.6"
-    "@babel/helper-module-transforms" "^7.28.6"
-    "@babel/helpers" "^7.28.6"
-    "@babel/parser" "^7.29.0"
-    "@babel/template" "^7.28.6"
-    "@babel/traverse" "^7.29.0"
-    "@babel/types" "^7.29.0"
     "@jridgewell/remapping" "^2.3.5"
     convert-source-map "^2.0.0"
     debug "^4.1.0"
@@ -1858,10 +1837,10 @@
     "@sentry-internal/browser-utils" "10.38.0"
     "@sentry/core" "10.38.0"
 
-"@sentry/babel-plugin-component-annotate@4.8.0":
-  version "4.8.0"
-  resolved "https://registry.yarnpkg.com/@sentry/babel-plugin-component-annotate/-/babel-plugin-component-annotate-4.8.0.tgz#6705126a7726bd248f93acc79b8f3c8921b1c385"
-  integrity sha512-cy/9Eipkv23MsEJ4IuB4dNlVwS9UqOzI3Eu+QPake5BVFgPYCX0uP0Tr3Z43Ime6Rb+BiDnWC51AJK9i9afHYw==
+"@sentry/babel-plugin-component-annotate@4.9.0":
+  version "4.9.0"
+  resolved "https://registry.yarnpkg.com/@sentry/babel-plugin-component-annotate/-/babel-plugin-component-annotate-4.9.0.tgz#5fbfd024935ab6f3cb39042aa6c4210060202ff4"
+  integrity sha512-TJ7sVoa2Bf36lpJjBAzpNDC5Hg+evjsQnqUPeDx9Nz/YFw0u9rK1cwvi95gVWpx7PJSDCkljIv3aw0m4RatHpQ==
 
 "@sentry/browser@10.38.0":
   version "10.38.0"
@@ -1874,13 +1853,13 @@
     "@sentry-internal/replay-canvas" "10.38.0"
     "@sentry/core" "10.38.0"
 
-"@sentry/bundler-plugin-core@4.8.0":
-  version "4.8.0"
-  resolved "https://registry.yarnpkg.com/@sentry/bundler-plugin-core/-/bundler-plugin-core-4.8.0.tgz#2e7a4493795a848951e1e074a1b15b650fe0e6b0"
-  integrity sha512-QaXd/NzaZ2vmiA2FNu2nBkgQU+17N3fE+zVOTzG0YK54QDSJMd4n3AeJIEyPhSzkOob+GqtO22nbYf6AATFMAw==
+"@sentry/bundler-plugin-core@4.9.0":
+  version "4.9.0"
+  resolved "https://registry.yarnpkg.com/@sentry/bundler-plugin-core/-/bundler-plugin-core-4.9.0.tgz#655a5d2ef5391bc0052ad5a3c93ae4d9ed337bc6"
+  integrity sha512-gOVgHG5BrxCFmZow1XovlDr1FH/gO/LfD8OKci1rryeqHVBLr3+S4yS4ACl+E5lfQPym8Ve1BKh793d1rZ0dyA==
   dependencies:
     "@babel/core" "^7.18.5"
-    "@sentry/babel-plugin-component-annotate" "4.8.0"
+    "@sentry/babel-plugin-component-annotate" "4.9.0"
     "@sentry/cli" "^2.57.0"
     dotenv "^16.3.1"
     find-up "^5.0.0"
@@ -1962,11 +1941,11 @@
     "@sentry/core" "10.38.0"
 
 "@sentry/vite-plugin@^4.3.0":
-  version "4.8.0"
-  resolved "https://registry.yarnpkg.com/@sentry/vite-plugin/-/vite-plugin-4.8.0.tgz#3d0a5edb57ca34aa45c72c1869b1c654287cc521"
-  integrity sha512-/YZJitGsx/o72FFQYy3tucUfs4w3COvSI1d2NYyAhIzay4tjLLRjpM5PdwFnoBT7Uj/7jSbuHkg87PAliLiu2g==
+  version "4.9.0"
+  resolved "https://registry.yarnpkg.com/@sentry/vite-plugin/-/vite-plugin-4.9.0.tgz#63426052abfd0df38d8a82790a96cb3a41934fe1"
+  integrity sha512-1olEMpZnwZS4UdboB25w5sZYJSlwbxJaieoL0c7FDNMyyns5GhXSl6mK8Lpx9w3rIc88gw9JOdsehdd6YrlLOA==
   dependencies:
-    "@sentry/bundler-plugin-core" "4.8.0"
+    "@sentry/bundler-plugin-core" "4.9.0"
     unplugin "1.0.1"
 
 "@surma/rollup-plugin-off-main-thread@^2.2.3":
