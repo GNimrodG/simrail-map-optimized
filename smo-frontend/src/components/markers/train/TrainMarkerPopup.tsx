@@ -439,6 +439,12 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         </Typography>
       )}
 
+      {train.TrainData.RequiredMapDLCs?.flat(2).includes(4009000) && (
+        <Typography level="body-lg" color="warning" variant="solid" noWrap>
+          Łódź Junction
+        </Typography>
+      )}
+
       <Stack direction="column" sx={{ width: "100%" }}>
         <Stepper
           sx={{

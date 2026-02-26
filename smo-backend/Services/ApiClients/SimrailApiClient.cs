@@ -247,7 +247,7 @@ public class SimrailApiClient : IDisposable
     /// <returns>An array of server status information.</returns>
     public async Task<ServerStatus[]> GetServersAsync(CancellationToken stoppingToken)
     {
-        var response = await ExecuteWithRetryAsync(
+        using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(ServersOpenUrl, ct),
             "GetServers",
             stoppingToken);
@@ -262,7 +262,7 @@ public class SimrailApiClient : IDisposable
     /// <returns>An array of train information for the specified server.</returns>
     public async Task<Train[]> GetTrainsAsync(string serverCode, CancellationToken stoppingToken)
     {
-        var response = await ExecuteWithRetryAsync(
+        using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(TrainsUrlPrefix + serverCode, ct),
             $"GetTrains({serverCode})",
             stoppingToken);
@@ -277,7 +277,7 @@ public class SimrailApiClient : IDisposable
     /// <returns>An array of train position information for the specified server.</returns>
     public async Task<TrainPosition[]> GetTrainPositionsAsync(string serverCode, CancellationToken stoppingToken)
     {
-        var response = await ExecuteWithRetryAsync(
+        using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(TrainPositionsUrlPrefix + serverCode, ct),
             $"GetTrainPositions({serverCode})",
             stoppingToken);
@@ -292,7 +292,7 @@ public class SimrailApiClient : IDisposable
     /// <returns>An array of station information for the specified server.</returns>
     public async Task<Station[]> GetStationsAsync(string serverCode, CancellationToken stoppingToken)
     {
-        var response = await ExecuteWithRetryAsync(
+        using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(StationsUrlPrefix + serverCode, ct),
             $"GetStations({serverCode})",
             stoppingToken);
@@ -307,7 +307,7 @@ public class SimrailApiClient : IDisposable
     /// <returns>A tuple containing the server time in unix epoch format and the response date, or null if parsing failed.</returns>
     public async Task<(long time, DateTime date)?> GetTimeAsync(string serverCode, CancellationToken stoppingToken)
     {
-        var response = await ExecuteWithRetryAsync(
+        using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(TimeUrlPrefix + serverCode, ct),
             $"GetTime({serverCode})",
             stoppingToken);
@@ -327,7 +327,7 @@ public class SimrailApiClient : IDisposable
     /// <returns>The timezone offset in hours, or null if parsing failed.</returns>
     public async Task<int?> GetTimezoneAsync(string serverCode, CancellationToken stoppingToken)
     {
-        var response = await ExecuteWithRetryAsync(
+        using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(TimezoneUrlPrefix + serverCode, ct),
             $"GetTimezone({serverCode})",
             stoppingToken);
@@ -345,7 +345,7 @@ public class SimrailApiClient : IDisposable
     /// <returns>An array of timetable information for the specified server.</returns>
     public async Task<Timetable[]> GetAllTimetablesAsync(string serverCode, CancellationToken stoppingToken)
     {
-        var response = await ExecuteWithRetryAsync(
+        using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(TimetableUrlPrefix + serverCode, ct),
             $"GetAllTimetables({serverCode})",
             stoppingToken);
@@ -376,7 +376,7 @@ public class SimrailApiClient : IDisposable
     public async Task<EdrTimetableTrainEntry[]> GetEdrTimetablesAsync(string serverCode,
         CancellationToken stoppingToken)
     {
-        var response = await ExecuteWithRetryAsync(
+        using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(EdrTimetableUrlPrefix + serverCode, ct),
             $"GetEdrTimetables({serverCode})",
             stoppingToken);
@@ -404,7 +404,7 @@ public class SimrailApiClient : IDisposable
     /// <returns>An ApiResponseWithAge containing server status information and cache timing data.</returns>
     public async Task<ApiResponseWithAge<ServerStatus[]>> GetServersWithAgeAsync(CancellationToken stoppingToken)
     {
-        var response = await ExecuteWithRetryAsync(
+        using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(ServersOpenUrl, ct),
             "GetServersWithAge",
             stoppingToken);
@@ -420,7 +420,7 @@ public class SimrailApiClient : IDisposable
     public async Task<ApiResponseWithAge<Train[]>> GetTrainsWithAgeAsync(string serverCode,
         CancellationToken stoppingToken)
     {
-        var response = await ExecuteWithRetryAsync(
+        using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(TrainsUrlPrefix + serverCode, ct),
             $"GetTrainsWithAge({serverCode})",
             stoppingToken);
@@ -436,7 +436,7 @@ public class SimrailApiClient : IDisposable
     public async Task<ApiResponseWithAge<TrainPosition[]>> GetTrainPositionsWithAgeAsync(string serverCode,
         CancellationToken stoppingToken)
     {
-        var response = await ExecuteWithRetryAsync(
+        using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(TrainPositionsUrlPrefix + serverCode, ct),
             $"GetTrainPositionsWithAge({serverCode})",
             stoppingToken);
@@ -452,7 +452,7 @@ public class SimrailApiClient : IDisposable
     public async Task<ApiResponseWithAge<Station[]>> GetStationsWithAgeAsync(string serverCode,
         CancellationToken stoppingToken)
     {
-        var response = await ExecuteWithRetryAsync(
+        using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(StationsUrlPrefix + serverCode, ct),
             $"GetStationsWithAge({serverCode})",
             stoppingToken);
