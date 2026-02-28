@@ -10,7 +10,10 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/b3.jpg",
     "DispatchedBy": [],
     "Id": "6408789673983b991bbfcee3",
-    "IgnoredStations": ["Będzin Miasto", "Będzin Ksawera"]
+    "IgnoredStations": [
+      "Będzin Miasto",
+      "Będzin Ksawera"
+    ]
   },
   {
     "Name": "Bukowno",
@@ -23,7 +26,9 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/bo3.jpg",
     "DispatchedBy": [],
     "Id": "660679eb6a5a9b314b232f6b",
-    "IgnoredStations": ["Bukowno Przymiarki"]
+    "IgnoredStations": [
+      "Bukowno Przymiarki"
+    ]
   },
   {
     "Name": "Dąbrowa Górnicza",
@@ -36,7 +41,12 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/dg3.jpg",
     "DispatchedBy": [],
     "Id": "6408760173983b991bbfcedb",
-    "IgnoredStations": ["Będzin Ksawera", "Dąbrowa Górnicza Gołonóg", "Dąbrowa Górnicza Pogoria", "Będzin Miasto"]
+    "IgnoredStations": [
+      "Będzin Ksawera",
+      "Dąbrowa Górnicza Gołonóg",
+      "Dąbrowa Górnicza Pogoria",
+      "Będzin Miasto"
+    ]
   },
   {
     "Name": "Dąbrowa Górnicza Huta Katowice",
@@ -49,7 +59,9 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/dghk3.jpg",
     "DispatchedBy": [],
     "Id": "66104ca36a5a9b314b232f6f",
-    "SubStations": ["Dąbrowa Górnicza Huta Katowice R7"]
+    "SubStations": [
+      "Dąbrowa Górnicza Huta Katowice R7"
+    ]
   },
   {
     "Name": "Dąbrowa Górnicza Wschodnia",
@@ -74,7 +86,10 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/dz3.jpg",
     "DispatchedBy": [],
     "Id": "6456644df5f64a4c09852a47",
-    "SubStations": ["Dąbrowa Górnicza Ząbkowice DZA", "Dąbrowa Górnicza Ząbkowice GTB"],
+    "SubStations": [
+      "Dąbrowa Górnicza Ząbkowice DZA",
+      "Dąbrowa Górnicza Ząbkowice GTB"
+    ],
     "IgnoredStations": [
       "Dąbrowa Górnicza Pogoria",
       "Dąbrowa Górnicza Gołonóg",
@@ -118,8 +133,17 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/gr3.jpg",
     "DispatchedBy": [],
     "Id": "63f9f6c5b7b329ce5055892d",
-    "SubStations": ["Grodzisk Maz. R58", "Grodzisk Mazowiecki R64"],
-    "IgnoredStations": ["Milanówek", "Brwinów", "Parzniew", "Jaktorów", "Międzyborów"]
+    "SubStations": [
+      "Grodzisk Maz. R58",
+      "Grodzisk Mazowiecki R64"
+    ],
+    "IgnoredStations": [
+      "Milanówek",
+      "Brwinów",
+      "Parzniew",
+      "Jaktorów",
+      "Międzyborów"
+    ]
   },
   {
     "Name": "Idzikowice",
@@ -132,7 +156,10 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/Id3.jpg",
     "DispatchedBy": [],
     "Id": "64086a7673983b991bbfced3",
-    "SubStations": ["Idzikowice Roz.12", "Idzikowice Roz.18"]
+    "SubStations": [
+      "Idzikowice Roz.12",
+      "Idzikowice Roz.18"
+    ]
   },
   {
     "Name": "Juliusz",
@@ -157,7 +184,9 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/ko3.jpg",
     "DispatchedBy": [],
     "Id": "644133f3858f72cc3d476e42",
-    "IgnoredStations": ["Katowice Załęże"]
+    "IgnoredStations": [
+      "Katowice Załęże"
+    ]
   },
   {
     "Name": "Katowice Zawodzie",
@@ -170,7 +199,9 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/kz3.jpg",
     "DispatchedBy": [],
     "Id": "640871fa73983b991bbfced7",
-    "IgnoredStations": ["Katowice Szopienice Południowe"]
+    "IgnoredStations": [
+      "Katowice Szopienice Południowe"
+    ]
   },
   {
     "Name": "Knapówka",
@@ -183,7 +214,9 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/kn3.jpg",
     "DispatchedBy": [],
     "Id": "6408629173983b991bbfcecb",
-    "SubStations": ["Knapówka R2"]
+    "SubStations": [
+      "Knapówka R2"
+    ]
   },
   {
     "Name": "Korytów",
@@ -233,7 +266,9 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/kpm3.jpg",
     "DispatchedBy": [],
     "Id": "67558c17883a1210a347c587",
-    "SubStations": ["Kraków Przedmieście R3"]
+    "SubStations": [
+      "Kraków Przedmieście R3"
+    ]
   },
   {
     "Name": "Łazy",
@@ -270,7 +305,11 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/lc3.jpg",
     "DispatchedBy": [],
     "Id": "643e11b3caafcbb38c31b57c",
-    "IgnoredStations": ["Wiesiółka", "Chruszczobród", "Dąbrowa Górnicza Sikorka"]
+    "IgnoredStations": [
+      "Wiesiółka",
+      "Chruszczobród",
+      "Dąbrowa Górnicza Sikorka"
+    ]
   },
   {
     "Name": "Miechów",
@@ -283,7 +322,14 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/mi3.jpg",
     "DispatchedBy": [],
     "Id": "675330d44337b38ac4027545",
-    "IgnoredStations": ["Kamieńczyce", "Szczepanowice", "Smroków", "Pstroszyce", "Dziadówki", "Tunel R13"]
+    "IgnoredStations": [
+      "Kamieńczyce",
+      "Szczepanowice",
+      "Smroków",
+      "Pstroszyce",
+      "Dziadówki",
+      "Tunel R13"
+    ]
   },
   {
     "Name": "Niedźwiedź",
@@ -296,7 +342,12 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/nd3.jpg",
     "DispatchedBy": [],
     "Id": "675c8b3836ee26bf2694b663",
-    "IgnoredStations": ["Słomniki Miasto", "Goszcza", "Łuczyce", "Baranówka"]
+    "IgnoredStations": [
+      "Słomniki Miasto",
+      "Goszcza",
+      "Łuczyce",
+      "Baranówka"
+    ]
   },
   {
     "Name": "Olszamowice",
@@ -309,7 +360,9 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/ol3.jpg",
     "DispatchedBy": [],
     "Id": "664c9e66266957c3158393e9",
-    "SubStations": ["Pilichowice"]
+    "SubStations": [
+      "Pilichowice"
+    ]
   },
   {
     "Name": "Opoczno Południe",
@@ -334,8 +387,17 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/pr3.jpg",
     "DispatchedBy": [],
     "Id": "664bb464266957c3158393e5",
-    "SubStations": ["Józefinów"],
-    "IgnoredStations": ["Piastów", "Warszawa Ursus Niedźwiadek", "Warszawa Ursus", "Parzniew", "Brwinów", "Milanówek"]
+    "SubStations": [
+      "Józefinów"
+    ],
+    "IgnoredStations": [
+      "Piastów",
+      "Warszawa Ursus Niedźwiadek",
+      "Warszawa Ursus",
+      "Parzniew",
+      "Brwinów",
+      "Milanówek"
+    ]
   },
   {
     "Name": "Psary",
@@ -348,7 +410,9 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/ps3.jpg",
     "DispatchedBy": [],
     "Id": "6408641873983b991bbfcecd",
-    "SubStations": ["Psary Roz.40"]
+    "SubStations": [
+      "Psary Roz.40"
+    ]
   },
   {
     "Name": "Raciborowice",
@@ -373,7 +437,9 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/sl3.jpg",
     "DispatchedBy": [],
     "Id": "654b7d25b694ecf3f05ba098",
-    "IgnoredStations": ["Bukowno Przymiarki"]
+    "IgnoredStations": [
+      "Bukowno Przymiarki"
+    ]
   },
   {
     "Name": "Słomniki",
@@ -386,7 +452,12 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/sm3.jpg",
     "DispatchedBy": [],
     "Id": "675c8cb536ee26bf2694b665",
-    "IgnoredStations": ["Słomniki Miasto", "Smroków", "Szczepanowice", "Kamieńczyce"]
+    "IgnoredStations": [
+      "Słomniki Miasto",
+      "Smroków",
+      "Szczepanowice",
+      "Kamieńczyce"
+    ]
   },
   {
     "Name": "Sosnowiec Główny",
@@ -399,8 +470,12 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/sg3.jpg",
     "DispatchedBy": [],
     "Id": "6408737d73983b991bbfced9",
-    "SubStations": ["Sosnowiec Gł. pzs R52"],
-    "IgnoredStations": ["Katowice Szopienice Południowe"]
+    "SubStations": [
+      "Sosnowiec Gł. pzs R52"
+    ],
+    "IgnoredStations": [
+      "Katowice Szopienice Południowe"
+    ]
   },
   {
     "Name": "Sosnowiec Kazimierz",
@@ -413,8 +488,13 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/skz3.jpg",
     "DispatchedBy": [],
     "Id": "66158ba69383db065076aad8",
-    "SubStations": ["Sosnowiec Kazimierz PZS SKZ1", "Sosnowiec Kazimierz PZS SKZ2"],
-    "IgnoredStations": ["Sosnowiec Porąbka"]
+    "SubStations": [
+      "Sosnowiec Kazimierz PZS SKZ1",
+      "Sosnowiec Kazimierz PZS SKZ2"
+    ],
+    "IgnoredStations": [
+      "Sosnowiec Porąbka"
+    ]
   },
   {
     "Name": "Sosnowiec Południowy",
@@ -439,7 +519,10 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/str3.jpg",
     "DispatchedBy": [],
     "Id": "6602a5b41d78b7aa5b5f8bad",
-    "SubStations": ["Starzyny R5", "Sprowa"]
+    "SubStations": [
+      "Starzyny R5",
+      "Sprowa"
+    ]
   },
   {
     "Name": "Strzałki",
@@ -452,8 +535,13 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/st3.jpg",
     "DispatchedBy": [],
     "Id": "664c8eae266957c3158393e7",
-    "SubStations": ["Biała Rawska"],
-    "IgnoredStations": ["Idzikowice Roz.12", "Idzikowice Roz.18"]
+    "SubStations": [
+      "Biała Rawska"
+    ],
+    "IgnoredStations": [
+      "Idzikowice Roz.12",
+      "Idzikowice Roz.18"
+    ]
   },
   {
     "Name": "Szeligi",
@@ -478,8 +566,12 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/tl3.jpg",
     "DispatchedBy": [],
     "Id": "660ee6ba6a5a9b314b232f6d",
-    "SubStations": ["Tunel R13"],
-    "IgnoredStations": ["Dziadówki"]
+    "SubStations": [
+      "Tunel R13"
+    ],
+    "IgnoredStations": [
+      "Dziadówki"
+    ]
   },
   {
     "Name": "Warszawa Włochy",
@@ -492,7 +584,12 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/wl3.jpg",
     "DispatchedBy": [],
     "Id": "6803c7d65dfb1a84d7f92ff3",
-    "IgnoredStations": ["Warszawa Ursus Północny", "Warszawa Ursus", "Warszawa Ursus Niedźwiadek", "Piastów"]
+    "IgnoredStations": [
+      "Warszawa Ursus Północny",
+      "Warszawa Ursus",
+      "Warszawa Ursus Niedźwiadek",
+      "Piastów"
+    ]
   },
   {
     "Name": "Włoszczowa Północ",
@@ -517,7 +614,11 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/zs3.jpg",
     "DispatchedBy": [],
     "Id": "675c87a936ee26bf2694b661",
-    "IgnoredStations": ["Baranówka", "Łuczyce", "Goszcza"]
+    "IgnoredStations": [
+      "Baranówka",
+      "Łuczyce",
+      "Goszcza"
+    ]
   },
   {
     "Name": "Zawiercie",
@@ -530,8 +631,14 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/zw3.jpg",
     "DispatchedBy": [],
     "Id": "6408787873983b991bbfcedf",
-    "SubStations": ["Zawiercie GT"],
-    "IgnoredStations": ["Zawiercie Borowe Pole", "Myszków Mrzygłód", "Myszków Światowit"]
+    "SubStations": [
+      "Zawiercie GT"
+    ],
+    "IgnoredStations": [
+      "Zawiercie Borowe Pole",
+      "Myszków Mrzygłód",
+      "Myszków Światowit"
+    ]
   },
   {
     "Name": "Gałkówek",
@@ -544,8 +651,13 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/ga3.jpg",
     "DispatchedBy": [],
     "Id": "67ffcf2c6c70787a33c81313",
-    "SubStations": ["Łódź Andrzejów"],
-    "IgnoredStations": ["Justynów", "Bedoń"]
+    "SubStations": [
+      "Łódź Andrzejów"
+    ],
+    "IgnoredStations": [
+      "Justynów",
+      "Bedoń"
+    ]
   },
   {
     "Name": "Koluszki",
@@ -566,7 +678,11 @@
       "Koluszki PZS R154",
       "Koluszki Bęzel.R154"
     ],
-    "IgnoredStations": ["Wągry", "Żakowice", "Chrusty Nowe"]
+    "IgnoredStations": [
+      "Wągry",
+      "Żakowice",
+      "Chrusty Nowe"
+    ]
   },
   {
     "Name": "Łódź Widzew",
@@ -579,8 +695,18 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/lw3.jpg",
     "DispatchedBy": [],
     "Id": "68092e467c23edeccd597f75",
-    "SubStations": ["Łódź Widzew R9", "Łódź Widzew PZS R3"],
-    "IgnoredStations": ["Łódź Niciarniana"]
+    "SubStations": [
+      "Łódź Widzew R9",
+      "Łódź Widzew PZS R3",
+      "Łódź Marysin",
+      "Łódź Dąbrowa PBS"
+    ],
+    "IgnoredStations": [
+      "Łódź Niciarniana",
+      "Łódź Warszawska",
+      "Łódź Arturówek",
+      "Łódź Radogoszcz Wschód"
+    ]
   },
   {
     "Name": "Płyćwia",
@@ -613,7 +739,13 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/rg3.jpg",
     "DispatchedBy": [],
     "Id": "67ff7a906c70787a33c8130f",
-    "IgnoredStations": ["Przyłęk Duży", "Krosnowa", "Lipce Reymontowskie", "Wągry", "Koluszki R59"]
+    "IgnoredStations": [
+      "Przyłęk Duży",
+      "Krosnowa",
+      "Lipce Reymontowskie",
+      "Wągry",
+      "Koluszki R59"
+    ]
   },
   {
     "Name": "Skierniewice",
@@ -626,8 +758,17 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/sk3.jpg",
     "DispatchedBy": [],
     "Id": "6800d6ada9642b0182713780",
-    "SubStations": ["Skierniewice M PZS", "Skierniewice S PZS", "Skierniewice P PZS", "Skierniewice GT 201-208"],
-    "IgnoredStations": ["Dąbrowice Skierniewickie", "Maków", "Skierniewice Rawka"]
+    "SubStations": [
+      "Skierniewice M PZS",
+      "Skierniewice S PZS",
+      "Skierniewice P PZS",
+      "Skierniewice GT 201-208"
+    ],
+    "IgnoredStations": [
+      "Dąbrowice Skierniewickie",
+      "Maków",
+      "Skierniewice Rawka"
+    ]
   },
   {
     "Name": "Żakowice Południowe",
@@ -640,7 +781,10 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/zp3.jpg",
     "DispatchedBy": [],
     "Id": "68024e1315b7831a2bc9d2a3",
-    "SubStations": ["Żakowice Płd Roz.5", "Żakow. Płd Zieleń R7"]
+    "SubStations": [
+      "Żakowice Płd Roz.5",
+      "Żakow. Płd Zieleń R7"
+    ]
   },
   {
     "Name": "Żyrardów",
@@ -653,8 +797,16 @@
     "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/zy3.jpg",
     "DispatchedBy": [],
     "Id": "67e7c02d46650199d1e4366a",
-    "SubStations": ["Radziwiłłów Mazowiecki"],
-    "IgnoredStations": ["Sucha Żyrardowska", "Międzyborów", "Jaktorów", "Jesionka", "Skierniewice Rawka"]
+    "SubStations": [
+      "Radziwiłłów Mazowiecki"
+    ],
+    "IgnoredStations": [
+      "Sucha Żyrardowska",
+      "Międzyborów",
+      "Jaktorów",
+      "Jesionka",
+      "Skierniewice Rawka"
+    ]
   },
   {
     "Name": "Katowice Tow. KTC",
@@ -664,7 +816,9 @@
     "Latitude": 50.26528905318747,
     "Longitude": 18.98548711536283,
     "Id": "l137_ktc",
-    "IgnoredStations": ["Katowice Załęże"]
+    "IgnoredStations": [
+      "Katowice Załęże"
+    ]
   },
   {
     "Name": "Brynów",
@@ -701,7 +855,9 @@
     "Latitude": 50.218462541767884,
     "Longitude": 19.001465526694027,
     "Id": "Ssc",
-    "SubStations": ["Katowice Much. KMB"]
+    "SubStations": [
+      "Katowice Much. KMB"
+    ]
   },
   {
     "Name": "Stawiska",
@@ -738,7 +894,9 @@
     "Latitude": 50.823959976470775,
     "Longitude": 19.94521227641923,
     "Id": "Cz",
-    "SubStations": ["Czarnca "]
+    "SubStations": [
+      "Czarnca "
+    ]
   },
   {
     "Name": "Sosnowiec Gł. pzs R52",
@@ -758,7 +916,9 @@
     "Latitude": 50.26578,
     "Longitude": 19.17415,
     "Id": "SDn",
-    "IgnoredStations": ["Sosnowiec Porąbka"]
+    "IgnoredStations": [
+      "Sosnowiec Porąbka"
+    ]
   },
   {
     "Name": "Myszków",
@@ -768,7 +928,9 @@
     "Latitude": 50.57391,
     "Longitude": 19.33097,
     "Id": "My",
-    "SubStations": ["Myszków GT"]
+    "SubStations": [
+      "Myszków GT"
+    ]
   },
   {
     "Name": "Przemiarki",
@@ -797,7 +959,9 @@
     "Longitude": 19.88301571264459,
     "Id": "Sp",
     "RemoteControlled": "Str",
-    "IgnoredStations": ["Starzyny R5"]
+    "IgnoredStations": [
+      "Starzyny R5"
+    ]
   },
   {
     "Name": "Marków",
@@ -826,7 +990,10 @@
     "Latitude": 52.220588,
     "Longitude": 20.963494,
     "Id": "WZD",
-    "SubStations": ["Warszawa Zach. R19", "Warszawa Zach. R10"]
+    "SubStations": [
+      "Warszawa Zach. R19",
+      "Warszawa Zach. R10"
+    ]
   },
   {
     "Name": "Warszawa Centralna",
@@ -836,7 +1003,10 @@
     "Latitude": 52.22812,
     "Longitude": 21.00163,
     "Id": "WDC",
-    "IgnoredStations": ["Warszawa Zach. R19", "Warszawa Zach. R10"]
+    "IgnoredStations": [
+      "Warszawa Zach. R19",
+      "Warszawa Zach. R10"
+    ]
   },
   {
     "Name": "Warszawa Wschodnia",
@@ -846,7 +1016,10 @@
     "Latitude": 52.25305636317541,
     "Longitude": 21.058287726145462,
     "Id": "WSD",
-    "SubStations": ["Warszawa Wsch.R.34", "Warszawa Wsch. R.58"]
+    "SubStations": [
+      "Warszawa Wsch.R.34",
+      "Warszawa Wsch. R.58"
+    ]
   },
   {
     "Name": "Warszawa Grochów",
@@ -856,7 +1029,9 @@
     "Latitude": 52.25382855010197,
     "Longitude": 21.09513806297933,
     "Id": "Warszawa Grochów",
-    "SubStations": ["Warszawa Grochów R5"]
+    "SubStations": [
+      "Warszawa Grochów R5"
+    ]
   },
   {
     "Name": "Kozioł",
@@ -866,7 +1041,9 @@
     "Latitude": 50.30827041951533,
     "Longitude": 19.383104570811348,
     "Id": "Kozioł",
-    "SubStations": ["Kozioł R12"]
+    "SubStations": [
+      "Kozioł R12"
+    ]
   },
   {
     "Name": "Dąbrowa Górnicza Towarowa DTA R5",
@@ -885,7 +1062,9 @@
     "Latitude": 50.3154335,
     "Longitude": 19.3730004,
     "Id": "DTA",
-    "SubStations": ["Dąbrowa Górnicza Towarowa DTA"]
+    "SubStations": [
+      "Dąbrowa Górnicza Towarowa DTA"
+    ]
   },
   {
     "Name": "Dąbrowa Górnicza Strzemieszyce",
@@ -895,7 +1074,9 @@
     "Latitude": 50.31140078325932,
     "Longitude": 19.267317086518855,
     "Id": "DS",
-    "SubStations": ["Dąbr.Gór.Strzem. R75"]
+    "SubStations": [
+      "Dąbr.Gór.Strzem. R75"
+    ]
   },
   {
     "Name": "Dąbrowa Górnicza Południowa",
@@ -941,7 +1122,9 @@
     "Latitude": 50.34229,
     "Longitude": 19.62181,
     "Id": "JO",
-    "IgnoredStations": ["Chrząstowice Olkuskie"]
+    "IgnoredStations": [
+      "Chrząstowice Olkuskie"
+    ]
   },
   {
     "Name": "Zarzecze APO",
@@ -951,8 +1134,12 @@
     "Latitude": 50.35678857895427,
     "Longitude": 19.69180795502556,
     "Id": "Za",
-    "SubStations": ["Zarzecze"],
-    "IgnoredStations": ["Chrząstowice Olkuskie"]
+    "SubStations": [
+      "Zarzecze"
+    ],
+    "IgnoredStations": [
+      "Chrząstowice Olkuskie"
+    ]
   },
   {
     "Name": "Wolbrom",
@@ -962,7 +1149,10 @@
     "Latitude": 50.3759,
     "Longitude": 19.7723,
     "Id": "W",
-    "IgnoredStations": ["Jeżówka", "Zarzecze"]
+    "IgnoredStations": [
+      "Jeżówka",
+      "Zarzecze"
+    ]
   },
   {
     "Name": "Charsznica",
@@ -1019,8 +1209,12 @@
     "Latitude": 50.394329,
     "Longitude": 19.879798,
     "Id": "GA",
-    "SubStations": ["Gajówka"],
-    "IgnoredStations": ["Jeżówka"]
+    "SubStations": [
+      "Gajówka"
+    ],
+    "IgnoredStations": [
+      "Jeżówka"
+    ]
   },
   {
     "Name": "Dłubnia",
@@ -1030,7 +1224,9 @@
     "Latitude": 50.10242866166052,
     "Longitude": 20.026786984046822,
     "Id": "Dl",
-    "SubStations": ["Dłubnia R2"]
+    "SubStations": [
+      "Dłubnia R2"
+    ]
   },
   {
     "Name": "Kraków Główny",
@@ -1068,7 +1264,11 @@
     "Longitude": 20.303921397971767,
     "Id": "RM",
     "RemoteControlled": "Zr",
-    "IgnoredStations": ["Skierniewice Rawka", "Jesionka", "Sucha Żyrardowska"]
+    "IgnoredStations": [
+      "Skierniewice Rawka",
+      "Jesionka",
+      "Sucha Żyrardowska"
+    ]
   },
   {
     "Name": "Warszawa Główna Towarowa",
@@ -1078,7 +1278,9 @@
     "Latitude": 52.214219,
     "Longitude": 20.91372,
     "Id": "WGT",
-    "SubStations": ["Warszawa Gł.Tow.Sr18"]
+    "SubStations": [
+      "Warszawa Gł.Tow.Sr18"
+    ]
   },
   {
     "Name": "Warszawa Gołąbki",
@@ -1097,7 +1299,10 @@
     "Latitude": 52.26321112394744,
     "Longitude": 21.056409543860823,
     "Id": "WPT",
-    "SubStations": ["Warszawa Praga WPT C", "Warszawa Praga PZS R15"]
+    "SubStations": [
+      "Warszawa Praga WPT C",
+      "Warszawa Praga PZS R15"
+    ]
   },
   {
     "Name": "Sędziszów Towarowy",
@@ -1139,8 +1344,15 @@
     "Latitude": 51.725208,
     "Longitude": 19.494952,
     "Id": "LCH",
-    "SubStations": ["Łódź Chojny R82"],
-    "IgnoredStations": ["Łódź Pabianicka", "Łódź Olechów Wiadukt", "Łódź Olechów Zachód", "Łódź Olechów Wschód"]
+    "SubStations": [
+      "Łódź Chojny R82"
+    ],
+    "IgnoredStations": [
+      "Łódź Pabianicka",
+      "Łódź Olechów Wiadukt",
+      "Łódź Olechów Zachód",
+      "Łódź Olechów Wschód"
+    ]
   },
   {
     "Name": "Łódź Olechów Łoa",
@@ -1176,7 +1388,8 @@
     "DispatchedBy": [],
     "Latitude": 51.744839,
     "Longitude": 19.512928,
-    "Id": "LD"
+    "Id": "LD",
+    "RemoteControlled": "LW"
   },
   {
     "Name": "Łódź Andrzejów",
@@ -1187,7 +1400,10 @@
     "Longitude": 19.610301,
     "Id": "2422_LA",
     "RemoteControlled": "G",
-    "IgnoredStations": ["Bedoń", "Justynów"]
+    "IgnoredStations": [
+      "Bedoń",
+      "Justynów"
+    ]
   },
   {
     "Name": "Słotwiny",
@@ -1224,7 +1440,9 @@
     "Latitude": 50.075806,
     "Longitude": 19.969094,
     "Id": "KO",
-    "SubStations": ["Kraków Olsza R2"]
+    "SubStations": [
+      "Kraków Olsza R2"
+    ]
   },
   {
     "Name": "Warszawa Podskarbińska",
@@ -1243,7 +1461,9 @@
     "Latitude": 51.6690816,
     "Longitude": 19.7809938,
     "Id": "3594_Ro",
-    "SubStations": ["Rokiciny GT"]
+    "SubStations": [
+      "Rokiciny GT"
+    ]
   },
   {
     "Name": "Baby",
@@ -1253,7 +1473,13 @@
     "Latitude": 51.5382793,
     "Longitude": 19.7171981,
     "Id": "60_Ba",
-    "SubStations": ["Baby GT", "Wolbórka", "Łaznów", "Moszczenica", "Jarosty"]
+    "SubStations": [
+      "Baby GT",
+      "Wolbórka",
+      "Łaznów",
+      "Moszczenica",
+      "Jarosty"
+    ]
   },
   {
     "Name": "Piotrków Trybunalski",
@@ -1263,7 +1489,12 @@
     "Latitude": 51.4037151,
     "Longitude": 19.6834799,
     "Id": "3223_PT",
-    "SubStations": ["Piotrków Tryb Tow", "Moszczenica", "Jarosty", "Milejów"]
+    "SubStations": [
+      "Piotrków Tryb Tow",
+      "Moszczenica",
+      "Jarosty",
+      "Milejów"
+    ]
   },
   {
     "Name": "Rozprza",
@@ -1404,7 +1635,9 @@
     "DispatchedBy": [],
     "Id": "dc32227e-e68f-4ec0-a1c0-f92d4dee1ed8",
     "PointId": "500",
-    "IgnoredStations": ["Świętochłowice"]
+    "IgnoredStations": [
+      "Świętochłowice"
+    ]
   },
   {
     "Name": "Łódź Fabryczna",
@@ -1416,7 +1649,9 @@
     "Id": "a1bd1c3e-43f5-4d77-8b26-4219656a8e9b",
     "PointId": "2431",
     "SubStations": [],
-    "IgnoredStations": ["Łódź Niciarniana"]
+    "IgnoredStations": [
+      "Łódź Niciarniana"
+    ]
   },
   {
     "Name": "Suchedniów Północny",
@@ -1453,24 +1688,29 @@
     "Id": "c0d95ff4-87f7-4bb0-af51-b46bdc34848c",
     "PointId": "3827",
     "SubStations": [],
-    "IgnoredStations": []
+    "IgnoredStations": [
+      "Sieradz Warta"
+    ]
   },
   {
     "Name": "Zduńska Wola",
-    "Prefix": "5291_ZW",
+    "Prefix": "ZW",
     "DifficultyLevel": -1,
     "MainImageUrl": "https://s3.eu-central-1.amazonaws.com/forum.simrail.eu/monthly_2025_09/06_09.2025_4.thumb.png.05cc5bc69aa9b418b615b6384bebcf60.png",
-    "Latitude": 51.6118974,
-    "Longitude": 18.9589887,
+    "Latitude": 51.61125,
+    "Longitude": 18.942019,
     "DispatchedBy": [],
     "Id": "704e202c-a09c-4bc3-a468-a9f93b6860ec",
     "PointId": "5291",
     "SubStations": [],
-    "IgnoredStations": []
+    "IgnoredStations": [
+      "Izabelów",
+      "Męcka Wola"
+    ]
   },
   {
     "Name": "Gajewniki",
-    "Prefix": "919_Gw",
+    "Prefix": "Ga",
     "DifficultyLevel": -1,
     "MainImageUrl": "https://s3.eu-central-1.amazonaws.com/forum.simrail.eu/monthly_2025_09/06_09.2025_1.thumb.png.2284b52830c703254ae1ef05a71eb76c.png",
     "Latitude": 51.6127894,
@@ -1478,12 +1718,17 @@
     "DispatchedBy": [],
     "Id": "c3acbd3e-ad88-4ef0-8686-010c11b175a6",
     "PointId": "919",
-    "SubStations": [],
-    "IgnoredStations": []
+    "SubStations": [
+      "Gajewniki Roz.3",
+      "Gajewniki Roz.7"
+    ],
+    "IgnoredStations": [
+      "Borszewice"
+    ]
   },
   {
     "Name": "Łask",
-    "Prefix": "2360_Ls",
+    "Prefix": "La",
     "DifficultyLevel": -1,
     "Latitude": 51.6041312,
     "Longitude": 19.1087026,
@@ -1491,8 +1736,15 @@
     "DispatchedBy": [],
     "Id": "7425c263-629b-4dae-bc59-10ba138bf084",
     "PointId": "2360",
-    "SubStations": [],
-    "IgnoredStations": []
+    "SubStations": [
+      "Dobroń"
+    ],
+    "IgnoredStations": [
+      "Borszewice",
+      "Gajewniki Roz.3",
+      "Kolumna",
+      "Chechło"
+    ]
   },
   {
     "Name": "Pabianice",
@@ -1505,7 +1757,10 @@
     "Id": "9d170c50-8108-44f3-b3e2-3411c9c7a191",
     "PointId": "3093",
     "SubStations": [],
-    "IgnoredStations": []
+    "IgnoredStations": [
+      "Pabianice Północne",
+      "Chechło"
+    ]
   },
   {
     "Name": "Łódź Lublinek",
@@ -1518,7 +1773,10 @@
     "Id": "e643af5e-e138-4d2c-8fc4-a62db344c3d8",
     "PointId": "2330",
     "SubStations": [],
-    "IgnoredStations": []
+    "IgnoredStations": [
+      "Łódź Retkinia",
+      "Pabianice Północne"
+    ]
   },
   {
     "Name": "Retkinia",
@@ -1530,8 +1788,12 @@
     "DispatchedBy": [],
     "Id": "9061d502-c82d-41fa-b606-1a47317d6d9a",
     "PointId": "3577",
-    "SubStations": ["Retkinia R.2"],
-    "IgnoredStations": ["Łódź Retkinia"]
+    "SubStations": [
+      "Retkinia R.2"
+    ],
+    "IgnoredStations": [
+      "Łódź Retkinia"
+    ]
   },
   {
     "Name": "Łódź Kaliska PZS R219-R227",
@@ -1542,33 +1804,41 @@
     "DispatchedBy": [],
     "Id": "dc444059-46b9-4165-9e7e-64f02ad54e6d",
     "PointId": "5703",
+    "RemoteControlled": "2432_LK",
     "SubStations": [],
-    "IgnoredStations": ["Łódź Pabianicka"]
+    "IgnoredStations": [
+      "Łódź Pabianicka"
+    ]
   },
   {
     "Name": "Łódź Kaliska",
-    "Prefix": "2432_ŁK",
+    "Prefix": "2432_LK",
     "DifficultyLevel": -1,
     "Latitude": 51.7611548,
     "Longitude": 19.4274575,
     "MainImageUrl": "https://s3.eu-central-1.amazonaws.com/forum.simrail.eu/monthly_2025_10/LodzKaliska_6.thumb.png.6f2d01b721bd6c58d129f900e1d07968.png",
     "DispatchedBy": [],
-    "Id": "2432_ŁK",
-    "PointId": 2432,
-    "SubStations": [],
+    "Id": "2432_LK",
+    "PointId": "2432",
+    "SubStations": [
+      "Łódź Kaliska PZS R219-R227"
+    ],
     "IgnoredStations": []
   },
   {
     "Name": "Łódź Żabieniec",
-    "Prefix": "ŁZ",
+    "Prefix": "LZ",
     "DifficultyLevel": -1,
     "Latitude": 51.7959907,
     "Longitude": 19.406193,
     "MainImageUrl": "https://s3.eu-central-1.amazonaws.com/forum.simrail.eu/monthly_2025_10/LodzZabieniec_6.thumb.png.70468a9502933500ebf028f08c246bc0.png",
     "DispatchedBy": [],
-    "Id": "ŁZ",
-    "PointId": null,
-    "SubStations": [],
+    "Id": "LZ",
+    "PointId": "2463",
+    "SubStations": [
+      "Łódź Żabieniec GT",
+      "Łódź Radogoszcz Zachód"
+    ],
     "IgnoredStations": []
   },
   {
@@ -1582,7 +1852,16 @@
     "Id": "5311_Zg",
     "PointId": 5311,
     "SubStations": [],
-    "IgnoredStations": []
+    "IgnoredStations": [
+      "Zgierz Jaracza",
+      "Zgierz Rudunki",
+      "Łódź Radogoszcz Wschód",
+      "Łódź Arturówek",
+      "Łódź Radogoszcz Zachód",
+      "Łódź Warszawska",
+      "Smardzew",
+      "Glinnik Wieś"
+    ]
   },
   {
     "Name": "Łódź Marysin",
@@ -1595,6 +1874,127 @@
     "Id": "LM",
     "PointId": null,
     "SubStations": [],
+    "IgnoredStations": [],
+    "RemoteControlled": "LW"
+  },
+  {
+    "Name": "Glinnik",
+    "Prefix": "1057_Gn",
+    "DifficultyLevel": -1,
+    "Latitude": 51.8866005,
+    "Longitude": 19.4951234,
+    "DispatchedBy": [],
+    "Id": "a969cdd0-3bf2-4015-91ed-69ebbe95a0af",
+    "PointId": "1057",
+    "SubStations": [],
     "IgnoredStations": []
+  },
+  {
+    "Name": "Zgierz Północ",
+    "Prefix": "5314_ZgP",
+    "DifficultyLevel": -1,
+    "Latitude": 51.8691546,
+    "Longitude": 19.3837488,
+    "DispatchedBy": [],
+    "Id": "6c8555e2-9329-4899-a17c-941196e3b702",
+    "PointId": "5314",
+    "SubStations": [],
+    "IgnoredStations": [
+      "Zgierz Jaracza"
+    ]
+  },
+  {
+    "Name": "Dobroń",
+    "Prefix": "802_Db",
+    "DifficultyLevel": -1,
+    "Latitude": 51.6298614,
+    "Longitude": 19.2426667,
+    "DispatchedBy": [],
+    "Id": "802_Db",
+    "PointId": "802",
+    "SubStations": [],
+    "IgnoredStations": [],
+    "RemoteControlled": "La"
+  },
+  {
+    "Name": "Kolumna",
+    "Prefix": "Kol",
+    "DifficultyLevel": -1,
+    "Latitude": 51.6145585,
+    "Longitude": 19.1953411,
+    "DispatchedBy": [],
+    "Id": "Kol",
+    "PointId": null,
+    "SubStations": [],
+    "IgnoredStations": [],
+    "RemoteControlled": "La"
+  },
+  {
+    "Name": "Męka",
+    "Prefix": "2582_Me",
+    "DifficultyLevel": -1,
+    "Latitude": 51.609369,
+    "Longitude": 18.788064,
+    "DispatchedBy": [],
+    "Id": "2582_Me",
+    "PointId": "2582",
+    "SubStations": [],
+    "IgnoredStations": [
+      "Izabelów",
+      "Męcka Wola",
+      "Sieradz Męka",
+      "Sieradz Warta"
+    ]
+  },
+  {
+    "Name": "Sędzice",
+    "Prefix": "3792_Se",
+    "DifficultyLevel": -1,
+    "Latitude": 51.6288941,
+    "Longitude": 18.5700068,
+    "DispatchedBy": [],
+    "Id": "77aff2db-7522-4567-9760-5e19eeb6962f",
+    "PointId": "3792",
+    "SubStations": [],
+    "IgnoredStations": []
+  },
+  {
+    "Name": "Dionizów",
+    "Prefix": "779_Di",
+    "DifficultyLevel": -1,
+    "Latitude": 51.6239791,
+    "Longitude": 18.9616277,
+    "DispatchedBy": [],
+    "Id": "4bb95406-b8b7-46fb-93b6-41bb220faa6d",
+    "PointId": "779",
+    "SubStations": [],
+    "IgnoredStations": []
+  },
+  {
+    "Name": "Zduńska Wola Karsznice",
+    "Prefix": "5292_ZWK",
+    "DifficultyLevel": -1,
+    "Latitude": 51.5890163,
+    "Longitude": 18.9947256,
+    "DispatchedBy": [],
+    "Id": "0066ee79-8e19-4876-a1ad-d332b187fb27",
+    "PointId": "5292",
+    "SubStations": [],
+    "IgnoredStations": []
+  },
+  {
+    "Name": "Zgierz Kontrewers",
+    "Prefix": "5313_ZK",
+    "DifficultyLevel": -1,
+    "Latitude": 51.8650062,
+    "Longitude": 19.3416973,
+    "DispatchedBy": [],
+    "Id": "5313_ZK",
+    "PointId": 5313,
+    "SubStations": [],
+    "IgnoredStations": [
+      "Jedlicze koło Zgierza",
+      "Grotniki"
+    ]
   }
 ]
