@@ -12,10 +12,47 @@ on:
       - master
     paths:
       - "smo-backend/**"
+      - ".github/workflows/build-backend.yml"
 
 jobs:
+  test-backend:
+    name: Run Backend Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore
+        run: dotnet restore ./smo-backend/smo-backend.sln
+      - name: Test
+        id: run-tests
+        continue-on-error: true
+        run: >-
+          dotnet test ./smo-backend/smo-backend.Tests/smo-backend.Tests.csproj
+          --configuration Release
+          --no-restore
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory ./smo-backend/TestResults
+      - name: Publish Test Report
+        if: always()
+        uses: dorny/test-reporter@v2
+        with:
+          name: Backend Tests
+          path: smo-backend/TestResults/*.trx
+          reporter: dotnet-trx
+      - name: Fail if tests failed
+        if: steps.run-tests.outcome == 'failure'
+        run: exit 1
+
   build-backend:
     name: Build and Push
+    needs: test-backend
     runs-on: ubuntu-latest
     env:
       SHOULD_PUSH: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' && secrets.DOCKER_REGISTRY_USERNAME != '' }}

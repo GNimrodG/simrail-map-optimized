@@ -15,6 +15,11 @@ public class TimeDataService(
     SimrailApiClient apiClient)
     : BaseServerDataService<TimeData>("TIME", logger, scopeFactory, serverDataService)
 {
+    private static readonly Gauge ServerTimezoneGauge = Metrics.CreateGauge(
+        "smo_server_timezone",
+        "The timezone of the server",
+        "server");
+
     /// <inheritdoc cref="BaseServerDataService{TimeData}.FetchInterval"/>
     protected override TimeSpan FetchInterval => TimeSpan.FromMinutes(5);
 
@@ -26,17 +31,9 @@ public class TimeDataService(
     protected override async Task<TimeData> FetchServerData(string serverCode, CancellationToken stoppingToken)
     {
         var timezone = await apiClient.GetTimezoneAsync(serverCode, stoppingToken).NoContext();
-
-        if (timezone == null)
-            throw new("Failed to fetch timezone data");
-
-
         var time = await apiClient.GetTimeAsync(serverCode, stoppingToken).NoContext();
 
-        if (time == null)
-            throw new("Failed to fetch time data");
-
-        return new(time.Value.time, timezone.Value, time.Value.date);
+        return new(time.time, timezone, time.date);
     }
 
     /// <inheritdoc />
@@ -46,9 +43,4 @@ public class TimeDataService(
 
         ServerTimezoneGauge.WithLabels(data.ServerCode).Set(data.Data.Timezone);
     }
-
-    private static readonly Gauge ServerTimezoneGauge = Metrics.CreateGauge(
-        "smo_server_timezone",
-        "The timezone of the server",
-        "server");
 }

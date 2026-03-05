@@ -19,8 +19,16 @@ public class QueueProcessor<T>(
     int maxQueueSize = 3)
     : IDisposable
 {
-    private readonly SemaphoreSlim _processingLock = new(maxDegreeOfParallelism, maxDegreeOfParallelism);
     private readonly Queue<T> _dataQueue = new();
+    private readonly SemaphoreSlim _processingLock = new(maxDegreeOfParallelism, maxDegreeOfParallelism);
+
+    /// <inheritdoc cref="IDisposable.Dispose" />
+    public void Dispose()
+    {
+        ClearQueue();
+        _processingLock.Dispose();
+        GC.SuppressFinalize(this);
+    }
 
     /// <summary>
     /// Enqueues data for processing. If the queue is full, the oldest item will be removed to make space for the new data.
@@ -52,17 +60,23 @@ public class QueueProcessor<T>(
             // and will be processed when the current processing finishes
             if (!await _processingLock.WaitAsync(0).NoContext()) return;
 
-            try
+            // Start processing in background without awaiting.
+            // Always release the semaphore when processing loop exits.
+            _ = Task.Run(async () =>
             {
-                // Process the queue
-                await ProcessQueuedData().NoContext();
-                _processingLock.Release();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error processing data");
-                _processingLock.Release();
-            }
+                try
+                {
+                    await ProcessQueuedData().NoContext();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Unexpected error in queue processor loop");
+                }
+                finally
+                {
+                    _processingLock.Release();
+                }
+            });
         }
         catch (Exception ex)
         {
@@ -82,7 +96,7 @@ public class QueueProcessor<T>(
                     return;
 
                 nextData = _dataQueue.Dequeue();
-                logger.LogInformation("Processing queued data. Remaining queue length: {QueueLength}/{MaxQueueSize}",
+                logger.LogDebug("Processing queued data. Remaining queue length: {QueueLength}/{MaxQueueSize}",
                     _dataQueue.Count, maxQueueSize == -1 ? "unlimited" : maxQueueSize);
                 gauge.Set(_dataQueue.Count);
             }
@@ -109,13 +123,5 @@ public class QueueProcessor<T>(
             logger.LogInformation("Cleared the queue");
             gauge.Set(0);
         }
-    }
-
-    /// <inheritdoc cref="IDisposable.Dispose"/>
-    public void Dispose()
-    {
-        ClearQueue();
-        _processingLock.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

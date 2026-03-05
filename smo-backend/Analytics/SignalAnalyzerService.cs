@@ -70,10 +70,20 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     public SignalAnalyzerService(ILogger<SignalAnalyzerService> logger,
         IServiceScopeFactory scopeFactory,
         TrainDataService trainDataService)
+        : this(logger, scopeFactory)
+    {
+        _trainDataService = trainDataService;
+    }
+
+    /// <summary>
+    ///     Constructor for testing purposes. Does not require <see cref="TrainDataService" />.
+    /// </summary>
+    protected SignalAnalyzerService(ILogger<SignalAnalyzerService> logger,
+        IServiceScopeFactory scopeFactory)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
-        _trainDataService = trainDataService;
+        _trainDataService = null!;
 
         _queueProcessor =
             new(logger, ProcessTrainData, SignalAnalyzerQueueGauge);
@@ -173,7 +183,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         }
     }
 
-    private async Task<SignalStatus[]> GetSignals()
+    protected virtual async Task<SignalStatus[]> GetSignals()
     {
         using var scope = _scopeFactory.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
@@ -327,11 +337,11 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 signal.Trains = train?.Select(t => t.TrainNoLocal).ToArray();
 
                 var earlierTrain = earlierSignalIndex.GetValueOrDefault(signal.Name);
+                var hasEarlierTrain = earlierTrain is { Length: > 0 };
 
-                if (earlierTrain is { Length: > 0 })
+                if (hasEarlierTrain)
                 {
-                    signal.TrainsAhead = earlierTrain.Select(x => x.TrainNoLocal).ToArray();
-                    continue;
+                    signal.TrainsAhead = earlierTrain!.Select(x => x.TrainNoLocal).ToArray();
                 }
 
                 var onlyHasOneNextSignal = signal is
@@ -342,7 +352,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 if (!onlyHasOneNextSignal)
                 {
                     // if it has more than one next signal, but it's finalized and all the next signals have a train
-                    if (signal is { Type: "main", NextFinalized: true } &&
+                    if (!hasEarlierTrain && signal is { Type: "main", NextFinalized: true } &&
                         signal.NextSignals.All(s => signalsIndex.ContainsKey(s.Name)))
                     {
                         signal.TrainsAhead = signal.NextSignals.Select(s => signalsIndex[s.Name])
@@ -354,36 +364,41 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 }
 
                 var nextSignalName = signal.NextSignals[0].Name;
-                signal.TrainsAhead = signalsIndex
-                                         .GetValueOrDefault(nextSignalName)?.Select(t => t.TrainNoLocal)
-                                         .ToArray() ??
-                                     (earlierSignalIndex.TryGetValue(nextSignalName, out var earlierTrains)
-                                         ? earlierTrains.Select(x => x.TrainNoLocal).ToArray()
-                                         : null);
 
-                var blockingConnections = signal.GetBlockingConnections()
-                    .Where(c =>
-                    {
-                        var nextTrains = signalsIndex.GetValueOrDefault(c.Next) ?? [];
-                        var hasTrainAtNext = nextTrains.Length > 0;
-
-                        var isSameTrainComingFromPrev = passedSignalIndex.TryGetValue(c.Prev, out var prevTrains) &&
-                                                        prevTrains.Length > 0 &&
-                                                        prevTrains.All(t => nextTrains.Contains(t));
-
-                        return hasTrainAtNext && isSameTrainComingFromPrev;
-                    })
-                    .SelectMany(c => signalsIndex.GetValueOrDefault(c.Next)?.Select(t => t.TrainNoLocal) ?? [])
-                    .ToArray();
-
-                if (blockingConnections.Length > 0)
+                if (!hasEarlierTrain)
                 {
-                    signal.TrainsAhead ??= [];
+                    signal.TrainsAhead = signalsIndex
+                                             .GetValueOrDefault(nextSignalName)?.Select(t => t.TrainNoLocal)
+                                             .ToArray() ??
+                                         (earlierSignalIndex.TryGetValue(nextSignalName, out var earlierTrains)
+                                             ? earlierTrains.Select(x => x.TrainNoLocal).ToArray()
+                                             : null);
 
-                    signal.TrainsAhead = signal.TrainsAhead
-                        .Concat(blockingConnections)
-                        .Distinct()
+                    var blockingConnections = signal.GetBlockingConnections()
+                        .Where(c =>
+                        {
+                            var nextTrains = signalsIndex.GetValueOrDefault(c.Next) ?? [];
+                            var hasTrainAtNext = nextTrains.Length > 0;
+
+                            var isSameTrainComingFromPrev =
+                                passedSignalIndex.TryGetValue(c.Prev, out var prevTrains) &&
+                                prevTrains.Length > 0 &&
+                                prevTrains.All(t => nextTrains.Contains(t));
+
+                            return hasTrainAtNext && isSameTrainComingFromPrev;
+                        })
+                        .SelectMany(c => signalsIndex.GetValueOrDefault(c.Next)?.Select(t => t.TrainNoLocal) ?? [])
                         .ToArray();
+
+                    if (blockingConnections.Length > 0)
+                    {
+                        signal.TrainsAhead ??= [];
+
+                        signal.TrainsAhead = signal.TrainsAhead
+                            .Concat(blockingConnections)
+                            .Distinct()
+                            .ToArray();
+                    }
                 }
 
                 // Check for a train two signals ahead

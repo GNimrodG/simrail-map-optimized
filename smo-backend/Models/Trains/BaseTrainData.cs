@@ -1,7 +1,7 @@
 ﻿// ReSharper disable InconsistentNaming
 
-using Newtonsoft.Json;
 using MessagePack;
+using Newtonsoft.Json;
 using SMOBackend.Utils;
 
 namespace SMOBackend.Models.Trains;
@@ -31,6 +31,6 @@ public class BaseTrainData
 
         var parts = SignalInFront.Split('@');
 
-        return parts[1];
+        return parts.Length > 1 ? parts[1] : null;
     }
 }

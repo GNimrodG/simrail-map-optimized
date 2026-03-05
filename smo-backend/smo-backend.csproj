@@ -11,6 +11,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="smo-backend.Tests"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="smo-backend.Tests\**"/>
+    <Content Remove="smo-backend.Tests\**"/>
+    <EmbeddedResource Remove="smo-backend.Tests\**"/>
+    <None Remove="smo-backend.Tests\**"/>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
     <PackageReference Include="Marvin.Cache.Headers" Version="7.2.0" />
     <PackageReference Include="MessagePack" Version="3.1.4" />

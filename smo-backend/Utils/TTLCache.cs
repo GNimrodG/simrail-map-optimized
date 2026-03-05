@@ -14,6 +14,7 @@ public class TtlCache<TKey, TValue> : IDisposable
     where TKey : notnull
 {
     private readonly MemoryCache _cache = new(new MemoryCacheOptions());
+    private readonly SemaphoreSlim _fileSaveLock = new(1, 1); // Ensure only one save operation at a time
     private readonly Timer? _gaugeUpdateTimer;
     private readonly Queue<TKey> _insertionOrder = new();
 
@@ -41,7 +42,16 @@ public class TtlCache<TKey, TValue> : IDisposable
     }
 
     /// <inheritdoc cref="Dictionary{TKey,TValue}.Keys"/>
-    public IEnumerable<TKey> Keys => _cache.Keys as IEnumerable<TKey> ?? [];
+    public IEnumerable<TKey> Keys
+    {
+        get
+        {
+            lock (_orderLock)
+            {
+                return _insertionOrder.Where(key => _cache.TryGetValue(key, out _)).ToList();
+            }
+        }
+    }
 
     /// <inheritdoc cref="Dictionary{TKey,TValue}.Count" />
     public int Count => _cache.Count;
@@ -80,13 +90,13 @@ public class TtlCache<TKey, TValue> : IDisposable
         _disposed = true;
         _gaugeUpdateTimer?.Stop();
         _gaugeUpdateTimer?.Dispose();
-        _cache.Dispose();
-        lock (_orderLock)
-        {
-            _insertionOrder.Clear();
-        }
 
-        KeyAdded = null;
+        // Clear cache contents before disposing
+        Clear();
+
+        _cache.Dispose();
+        _fileSaveLock.Dispose();
+
         CacheSizeGauge.RemoveLabelled(_instanceName);
         GC.SuppressFinalize(this);
     }
@@ -238,29 +248,64 @@ public class TtlCache<TKey, TValue> : IDisposable
     /// <param name="filePath">Path to the file to save to.</param>
     public async Task SaveToFileAsync(string filePath)
     {
+        // Ensure only one save operation at a time to prevent file conflicts
+        await _fileSaveLock.WaitAsync().NoContext();
+
         var tempFilePath = filePath + ".tmp";
 
-        await using var stream = new FileStream(
-            tempFilePath,
-            FileMode.Create,
-            FileAccess.Write,
-            FileShare.None,
-            bufferSize: 4096,
-            useAsync: true);
+        try
+        {
+            // Ensure the directory exists
+            var directory = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
 
-        var value = _cache.Keys.Where(key => _cache.Get(key) is TValue)
-            .ToDictionary(key => (TKey)key, key => _cache.Get(key));
+            await using var stream = new FileStream(
+                tempFilePath,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None,
+                4096,
+                true);
 
-        await MessagePackSerializer.SerializeAsync(stream, value,
-            ContractlessStandardResolver.Options).NoContext();
+            var value = _cache.Keys.Where(key => _cache.Get(key) is TValue)
+                .ToDictionary(key => (TKey)key, key => _cache.Get(key));
 
-        await stream.FlushAsync().NoContext();
+            await MessagePackSerializer.SerializeAsync(stream, value,
+                ContractlessStandardResolver.Options).NoContext();
 
-        stream.Close();
+            await stream.FlushAsync().NoContext();
 
-        // Rename the file to remove the .tmp extension
-        if (File.Exists(filePath)) File.Delete(filePath);
-        File.Move(tempFilePath, filePath);
+            stream.Close();
+
+            // Rename the file to remove the .tmp extension
+            if (File.Exists(filePath))
+                File.Delete(filePath);
+
+            // Verify temp file exists before attempting move
+            if (File.Exists(tempFilePath))
+                File.Move(tempFilePath, filePath, true);
+        }
+        catch (Exception)
+        {
+            // Clean up temp file if it exists and operation failed
+            if (!File.Exists(tempFilePath)) throw;
+
+            try
+            {
+                File.Delete(tempFilePath);
+            }
+            catch
+            {
+                // Ignore cleanup errors
+            }
+
+            throw;
+        }
+        finally
+        {
+            _fileSaveLock.Release();
+        }
     }
 
     /// <summary>

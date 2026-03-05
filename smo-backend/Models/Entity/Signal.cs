@@ -232,7 +232,10 @@ public partial class Signal : BaseEntity
             return prevRole != Role;
         }
 
-        var stationPrefix = MAIN_SIGNAL_REGEX().Match(Name).Groups[1].Value;
+        // Extract station prefix from signal name
+        // For "StationA_A" -> "StationA_", for "123_StationA_A" -> "123_StationA_"
+        var match = MAIN_SIGNAL_REGEX().Match(Name);
+        var stationPrefix = match.Groups[1].Value + match.Groups[2].Value + "_";
 
         // Process non-block signals
         var hasPrevConnections = PrevSignalConnections.Count > 0;

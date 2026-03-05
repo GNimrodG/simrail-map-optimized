@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Prometheus;
-using SMOBackend.Data;
 using SMOBackend.Models;
 
 namespace SMOBackend.Utils;
@@ -86,18 +85,27 @@ internal static class StdUtils
         var raw = Environment.GetEnvironmentVariable(name);
         if (string.IsNullOrWhiteSpace(raw)) return defaultValue;
 
-        if (TimeSpan.TryParse(raw, CultureInfo.InvariantCulture, out var ts))
-            return ts;
-
+        // Try parsing as integer seconds first (before TimeSpan.TryParse which treats integers as days)
         if (int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seconds) && seconds >= 0)
             return TimeSpan.FromSeconds(seconds);
 
+        // Try parsing as double seconds
         if (double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var dblSeconds) &&
             dblSeconds >= 0)
             return TimeSpan.FromSeconds(dblSeconds);
 
+        // Finally try parsing as TimeSpan format (e.g., "00:05:30") - but only if non-negative
+        if (TimeSpan.TryParse(raw, CultureInfo.InvariantCulture, out var ts) && ts >= TimeSpan.Zero)
+            return ts;
+
         return defaultValue;
     }
+
+    public static ConfiguredTaskAwaitable NoContext(this Task task) => task.ConfigureAwait(false);
+
+    public static ConfiguredTaskAwaitable<T> NoContext<T>(this Task<T> task) => task.ConfigureAwait(false);
+
+    public static ConfiguredValueTaskAwaitable<T> NoContext<T>(this ValueTask<T> task) => task.ConfigureAwait(false);
 
     public class TrainTypeCodeConverter : JsonConverter<SimplifiedTimetableEntry.TrainTypeCode>
     {
@@ -119,10 +127,4 @@ internal static class StdUtils
             throw new JsonSerializationException($"Unexpected token {reader.TokenType} when parsing TrainTypeCode.");
         }
     }
-
-    public static ConfiguredTaskAwaitable NoContext(this Task task) => task.ConfigureAwait(false);
-    
-    public static ConfiguredTaskAwaitable<T> NoContext<T>(this Task<T> task) => task.ConfigureAwait(false);
-    
-    public static ConfiguredValueTaskAwaitable<T> NoContext<T>(this ValueTask<T> task) => task.ConfigureAwait(false);
 }

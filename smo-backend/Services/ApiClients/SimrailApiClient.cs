@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
+using System.Net.Sockets;
 using Newtonsoft.Json;
 using SMOBackend.Models;
 using SMOBackend.Models.Entity;
@@ -48,6 +49,38 @@ public class SimrailApiTemporarilyUnavailableException : Exception
     /// <param name="message">The error message that explains the reason for the exception.</param>
     /// <param name="innerException">The exception that is the cause of the current exception.</param>
     public SimrailApiTemporarilyUnavailableException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+}
+
+/// <summary>
+///     Exception thrown when the SimRail API returns an error response
+/// </summary>
+public class SimrailApiErrorException : Exception
+{
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="SimrailApiErrorException" /> class.
+    /// </summary>
+    /// <param name="message">The error message from the API.</param>
+    /// <param name="statusCode">The HTTP status code returned by the API.</param>
+    public SimrailApiErrorException(string message, int statusCode)
+        : base(message)
+    {
+    }
+}
+
+/// <summary>
+///     Exception thrown when the SimRail API response cannot be parsed
+/// </summary>
+public class SimrailApiParseException : Exception
+{
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="SimrailApiParseException" /> class.
+    /// </summary>
+    /// <param name="message">The error message explaining the parsing issue.</param>
+    /// <param name="innerException">The exception that occurred during parsing.</param>
+    public SimrailApiParseException(string message, Exception? innerException = null)
         : base(message, innerException)
     {
     }
@@ -172,11 +205,22 @@ public class SimrailApiClient : IDisposable
                 SocketError.ConnectionRefused or
                 SocketError.TimedOut or
                 SocketError.NetworkUnreachable or
-                SocketError.HostUnreachable,
-            HttpRequestException httpEx => httpEx.Message.Contains("Connection refused") ||
-                                           httpEx.Message.Contains("timeout") ||
-                                           httpEx.Message.Contains("network"),
+                SocketError.HostUnreachable or
+                SocketError.ConnectionReset,
+
+            HttpRequestException httpEx =>
+                httpEx.StatusCode is HttpStatusCode.TooManyRequests or
+                    HttpStatusCode.ServiceUnavailable or
+                    HttpStatusCode.GatewayTimeout or
+                    HttpStatusCode.RequestTimeout or
+                    HttpStatusCode.BadGateway ||
+                httpEx.Message.Contains("Connection refused", StringComparison.OrdinalIgnoreCase) ||
+                httpEx.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase) ||
+                httpEx.Message.Contains("network", StringComparison.OrdinalIgnoreCase) ||
+                httpEx.Message.Contains("SSL", StringComparison.OrdinalIgnoreCase),
+
             TaskCanceledException => true, // Timeout
+            IOException => true, // Network I/O errors
             _ => false
         };
     }
@@ -202,27 +246,57 @@ public class SimrailApiClient : IDisposable
     /// <param name="response">The HTTP response message to process.</param>
     /// <param name="stoppingToken">The cancellation token to observe.</param>
     /// <returns>An ApiResponseWithAge containing the data array and cache timing information.</returns>
+    /// <exception cref="SimrailApiErrorException">Thrown when the API returns an error status code.</exception>
+    /// <exception cref="SimrailApiParseException">Thrown when the response cannot be parsed.</exception>
     private static async Task<ApiResponseWithAge<T[]>> HandleResponseWithAge<T>(HttpResponseMessage response,
         CancellationToken stoppingToken)
         where T : class
     {
-        response.EnsureSuccessStatusCode();
+        // Check for HTTP errors
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(stoppingToken);
+            throw new SimrailApiErrorException(
+                $"API request failed with status code {(int)response.StatusCode} ({response.StatusCode}): {errorContent}",
+                (int)response.StatusCode);
+        }
 
-        await using var stream = await response.Content.ReadAsStreamAsync(stoppingToken);
-        using var reader = new StreamReader(stream);
-        await using var jsonReader = new JsonTextReader(reader);
+        BaseListResponse<T>? result;
 
-        var serializer = new JsonSerializer();
-        var result = serializer.Deserialize<BaseListResponse<T>>(jsonReader);
+        try
+        {
+            await using var stream = await response.Content.ReadAsStreamAsync(stoppingToken);
+            using var reader = new StreamReader(stream);
+            await using var jsonReader = new JsonTextReader(reader);
+
+            var serializer = new JsonSerializer();
+            result = serializer.Deserialize<BaseListResponse<T>>(jsonReader);
+        }
+        catch (JsonException ex)
+        {
+            throw new SimrailApiParseException("Failed to parse API response as JSON", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new SimrailApiParseException($"Unexpected error while parsing API response: {ex.Message}", ex);
+        }
 
         if (result == null)
         {
-            throw new("Response is null");
+            throw new SimrailApiParseException("Response deserialized to null");
+        }
+
+        if (result.Data == null)
+        {
+            throw new SimrailApiParseException("Response data is null");
         }
 
         if (!result.Result)
         {
-            throw new(result.Description);
+            var errorMessage = string.IsNullOrWhiteSpace(result.Description)
+                ? "API returned an error response without description"
+                : result.Description;
+            throw new SimrailApiErrorException(errorMessage, 200); // 200 but Result=false
         }
 
         var responseWithAge =
@@ -231,10 +305,11 @@ public class SimrailApiClient : IDisposable
         if (response.Headers.Date == null || response.Headers.Age == null || result.Data.Length <= 0 ||
             result.Data[0] is not IEntityWithTimestamp) return responseWithAge;
 
+        // Set timestamps on entities that support it
+        var timestamp = response.Headers.Date!.Value.UtcDateTime - response.Headers.Age!.Value;
         foreach (var item in result.Data)
         {
-            ((IEntityWithTimestamp)item).Timestamp =
-                response.Headers.Date!.Value.UtcDateTime - response.Headers.Age!.Value;
+            if (item is IEntityWithTimestamp entity) entity.Timestamp = timestamp;
         }
 
         return responseWithAge;
@@ -304,19 +379,32 @@ public class SimrailApiClient : IDisposable
     /// </summary>
     /// <param name="serverCode">The server code to query for time information.</param>
     /// <param name="stoppingToken">The cancellation token to observe.</param>
-    /// <returns>A tuple containing the server time in unix epoch format and the response date, or null if parsing failed.</returns>
-    public async Task<(long time, DateTime date)?> GetTimeAsync(string serverCode, CancellationToken stoppingToken)
+    /// <returns>A tuple containing the server time in unix epoch format and the response date.</returns>
+    /// <exception cref="SimrailApiErrorException">Thrown when the API returns an error status code.</exception>
+    /// <exception cref="SimrailApiParseException">Thrown when the response cannot be parsed as a long or the Date header is missing.</exception>
+    public async Task<(long time, DateTime date)> GetTimeAsync(string serverCode, CancellationToken stoppingToken)
     {
         using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(TimeUrlPrefix + serverCode, ct),
             $"GetTime({serverCode})",
             stoppingToken);
 
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync(stoppingToken);
-        if (long.TryParse(content, out var time)) return (time, response.Headers.Date!.Value.DateTime);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(stoppingToken);
+            throw new SimrailApiErrorException(
+                $"GetTime failed with status code {(int)response.StatusCode} ({response.StatusCode}): {errorContent}",
+                (int)response.StatusCode);
+        }
 
-        throw new(content);
+        var content = await response.Content.ReadAsStringAsync(stoppingToken);
+
+        if (!long.TryParse(content, out var time))
+            throw new SimrailApiParseException($"Failed to parse time response as long: '{content}'");
+
+        return !response.Headers.Date.HasValue
+            ? throw new SimrailApiParseException("Response Date header is missing")
+            : (time, response.Headers.Date.Value.DateTime);
     }
 
     /// <summary>
@@ -324,17 +412,29 @@ public class SimrailApiClient : IDisposable
     /// </summary>
     /// <param name="serverCode">The server code to query for timezone information.</param>
     /// <param name="stoppingToken">The cancellation token to observe.</param>
-    /// <returns>The timezone offset in hours, or null if parsing failed.</returns>
-    public async Task<int?> GetTimezoneAsync(string serverCode, CancellationToken stoppingToken)
+    /// <returns>The timezone offset in hours.</returns>
+    /// <exception cref="SimrailApiErrorException">Thrown when the API returns an error status code.</exception>
+    /// <exception cref="SimrailApiParseException">Thrown when the response cannot be parsed as an integer.</exception>
+    public async Task<int> GetTimezoneAsync(string serverCode, CancellationToken stoppingToken)
     {
         using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(TimezoneUrlPrefix + serverCode, ct),
             $"GetTimezone({serverCode})",
             stoppingToken);
 
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(stoppingToken);
+            throw new SimrailApiErrorException(
+                $"GetTimezone failed with status code {(int)response.StatusCode} ({response.StatusCode}): {errorContent}",
+                (int)response.StatusCode);
+        }
+
         var content = await response.Content.ReadAsStringAsync(stoppingToken);
-        return int.TryParse(content, out var timezone) ? timezone : null;
+
+        return !int.TryParse(content, out var timezone)
+            ? throw new SimrailApiParseException($"Failed to parse timezone response as integer: '{content}'")
+            : timezone;
     }
 
     /// <summary>
@@ -343,6 +443,8 @@ public class SimrailApiClient : IDisposable
     /// <param name="serverCode">The server code to query for timetable information.</param>
     /// <param name="stoppingToken">The cancellation token to observe.</param>
     /// <returns>An array of timetable information for the specified server.</returns>
+    /// <exception cref="SimrailApiErrorException">Thrown when the API returns an error status code.</exception>
+    /// <exception cref="SimrailApiParseException">Thrown when the response cannot be parsed.</exception>
     public async Task<Timetable[]> GetAllTimetablesAsync(string serverCode, CancellationToken stoppingToken)
     {
         using var response = await ExecuteWithRetryAsync(
@@ -350,21 +452,38 @@ public class SimrailApiClient : IDisposable
             $"GetAllTimetables({serverCode})",
             stoppingToken);
 
-        response.EnsureSuccessStatusCode();
-
-        await using var stream = await response.Content.ReadAsStreamAsync(stoppingToken);
-        using var reader = new StreamReader(stream);
-        await using var jsonReader = new JsonTextReader(reader);
-
-        var serializer = new JsonSerializer();
-        var result = serializer.Deserialize<Timetable[]>(jsonReader);
-
-        if (result == null)
+        if (!response.IsSuccessStatusCode)
         {
-            throw new("Response is null");
+            var errorContent = await response.Content.ReadAsStringAsync(stoppingToken);
+            throw new SimrailApiErrorException(
+                $"GetAllTimetables failed with status code {(int)response.StatusCode} ({response.StatusCode}): {errorContent}",
+                (int)response.StatusCode);
         }
 
-        return result;
+        try
+        {
+            await using var stream = await response.Content.ReadAsStreamAsync(stoppingToken);
+            using var reader = new StreamReader(stream);
+            await using var jsonReader = new JsonTextReader(reader);
+
+            var serializer = new JsonSerializer();
+            var result = serializer.Deserialize<Timetable[]>(jsonReader);
+
+            return result ?? throw new SimrailApiParseException("GetAllTimetables response deserialized to null");
+        }
+        catch (JsonException ex)
+        {
+            throw new SimrailApiParseException("Failed to parse GetAllTimetables response as JSON", ex);
+        }
+        catch (SimrailApiParseException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new SimrailApiParseException(
+                $"Unexpected error while parsing GetAllTimetables response: {ex.Message}", ex);
+        }
     }
 
     /// <summary>
@@ -373,6 +492,8 @@ public class SimrailApiClient : IDisposable
     /// <param name="serverCode">The server code to query for EDR timetable information.</param>
     /// <param name="stoppingToken">The cancellation token to observe.</param>
     /// <returns>An array of EDR timetable entries for the specified server.</returns>
+    /// <exception cref="SimrailApiErrorException">Thrown when the API returns an error status code.</exception>
+    /// <exception cref="SimrailApiParseException">Thrown when the response cannot be parsed.</exception>
     public async Task<EdrTimetableTrainEntry[]> GetEdrTimetablesAsync(string serverCode,
         CancellationToken stoppingToken)
     {
@@ -381,20 +502,40 @@ public class SimrailApiClient : IDisposable
             $"GetEdrTimetables({serverCode})",
             stoppingToken);
 
-        response.EnsureSuccessStatusCode();
-        await using var stream = await response.Content.ReadAsStreamAsync(stoppingToken);
-        using var reader = new StreamReader(stream);
-        await using var jsonReader = new JsonTextReader(reader);
-
-        var serializer = new JsonSerializer();
-        var result = serializer.Deserialize<EdrTimetableTrainEntry[]>(jsonReader);
-
-        if (result == null)
+        if (!response.IsSuccessStatusCode)
         {
-            throw new("Response is null");
+            var errorContent = await response.Content.ReadAsStringAsync(stoppingToken);
+            throw new SimrailApiErrorException(
+                $"GetEdrTimetables failed with status code {(int)response.StatusCode} ({response.StatusCode}): {errorContent}",
+                (int)response.StatusCode);
         }
 
-        return result;
+        try
+        {
+            await using var stream = await response.Content.ReadAsStreamAsync(stoppingToken);
+            using var reader = new StreamReader(stream);
+            await using var jsonReader = new JsonTextReader(reader);
+
+            var serializer = new JsonSerializer();
+            var result = serializer.Deserialize<EdrTimetableTrainEntry[]>(jsonReader);
+
+            if (result == null) throw new SimrailApiParseException("GetEdrTimetables response deserialized to null");
+
+            return result;
+        }
+        catch (JsonException ex)
+        {
+            throw new SimrailApiParseException("Failed to parse GetEdrTimetables response as JSON", ex);
+        }
+        catch (SimrailApiParseException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new SimrailApiParseException(
+                $"Unexpected error while parsing GetEdrTimetables response: {ex.Message}", ex);
+        }
     }
 
     /// <summary>
