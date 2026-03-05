@@ -5760,9 +5760,9 @@ react-error-boundary@^6.0.0:
   integrity sha512-BrYwPOdXi5mqkk5lw+Uvt0ThHx32rCt3BkukS4X23A2AIWDPSGX6iaWTc0y9TU/mHDA/6qOSGel+B2ERkOvD1w==
 
 react-i18next@^16.2.3:
-  version "16.5.4"
-  resolved "https://registry.yarnpkg.com/react-i18next/-/react-i18next-16.5.4.tgz#4f458b1baab274dca439ab67629c854203bf97c6"
-  integrity sha512-6yj+dcfMncEC21QPhOTsW8mOSO+pzFmT6uvU7XXdvM/Cp38zJkmTeMeKmTrmCMD5ToT79FmiE/mRWiYWcJYW4g==
+  version "16.5.5"
+  resolved "https://registry.yarnpkg.com/react-i18next/-/react-i18next-16.5.5.tgz#902396cf2f6d7969496ae4f20a3cea8a3e20491e"
+  integrity sha512-5Z35e2JMALNR16FK/LDNQoAatQTVuO/4m4uHrIzewOPXIyf75gAHzuNLSWwmj5lRDJxDvXRJDECThkxWSAReng==
   dependencies:
     "@babel/runtime" "^7.28.4"
     html-parse-stringify "^3.0.1"
