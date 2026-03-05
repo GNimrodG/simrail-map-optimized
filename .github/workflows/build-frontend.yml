@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v6
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           # Dynamic image name: if DOCKER_REGISTRY_URL is set use <registry>/smo-frontend, otherwise just 'smo-frontend'
           images: ${{ vars.DOCKER_REGISTRY_URL && format('{0}/smo-frontend', vars.DOCKER_REGISTRY_URL) || 'smo-frontend' }}
