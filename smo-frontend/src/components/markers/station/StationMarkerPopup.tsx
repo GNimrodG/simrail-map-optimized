@@ -19,7 +19,7 @@ import {
   lazy,
   Suspense,
   useCallback,
-  useEffect,
+  useContext,
   useMemo,
   useState,
   useTransition,
@@ -32,11 +32,11 @@ import _wikiLinks from "../../../assets/wiki-links.json";
 import useStationTimetableEntries from "../../../hooks/useStationTimetableEntries";
 import { dataProvider } from "../../../utils/data-manager";
 import { getSignalsForStation, getStationGeometry, goToSignal } from "../../../utils/geom-utils";
+import SelectedStationTimetableContext from "../../../utils/selected-station-timetable-context";
 import { OsmNode, Station, UserProfileResponse } from "../../../utils/types";
 import InfoIcon from "../../icons/InfoIcon";
 import Loading from "../../Loading";
 import SteamProfileDisplay from "../../profile/SteamProfileDisplay";
-import StationTimetableModal from "../../timetable/StationTimetableModal";
 import SignalSpeedDisplay from "../../utils/SignalSpeedDisplay";
 import RemoteControlStationDisplay from "./RemoteControlStationDisplay";
 import XboxProfileDisplay from "../../profile/XboxProfileDisplay";
@@ -59,7 +59,6 @@ export interface StationMarkerPopupProps {
   station: Station;
   userData: UserProfileResponse | null;
   onClosePopup: () => void;
-  onShouldKeepMounted?: (shouldKeepMounted: boolean) => void;
   stationOsmData: OsmNode | null;
 }
 
@@ -69,7 +68,6 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
   station,
   userData,
   onClosePopup,
-  onShouldKeepMounted,
   stationOsmData,
 }) => {
   const { t, i18n } = useTranslation("translation", { keyPrefix: "StationMarkerPopup" });
@@ -85,11 +83,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
     defaultValue: true,
   });
 
-  const [timetableModalOpen, setTimetableModalOpen] = useState(false);
-
-  useEffect(() => {
-    onShouldKeepMounted?.(timetableModalOpen);
-  }, [onShouldKeepMounted, timetableModalOpen]);
+  const { setSelectedStationTimetable } = useContext(SelectedStationTimetableContext);
 
   const { stationTimetable, loading: timetableLoading } = useStationTimetableEntries(station.Name);
 
@@ -283,7 +277,7 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
           disabled={!stationTimetable?.length}
           variant="solid"
           color="neutral"
-          onClick={() => startTransition(() => setTimetableModalOpen(true))}>
+          onClick={() => startTransition(() => setSelectedStationTimetable(station.Name))}>
           {t(stationTimetable && !stationTimetable.length ? "Timetable.Unavailabe" : "Timetable.Button")}
         </Button>
 
@@ -389,13 +383,6 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
           </Typography>
         </Sheet>
       </Modal>
-      {/* Timetable Modal */}
-      <StationTimetableModal
-        open={timetableModalOpen}
-        onClose={() => startTransition(() => setTimetableModalOpen(false))}
-        stationName={station.Name}
-        stationTimetable={stationTimetable}
-      />
     </>
   );
 };

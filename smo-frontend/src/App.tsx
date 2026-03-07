@@ -8,6 +8,7 @@ import { lazy, Suspense, useMemo, useState } from "react";
 import CookieConsent from "./components/CookieConsent";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Loading from "./components/Loading";
+import SelectedStationTimetableProvider from "./components/SelectedStationTimetableProvider";
 import SelectedTrainProvider from "./components/SelectedTrainProvider";
 import MapLinesContext, { MapLineData } from "./utils/map-lines-context";
 import SelectedRouteContext from "./utils/selected-route-context";
@@ -30,14 +31,16 @@ function App() {
       <CssBaseline />
       <SelectedRouteContext.Provider value={selectedRouteContextValue}>
         <SelectedTrainProvider>
-          <MapLinesContext.Provider value={mapLinesContextValue}>
-            <Suspense fallback={<Loading color="success" />}>
-              <ErrorBoundary location="App">
-                <CookieConsent />
-                <MainMap />
-              </ErrorBoundary>
-            </Suspense>
-          </MapLinesContext.Provider>
+          <SelectedStationTimetableProvider>
+            <MapLinesContext.Provider value={mapLinesContextValue}>
+              <Suspense fallback={<Loading color="success" />}>
+                <ErrorBoundary location="App">
+                  <CookieConsent />
+                  <MainMap />
+                </ErrorBoundary>
+              </Suspense>
+            </MapLinesContext.Provider>
+          </SelectedStationTimetableProvider>
         </SelectedTrainProvider>
       </SelectedRouteContext.Provider>
     </CssVarsProvider>

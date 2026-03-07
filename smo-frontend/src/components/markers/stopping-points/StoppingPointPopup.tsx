@@ -1,13 +1,13 @@
 ﻿import Button from "@mui/joy/Button";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
-import { type FunctionComponent, useState, useTransition } from "react";
+import { type FunctionComponent, useContext, useTransition } from "react";
 import { useTranslation } from "react-i18next";
 
 import useStationTimetableEntries from "../../../hooks/useStationTimetableEntries";
+import SelectedStationTimetableContext from "../../../utils/selected-station-timetable-context";
 import { OsmNode } from "../../../utils/types";
 import Loading from "../../Loading";
-import StationTimetableModal from "../../timetable/StationTimetableModal";
 
 export interface StoppingPointPopupProps {
   stop: OsmNode;
@@ -16,7 +16,7 @@ export interface StoppingPointPopupProps {
 const StoppingPointPopup: FunctionComponent<StoppingPointPopupProps> = ({ stop }) => {
   const { t, i18n } = useTranslation();
   const [isPending, startTransition] = useTransition();
-  const [timetableModalOpen, setTimetableModalOpen] = useState(false);
+  const { setSelectedStationTimetable } = useContext(SelectedStationTimetableContext);
 
   const { stationTimetable, loading: timetableLoading } = useStationTimetableEntries(stop.tags.name);
 
@@ -41,7 +41,7 @@ const StoppingPointPopup: FunctionComponent<StoppingPointPopupProps> = ({ stop }
           disabled={!stationTimetable?.length}
           variant="solid"
           color="neutral"
-          onClick={() => startTransition(() => setTimetableModalOpen(true))}>
+          onClick={() => startTransition(() => setSelectedStationTimetable(stop.tags.name))}>
           {t(
             stationTimetable && !stationTimetable.length
               ? "StationMarkerPopup.Timetable.Unavailabe"
@@ -49,13 +49,6 @@ const StoppingPointPopup: FunctionComponent<StoppingPointPopupProps> = ({ stop }
           )}
         </Button>
       </Stack>
-
-      <StationTimetableModal
-        open={timetableModalOpen}
-        onClose={() => setTimetableModalOpen(false)}
-        stationName={stop.tags.name}
-        stationTimetable={stationTimetable}
-      />
     </>
   );
 };

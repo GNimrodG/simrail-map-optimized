@@ -30,6 +30,7 @@ import SelectedTrainInfo from "./SelectedTrainInfo";
 import ServerSelector from "./ServerSelector";
 import SettingsModal from "./settings/SettingsModal";
 import StatsDisplay from "./StatsDisplay";
+import SelectedStationTimetableModal from "./timetable/SelectedStationTimetableModal";
 import ServerTrainListModal from "./trains/ServerTrainListModal";
 import RefreshableTileLayer from "./utils/RefreshableTileLayer";
 import ThemeToggle from "./utils/ThemeToggle";
@@ -99,7 +100,7 @@ const MainMap: FunctionComponent = () => {
         '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
         `<a href="https://github.com/GNimrodG/simrail-map-optimized" target="_blank">GitHub</a> (v${VERSION})`,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).feedback && `<a onclick="window.feedback()" href="#">${t("BugReport")}</a>`,
+        (globalThis as any).feedback && `<a onclick="globalThis.feedback()" href="#">${t("BugReport")}</a>`,
         `<a href="/privacy-policy.html" target="_blank">${t("PrivacyPolicy.Title")}</a>`,
         'This website is not affiliated with the <a href="https://simrail.eu" target="_blank">SimRail</a> team.',
       ]
@@ -188,6 +189,10 @@ const MainMap: FunctionComponent = () => {
             <SelectedTrainInfo />
           </ErrorBoundary>
         </Control>
+
+        <ErrorBoundary location="MainMap - SelectedStationTimetableModal">
+          <SelectedStationTimetableModal />
+        </ErrorBoundary>
 
         {/* Layers */}
         {/* ThemeToggle */}

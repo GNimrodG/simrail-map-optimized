@@ -21,6 +21,7 @@ export interface StationTimetableModalProps {
   onClose: () => void;
   stationName: string;
   stationTimetable?: SimplifiedTimtableEntry[] | null;
+  startCollapsed?: boolean;
 }
 
 const StationTimetableModal: FunctionComponent<StationTimetableModalProps> = ({
@@ -28,12 +29,14 @@ const StationTimetableModal: FunctionComponent<StationTimetableModalProps> = ({
   onClose,
   stationName,
   stationTimetable,
+  startCollapsed = false,
 }) => {
   const { t } = useTranslation("translation", { keyPrefix: "StationMarkerPopup" });
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [collapsedHeight, setCollapsedHeight] = useState(350);
   const isDraggingRef = useRef(false);
   const modalRef = useRef<HTMLDivElement>(null);
+  const wasOpenRef = useRef(false);
 
   const [search, setSearch] = useState("");
 
@@ -67,6 +70,14 @@ const StationTimetableModal: FunctionComponent<StationTimetableModalProps> = ({
       document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [handleMouseMove, handleMouseUp]);
+
+  useEffect(() => {
+    if (open && !wasOpenRef.current) {
+      setIsCollapsed(startCollapsed);
+    }
+
+    wasOpenRef.current = open;
+  }, [open, startCollapsed]);
 
   const filteredTimetable = useMemo(() => {
     if (!stationTimetable || !debouncedSearch) return stationTimetable;
