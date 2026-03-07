@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
 export function usePrevious<T>(value: T, ignoreFalsy = false): [value: T | undefined, time: number] {
-  const ref = useRef<T>();
+  const ref = useRef<T | undefined>(undefined);
   const refTime = useRef<number>(0);
 
   useEffect(() => {

@@ -349,7 +349,7 @@ const StationTimetableTableView: FunctionComponent<StationTimetableTableViewProp
               </td>
               {/* Line */}
               <td>
-                <Typography fontFamily="monospace" level="body-sm" sx={{ color: "inherit" }}>
+                <Typography component="div" fontFamily="monospace" level="body-sm" sx={{ color: "inherit" }}>
                   <Stack>
                     {filteredLines.map((line, index, arr) => (
                       <Fragment key={`${entry.trainNoLocal}-line${line}-${index}`}>

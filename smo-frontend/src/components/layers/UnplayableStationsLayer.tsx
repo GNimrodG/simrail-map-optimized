@@ -21,7 +21,7 @@ const UnplayableStationsLayer: FunctionComponent = () => {
   );
 
   // Store the handler in a ref to prevent recreating it on every render
-  const handlerRef = useRef<DebouncedFunc<LeafletEventHandlerFn>>();
+  const handlerRef = useRef<DebouncedFunc<LeafletEventHandlerFn>>(null);
 
   useEffect(() => {
     if (!map) return; // Early return if map is not available

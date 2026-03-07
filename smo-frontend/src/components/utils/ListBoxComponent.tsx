@@ -70,7 +70,7 @@ const ListboxComponent = forwardRef<
   });
 
   const itemCount = itemData.length;
-  const itemSize = 44;
+  const itemSize = 46;
 
   return (
     <Popper ref={ref} anchorEl={anchorEl} open={open} modifiers={modifiers} style={{ zIndex: 1000 }}>
@@ -82,7 +82,7 @@ const ListboxComponent = forwardRef<
           outerElementType={OuterElementType}
           innerElementType="ul"
           itemSize={itemSize}
-          overscanCount={5}
+          overscanCount={10}
           itemCount={itemCount}>
           {renderRow}
         </FixedSizeList>

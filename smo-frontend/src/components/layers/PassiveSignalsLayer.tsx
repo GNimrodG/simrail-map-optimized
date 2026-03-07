@@ -2,7 +2,7 @@ import type { LeafletEventHandlerFn } from "leaflet";
 import type { DebouncedFunc } from "lodash";
 import debounce from "lodash/debounce";
 import isEqual from "lodash/isEqual";
-import { type FunctionComponent, useCallback, useEffect, useRef, useState } from "react";
+import { type FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LayerGroup, useMap } from "react-leaflet";
 import { BehaviorSubject, distinctUntilChanged, map } from "rxjs";
 
@@ -10,7 +10,7 @@ import useBehaviorSubj from "../../hooks/useBehaviorSubj";
 import { useSetting } from "../../hooks/useSetting";
 import { dataProvider } from "../../utils/data-manager";
 import { getVisibleSignals, goToSignal } from "../../utils/geom-utils";
-import { SignalStatus } from "../../utils/types";
+import { SignalStatus, Train } from "../../utils/types";
 import SignalMarker from "../markers/signal/SignalMarker";
 
 const MIN_ZOOM = 11;
@@ -34,9 +34,31 @@ const PassiveSignalsLayer: FunctionComponent = () => {
   const [visibleSignals, setVisibleSignals] = useState<SignalStatus[]>([]);
 
   const passiveSignals = useBehaviorSubj(passiveSignals$);
+  const trains = useBehaviorSubj(dataProvider.trainsData$);
+
+  const trainLookup = useMemo(() => {
+    const lookup = new Map<string, Train>();
+    for (const train of trains) {
+      lookup.set(train.TrainNoLocal, train);
+    }
+    return lookup;
+  }, [trains]);
+
+  const signalTrainsByName = useMemo(() => {
+    const byName = new Map<string, Train[] | null>();
+
+    for (const signal of visibleSignals) {
+      const signalTrains = signal.Trains?.map((trainNo) => trainLookup.get(trainNo)).filter(
+        (train): train is Train => !!train,
+      );
+      byName.set(signal.Name, signalTrains || null);
+    }
+
+    return byName;
+  }, [trainLookup, visibleSignals]);
 
   // Store the handler in a ref to prevent recreating it on every render
-  const handlerRef = useRef<DebouncedFunc<LeafletEventHandlerFn>>();
+  const handlerRef = useRef<DebouncedFunc<LeafletEventHandlerFn>>(null);
 
   // Combined effect for initial and map change updates
   useEffect(() => {
@@ -86,6 +108,7 @@ const PassiveSignalsLayer: FunctionComponent = () => {
           key={"signal_" + signal.Name}
           opacity={layerOpacities["passive-signals"]}
           signal={signal}
+          trains={signalTrainsByName.get(signal.Name) || null}
           onSignalSelect={handleSignalSelect}
           pane="passiveSignalsPane"
         />

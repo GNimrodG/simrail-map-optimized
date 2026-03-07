@@ -241,7 +241,7 @@ const StationTimetableCardsView: FunctionComponent<StationTimetableCardsViewProp
 
         if (entry.arrivalTime || entry.departureTime) {
           scheduleDetails.push(
-            <Typography level="body-sm" sx={{ color: "inherit" }} key="times" fontFamily="monospace">
+            <Typography component="div" level="body-sm" sx={{ color: "inherit" }} key="times" fontFamily="monospace">
               {entry.arrivalTime && <TimeDisplay time={entry.arrivalTime} />}
               {entry.departureTime && entry.departureTime !== entry.arrivalTime && (
                 <>
@@ -269,7 +269,7 @@ const StationTimetableCardsView: FunctionComponent<StationTimetableCardsViewProp
 
         if (entry.stopType) {
           scheduleDetails.push(
-            <Typography key="stop-type" fontFamily="monospace" level="body-sm">
+            <Typography component="div" key="stop-type" fontFamily="monospace" level="body-sm">
               <StopTypeDisplay stopType={entry.stopType as "NoStopOver" | "CommercialStop" | "NoncommercialStop"} />
             </Typography>,
           );
