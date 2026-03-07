@@ -26,7 +26,7 @@ builder.Services.AddCors(options =>
                 .AllowCredentials()
                 .WithOrigins(
                     "http://localhost:5173",
-                    "http://locahost:4173",
+                    "http://localhost:4173",
                     StdUtils.GetEnvVar("FRONTEND_URL", "https://smo.data-unknown.com")
                 )
                 .SetPreflightMaxAge(TimeSpan.FromHours(2))

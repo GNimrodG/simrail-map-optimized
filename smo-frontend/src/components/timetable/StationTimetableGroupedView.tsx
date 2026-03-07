@@ -257,7 +257,7 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
                         color={train ? getColorTrainMarker(train.TrainData.Velocity) : "neutral"}>
                         {entry.trainNoLocal}
                       </Typography>
-                      <Typography fontFamily="monospace" level="body-sm" sx={{ color: "inherit" }}>
+                      <Typography component="div" fontFamily="monospace" level="body-sm" sx={{ color: "inherit" }}>
                         <TrainTypeDisplay type={entry.trainType} hideTooltip />
                       </Typography>
                       {entry.arrivalTime || entry.departureTime ? (
@@ -284,7 +284,7 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
                         </Typography>
                       )}
                       {entry.stopType && (
-                        <Typography fontFamily="monospace" level="body-sm" sx={{ color: "inherit" }}>
+                        <Typography component="div" fontFamily="monospace" level="body-sm" sx={{ color: "inherit" }}>
                           <StopTypeDisplay
                             stopType={entry.stopType as "NoStopOver" | "CommercialStop" | "NoncommercialStop"}
                           />

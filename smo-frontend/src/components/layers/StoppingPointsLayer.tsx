@@ -70,9 +70,9 @@ const StoppingPointsLayer: FunctionComponent = () => {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Store the handler in a ref to prevent recreating it on every render
-  const handlerRef = useRef<DebouncedFunc<LeafletEventHandlerFn>>();
-  const fetchHandlerRef = useRef<DebouncedFunc<() => Promise<void>>>();
-  const zoomHandlerRef = useRef<() => void>();
+  const handlerRef = useRef<DebouncedFunc<LeafletEventHandlerFn>>(null);
+  const fetchHandlerRef = useRef<DebouncedFunc<() => Promise<void>>>(null);
+  const zoomHandlerRef = useRef<() => void>(null);
 
   // Function to fetch railway halts for current bounds
   const fetchHaltsForCurrentBounds = useCallback(async () => {

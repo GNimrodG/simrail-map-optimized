@@ -1,7 +1,7 @@
 import Box from "@mui/joy/Box";
 import { styled, useTheme } from "@mui/joy/styles";
 import Typography from "@mui/joy/Typography";
-import { CSSProperties, type FunctionComponent, useMemo } from "react";
+import { CSSProperties, type FunctionComponent, type ReactElement, useMemo } from "react";
 
 export interface StationLayoutGraphicProps {
   cell: string;
@@ -58,8 +58,8 @@ const StationLayoutGraphic: FunctionComponent<StationLayoutGraphicProps> = ({ ce
   const theme = useTheme();
 
   const [shapes, texts] = useMemo(() => {
-    const shapes: JSX.Element[] = [];
-    const texts: JSX.Element[] = [];
+    const shapes: ReactElement[] = [];
+    const texts: ReactElement[] = [];
     for (const cellPart of cell.split(",")) {
       const [shape, ...rest] = cellPart.split(":");
       let color = rest?.[0] || theme.palette.neutral[600];
