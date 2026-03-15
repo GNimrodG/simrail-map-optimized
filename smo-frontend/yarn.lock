@@ -1354,9 +1354,9 @@
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
 "@mantine/hooks@^8.0.0":
-  version "8.3.16"
-  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-8.3.16.tgz#39d7558cad8d69191881c34ea9a7f86345666e6f"
-  integrity sha512-DthR8/KDCLIip3KoXyn370HEiKxiOwH+ZeXs1UoSv/e58xR88OE85Slyb5b5pRsDa4ndYnES+j9wyRyrRXLWfg==
+  version "8.3.17"
+  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-8.3.17.tgz#b753d0de00e901ba6a90afd28aab0ce07404ee68"
+  integrity sha512-MqVw4ad0qrcY7IgVk8+GJh7qCRIwLXTfEtGeXwmaZagMDn2YB8EUtrnuZO2be5bi3yketWtOPYvl3adh05hZRg==
 
 "@microsoft/signalr-protocol-msgpack@^10.0.0":
   version "10.0.0"
