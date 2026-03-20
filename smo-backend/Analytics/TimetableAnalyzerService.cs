@@ -11,7 +11,8 @@ namespace SMOBackend.Analytics;
 public class TimetableAnalyzerService(
     ILogger<TimetableAnalyzerService> logger,
     IServiceScopeFactory scopeFactory,
-    TimetableDataService timetableDataService) : IHostedService
+    TimetableDataService timetableDataService,
+    TrainDataService trainDataService) : IHostedService
 {
     private static readonly string DataDirectory = Path.Combine(AppContext.BaseDirectory, "data", "timetables");
     private static readonly string StationTimetableDataFile = Path.Combine(DataDirectory, "station-timetable-data.bin");
@@ -106,7 +107,12 @@ public class TimetableAnalyzerService(
             stopwatch.Start();
 
             var timetableEntriesPerStation = timetableData.Data
-                .SelectMany(x => x.TimetableEntries.Select((_, i) => new SimplifiedTimetableEntry(x, i)))
+                .SelectMany(timetable =>
+                {
+                    var lastConsist = trainDataService.GetLastConsist(timetableData.ServerCode, timetable.TrainNoLocal);
+                    return timetable.TimetableEntries.Select((_, i) =>
+                        new SimplifiedTimetableEntry(timetable, i, lastConsist));
+                })
                 .GroupBy(x => x.StationName)
                 .ToDictionary(g => g.Key, g => g.ToArray());
 

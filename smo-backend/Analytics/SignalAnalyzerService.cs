@@ -49,16 +49,19 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     private readonly QueueProcessor<Dictionary<string, Train[]>> _queueProcessor;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    private readonly int _trainCacheMaxEntries = StdUtils.GetEnvVar("TRAIN_CACHE_MAX_ENTRIES", -1);
+    private readonly TtlCache<string, string> _signalRedAfterPassCache;
+
     private readonly TrainDataService _trainDataService;
 
+    /// <summary>
+    ///     Cache mapping trainId -> last signal name that the train was at
+    /// </summary>
     private readonly TtlCache<string, string> _trainLastSignalCache;
 
-    private readonly int _trainPassedCacheMaxEntries = StdUtils.GetEnvVar("TRAIN_PASSED_CACHE_MAX_ENTRIES", -1);
-
+    /// <summary>
+    ///     Cache mapping trainId -> last signal name that the train passed
+    /// </summary>
     private readonly TtlCache<string, string> _trainPassedSignalCache;
-
-    private readonly int _trainPrevCacheMaxEntries = StdUtils.GetEnvVar("TRAIN_PREV_CACHE_MAX_ENTRIES", -1);
 
     private readonly TtlCache<string, TrainPrevSignalData> _trainPrevSignalCache;
 
@@ -88,9 +91,15 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         _queueProcessor =
             new(logger, ProcessTrainData, SignalAnalyzerQueueGauge);
 
-        _trainLastSignalCache = new(TimeSpan.FromSeconds(30), "TrainLastSignalCache", _trainCacheMaxEntries);
-        _trainPassedSignalCache = new(TimeSpan.FromMinutes(5), "TrainPassedSignalCache", _trainPassedCacheMaxEntries);
-        _trainPrevSignalCache = new(TimeSpan.FromSeconds(30), "TrainPrevSignalCache", _trainPrevCacheMaxEntries);
+        _trainLastSignalCache =
+            TtlCache<string, string>.CreateWithEnvSettings("TrainLastSignalCache", TimeSpan.FromMinutes(5));
+        _trainPassedSignalCache =
+            TtlCache<string, string>.CreateWithEnvSettings("TrainPassedSignalCache", TimeSpan.FromMinutes(5));
+        _signalRedAfterPassCache =
+            TtlCache<string, string>.CreateWithEnvSettings("SignalRedAfterPassCache", TimeSpan.FromMinutes(1));
+        _trainPrevSignalCache =
+            TtlCache<string, TrainPrevSignalData>.CreateWithEnvSettings("TrainPrevSignalCache",
+                TimeSpan.FromSeconds(30));
     }
 
     /// <inheritdoc />
@@ -153,6 +162,14 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             _trainPassedSignalCache.Remove(trainId);
         }
 
+        // Remove entries from the signal red cache that were caused by trains from this server
+        var redKeysToRemove = _signalRedAfterPassCache.Keys
+            .Where(signalName => _signalRedAfterPassCache.TryGetValue(signalName, out var causingTrainId) &&
+                                 causingTrainId.Contains($"@{serverCode}-"))
+            .ToList();
+
+        foreach (var signalName in redKeysToRemove) _signalRedAfterPassCache.Remove(signalName);
+
         _logger.LogInformation("Cleared {TrainCount} train signal cache records for offline server {ServerCode}",
             trainIdsToRemove.Count, serverCode);
     }
@@ -183,6 +200,9 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         }
     }
 
+    /// <summary>
+    ///     Gets the signals with their connections and other relevant data for the signal analysis.
+    /// </summary>
     protected virtual async Task<SignalStatus[]> GetSignals()
     {
         using var scope = _scopeFactory.CreateScope();
@@ -336,12 +356,16 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 var train = signalsIndex.GetValueOrDefault(signal.Name);
                 signal.Trains = train?.Select(t => t.TrainNoLocal).ToArray();
 
-                var earlierTrain = earlierSignalIndex.GetValueOrDefault(signal.Name);
-                var hasEarlierTrain = earlierTrain is { Length: > 0 };
+                var trainsAhead = earlierSignalIndex.GetValueOrDefault(signal.Name) ??
+                                  (_signalRedAfterPassCache.TryGetValue(signal.Name, out var causingTrainId) &&
+                                   trains.Any(t => t.GetTrainId() == causingTrainId)
+                                      ? [trains.First(t => t.GetTrainId() == causingTrainId)]
+                                      : null);
+                var hasTrainAhead = trainsAhead is { Length: > 0 };
 
-                if (hasEarlierTrain)
+                if (hasTrainAhead)
                 {
-                    signal.TrainsAhead = earlierTrain!.Select(x => x.TrainNoLocal).ToArray();
+                    signal.TrainsAhead = trainsAhead!.Select(x => x.TrainNoLocal).ToArray();
                 }
 
                 var onlyHasOneNextSignal = signal is
@@ -352,7 +376,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 if (!onlyHasOneNextSignal)
                 {
                     // if it has more than one next signal, but it's finalized and all the next signals have a train
-                    if (!hasEarlierTrain && signal is { Type: "main", NextFinalized: true } &&
+                    if (!hasTrainAhead && signal is { Type: "main", NextFinalized: true } &&
                         signal.NextSignals.All(s => signalsIndex.ContainsKey(s.Name)))
                     {
                         signal.TrainsAhead = signal.NextSignals.Select(s => signalsIndex[s.Name])
@@ -365,7 +389,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
                 var nextSignalName = signal.NextSignals[0].Name;
 
-                if (!hasEarlierTrain)
+                if (!hasTrainAhead)
                 {
                     signal.TrainsAhead = signalsIndex
                                              .GetValueOrDefault(nextSignalName)?.Select(t => t.TrainNoLocal)
@@ -607,6 +631,8 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                     {
                         // Train has moved to a new signal - update the passed signal cache
                         _trainPassedSignalCache.Set(train.GetTrainId(), prevSignalData.SignalName);
+                        // mark the signal as "red after pass" for 30s unless another train overrides it
+                        _signalRedAfterPassCache.Set(prevSignalData.SignalName, train.GetTrainId());
                         _trainLastSignalCache.Set(train.GetTrainId(), signal.Name);
                     }
 
@@ -630,6 +656,9 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         }
 
         await context.SaveChangesAsync();
+
+        // Clear the ChangeTracker to release memory
+        context.ChangeTracker.Clear();
 
         var elapsed = (int)stopwatch.ElapsedMilliseconds;
         stopwatch.Stop();
@@ -661,7 +690,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
             if (dbSignal == null)
             {
-                _logger.LogError("Signal {SignalId} not found in the database, but exists in the lookup!", signalId);
+                LogSignalNotFoundInDatabase(signalId);
                 return signal;
             }
 
@@ -975,8 +1004,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
         if (dbPrevSignalLocation == null)
         {
-            _logger.LogError(
-                "Signal {SignalId} not found in the database, but exists in the lookup!", prevSignal.Name);
+            LogSignalNotFoundInDatabase(prevSignal.Name);
             return false;
         }
 
@@ -987,8 +1015,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
         if (signalLocation == null)
         {
-            _logger.LogError(
-                "Signal {SignalId} not found in the database, but exists in the lookup!", signal.Name);
+            LogSignalNotFoundInDatabase(signal.Name);
             return false;
         }
 
@@ -1048,6 +1075,9 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     {
         return _trainPassedSignalCache.TryGetValue(trainId, out var passedSignalName) ? passedSignalName : null;
     }
+
+    [LoggerMessage(LogLevel.Error, "Signal {signalId} not found in the database, but exists in the lookup!")]
+    partial void LogSignalNotFoundInDatabase(string signalId);
 
     /// <summary>
     ///     Represents the previous signal data for a train.

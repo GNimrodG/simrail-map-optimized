@@ -73,9 +73,18 @@ public readonly struct SimplifiedTimetableEntry
     /// </summary>
     public string? NextStation { get; }
 
-    [JsonIgnore] public string? SupervisedBy { get; }
+    /// <summary>
+    ///     The last known consist for this train.
+    /// </summary>
+    public string[]? LastConsist { get; }
 
-    internal SimplifiedTimetableEntry(Timetable timetable, int index)
+    /// <summary>
+    ///     The entity supervising the train at this station, if any.
+    /// </summary>
+    [JsonIgnore]
+    public string? SupervisedBy { get; }
+
+    internal SimplifiedTimetableEntry(Timetable timetable, int index, string[]? lastConsist = null)
     {
         var timetableEntry = timetable.TimetableEntries[index];
 
@@ -98,6 +107,10 @@ public readonly struct SimplifiedTimetableEntry
 
         var nextStation = timetable.TimetableEntries.ElementAtOrDefault(index + 1);
         NextStation = nextStation != null ? string.Intern(nextStation.NameOfPoint) : null;
+
+        LastConsist = lastConsist is { Length: > 0 }
+            ? [.. lastConsist.Select(string.Intern)]
+            : null;
 
         Index = (short)index;
         SupervisedBy = timetableEntry.SupervisedBy != null ? string.Intern(timetableEntry.SupervisedBy) : null;
@@ -138,16 +151,22 @@ public readonly struct SimplifiedTimetableEntry
             _c3 = code[2];
         }
 
+        /// <inheritdoc />
         public override string ToString() => $"{_c1}{_c2}{_c3}";
 
+        /// <inheritdoc />
         public override bool Equals(object? obj) => obj is TrainTypeCode other && Equals(other);
 
+        /// <inheritdoc />
         public bool Equals(TrainTypeCode other) => _c1 == other._c1 && _c2 == other._c2 && _c3 == other._c3;
 
+        /// <inheritdoc />
         public override int GetHashCode() => HashCode.Combine(_c1, _c2, _c3);
 
+        /// <inheritdoc />
         public static bool operator ==(TrainTypeCode left, TrainTypeCode right) => left.Equals(right);
 
+        /// <inheritdoc />
         public static bool operator !=(TrainTypeCode left, TrainTypeCode right) => !(left == right);
     }
 }

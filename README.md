@@ -89,9 +89,14 @@ Signal analyzer
 - `SIGNAL_BUFFER_DISTANCE_BETWEEN`: Extra buffer (meters) in movement validation (`50`)
 - `SIGNAL_MIN_DISTANCE_BETWEEN`: Min distance between signals (meters) (`200`)
 - `SIGNAL_MIN_DISTANCE`: Distance threshold to treat a train as at a signal (meters) (`100`)
-- `TRAIN_CACHE_MAX_ENTRIES`: Capacity of in-memory train->last-signal cache (`-1` = unlimited)
-- `TRAIN_PASSED_CACHE_MAX_ENTRIES`: Capacity of passed-signal cache (`-1` = unlimited)
-- `TRAIN_PREV_CACHE_MAX_ENTRIES`: Capacity of prev-signal data cache (`-1` = unlimited)
+- `TrainLastSignalCache_Duration`: TTL for train -> last signal cache (`00:05:00`)
+- `TrainLastSignalCache_MaxEntries`: Max entries for train -> last signal cache (`-1` = unlimited)
+- `TrainPassedSignalCache_Duration`: TTL for train -> passed signal cache (`00:05:00`)
+- `TrainPassedSignalCache_MaxEntries`: Max entries for train -> passed signal cache (`-1` = unlimited)
+- `SignalRedAfterPassCache_Duration`: TTL for red-after-pass signal cache (`00:00:30`)
+- `SignalRedAfterPassCache_MaxEntries`: Max entries for red-after-pass signal cache (`-1` = unlimited)
+- `TrainPrevSignalCache_Duration`: TTL for train -> previous signal snapshot cache (`00:00:30`)
+- `TrainPrevSignalCache_MaxEntries`: Max entries for train -> previous signal snapshot cache (`-1` = unlimited)
 
 Station analyzer
 
@@ -110,6 +115,7 @@ Route point analyzer
 Notes
 
 - All `{SERVICE}_REFRESH_INTERVAL` values can be specified as "HH:MM:SS" or as integer seconds.
+- `*_Duration` cache values support integer seconds (for example `30`), floating-point seconds (for example `2.5`), or TimeSpan format (for example `00:00:30`). Invalid or negative values fall back to defaults.
 - When `DATABASE_URL` is not set, `ConnectionStrings:DefaultConnection` from appsettings is used.
 - `FRONTEND_URL` augments the built-in localhost origins in development.
 

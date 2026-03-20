@@ -102,6 +102,26 @@ public class TtlCache<TKey, TValue> : IDisposable
     }
 
     /// <summary>
+    ///     Creates a TtlCache instance with TTL and max entries configured via environment variables.
+    /// </summary>
+    /// <param name="name">
+    ///     The base name for the cache, used to derive environment variable names. For example, if name is
+    ///     "MyCache", it will look for "MyCache_Duration" and "MyCache_MaxEntries" environment variables.
+    /// </param>
+    /// <param name="defaultTtt">The default TTL to use if the environment variable is not set or invalid.</param>
+    /// <param name="defaultMaxEntries">
+    ///     The default maximum number of entries to use if the environment variable is not set or
+    ///     invalid. If null, there will be no limit on the number of entries.
+    /// </param>
+    /// <returns>>A new instance of TtlCache configured with the specified settings.</returns>
+    public static TtlCache<TKey, TValue> CreateWithEnvSettings(string name, TimeSpan defaultTtt,
+        int? defaultMaxEntries = null)
+    {
+        return new(StdUtils.GetEnvVarDuration(name + "_Duration", defaultTtt), name,
+            StdUtils.GetEnvVar(name + "_MaxEntries", defaultMaxEntries ?? -1));
+    }
+
+    /// <summary>
     ///     Event that is triggered when a new key is added to the cache.
     /// </summary>
     public event EventHandler<TKey>? KeyAdded;
@@ -134,6 +154,27 @@ public class TtlCache<TKey, TValue> : IDisposable
         CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
     }
 
+    /// <summary>
+    ///     Cleans up expired entries from the cache's insertion order queue.
+    ///     This should be called periodically to prevent memory leaks from expired entries.
+    /// </summary>
+    private void CleanupExpiredEntries()
+    {
+        lock (_orderLock)
+        {
+            // Clean up the insertion order queue by removing keys that are no longer in cache
+            if (_insertionOrder.Count <= 0) return;
+
+            var validKeys = new Queue<TKey>(_cache.Count);
+            while (_insertionOrder.TryDequeue(out var key))
+                if (_cache.TryGetValue(key, out _))
+                    validKeys.Enqueue(key);
+
+            _insertionOrder.Clear();
+            foreach (var key in validKeys) _insertionOrder.Enqueue(key);
+        }
+    }
+
     private void _add(TKey key, TValue value)
     {
         // Track insertion order only if this is a new key
@@ -149,6 +190,14 @@ public class TtlCache<TKey, TValue> : IDisposable
         });
 
         EnforceCapacity();
+
+        // Aggressively cleanup expired entries when adding new items
+        // When items expire via TTL, they're removed from _cache but still in _insertionOrder queue
+        // This causes memory leak as stale keys accumulate
+        lock (_orderLock)
+        {
+            if (_insertionOrder.Count > _cache.Count) CleanupExpiredEntries();
+        }
     }
 
     /// <inheritdoc cref="Dictionary{TKey,TValue}.Add"/>
@@ -163,6 +212,14 @@ public class TtlCache<TKey, TValue> : IDisposable
     public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
     {
         CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
+
+        // Aggressively cleanup expired entries to prevent memory leak
+        // When items expire via TTL, they're removed from _cache but still in _insertionOrder queue
+        // This causes memory leak as stale keys accumulate
+        lock (_orderLock)
+        {
+            if (_insertionOrder.Count > _cache.Count) CleanupExpiredEntries();
+        }
 
         if (_cache.TryGetValue(key, out var cachedValue) && cachedValue is TValue)
         {
