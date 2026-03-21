@@ -41,7 +41,7 @@ jobs:
           --results-directory ./smo-backend/TestResults
       - name: Publish Test Report
         if: always()
-        uses: dorny/test-reporter@v2
+        uses: dorny/test-reporter@v3
         with:
           name: Backend Tests
           path: smo-backend/TestResults/*.trx
