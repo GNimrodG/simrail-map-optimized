@@ -4708,9 +4708,9 @@ i18next-browser-languagedetector@^8.0.0:
     "@babel/runtime" "^7.23.2"
 
 i18next@^25.5.3:
-  version "25.10.2"
-  resolved "https://registry.yarnpkg.com/i18next/-/i18next-25.10.2.tgz#d8aa16ff84b76d1811fa7935dede1868da8fe2fd"
-  integrity sha512-eI/yYvivefa3sX6kRRhIuAHFNWS3NVa5joa0I80tDZ2Kw6uI2Cjhxb9R89A1f06N4DcryQbdGUieMitMnDA+1A==
+  version "25.10.3"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-25.10.3.tgz#d917a45b5603eece8c988de642c5e6e937d744f7"
+  integrity sha512-9XCjFgF7q4wNdmy7RFcDBIx1ndSXU3QwtbmqPjOdUxYxU9gbovJzZUY5Mb3ejWmDhxMl6Wmr2OenWOU3uyy6VQ==
   dependencies:
     "@babel/runtime" "^7.29.2"
 
