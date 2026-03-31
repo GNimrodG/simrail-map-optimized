@@ -1358,10 +1358,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@mantine/hooks@^8.0.0":
-  version "8.3.18"
-  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-8.3.18.tgz#7e5601c0683ed2411e3aee8fcb81a151e5341ad2"
-  integrity sha512-QoWr9+S8gg5050TQ06aTSxtlpGjYOpIllRbjYYXlRvZeTsUqiTbVfvQROLexu4rEaK+yy9Wwriwl9PMRgbLqPw==
+"@mantine/hooks@^9.0.0":
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-9.0.0.tgz#a63b7705ee51f8339d2b1df5b2d377ebe28ccce2"
+  integrity sha512-TKcz+k0JH/jtblBfwOw/vXBX2EpJO66psJ5ZVmdDhwc6vbHDsvY6oYN8ynt9TfRn/eHZXsEmLPNj+wuGtWy4BA==
 
 "@microsoft/signalr-protocol-msgpack@^10.0.0":
   version "10.0.0"
