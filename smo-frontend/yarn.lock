@@ -5201,9 +5201,9 @@ lower-case@^2.0.2:
     tslib "^2.0.3"
 
 lru-cache@^11.0.0, lru-cache@^11.2.4:
-  version "11.2.7"
-  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-11.2.7.tgz#9127402617f34cd6767b96daee98c28e74458d35"
-  integrity sha512-aY/R+aEsRelme17KGQa/1ZSIpLpNYYrhcrepKTZgE+W3WM16YMCaPwOHLHsmopZHELU0Ojin1lPVxKR0MihncA==
+  version "11.3.0"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-11.3.0.tgz#c1fb0c77eae4962f326d6118c73471010a6f4f95"
+  integrity sha512-sr8xPKE25m6vJVcrdn6NxtC0fVfuPowbscLypegRgOm0yXSqr5JNHCAY3hnusdJ7HRBW04j6Ip4khvHU778DuQ==
 
 lru-cache@^5.1.1:
   version "5.1.1"
