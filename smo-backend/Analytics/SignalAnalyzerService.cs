@@ -503,26 +503,34 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             return new();
 
         const string sql = """
-                           SELECT s.name, s.accuracy, s.type, s.prev_finalized, s.next_finalized, 
-                                  s.prev_regex, s.next_regex,
-                                  COALESCE(
-                                      json_agg(
-                                          json_build_object('name', pc.prev, 'vmax', pc.vmax)
-                                      ) FILTER (WHERE pc.prev IS NOT NULL), 
-                                      '[]'::json
-                                  ) as prev_connections,
-                                  COALESCE(
-                                      json_agg(
-                                          json_build_object('name', nc.next, 'vmax', nc.vmax)
-                                      ) FILTER (WHERE nc.next IS NOT NULL), 
-                                      '[]'::json
-                                  ) as next_connections
+                           SELECT s.name,
+                                  s.location,
+                                  s.accuracy,
+                                  s.type,
+                                  s.prev_finalized,
+                                  s.next_finalized,
+                                  s.prev_regex,
+                                  s.next_regex,
+                                  COALESCE(pc.prev_connections, '[]'::json) as prev_connections,
+                                  COALESCE(nc.next_connections, '[]'::json) as next_connections
                            FROM signals s
-                           LEFT JOIN signal_connections pc ON s.name = pc.next
-                           LEFT JOIN signal_connections nc ON s.name = nc.prev
+                           LEFT JOIN LATERAL (
+                               SELECT json_agg(json_build_object('name', p.prev, 'vmax', p.vmax)) as prev_connections
+                               FROM (
+                                   SELECT DISTINCT sc.prev, sc.vmax
+                                   FROM signal_connections sc
+                                   WHERE sc.next = s.name
+                               ) p
+                           ) pc ON true
+                           LEFT JOIN LATERAL (
+                               SELECT json_agg(json_build_object('name', n.next, 'vmax', n.vmax)) as next_connections
+                               FROM (
+                                   SELECT DISTINCT sc.next, sc.vmax
+                                   FROM signal_connections sc
+                                   WHERE sc.prev = s.name
+                               ) n
+                           ) nc ON true
                            WHERE s.name = ANY(@signalNames)
-                           GROUP BY s.name, s.accuracy, s.type, s.prev_finalized, s.next_finalized, 
-                                    s.prev_regex, s.next_regex
                            """;
 
         var signalData = await context.Database
@@ -534,6 +542,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             s => s.Name,
             s => new MinimalSignalData(
                 s.Name,
+                s.Location,
                 s.Accuracy,
                 s.Type,
                 s.PrevFinalized,
@@ -542,9 +551,11 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 s.NextRegex,
                 JsonConvert.DeserializeObject<List<SignalConnectionData>>(s.PrevConnections)
                     ?.Select(c => new MinimalSignalData.SignalConnection(c.Name, c.Vmax))
+                    .DistinctBy(c => c.Signal)
                     .ToList() ?? [],
                 JsonConvert.DeserializeObject<List<SignalConnectionData>>(s.NextConnections)
                     ?.Select(c => new MinimalSignalData.SignalConnection(c.Name, c.Vmax))
+                    .DistinctBy(c => c.Signal)
                     .ToList() ?? []
             )
         );
@@ -696,6 +707,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
             // better accuracy
             dbSignal.Location = train.TrainData.Location!;
+            signal.Location = dbSignal.Location;
             signal.Accuracy = dbSignal.Accuracy = train.TrainData.DistanceToSignalInFront;
 
 
@@ -816,6 +828,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 .Select(s => new
                 {
                     s.Name,
+                    s.Location,
                     s.Accuracy,
                     s.Type,
                     s.PrevFinalized,
@@ -831,6 +844,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 ? null
                 : new MinimalSignalData(
                     dbData.Name,
+                    dbData.Location,
                     dbData.Accuracy,
                     dbData.Type,
                     dbData.PrevFinalized,
@@ -997,30 +1011,20 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             }
         }
 
-        var dbPrevSignalLocation = await context.Signals
-            .Where(s => s.Name == prevSignal.Name)
-            .Select(s => s.Location)
-            .FirstOrDefaultAsync();
-
-        if (dbPrevSignalLocation == null)
+        if (prevSignal.Location == null)
         {
             LogSignalNotFoundInDatabase(prevSignal.Name);
             return false;
         }
 
-        var signalLocation = await context.Signals
-            .Where(s => s.Name == signal.Name)
-            .Select(s => s.Location)
-            .FirstOrDefaultAsync();
-
-        if (signalLocation == null)
+        if (signal.Location == null)
         {
             LogSignalNotFoundInDatabase(signal.Name);
             return false;
         }
 
         // check if distance between signals is less than MinDistanceBetweenSignals
-        if (dbPrevSignalLocation.HaversineDistance(signalLocation) < _minDistanceBetweenSignals)
+        if (prevSignal.Location.HaversineDistance(signal.Location) < _minDistanceBetweenSignals)
         {
             TryLogError(
                 prevSignal.Name, signal.Name,
@@ -1091,6 +1095,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
     private class MinimalSignalData(
         string name,
+        Point? location,
         double accuracy,
         string? type,
         bool prevFinalized,
@@ -1102,6 +1107,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     {
         public MinimalSignalData(Signal signal) : this(
             signal.Name,
+            signal.Location,
             signal.Accuracy,
             signal.Type,
             signal.PrevFinalized,
@@ -1116,6 +1122,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
 
         public string Name { get; } = name;
+        public Point? Location { get; set; } = location;
         public double Accuracy { get; set; } = accuracy;
         public string? Type { get; } = type;
         public bool PrevFinalized { get; } = prevFinalized;
@@ -1149,6 +1156,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     private sealed class OptimizedSignalProjection
     {
         public required string Name { get; init; }
+        public required Point Location { get; init; }
         public required double Accuracy { get; init; }
         public required string? Type { get; init; }
         public required bool PrevFinalized { get; init; }
