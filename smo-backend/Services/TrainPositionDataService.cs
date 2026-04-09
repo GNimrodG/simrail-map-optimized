@@ -1,4 +1,5 @@
-﻿using Prometheus;
+﻿using System.Collections.Concurrent;
+using Prometheus;
 using SMOBackend.Models;
 using SMOBackend.Models.Trains;
 using SMOBackend.Services.ApiClients;
@@ -23,8 +24,23 @@ public class TrainPositionDataService(
     private static readonly Gauge TrainAvgSpeedGauge = Metrics
         .CreateGauge("smo_train_avg_speed", "Average speed of trains on the server", "server");
 
+    private readonly ConcurrentDictionary<string, IReadOnlyDictionary<string, TrainPosition>> _trainPositionIndex =
+        new();
+
     /// <inheritdoc />
     protected override TimeSpan FetchInterval => TimeSpan.FromSeconds(1);
+
+    /// <inheritdoc />
+    public void ClearServerMetrics(string serverCode)
+    {
+        _trainPositionIndex.TryRemove(serverCode, out _);
+
+        // Clear train count metrics for the offline server
+        TrainCountGauge.RemoveLabelledByPredicate(labels => labels.Length > 0 && labels[0] == serverCode);
+
+        // Clear train average speed metrics for the offline server
+        TrainAvgSpeedGauge.RemoveLabelledByPredicate(labels => labels.Length > 0 && labels[0] == serverCode);
+    }
 
     /// <inheritdoc />
     protected override Task<TrainPosition[]> FetchServerData(string serverCode, CancellationToken stoppingToken) =>
@@ -36,10 +52,14 @@ public class TrainPositionDataService(
     /// <param name="trains"> The trains to apply the data to.</param>
     public void ApplyToTrains(Train[] trains)
     {
-        foreach (var train in trains)
+        foreach (var serverGroup in trains.GroupBy(t => t.ServerCode))
         {
-            var trainPosData = this[train.ServerCode]?.FirstOrDefault(t => t.Id == train.Id);
-            trainPosData?.ApplyTo(train);
+            if (!_trainPositionIndex.TryGetValue(serverGroup.Key, out var positionIndex))
+                continue;
+
+            foreach (var train in serverGroup)
+                if (positionIndex.TryGetValue(train.Id, out var trainPosData))
+                    trainPosData.ApplyTo(train);
         }
     }
 
@@ -53,6 +73,10 @@ public class TrainPositionDataService(
 
         foreach (var (server, trains) in data)
         {
+            _trainPositionIndex[server] = trains
+                .GroupBy(t => t.Id)
+                .ToDictionary(g => g.Key, g => g.First());
+
             if (trains.Length == 0)
                 continue;
 
@@ -60,15 +84,5 @@ public class TrainPositionDataService(
             TrainAvgSpeedGauge.WithLabels(server)
                 .Set(trains.Length > 0 ? trains.Average(train => train.Velocity) : 0);
         }
-    }
-
-    /// <inheritdoc />
-    public void ClearServerMetrics(string serverCode)
-    {
-        // Clear train count metrics for the offline server
-        TrainCountGauge.RemoveLabelledByPredicate(labels => labels.Length > 0 && labels[0] == serverCode);
-
-        // Clear train average speed metrics for the offline server
-        TrainAvgSpeedGauge.RemoveLabelledByPredicate(labels => labels.Length > 0 && labels[0] == serverCode);
     }
 }

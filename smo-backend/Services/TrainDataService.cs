@@ -1,4 +1,5 @@
-﻿using Prometheus;
+﻿using System.Diagnostics;
+using Prometheus;
 using SMOBackend.Analytics;
 using SMOBackend.Models.Trains;
 using SMOBackend.Services.ApiClients;
@@ -9,7 +10,7 @@ namespace SMOBackend.Services;
 /// <summary>
 /// Service for fetching and processing train data.
 /// </summary>
-public class TrainDataService(
+public partial class TrainDataService(
     ILogger<TrainDataService> logger,
     IServiceScopeFactory scopeFactory,
     ServerDataService serverDataService,
@@ -27,6 +28,8 @@ public class TrainDataService(
 
     private readonly TtlCache<string, string[]> _lastConsistCache =
         new(TimeSpan.FromHours(24), "LastConsistCache", 50000);
+
+    private readonly int _phaseTimingLogThresholdMs = StdUtils.GetEnvVar("TRAIN_PHASE_TIMING_LOG_THRESHOLD_MS", 250);
 
     private TimedFunction? _autoSaveFunction;
 
@@ -75,11 +78,32 @@ public class TrainDataService(
     /// <inheritdoc />
     protected override async Task<Train[]> FetchServerData(string serverCode, CancellationToken stoppingToken)
     {
-        var trains = await apiClient.GetTrainsAsync(serverCode, stoppingToken);
+        var totalSw = Stopwatch.StartNew();
 
+        var fetchSw = Stopwatch.StartNew();
+        var trains = await apiClient.GetTrainsAsync(serverCode, stoppingToken);
+        fetchSw.Stop();
+
+        var batchTrainTypeCache = new Dictionary<string, string?>(StringComparer.Ordinal);
+
+        var enrichSw = Stopwatch.StartNew();
         // Populate TrainType for each train
         foreach (var train in trains)
-            train.TrainType = trainTypeService.GetTrainType(train.TrainNoLocal);
+        {
+            if (!batchTrainTypeCache.TryGetValue(train.TrainNoLocal, out var trainType))
+            {
+                trainType = trainTypeService.GetTrainType(train.TrainNoLocal);
+                batchTrainTypeCache[train.TrainNoLocal] = trainType;
+            }
+
+            train.TrainType = trainType;
+        }
+
+        enrichSw.Stop();
+
+        totalSw.Stop();
+        LogTrainFetchPhases(serverCode, trains.Length, fetchSw.ElapsedMilliseconds, enrichSw.ElapsedMilliseconds,
+            totalSw.ElapsedMilliseconds);
 
         return trains;
     }
@@ -87,18 +111,76 @@ public class TrainDataService(
     /// <inheritdoc />
     protected override void OnPerServerDataReceived(PerServerData<Train[]> data)
     {
+        var totalSw = Stopwatch.StartNew();
+
+        var dispatchSw = Stopwatch.StartNew();
         base.OnPerServerDataReceived(data);
+        dispatchSw.Stop();
+
+        var postProcessSw = Stopwatch.StartNew();
+        var playerTrainCount = 0;
 
         foreach (var train in data.Data)
         {
             if (string.IsNullOrWhiteSpace(train.TrainNoLocal) || train.Vehicles.Length == 0)
-                continue;
+            {
+                if (train.Type == "user")
+                    playerTrainCount++;
 
-            _lastConsistCache.Set(GetConsistCacheKey(data.ServerCode, train.TrainNoLocal), train.Vehicles);
+                continue;
+            }
+
+            var cacheKey = GetConsistCacheKey(data.ServerCode, train.TrainNoLocal);
+
+            if (_lastConsistCache.TryGetValue(cacheKey, out var existingConsist) &&
+                existingConsist.Length == train.Vehicles.Length &&
+                existingConsist.SequenceEqual(train.Vehicles))
+            {
+                if (train.Type == "user")
+                    playerTrainCount++;
+
+                continue;
+            }
+
+            _lastConsistCache.Set(cacheKey, train.Vehicles);
+
+            if (train.Type == "user")
+                playerTrainCount++;
         }
 
+        postProcessSw.Stop();
+
         PlayerTrainCountGauge.WithLabels(data.ServerCode)
-            .Set(data.Data.Count(train => train.Type == "user"));
+            .Set(playerTrainCount);
+
+        totalSw.Stop();
+        LogTrainDispatchPhases(data.ServerCode, data.Data.Length, dispatchSw.ElapsedMilliseconds,
+            postProcessSw.ElapsedMilliseconds, totalSw.ElapsedMilliseconds);
+    }
+
+    private void LogTrainFetchPhases(string serverCode, int trainCount, long fetchMs, long enrichMs, long totalMs)
+    {
+        if (totalMs < _phaseTimingLogThresholdMs) return;
+
+        if (totalMs >= 1000)
+            logger.LogInformation(
+                "TRAIN fetch phases for {ServerCode}: fetch={FetchMs}ms enrich={EnrichMs}ms total={TotalMs}ms trains={TrainCount}",
+                serverCode, fetchMs, enrichMs, totalMs, trainCount);
+        else
+            LogTrainDebugFetchPhasesForServer(serverCode, fetchMs, enrichMs, totalMs, trainCount);
+    }
+
+    private void LogTrainDispatchPhases(string serverCode, int trainCount, long dispatchMs, long postProcessMs,
+        long totalMs)
+    {
+        if (totalMs < _phaseTimingLogThresholdMs) return;
+
+        if (totalMs >= 1000)
+            logger.LogInformation(
+                "TRAIN dispatch phases for {ServerCode}: eventDispatch={DispatchMs}ms postProcess={PostProcessMs}ms total={TotalMs}ms trains={TrainCount}",
+                serverCode, dispatchMs, postProcessMs, totalMs, trainCount);
+        else
+            LogTrainDebugDispatchPhasesForServer(serverCode, dispatchMs, postProcessMs, totalMs, trainCount);
     }
 
     /// <summary>
@@ -139,4 +221,14 @@ public class TrainDataService(
             logger.LogError(ex, "Failed to save train consists to file");
         }
     }
+
+    [LoggerMessage(LogLevel.Debug,
+        "TRAIN dispatch phases for {ServerCode}: eventDispatch={DispatchMs}ms postProcess={PostProcessMs}ms total={TotalMs}ms trains={TrainCount}")]
+    partial void LogTrainDebugDispatchPhasesForServer(string serverCode, long dispatchMs, long postProcessMs,
+        long totalMs, int trainCount);
+
+    [LoggerMessage(LogLevel.Debug,
+        "TRAIN fetch phases for {ServerCode}: fetch={FetchMs}ms enrich={EnrichMs}ms total={TotalMs}ms trains={TrainCount}")]
+    partial void LogTrainDebugFetchPhasesForServer(string serverCode, long fetchMs, long enrichMs, long totalMs,
+        int trainCount);
 }

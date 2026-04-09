@@ -347,6 +347,8 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 .GroupBy(train => train.data!)
                 .ToDictionary(g => g.Key, g => g.Select(x => x.train).ToArray());
 
+            var trainsById = trains.ToDictionary(t => t.GetTrainId());
+
             var signals = await GetSignals();
             var signalLookup = signals.ToDictionary(s => s.Name);
 
@@ -358,8 +360,8 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
                 var trainsAhead = earlierSignalIndex.GetValueOrDefault(signal.Name) ??
                                   (_signalRedAfterPassCache.TryGetValue(signal.Name, out var causingTrainId) &&
-                                   trains.Any(t => t.GetTrainId() == causingTrainId)
-                                      ? [trains.First(t => t.GetTrainId() == causingTrainId)]
+                                   trainsById.TryGetValue(causingTrainId, out var causingTrain)
+                                      ? [causingTrain]
                                       : null);
                 var hasTrainAhead = trainsAhead is { Length: > 0 };
 
@@ -683,8 +685,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         foreach (var (serverCode, count) in invalidTrainsPerServer)
             InvalidTrainsHistogram.WithLabels(serverCode).Observe(count);
 
-        context.Stats.Add(new("SIGNALS-PROC", elapsed));
-        await context.SaveChangesAsync();
+        await _scopeFactory.LogStat("SIGNALS-PROC", elapsed);
     }
 
     private async Task<MinimalSignalData> UpdateSignal(MinimalSignalData? signal, Train train,
@@ -1045,14 +1046,14 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             using var scope = _scopeFactory.CreateScope();
             await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-            var existing = await context.SignalConnectionErrors
-                .AnyAsync(x => x.Prev == prev && x.Next == next && x.Error == errorText);
-
-            if (existing) return;
-
             _logger.LogWarning("Signal connection error: {ErrorMessage}", error);
             context.SignalConnectionErrors.Add(new(prev, next, error, trainId, vmax));
             await context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+            when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            // Duplicate error row (PK on Prev/Next/Error) - ignore without extra pre-check query.
         }
         catch (Exception e)
         {

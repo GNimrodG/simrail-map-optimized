@@ -16,6 +16,9 @@ public class TimetableDataService(
 {
     private readonly string _dataDirectory = Path.Combine(AppContext.BaseDirectory, "data", "timetables");
 
+    private readonly TtlCache<string, Timetable> _timetableCache =
+        TtlCache<string, Timetable>.CreateWithEnvSettings("TimetableFileCache", TimeSpan.FromMinutes(20), 5000);
+
     /// <inheritdoc cref="BaseServerDataService{Nullable{object}}.FetchInterval" />
     protected override TimeSpan FetchInterval => TimeSpan.FromHours(1);
 
@@ -58,6 +61,7 @@ public class TimetableDataService(
             new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
             async (timetable, token) =>
             {
+                var cacheKey = GetCacheKey(serverCode, timetable.TrainNoLocal);
                 var tempFilePath = Path.Combine(serverDirectory, $"{serverCode}-{timetable.TrainNoLocal}.bin.tmp");
 
                 try
@@ -70,7 +74,8 @@ public class TimetableDataService(
                         bufferSize: 4096,
                         useAsync: true);
 
-                    await MessagePackSerializer.SerializeAsync(fileStream, timetable, cancellationToken: token).NoContext();
+                    await MessagePackSerializer.SerializeAsync(fileStream, timetable, cancellationToken: token)
+                        .NoContext();
 
                     await fileStream.FlushAsync(token).NoContext();
 
@@ -80,6 +85,9 @@ public class TimetableDataService(
                     var finalFilePath = Path.Combine(serverDirectory, $"{serverCode}-{timetable.TrainNoLocal}.bin");
 
                     await AtomicFileReplaceAsync(tempFilePath, finalFilePath, token).NoContext();
+
+                    // Keep a hot in-memory copy to avoid repeated file deserialization on read paths.
+                    _timetableCache.Set(cacheKey, timetable);
                 }
                 catch (Exception ex)
                 {
@@ -121,6 +129,10 @@ public class TimetableDataService(
     public async Task<Timetable?> GetTimetableForTrainAsync(string serverCode, string trainNoLocal,
         CancellationToken stoppingToken = default)
     {
+        var cacheKey = GetCacheKey(serverCode, trainNoLocal);
+
+        if (_timetableCache.TryGetValue(cacheKey, out var cachedTimetable)) return cachedTimetable;
+
         var filePath = Path.Combine(_dataDirectory, serverCode, $"{serverCode}-{trainNoLocal}.bin");
 
         if (!File.Exists(filePath))
@@ -139,8 +151,11 @@ public class TimetableDataService(
                 bufferSize: 4096,
                 useAsync: true);
 
-            return await MessagePackSerializer.DeserializeAsync<Timetable>(fileStream,
+            var timetable = await MessagePackSerializer.DeserializeAsync<Timetable>(fileStream,
                 cancellationToken: stoppingToken);
+
+            _timetableCache.Set(cacheKey, timetable);
+            return timetable;
         }
         catch (IOException ex)
         {
@@ -164,6 +179,8 @@ public class TimetableDataService(
             {
                 logger.LogError(deleteEx, "Failed to delete corrupted file {FilePath}", filePath);
             }
+
+            _timetableCache.Remove(cacheKey);
 
             return null;
         }
@@ -243,5 +260,10 @@ public class TimetableDataService(
 
         var hResult = ex.HResult & 0xFFFF;
         return hResult is errorSharingViolation or errorLockViolation;
+    }
+
+    private static string GetCacheKey(string serverCode, string trainNoLocal)
+    {
+        return $"{serverCode}:{trainNoLocal}";
     }
 }
