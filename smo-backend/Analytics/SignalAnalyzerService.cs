@@ -54,6 +54,11 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
     private readonly TtlCache<string, string> _signalRedAfterPassCache;
 
+    private readonly TimeSpan _signalsSnapshotCacheDuration =
+        StdUtils.GetEnvVarDuration("SIGNALS_SNAPSHOT_CACHE_DURATION", TimeSpan.FromSeconds(2));
+
+    private readonly SemaphoreSlim _signalsSnapshotLock = new(1, 1);
+
     private readonly TrainDataService _trainDataService;
 
     /// <summary>
@@ -69,6 +74,9 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     private readonly TtlCache<string, TrainPrevSignalData> _trainPrevSignalCache;
 
     private byte _runCount;
+    private SignalStatus[]? _signalsSnapshot;
+
+    private DateTime _signalsSnapshotUpdatedAt = DateTime.MinValue;
 
     /// <summary>
     /// Service to analyze signals and their connections.
@@ -208,6 +216,41 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     /// </summary>
     protected virtual async Task<SignalStatus[]> GetSignals()
     {
+        if (_signalsSnapshotCacheDuration > TimeSpan.Zero)
+        {
+            var cached = _signalsSnapshot;
+            if (cached != null && DateTime.UtcNow - _signalsSnapshotUpdatedAt <= _signalsSnapshotCacheDuration)
+                return CloneSignals(cached);
+        }
+
+        await _signalsSnapshotLock.WaitAsync().NoContext();
+        try
+        {
+            if (_signalsSnapshotCacheDuration > TimeSpan.Zero)
+            {
+                var cached = _signalsSnapshot;
+                if (cached != null && DateTime.UtcNow - _signalsSnapshotUpdatedAt <= _signalsSnapshotCacheDuration)
+                    return CloneSignals(cached);
+            }
+
+            var loaded = await LoadSignalsFromDatabase().NoContext();
+
+            if (_signalsSnapshotCacheDuration > TimeSpan.Zero)
+            {
+                _signalsSnapshot = loaded;
+                _signalsSnapshotUpdatedAt = DateTime.UtcNow;
+            }
+
+            return CloneSignals(loaded);
+        }
+        finally
+        {
+            _signalsSnapshotLock.Release();
+        }
+    }
+
+    private async Task<SignalStatus[]> LoadSignalsFromDatabase()
+    {
         using var scope = _scopeFactory.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
@@ -268,6 +311,42 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 .OrderBy(x => x.Name)
                 .ToArray() ?? []
         }).ToArray();
+    }
+
+    private static SignalStatus[] CloneSignals(SignalStatus[] source)
+    {
+        var clone = new SignalStatus[source.Length];
+        for (var i = 0; i < source.Length; i++)
+        {
+            var signal = source[i];
+            clone[i] = new()
+            {
+                Name = signal.Name,
+                Extra = signal.Extra,
+                Accuracy = signal.Accuracy,
+                Type = signal.Type,
+                Role = signal.Role,
+                PrevFinalized = signal.PrevFinalized,
+                NextFinalized = signal.NextFinalized,
+                PrevRegex = signal.PrevRegex,
+                NextRegex = signal.NextRegex,
+                Location = signal.Location,
+                CreatedBy = signal.CreatedBy,
+                PrevSignals = signal.PrevSignals,
+                NextSignals = signal.NextSignals,
+                Trains = null,
+                TrainsAhead = null,
+                NextSignalWithTrainAhead = null
+            };
+        }
+
+        return clone;
+    }
+
+    private void InvalidateSignalsSnapshot()
+    {
+        _signalsSnapshot = null;
+        _signalsSnapshotUpdatedAt = DateTime.MinValue;
     }
 
 
@@ -495,6 +574,8 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             context.ChangeTracker.Entries().Count(x => x.State == EntityState.Modified));
         await context.SaveChangesAsync(cancellationToken);
 
+        InvalidateSignalsSnapshot();
+
         // Clear the ChangeTracker to release memory
         context.ChangeTracker.Clear();
 
@@ -679,6 +760,8 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         var saveSw = Stopwatch.StartNew();
         await context.SaveChangesAsync();
         saveSw.Stop();
+
+        InvalidateSignalsSnapshot();
 
         // Clear the ChangeTracker to release memory
         context.ChangeTracker.Clear();

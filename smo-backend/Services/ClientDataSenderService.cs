@@ -233,7 +233,7 @@ internal class ClientDataSenderService(
 
             if (totalSw.ElapsedMilliseconds >= _phaseTimingLogThresholdMs)
                 logger.LogInformation(
-                    "[TRAIN] TRAIN client dispatch phases for {ServerCode}: applyPositions={ApplyPositionsMs}ms sendTrains={SendTrainsMs}ms getSignals={GetSignalsMs}ms sendSignals={SendSignalsMs}ms sendDelays={SendDelaysMs}ms total={TotalMs}ms trains={TrainCount}",
+                    "TRAIN client dispatch phases for {ServerCode}: applyPositions={ApplyPositionsMs}ms sendTrains={SendTrainsMs}ms getSignals={GetSignalsMs}ms sendSignals={SendSignalsMs}ms sendDelays={SendDelaysMs}ms total={TotalMs}ms trains={TrainCount}",
                     data.ServerCode, applyPositionsMs, sendTrainsMs, getSignalsMs, sendSignalsMs, sendDelaysMs,
                     totalSw.ElapsedMilliseconds, data.Data.Length);
         }
