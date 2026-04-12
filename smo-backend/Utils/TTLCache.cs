@@ -13,6 +13,9 @@ namespace SMOBackend.Utils;
 public class TtlCache<TKey, TValue> : IDisposable
     where TKey : notnull
 {
+    private const int CleanupIntervalMs = 1000;
+    private const int CleanupStaleThreshold = 64;
+
     private readonly MemoryCache _cache = new(new MemoryCacheOptions());
     private readonly SemaphoreSlim _fileSaveLock = new(1, 1); // Ensure only one save operation at a time
     private readonly Timer? _gaugeUpdateTimer;
@@ -22,7 +25,9 @@ public class TtlCache<TKey, TValue> : IDisposable
     private readonly int? _maxEntries;
     private readonly Lock _orderLock = new();
     private readonly TimeSpan? _ttl;
+    private int _cleanupInProgress;
     private bool _disposed;
+    private long _lastCleanupTick = Environment.TickCount64;
 
     /// <summary>
     ///     A simple in-memory cache with a time-to-live (TTL) for each entry.
@@ -161,17 +166,47 @@ public class TtlCache<TKey, TValue> : IDisposable
     private void CleanupExpiredEntries()
     {
         lock (_orderLock)
+            CleanupExpiredEntriesUnderLock();
+    }
+
+    private void CleanupExpiredEntriesUnderLock()
+    {
+        // Clean up the insertion order queue by removing keys that are no longer in cache
+        if (_insertionOrder.Count <= 0) return;
+
+        var validKeys = new Queue<TKey>(_cache.Count);
+        while (_insertionOrder.TryDequeue(out var key))
+            if (_cache.TryGetValue(key, out _))
+                validKeys.Enqueue(key);
+
+        _insertionOrder.Clear();
+        foreach (var key in validKeys) _insertionOrder.Enqueue(key);
+    }
+
+    private void TryCleanupExpiredEntriesThrottled()
+    {
+        var staleCount = _insertionOrder.Count - _cache.Count;
+        if (staleCount < CleanupStaleThreshold) return;
+
+        var now = Environment.TickCount64;
+        var lastCleanup = Interlocked.Read(ref _lastCleanupTick);
+        if (now - lastCleanup < CleanupIntervalMs) return;
+
+        if (Interlocked.Exchange(ref _cleanupInProgress, 1) == 1) return;
+
+        try
         {
-            // Clean up the insertion order queue by removing keys that are no longer in cache
-            if (_insertionOrder.Count <= 0) return;
+            lock (_orderLock)
+            {
+                if (_insertionOrder.Count > _cache.Count)
+                    CleanupExpiredEntriesUnderLock();
+            }
 
-            var validKeys = new Queue<TKey>(_cache.Count);
-            while (_insertionOrder.TryDequeue(out var key))
-                if (_cache.TryGetValue(key, out _))
-                    validKeys.Enqueue(key);
-
-            _insertionOrder.Clear();
-            foreach (var key in validKeys) _insertionOrder.Enqueue(key);
+            Interlocked.Exchange(ref _lastCleanupTick, now);
+        }
+        finally
+        {
+            Volatile.Write(ref _cleanupInProgress, 0);
         }
     }
 
@@ -191,13 +226,8 @@ public class TtlCache<TKey, TValue> : IDisposable
 
         EnforceCapacity();
 
-        // Aggressively cleanup expired entries when adding new items
-        // When items expire via TTL, they're removed from _cache but still in _insertionOrder queue
-        // This causes memory leak as stale keys accumulate
-        lock (_orderLock)
-        {
-            if (_insertionOrder.Count > _cache.Count) CleanupExpiredEntries();
-        }
+        // Cleanup stale insertion-order keys in a throttled way to avoid hot-path stalls.
+        if (_insertionOrder.Count > _cache.Count) TryCleanupExpiredEntriesThrottled();
     }
 
     /// <inheritdoc cref="Dictionary{TKey,TValue}.Add"/>
@@ -213,13 +243,8 @@ public class TtlCache<TKey, TValue> : IDisposable
     {
         CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
 
-        // Aggressively cleanup expired entries to prevent memory leak
-        // When items expire via TTL, they're removed from _cache but still in _insertionOrder queue
-        // This causes memory leak as stale keys accumulate
-        lock (_orderLock)
-        {
-            if (_insertionOrder.Count > _cache.Count) CleanupExpiredEntries();
-        }
+        // Cleanup stale insertion-order keys in a throttled way to avoid hot-path stalls.
+        if (_insertionOrder.Count > _cache.Count) TryCleanupExpiredEntriesThrottled();
 
         if (_cache.TryGetValue(key, out var cachedValue) && cachedValue is TValue)
         {

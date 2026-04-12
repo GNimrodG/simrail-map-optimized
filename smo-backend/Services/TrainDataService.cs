@@ -80,9 +80,9 @@ public partial class TrainDataService(
     {
         var totalSw = Stopwatch.StartNew();
 
-        var fetchSw = Stopwatch.StartNew();
+        var getTrainsSw = Stopwatch.StartNew();
         var trains = await apiClient.GetTrainsAsync(serverCode, stoppingToken);
-        fetchSw.Stop();
+        getTrainsSw.Stop();
 
         var batchTrainTypeCache = new Dictionary<string, string?>(StringComparer.Ordinal);
 
@@ -102,7 +102,7 @@ public partial class TrainDataService(
         enrichSw.Stop();
 
         totalSw.Stop();
-        LogTrainFetchPhases(serverCode, trains.Length, fetchSw.ElapsedMilliseconds, enrichSw.ElapsedMilliseconds,
+        LogTrainFetchPhases(serverCode, trains.Length, getTrainsSw.ElapsedMilliseconds, enrichSw.ElapsedMilliseconds,
             totalSw.ElapsedMilliseconds);
 
         return trains;
@@ -164,7 +164,7 @@ public partial class TrainDataService(
 
         if (totalMs >= 1000)
             logger.LogInformation(
-                "TRAIN fetch phases for {ServerCode}: fetch={FetchMs}ms enrich={EnrichMs}ms total={TotalMs}ms trains={TrainCount}",
+                "TRAIN fetch phases for {ServerCode}: getTrains={FetchMs}ms enrich={EnrichMs}ms total={TotalMs}ms trains={TrainCount}",
                 serverCode, fetchMs, enrichMs, totalMs, trainCount);
         else
             LogTrainDebugFetchPhasesForServer(serverCode, fetchMs, enrichMs, totalMs, trainCount);
@@ -228,7 +228,7 @@ public partial class TrainDataService(
         long totalMs, int trainCount);
 
     [LoggerMessage(LogLevel.Debug,
-        "TRAIN fetch phases for {ServerCode}: fetch={FetchMs}ms enrich={EnrichMs}ms total={TotalMs}ms trains={TrainCount}")]
+        "TRAIN fetch phases for {ServerCode}: getTrains={FetchMs}ms enrich={EnrichMs}ms total={TotalMs}ms trains={TrainCount}")]
     partial void LogTrainDebugFetchPhasesForServer(string serverCode, long fetchMs, long enrichMs, long totalMs,
         int trainCount);
 }

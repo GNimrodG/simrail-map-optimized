@@ -46,6 +46,9 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
     private readonly int _minDistanceToSignal = StdUtils.GetEnvVar("SIGNAL_MIN_DISTANCE", 100);
 
+    private readonly int _phaseTimingLogThresholdMs =
+        StdUtils.GetEnvVar("SIGNALS_PROC_PHASE_TIMING_LOG_THRESHOLD_MS", 250);
+
     private readonly QueueProcessor<Dictionary<string, Train[]>> _queueProcessor;
     private readonly IServiceScopeFactory _scopeFactory;
 
@@ -574,8 +577,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
         _logger.LogInformation("Processing train data...");
 
-        var stopwatch = new Stopwatch();
-        stopwatch.Start();
+        var stopwatch = Stopwatch.StartNew();
         var invalidTrainsPerServer = trains.Values.SelectMany(t => t)
             .GroupBy(t => t.ServerCode)
             .ToDictionary(g => g.Key, _ => 0);
@@ -593,9 +595,13 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         using var scope = _scopeFactory.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
+        var signalFetchSw = Stopwatch.StartNew();
         var signalLookup = await GetRelevantSignalsOptimized(relevantSignals, context);
+        signalFetchSw.Stop();
+
         var signals = signalLookup.Values.ToList();
 
+        var trainProcessingSw = Stopwatch.StartNew();
         // Important: as these are all the trains in every server, one signal can change multiple times
         foreach (var train in allTrains)
         {
@@ -668,13 +674,17 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 DateTime.Now, train.TrainData.Velocity));
         }
 
+        trainProcessingSw.Stop();
+
+        var saveSw = Stopwatch.StartNew();
         await context.SaveChangesAsync();
+        saveSw.Stop();
 
         // Clear the ChangeTracker to release memory
         context.ChangeTracker.Clear();
 
-        var elapsed = (int)stopwatch.ElapsedMilliseconds;
         stopwatch.Stop();
+        var elapsed = (int)stopwatch.ElapsedMilliseconds;
 
         var invalidTrainsSum = invalidTrainsPerServer.Values.Sum();
 
@@ -685,7 +695,27 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         foreach (var (serverCode, count) in invalidTrainsPerServer)
             InvalidTrainsHistogram.WithLabels(serverCode).Observe(count);
 
+        LogSignalProcessingPhases(allTrains.Count, relevantSignals.Length, signalFetchSw.ElapsedMilliseconds,
+            trainProcessingSw.ElapsedMilliseconds, saveSw.ElapsedMilliseconds, elapsed, invalidTrainsSum);
+
         await _scopeFactory.LogStat("SIGNALS-PROC", elapsed);
+    }
+
+    private void LogSignalProcessingPhases(int trainCount, int relevantSignalCount, long signalFetchMs,
+        long trainProcessingMs, long saveMs, long totalMs, int invalidTrainCount)
+    {
+        if (totalMs < _phaseTimingLogThresholdMs) return;
+
+        if (totalMs >= 1000)
+            _logger.LogInformation(
+                "SIGNALS-PROC phases: signalFetch={SignalFetchMs}ms trainLoop={TrainProcessingMs}ms saveChanges={SaveMs}ms total={TotalMs}ms trains={TrainCount} relevantSignals={RelevantSignalCount} invalidTrains={InvalidTrainCount}",
+                signalFetchMs, trainProcessingMs, saveMs, totalMs, trainCount, relevantSignalCount,
+                invalidTrainCount);
+        else
+            _logger.LogDebug(
+                "SIGNALS-PROC phases: signalFetch={SignalFetchMs}ms trainLoop={TrainProcessingMs}ms saveChanges={SaveMs}ms total={TotalMs}ms trains={TrainCount} relevantSignals={RelevantSignalCount} invalidTrains={InvalidTrainCount}",
+                signalFetchMs, trainProcessingMs, saveMs, totalMs, trainCount, relevantSignalCount,
+                invalidTrainCount);
     }
 
     private async Task<MinimalSignalData> UpdateSignal(MinimalSignalData? signal, Train train,
