@@ -11,6 +11,7 @@ namespace SMOBackend.Services;
 internal class ClientDataSenderService(
     ILogger<ClientDataSenderService> logger,
     IHubContext<MainHub> hub,
+    ClientManagerService clientManagerService,
     ServerDataService serverDataService,
     StationDataService stationDataService,
     TrainDataService trainDataService,
@@ -108,6 +109,9 @@ internal class ClientDataSenderService(
 
     private async void OnTrainDataReceived(PerServerData<Train[]> data)
     {
+        if (!HasSubscribersForServer(data.ServerCode))
+            return;
+
         var totalSw = Stopwatch.StartNew();
         long applyPositionsMs = 0;
         long sendTrainsMs = 0;
@@ -265,6 +269,14 @@ internal class ClientDataSenderService(
         catch (Exception e)
         {
             logger.LogError(e, "Error sending time to clients");
+        }
+    }
+
+    private bool HasSubscribersForServer(string serverCode)
+    {
+        lock (clientManagerService.SelectedServers)
+        {
+            return clientManagerService.SelectedServers.Values.Contains(serverCode);
         }
     }
 }

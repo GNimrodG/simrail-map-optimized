@@ -1233,6 +1233,7 @@
     "Name": "Kraków Główny",
     "Prefix": "KG",
     "DifficultyLevel": -1,
+    "MainImageUrl": "/assets/stations/Krakow_Glowny.jpg",
     "DispatchedBy": [],
     "Latitude": 50.071904472719126,
     "Longitude": 19.947586302048965,

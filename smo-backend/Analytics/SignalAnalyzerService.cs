@@ -216,6 +216,8 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     /// </summary>
     protected virtual async Task<SignalStatus[]> GetSignals()
     {
+        SignalStatus[] snapshotToClone;
+
         if (_signalsSnapshotCacheDuration > TimeSpan.Zero)
         {
             var cached = _signalsSnapshot;
@@ -230,23 +232,29 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             {
                 var cached = _signalsSnapshot;
                 if (cached != null && DateTime.UtcNow - _signalsSnapshotUpdatedAt <= _signalsSnapshotCacheDuration)
-                    return CloneSignals(cached);
+                {
+                    snapshotToClone = cached;
+                }
+                else
+                {
+                    var loaded = await LoadSignalsFromDatabase().NoContext();
+
+                    _signalsSnapshot = loaded;
+                    _signalsSnapshotUpdatedAt = DateTime.UtcNow;
+                    snapshotToClone = loaded;
+                }
             }
-
-            var loaded = await LoadSignalsFromDatabase().NoContext();
-
-            if (_signalsSnapshotCacheDuration > TimeSpan.Zero)
+            else
             {
-                _signalsSnapshot = loaded;
-                _signalsSnapshotUpdatedAt = DateTime.UtcNow;
+                snapshotToClone = await LoadSignalsFromDatabase().NoContext();
             }
-
-            return CloneSignals(loaded);
         }
         finally
         {
             _signalsSnapshotLock.Release();
         }
+
+        return CloneSignals(snapshotToClone);
     }
 
     private async Task<SignalStatus[]> LoadSignalsFromDatabase()
@@ -758,10 +766,11 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         trainProcessingSw.Stop();
 
         var saveSw = Stopwatch.StartNew();
-        await context.SaveChangesAsync();
+        var changedRows = await context.SaveChangesAsync();
         saveSw.Stop();
 
-        InvalidateSignalsSnapshot();
+        if (changedRows > 0)
+            InvalidateSignalsSnapshot();
 
         // Clear the ChangeTracker to release memory
         context.ChangeTracker.Clear();
