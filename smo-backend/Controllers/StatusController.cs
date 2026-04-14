@@ -11,6 +11,20 @@ using SMOBackend.Utils;
 
 namespace SMOBackend.Controllers;
 
+/// <summary>
+///     Provides REST endpoints for current SMO server status, train, station, and analytics data.
+/// </summary>
+/// <param name="clientManagerService">Tracks connected clients and selected server groups.</param>
+/// <param name="serverDataService">Provides latest server status data.</param>
+/// <param name="trainDataService">Provides train data per server.</param>
+/// <param name="timetableDataService">Provides timetable data and train timetable lookup.</param>
+/// <param name="stationDataService">Provides station data per server.</param>
+/// <param name="timeDataService">Provides in-game time data per server.</param>
+/// <param name="delayAnalyzerService">Computes train delay metrics.</param>
+/// <param name="timetableAnalyzerService">Aggregates timetable entries by station.</param>
+/// <param name="routePointAnalyzerService">Analyzes route-line and signal-line geometry data.</param>
+/// <param name="serverRestartAnalyzerService">Analyzes and predicts server restart patterns.</param>
+/// <param name="stationAnalyzerService">Stores and serves known station metadata.</param>
 [ApiController]
 [Route("status")]
 [Produces("application/json")]
@@ -268,6 +282,11 @@ public class StatusController(
         return Ok(delays);
     }
 
+    /// <summary>
+    ///     Gets restart history and last-known restart state for a specific server.
+    /// </summary>
+    /// <param name="serverCode">The server code.</param>
+    /// <returns>Restart status data for the server.</returns>
     [HttpGet("{serverCode}/restarts")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(NotFoundError))]
@@ -279,6 +298,34 @@ public class StatusController(
         var restartData = serverRestartAnalyzerService.GetRestartData(serverCode);
 
         return Ok(restartData);
+    }
+
+    /// <summary>
+    ///     Gets the next probable restart time for a specific server.
+    /// </summary>
+    [HttpGet("{serverCode}/restarts/next")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(NotFoundError))]
+    public ActionResult<ServerRestartPrediction> GetNextServerRestart(string serverCode)
+    {
+        if (!CheckServer(serverCode))
+            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+
+        return Ok(serverRestartAnalyzerService.GetNextRestartPrediction(serverCode));
+    }
+
+    /// <summary>
+    ///     Gets the next probable restart time for all known servers.
+    /// </summary>
+    [HttpGet("restarts/next")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(NotFoundError))]
+    public ActionResult<ServerRestartPrediction[]> GetNextServerRestarts()
+    {
+        if (serverDataService.Data == null)
+            return NotFound(new NotFoundError("Server data not found", "server_data_not_found"));
+
+        return Ok(serverRestartAnalyzerService.GetNextRestartPredictions());
     }
 
     /// <summary>

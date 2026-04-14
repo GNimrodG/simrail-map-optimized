@@ -18,7 +18,8 @@ internal class ClientDataSenderService(
     TrainPositionDataService trainPositionDataService,
     TimeDataService timeDataService,
     SignalAnalyzerService signalAnalyzerService,
-    TrainDelayAnalyzerService trainDelayAnalyzerService
+    TrainDelayAnalyzerService trainDelayAnalyzerService,
+    ServerRestartAnalyzerService serverRestartAnalyzerService
 ) : IHostedService
 {
     private readonly int _phaseTimingLogThresholdMs =
@@ -68,6 +69,8 @@ internal class ClientDataSenderService(
         {
             logger.LogTrace("Sending servers to clients");
             await hub.Clients.All.SendAsync("ServersReceived", servers);
+            await hub.Clients.All.SendAsync("NextServerRestartsReceived",
+                serverRestartAnalyzerService.GetNextRestartPredictions());
         }
         catch (Exception e)
         {

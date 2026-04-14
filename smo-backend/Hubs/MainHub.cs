@@ -344,7 +344,7 @@ public class MainHub(
             return null;
         }
     }
-    
+
     /// <summary>
     ///     Gets the Xbox profile data for a given XUID.
     /// </summary>
@@ -403,6 +403,22 @@ public class MainHub(
         }
 
         return null;
+    }
+
+    /// <summary>
+    ///     Gets the next server restart prediction for a specific server.
+    /// </summary>
+    public ServerRestartPrediction GetNextServerRestartByCode(string serverCode)
+    {
+        return serverRestartAnalyzerService.GetNextRestartPrediction(serverCode);
+    }
+
+    /// <summary>
+    ///     Gets next probable restart times for all known servers.
+    /// </summary>
+    public ServerRestartPrediction[] GetNextServerRestarts()
+    {
+        return serverRestartAnalyzerService.GetNextRestartPredictions();
     }
 
     /// <summary>
