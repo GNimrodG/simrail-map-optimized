@@ -1,14 +1,22 @@
-FROM node:current-slim AS builder
+FROM node:26-slim AS builder
+
+# Install corepack and enable it to use the correct version of yarn
+RUN npm install -g corepack && corepack enable
 
 WORKDIR /app
 
+# Copy package.json and yarn.lock first to leverage Docker cache for dependencies
 COPY package.json yarn.lock ./
 
-RUN yarn install
+# Install dependencies with a longer network timeout to handle slow connections
+RUN yarn install --frozen-lockfile --non-interactive --network-timeout 600000
 
-COPY . .
+# Copy all files except nginx.conf to the working directory
+COPY --exclude="nginx.conf" . .
 
+# Set the NODE_ENV to production for the build process
 ENV NODE_ENV=production
+# Build the application
 RUN yarn build
 
 FROM nginx:stable-alpine

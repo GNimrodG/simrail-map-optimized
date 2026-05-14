@@ -1,0 +1,7 @@
+.eslintrc.cjs
+.gitignore
+.idea
+.vscode
+.prettierrc
+dist
+node_modules
