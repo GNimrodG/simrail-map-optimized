@@ -1209,10 +1209,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@mantine/hooks@^9.0.0":
-  version "9.2.2"
-  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-9.2.2.tgz#57aeeb2e682b74df10fa5136bc060b1f97f9d823"
-  integrity sha512-E0eKEMv47Xo+QVKYj2buzLJURcO/Qfb12EvM4mjKlXPuTqYhl+Fvg7Sg+xHmta8iTtBvo/5G+iNeqc4pfs8eaA==
+"@mantine/hooks@^9.3.0":
+  version "9.3.0"
+  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-9.3.0.tgz#c22d6506d55f259ffc67e92e50376c2552cd16bc"
+  integrity sha512-QoSr9WI4WsKWrM3qFYYizHUn3+n+CVcFMYe4sdlnmFPStvs6BacPODKJSbFlYl73Z20t82JIy0eKqt4noHQI2g==
 
 "@microsoft/signalr-protocol-msgpack@^10.0.0":
   version "10.0.0"
