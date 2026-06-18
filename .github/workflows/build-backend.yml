@@ -23,7 +23,7 @@ jobs:
       checks: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
         with:
@@ -58,7 +58,7 @@ jobs:
       SHOULD_PUSH: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' && secrets.DOCKER_REGISTRY_USERNAME != '' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v6
