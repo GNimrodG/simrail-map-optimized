@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using MessagePack;
+﻿using MessagePack;
 using Newtonsoft.Json;
 using SMOBackend.Models.Entity;
 using SMOBackend.Utils;
@@ -76,16 +75,40 @@ public class Train : IEntityWithTimestamp
     public string GetTrainId() => $"{TrainNoLocal}@{ServerCode}-{Id}";
 
     /// <inheritdoc />
-    public override string ToString() => GetTrainId() +
-                                         (!string.IsNullOrEmpty(TrainData.SignalInFront)
-                                             ? $" at {TrainData.SignalInFront}"
-                                             : string.Empty);
+    public override string ToString()
+    {
+        return (TrainType ?? "") + GetTrainId() +
+               (!string.IsNullOrEmpty(TrainData.SignalInFront)
+                   ? $" at {TrainData.SignalInFront}"
+                   : string.Empty);
+    }
 
     /// <summary>
     /// Partial train data, the data that changes frequently.
     /// </summary>
     public class PartialTrainData
     {
+        public PartialTrainData()
+        {
+        }
+
+        public PartialTrainData(Train train)
+        {
+            Id = train.Id;
+            Type = train.Type;
+            Velocity = train.TrainData.Velocity;
+            SignalInFront = train.TrainData.GetSignal();
+            DistanceToSignalInFront = train.TrainData.DistanceToSignalInFront;
+            SignalInFrontSpeed = train.TrainData.SignalInFrontSpeed;
+            ControlledBySteamId = train.TrainData.ControlledBySteamID;
+            ControlledByXboxId = train.TrainData.ControlledByXboxID;
+            InBorderStationArea = train.TrainData.InBorderStationArea;
+            Latitude = train.TrainData.Latitude;
+            Longitude = train.TrainData.Longitude;
+            VdDelayedTimetableIndex = train.TrainData.VDDelayedTimetableIndex;
+            RequiredMapDlCs = train.TrainData.RequiredMapDLCs;
+        }
+
         /// <inheritdoc cref="Train.Id"/>
         public string Id { get; set; }
 
@@ -107,7 +130,7 @@ public class Train : IEntityWithTimestamp
         /// <inheritdoc cref="TrainData.ControlledBySteamID"/>
         [JsonProperty("ControlledBySteamID")]
         public string? ControlledBySteamId { get; set; }
-        
+
         /// <inheritdoc cref="TrainData.ControlledByXboxID"/>
         [JsonProperty("ControlledByXboxID")]
         public string? ControlledByXboxId { get; set; }
@@ -128,26 +151,5 @@ public class Train : IEntityWithTimestamp
         /// <inheritdoc cref="TrainData.RequiredMapDLCs"/>
         [JsonProperty("RequiredMapDLCs")]
         public uint[][]? RequiredMapDlCs { get; set; }
-
-        public PartialTrainData()
-        {
-        }
-
-        public PartialTrainData(Train train)
-        {
-            Id = train.Id;
-            Type = train.Type;
-            Velocity = train.TrainData.Velocity;
-            SignalInFront = train.TrainData.GetSignal();
-            DistanceToSignalInFront = train.TrainData.DistanceToSignalInFront;
-            SignalInFrontSpeed = train.TrainData.SignalInFrontSpeed;
-            ControlledBySteamId = train.TrainData.ControlledBySteamID;
-            ControlledByXboxId = train.TrainData.ControlledByXboxID;
-            InBorderStationArea = train.TrainData.InBorderStationArea;
-            Latitude = train.TrainData.Latitude;
-            Longitude = train.TrainData.Longitude;
-            VdDelayedTimetableIndex = train.TrainData.VDDelayedTimetableIndex;
-            RequiredMapDlCs = train.TrainData.RequiredMapDLCs;
-        }
     }
 }

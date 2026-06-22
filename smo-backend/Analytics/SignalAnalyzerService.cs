@@ -21,6 +21,11 @@ namespace SMOBackend.Analytics;
 /// </summary>
 public partial class SignalAnalyzerService : IHostedService, IServerMetricsCleaner
 {
+    /// <summary>
+    ///     Delegate for handling signal change events.
+    /// </summary>
+    public delegate void SignalChangedDataReceivedEventHandler(SignalChangeData data);
+
     private static readonly Gauge SignalAnalyzerQueueGauge = Metrics
         .CreateGauge("smo_signal_analyzer_queue", "Number of items in the signal analyzer queue");
 
@@ -729,9 +734,11 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 }
             }
 
+            TrainPrevSignalData? prevSignalData = null;
+
             if (signal != null)
             {
-                var prevSignalData = GetTrainPrevSignalData(train.GetTrainId());
+                prevSignalData = GetTrainPrevSignalData(train.GetTrainId());
 
                 if (prevSignalData != null)
                 {
@@ -755,6 +762,9 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                     }
                 }
             }
+
+            if (prevSignalData != null && prevSignalData.SignalName != signal?.Name || signal?.Name != null)
+                SignalChanged?.Invoke(new(train, prevSignalData?.SignalName ?? null));
 
             AddTrainPrevSignalData(train.GetTrainId(), new(
                 signalId,
@@ -1207,6 +1217,11 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     partial void LogSignalNotFoundInDatabase(string signalId);
 
     /// <summary>
+    ///     Event triggered when a train changes its signal. Provides the train data, previous signal, and current signal.
+    /// </summary>
+    public event SignalChangedDataReceivedEventHandler? SignalChanged;
+
+    /// <summary>
     ///     Represents the previous signal data for a train.
     /// </summary>
     public record TrainPrevSignalData(
@@ -1313,5 +1328,17 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     {
         public required string Name { get; init; }
         public required short? Vmax { get; init; }
+    }
+
+    /// <summary>
+    ///     Represents the data for a signal change event.
+    /// </summary>
+    public record SignalChangeData(Train Train, string? PrevSignalId)
+    {
+        /// <summary>
+        ///     Gets the current signal ID of the train after the change. This is a convenience property that retrieves the signal
+        ///     ID directly from the train data.
+        /// </summary>
+        public string? CurrentSignalId => Train.TrainData.GetSignal();
     }
 }

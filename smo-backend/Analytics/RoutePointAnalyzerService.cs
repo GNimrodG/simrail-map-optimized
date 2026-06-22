@@ -1,7 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.IO;
+using NetTopologySuite.LinearReferencing;
+using NetTopologySuite.Simplify;
 using Npgsql;
 using Prometheus;
 using SMOBackend.Data;
@@ -28,7 +32,7 @@ public record RoutePointGroup(string RouteId, string RunId, string TrainId);
 /// <remarks>
 /// This service processes train location data, creates route points, and performs cleanup operations.
 /// </remarks>
-public class RoutePointAnalyzerService : IHostedService
+public partial class RoutePointAnalyzerService : IHostedService
 {
     /// <summary>
     ///     Prometheus gauge for monitoring route point queue size.
@@ -169,6 +173,7 @@ public class RoutePointAnalyzerService : IHostedService
         _cancellationTokenSource = new();
 
         _trainDataService.DataReceived += OnTrainDataReceived;
+        _signalAnalyzerService.SignalChanged += OnSignalChanged;
 
         // Start tasks for periodic cleanup
         _cleanRouteLinesTask = Task.Run(() => CleanRouteLines(_cancellationTokenSource.Token), cancellationToken);
@@ -186,12 +191,44 @@ public class RoutePointAnalyzerService : IHostedService
         await _cancellationTokenSource.CancelAsync();
 
         _trainDataService.DataReceived -= OnTrainDataReceived;
+        _signalAnalyzerService.SignalChanged -= OnSignalChanged;
         _queueProcessor.ClearQueue();
 
         // Wait for tasks to complete
         await Task.WhenAll(_cleanRouteLinesTask!, _cleanOldLines!);
 
         _logger.LogInformation("Stopped route point analyzer service");
+    }
+
+    private async void OnSignalChanged(SignalAnalyzerService.SignalChangeData data)
+    {
+        try
+        {
+            // Backfill the past route points signal data if it was null
+            if (data.PrevSignalId is null || data.CurrentSignalId is null) return;
+
+            using var scope = _scopeFactory.CreateScope();
+            await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
+
+            var routePoints = await context.RoutePoints.Where(x =>
+                x.RouteId == data.Train.TrainNoLocal && x.RunId == data.Train.RunId && x.TrainId == data.Train.Id &&
+                x.PrevSignal == null && x.NextSignal == null).ToListAsync();
+
+            if (routePoints.Count == 0) return;
+
+            foreach (var routePoint in routePoints)
+            {
+                routePoint.PrevSignal = data.PrevSignalId;
+                routePoint.NextSignal = data.CurrentSignalId;
+            }
+
+            await context.SaveChangesAsync();
+            LogUpdatedCountRoutePointsForTrain(routePoints.Count, data.Train.GetTrainId());
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error updating route points for signal change");
+        }
     }
 
     /// <summary>
@@ -517,7 +554,7 @@ public class RoutePointAnalyzerService : IHostedService
     {
         try
         {
-            _logger.LogTrace("Received train data for {ServerCount} servers", data.Count);
+            LogReceivedTrainDataForServers(data.Count);
 
             // Update active train cache
             var now = DateTime.UtcNow;
@@ -631,6 +668,7 @@ public class RoutePointAnalyzerService : IHostedService
         }).ToList();
 
         foreach (var item in trainQueries)
+        {
             try
             {
                 var distance = await item.Query;
@@ -652,6 +690,7 @@ public class RoutePointAnalyzerService : IHostedService
                 _logger.LogError(ex, "Error processing train {TrainId}", item.Train.GetTrainId());
                 discardedCount++;
             }
+        }
 
         return (pointsToAdd, processedCount, discardedCount);
     }
@@ -860,6 +899,55 @@ public class RoutePointAnalyzerService : IHostedService
         }
     }
 
+    private static LineString MergeByProjectionSort(
+        IEnumerable<string> wktLines,
+        double simplifyTolerance = 0.00005, // tune this — see notes below
+        int srid = 4326)
+    {
+        var factory = NtsGeometryServices.Instance.CreateGeometryFactory(srid);
+        var reader = new WKTReader(factory);
+
+        var lines = wktLines
+            .Select(wkt => (LineString)reader.Read(wkt))
+            .ToList();
+
+        if (lines.Count == 0) throw new ArgumentException("No lines provided.");
+        if (lines.Count == 1) return lines[0];
+
+        // 1. Orient all lines in the same direction
+        var refLine = lines.OrderByDescending(l => l.Length).First();
+        var refVec = (
+            dx: refLine.EndPoint.X - refLine.StartPoint.X,
+            dy: refLine.EndPoint.Y - refLine.StartPoint.Y
+        );
+
+        var oriented = lines.Select(line =>
+        {
+            var vec = (dx: line.EndPoint.X - line.StartPoint.X, dy: line.EndPoint.Y - line.StartPoint.Y);
+            return refVec.dx * vec.dx + refVec.dy * vec.dy < 0
+                ? (LineString)line.Reverse()
+                : line;
+        }).ToList();
+
+        // 2. Build a projection index from the reference line
+        var reference = oriented.OrderByDescending(l => l.Length).First();
+        var refIdx = new LengthIndexedLine(reference);
+
+        // 3. Dump ALL coordinates from ALL lines, sort by their projected
+        //    position along the reference — this is the key ordering step
+        var allCoords = oriented
+            .SelectMany(l => l.Coordinates)
+            .Select(c => (coord: c, t: refIdx.Project(c)))
+            .OrderBy(x => x.t)
+            .Select(x => x.coord)
+            .ToArray();
+
+        // 4. Simplify removes the lateral zigzag while preserving corners
+        //    (DP keeps high-deviation points = corners, removes low-deviation = zigzag)
+        var raw = factory.CreateLineString(allCoords);
+        return (LineString)DouglasPeuckerSimplifier.Simplify(raw, simplifyTolerance);
+    }
+
     /// <summary>
     /// Gets the lines for a specific signal connection with optimized filtering.
     /// </summary>
@@ -867,10 +955,14 @@ public class RoutePointAnalyzerService : IHostedService
     {
         try
         {
-            return await GetFilteredRouteLines(
+            var routeLines = await GetFilteredRouteLines(
                 "WHERE prev_signal = @prevSignalId AND next_signal = @nextSignalId",
                 [new("@prevSignalId", prevSignalId), new("@nextSignalId", nextSignalId)],
                 maxLines);
+
+            var result = MergeByProjectionSort(routeLines);
+
+            return [result.AsText()];
         }
         catch (Exception ex)
         {
@@ -919,4 +1011,10 @@ public class RoutePointAnalyzerService : IHostedService
 
         return results;
     }
+
+    [LoggerMessage(LogLevel.Trace, "Received train data for {ServerCount} servers")]
+    partial void LogReceivedTrainDataForServers(int serverCount);
+
+    [LoggerMessage(LogLevel.Information, "Updated {Count} route points for train {TrainId} with new signal data")]
+    partial void LogUpdatedCountRoutePointsForTrain(int count, string trainId);
 }

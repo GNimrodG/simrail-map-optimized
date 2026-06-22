@@ -104,4 +104,11 @@ public class RoutePoint
     /// Created at timestamp of the route point.
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return
+            $"RoutePoint(#{Id}, {RouteId}, {RunId}-{TrainId}, ({Point.X}, {Point.Y}), InsidePlayArea={InsidePlayArea}, NextSignal={NextSignal}, PrevSignal={PrevSignal}, ServerCode={ServerCode}, CreatedAt={CreatedAt})";
+    }
 }

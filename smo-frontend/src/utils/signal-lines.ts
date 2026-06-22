@@ -1,6 +1,6 @@
-import { MapLineData } from "./map-lines-context";
-import { SignalStatus } from "./types";
-import { getCoordsFromLineString } from "./ui";
+import {MapLineData} from "./map-lines-context";
+import {SignalStatus} from "./types";
+import {getCoordsFromLineString} from "./ui";
 
 const SPEED_COLORS: Record<number, string> = {
   32767: "#00FF00",
@@ -118,7 +118,7 @@ const appendConnectionLines = async (
         continue;
       }
 
-      signalLines.forEach((line) => {
+      signalLines.forEach((line, lineIndex) => {
         const coords = [
           [prevSignalData.Location.Y, prevSignalData.Location.X] as [number, number],
           ...getCoordsFromLineString(line),
@@ -130,8 +130,9 @@ const appendConnectionLines = async (
           color2: getSpeedColor(prevSignal.Vmax),
           coords,
           index: index++,
-          width: 1,
-          label: undefined,
+          width: 3,
+          label:
+              lineIndex === 0 ? `${prevSignal.Name} -> ${signal.Name} (${formatVmaxLabel(prevSignal.Vmax)})` : undefined,
         });
       });
     } catch (error) {

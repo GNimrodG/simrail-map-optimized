@@ -247,7 +247,7 @@ public class StationAnalyzerService : IHostedService
                     {
                         if (_notFoundStations.Contains(station.NameOfPoint))
                         {
-                            _logger.LogWarning("Skipping station {StationName} as it was previously not found",
+                            _logger.LogTrace("Skipping station {StationName} as it was previously not found",
                                 station.NameOfPoint);
                             return;
                         }
