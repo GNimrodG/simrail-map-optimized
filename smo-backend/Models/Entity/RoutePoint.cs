@@ -14,6 +14,7 @@ namespace SMOBackend.Models.Entity;
 [Index(nameof(RouteId), IsUnique = false)]
 [Index(nameof(RouteId), nameof(RunId), nameof(TrainId), IsUnique = false)]
 [Index(nameof(RouteId), nameof(CreatedAt), IsUnique = false)]
+[Index(nameof(PrevSignal), nameof(NextSignal), IsUnique = false)]
 public class RoutePoint
 {
     private const int MaxRunIdLength = 43;

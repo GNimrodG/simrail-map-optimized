@@ -133,6 +133,8 @@ public partial class RoutePointAnalyzerService : IHostedService
     /// </summary>
     private Task? _cleanRouteLinesTask;
 
+    private TimedFunction? _signalLineGeneratorTask;
+
     /// <inheritdoc cref="RoutePointAnalyzerService" />
     public RoutePointAnalyzerService(ILogger<RoutePointAnalyzerService> logger,
         IServiceScopeFactory scopeFactory,
@@ -178,6 +180,10 @@ public partial class RoutePointAnalyzerService : IHostedService
         // Start tasks for periodic cleanup
         _cleanRouteLinesTask = Task.Run(() => CleanRouteLines(_cancellationTokenSource.Token), cancellationToken);
         _cleanOldLines = Task.Run(() => CleanOldLines(_cancellationTokenSource.Token), cancellationToken);
+        _signalLineGeneratorTask = new(GenerateSignalLines, TimeSpan.FromHours(1));
+
+        // Run on startup
+        GenerateSignalLines();
 
         _logger.LogInformation("Started route point analyzer service");
 
@@ -192,12 +198,79 @@ public partial class RoutePointAnalyzerService : IHostedService
 
         _trainDataService.DataReceived -= OnTrainDataReceived;
         _signalAnalyzerService.SignalChanged -= OnSignalChanged;
+        _signalLineGeneratorTask?.Dispose();
         _queueProcessor.ClearQueue();
 
         // Wait for tasks to complete
         await Task.WhenAll(_cleanRouteLinesTask!, _cleanOldLines!);
 
         _logger.LogInformation("Stopped route point analyzer service");
+    }
+
+    private async void GenerateSignalLines()
+    {
+        try
+        {
+            var stopwatch = Stopwatch.StartNew();
+            using var scope = _scopeFactory.CreateScope();
+            await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
+
+            var uniqueSignalLines = await context.RoutePoints.GroupBy(rp => new { rp.PrevSignal, rp.NextSignal })
+                .Select(g => new { g.Key.PrevSignal, g.Key.NextSignal, Count = g.Count() })
+                .Where(g => g.PrevSignal != null && g.NextSignal != null && g.Count > 1)
+                .ToListAsync();
+
+            var signalLineKeys = uniqueSignalLines.Select(s => $"{s.PrevSignal}-{s.NextSignal}").Distinct().ToList();
+
+            var storedSignalLines = await context.SignalLines
+                .Where(s => signalLineKeys.Contains(s.PrevSignal + "-" + s.NextSignal)).ToListAsync();
+
+            foreach (var signalLine in uniqueSignalLines)
+            {
+                var routeLines = await GetFilteredRouteLines(
+                    "WHERE prev_signal = @prevSignalId AND next_signal = @nextSignalId",
+                    [new("@prevSignalId", signalLine.PrevSignal), new("@nextSignalId", signalLine.NextSignal)],
+                    10);
+
+                if (routeLines.Length < 1) continue;
+
+                var result = routeLines.Length == 1
+                    ? (LineString)new WKTReader(NtsGeometryServices.Instance).Read(routeLines[0])
+                    : MergeByProjectionSort(routeLines);
+
+                SignalLine? storedLine = null;
+
+                if (storedSignalLines.Any(s =>
+                        s.PrevSignal == signalLine.PrevSignal && s.NextSignal == signalLine.NextSignal))
+                {
+                    storedLine = await context.SignalLines.FindAsync(signalLine.PrevSignal, signalLine.NextSignal);
+
+                    if (storedLine != null)
+                        result = MergeByProjectionSort([storedLine.Line.AsText(), result.AsText()]);
+                }
+
+                if (storedLine is null)
+                {
+                    storedLine = new()
+                    {
+                        PrevSignal = signalLine.PrevSignal,
+                        NextSignal = signalLine.NextSignal
+                    };
+                    context.SignalLines.Add(storedLine);
+                }
+
+                storedLine.Line = result;
+            }
+
+            var updatedCount = await context.SaveChangesAsync();
+            stopwatch.Stop();
+            LogUpdatedCountSignalLines(updatedCount, stopwatch.ElapsedMilliseconds);
+            await _scopeFactory.LogStat("SIGNALLINE", (int)stopwatch.ElapsedMilliseconds);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error generating signal lines");
+        }
     }
 
     private async void OnSignalChanged(SignalAnalyzerService.SignalChangeData data)
@@ -905,7 +978,7 @@ public partial class RoutePointAnalyzerService : IHostedService
         int srid = 4326)
     {
         var factory = NtsGeometryServices.Instance.CreateGeometryFactory(srid);
-        var reader = new WKTReader(factory);
+        var reader = new WKTReader(NtsGeometryServices.Instance);
 
         var lines = wktLines
             .Select(wkt => (LineString)reader.Read(wkt))
@@ -955,6 +1028,13 @@ public partial class RoutePointAnalyzerService : IHostedService
     {
         try
         {
+            using var scope = _scopeFactory.CreateScope();
+            await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
+
+            var signalLine = await context.SignalLines.FindAsync(prevSignalId, nextSignalId);
+
+            if (signalLine != null) return [signalLine.Line.AsText()];
+
             var routeLines = await GetFilteredRouteLines(
                 "WHERE prev_signal = @prevSignalId AND next_signal = @nextSignalId",
                 [new("@prevSignalId", prevSignalId), new("@nextSignalId", nextSignalId)],
@@ -1006,6 +1086,7 @@ public partial class RoutePointAnalyzerService : IHostedService
         allParams.Add(new("@maxLines", maxLines));
 
         var results = await context.Database
+            // ReSharper disable once CoVariantArrayConversion
             .SqlQueryRaw<string>(sql, allParams.ToArray())
             .ToArrayAsync();
 
@@ -1017,4 +1098,7 @@ public partial class RoutePointAnalyzerService : IHostedService
 
     [LoggerMessage(LogLevel.Information, "Updated {Count} route points for train {TrainId} with new signal data")]
     partial void LogUpdatedCountRoutePointsForTrain(int count, string trainId);
+
+    [LoggerMessage(LogLevel.Information, "Updated {Count} signal lines in {ElapsedMilliseconds} ms")]
+    partial void LogUpdatedCountSignalLines(int count, long elapsedMilliseconds);
 }

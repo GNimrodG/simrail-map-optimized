@@ -16,6 +16,8 @@ public class SmoContext(DbContextOptions<SmoContext> options) : DbContext(option
 
     public DbSet<RoutePoint> RoutePoints { get; set; }
 
+    public DbSet<SignalLine> SignalLines { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         foreach (var entityType in builder.Model.GetEntityTypes())
