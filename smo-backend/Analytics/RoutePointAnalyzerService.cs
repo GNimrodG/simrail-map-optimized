@@ -207,6 +207,10 @@ public partial class RoutePointAnalyzerService : IHostedService
         _logger.LogInformation("Stopped route point analyzer service");
     }
 
+    /// <summary>
+    ///     Runs every hour and generates signal lines by merging route lines between unique signal pairs and storing them in
+    ///     the database.
+    /// </summary>
     private async void GenerateSignalLines()
     {
         try
@@ -217,7 +221,7 @@ public partial class RoutePointAnalyzerService : IHostedService
 
             var uniqueSignalLines = await context.RoutePoints.GroupBy(rp => new { rp.PrevSignal, rp.NextSignal })
                 .Select(g => new { g.Key.PrevSignal, g.Key.NextSignal, Count = g.Count() })
-                .Where(g => g.PrevSignal != null && g.NextSignal != null && g.Count > 1)
+                .Where(g => g.PrevSignal != null && g.NextSignal != null && g.PrevSignal != g.NextSignal && g.Count > 1)
                 .ToListAsync();
 
             var signalLineKeys = uniqueSignalLines.Select(s => $"{s.PrevSignal}-{s.NextSignal}").Distinct().ToList();
