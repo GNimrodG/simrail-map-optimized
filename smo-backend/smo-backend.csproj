@@ -41,7 +41,7 @@
     <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
     <PackageReference Include="prometheus-net.AspNetCore.HealthChecks" Version="8.2.1" />
     <PackageReference Include="prometheus-net.SystemMetrics" Version="3.1.0" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.16.12"/>
+    <PackageReference Include="Scalar.AspNetCore" Version="2.16.13"/>
     <PackageReference Include="Sentry.AspNetCore" Version="6.6.0"/>
     <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="10.2.3"/>
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3"/>
