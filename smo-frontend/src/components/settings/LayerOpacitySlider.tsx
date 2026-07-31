@@ -10,6 +10,7 @@ import { useSetting } from "../../hooks/useSetting";
 export interface LayerOpacitySliderProps {
   layerId: string;
   layerType: "Overlay" | "Background";
+  legacyLayerId?: string;
 }
 
 const ValueLabelComponent: FunctionComponent<{ children: React.ReactNode }> = (props) => {
@@ -60,9 +61,14 @@ const ValueLabelComponent: FunctionComponent<{ children: React.ReactNode }> = (p
   );
 };
 
-const LayerOpacitySlider: FunctionComponent<LayerOpacitySliderProps> = ({ layerId, layerType = "Overlay" }) => {
+const LayerOpacitySlider: FunctionComponent<LayerOpacitySliderProps> = ({
+  layerId,
+  layerType = "Overlay",
+  legacyLayerId,
+}) => {
   const { t } = useTranslation("translation");
   const [value, setValue] = useSetting("layerOpacities");
+  const opacity = value[layerId] ?? (legacyLayerId ? value[legacyLayerId] : undefined) ?? 1;
 
   const marks: { value: number; label: string }[] = [
     { value: 0, label: "0%" },
@@ -83,7 +89,7 @@ const LayerOpacitySlider: FunctionComponent<LayerOpacitySliderProps> = ({ layerI
           valueLabel: ValueLabelComponent,
         }}
         valueLabelDisplay="auto"
-        value={value[layerId] * 100}
+        value={opacity * 100}
         onChange={(_e, v) => setValue({ ...value, [layerId]: (v as number) / 100 })}
       />
     </FormControl>

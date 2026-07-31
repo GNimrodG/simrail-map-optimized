@@ -1,3 +1,4 @@
+import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
 import IconButton from "@mui/joy/IconButton";
 import Stack from "@mui/joy/Stack";
@@ -11,9 +12,12 @@ import LayersIcon from "./icons/LayersIcon";
 
 const BACKGROUND_LAYERS = ["orm-infra", "orm-maxspeed", "orm-signals", "orm-electrification"];
 
+const MARKER_LAYER_GROUPS = [
+  { id: "stations", layers: ["bot-stations", "user-stations"] },
+  { id: "trains", layers: ["bot-trains", "user-trains"] },
+];
+
 const LAYERS = [
-  "stations",
-  "trains",
   "active-signals",
   "passive-signals",
   "selected-route",
@@ -31,6 +35,34 @@ const LayerMenu: FunctionComponent<LayerMenuProps> = ({ visibleLayers, setVisibl
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const isOsmAvailable = useBehaviorSubj(isOsmAvailable$);
+  const hasPartiallyVisibleMarkerGroup = MARKER_LAYER_GROUPS.some((group) => {
+    const visibleLayerCount = group.layers.filter((layer) => visibleLayers.includes(layer)).length;
+    return visibleLayerCount === 1;
+  });
+
+  const renderOverlayLayer = (layer: string) => (
+    <Checkbox
+      key={layer}
+      checked={visibleLayers.includes(layer)}
+      onChange={(e) => {
+        const checked = e.target.checked;
+        setVisibleLayers((layers) =>
+          checked ? [...layers, layer] : layers.filter((visibleLayer) => visibleLayer !== layer),
+        );
+      }}
+      label={t(`Layers.Overlay.${layer}`)}
+      size="sm"
+      disabled={!isOsmAvailable && layer === "stoppingpoints"}
+    />
+  );
+
+  const toggleLayerGroup = (groupLayers: string[]) => {
+    setVisibleLayers((layers) => {
+      const allVisible = groupLayers.every((layer) => layers.includes(layer));
+      const layersOutsideGroup = layers.filter((layer) => !groupLayers.includes(layer));
+      return allVisible ? layersOutsideGroup : [...layersOutsideGroup, ...groupLayers];
+    });
+  };
 
   return (
     <Tooltip
@@ -61,30 +93,59 @@ const LayerMenu: FunctionComponent<LayerMenuProps> = ({ visibleLayers, setVisibl
               }}
             />
           ))}
-          {LAYERS.map((layer) => (
-            <Checkbox
-              key={layer}
-              checked={visibleLayers.includes(layer)}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  setVisibleLayers([...visibleLayers, layer]);
-                } else {
-                  setVisibleLayers(visibleLayers.filter((l) => l !== layer));
-                }
-              }}
-              label={t(`Layers.Overlay.${layer}`)}
-              size="sm"
-              disabled={!isOsmAvailable && layer === "stoppingpoints"}
-            />
-          ))}
+          {MARKER_LAYER_GROUPS.map((group) => {
+            const allVisible = group.layers.every((layer) => visibleLayers.includes(layer));
+            const someVisible = group.layers.some((layer) => visibleLayers.includes(layer));
+
+            return (
+              <Stack key={group.id} spacing={0.5}>
+                <Checkbox
+                  checked={allVisible}
+                  indeterminate={someVisible && !allVisible}
+                  onChange={() => toggleLayerGroup(group.layers)}
+                  label={t(`Layers.Groups.${group.id}`)}
+                  size="sm"
+                  sx={{ fontWeight: "lg" }}
+                />
+                <Stack
+                  spacing={0.5}
+                  sx={{
+                    ml: 0.75,
+                    pl: 1,
+                    borderLeft: "2px solid",
+                    borderColor: "divider",
+                  }}>
+                  {group.layers.map(renderOverlayLayer)}
+                </Stack>
+              </Stack>
+            );
+          })}
+          {LAYERS.map(renderOverlayLayer)}
         </Stack>
       }>
       <IconButton
         variant="outlined"
-        sx={{ backgroundColor: "var(--joy-palette-background-surface)" }}
+        sx={{
+          backgroundColor: "var(--joy-palette-background-surface)",
+          position: "relative",
+        }}
         onClick={() => setIsOpen((isOpen) => !isOpen)}
         color="neutral">
         <LayersIcon />
+        {hasPartiallyVisibleMarkerGroup && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: -4,
+              right: -4,
+              width: 12,
+              height: 12,
+              borderRadius: "50%",
+              backgroundColor: "var(--joy-palette-danger-500)",
+              border: "2px solid var(--joy-palette-background-surface)",
+            }}
+          />
+        )}
       </IconButton>
     </Tooltip>
   );

@@ -10,7 +10,17 @@ import { getVisibleStations } from "../../utils/geom-utils";
 import { Station } from "../../utils/types";
 import StationMarker from "../markers/station/StationMarker";
 
-const StationsLayer: FunctionComponent = () => {
+type StationMarkerType = "bot" | "user";
+
+function filterStationsByMarkerType(stations: Station[], markerType: StationMarkerType) {
+  return stations.filter((station) => (station.DispatchedBy.length > 0 ? "user" : "bot") === markerType);
+}
+
+export interface StationsLayerProps {
+  markerType: StationMarkerType;
+}
+
+const StationsLayer: FunctionComponent<StationsLayerProps> = ({ markerType }) => {
   const map = useMap();
 
   const stations = useBehaviorSubj(dataProvider.stationsData$);
@@ -26,7 +36,9 @@ const StationsLayer: FunctionComponent = () => {
     // Create the debounced handler once
     if (!handlerRef.current) {
       handlerRef.current = debounce(function (this: L.Map) {
-        setVisibleStations(getVisibleStations(dataProvider.stationsData$.value, this));
+        setVisibleStations(
+          getVisibleStations(filterStationsByMarkerType(dataProvider.stationsData$.value, markerType), this),
+        );
       }, 500);
     }
 
@@ -38,22 +50,23 @@ const StationsLayer: FunctionComponent = () => {
 
     return () => {
       handler.cancel(); // Cancel any pending debounced calls
+      handlerRef.current = null;
       map.off("move", handler);
       map.off("zoom", handler);
       map.off("resize", handler);
     };
-  }, [map]);
+  }, [map, markerType]);
 
   useEffect(() => {
     if (map) {
-      setVisibleStations(getVisibleStations(stations, map));
+      setVisibleStations(getVisibleStations(filterStationsByMarkerType(stations, markerType), map));
     }
-  }, [stations, map]);
+  }, [stations, map, markerType]);
 
   return (
     <LayerGroup pane="stationsPane">
       {visibleStations?.map((station) => (
-        <StationMarker key={"station_" + station.Id} station={station} />
+        <StationMarker key={"station_" + station.Id} station={station} layerId={`${markerType}-stations`} />
       ))}
     </LayerGroup>
   );

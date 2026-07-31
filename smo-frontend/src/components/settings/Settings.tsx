@@ -138,8 +138,10 @@ const Settings: FunctionComponent = () => {
           <LayerOpacitySlider layerId="orm-maxspeed" layerType="Background" />
           <LayerOpacitySlider layerId="orm-signals" layerType="Background" />
           <LayerOpacitySlider layerId="orm-electrification" layerType="Background" />
-          <LayerOpacitySlider layerId="stations" layerType="Overlay" />
-          <LayerOpacitySlider layerId="trains" layerType="Overlay" />
+          <LayerOpacitySlider layerId="bot-stations" layerType="Overlay" legacyLayerId="stations" />
+          <LayerOpacitySlider layerId="user-stations" layerType="Overlay" legacyLayerId="stations" />
+          <LayerOpacitySlider layerId="bot-trains" layerType="Overlay" legacyLayerId="trains" />
+          <LayerOpacitySlider layerId="user-trains" layerType="Overlay" legacyLayerId="trains" />
           <LayerOpacitySlider layerId="active-signals" layerType="Overlay" />
           <LayerOpacitySlider layerId="passive-signals" layerType="Overlay" />
           <LayerOpacitySlider layerId="selected-route" layerType="Overlay" />

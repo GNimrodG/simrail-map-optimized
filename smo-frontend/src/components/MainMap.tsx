@@ -45,6 +45,16 @@ const TrainsLayer = lazy(() => import("./layers/TrainsLayer"));
 const UnplayableStationsLayer = lazy(() => import("./layers/UnplayableStationsLayer"));
 const StoppingPointsLayer = lazy(() => import("./layers/StoppingPointsLayer"));
 
+function migrateMarkerLayers(layers: string[]) {
+  const migratedLayers = layers.flatMap((layer) => {
+    if (layer === "stations") return ["bot-stations", "user-stations"];
+    if (layer === "trains") return ["bot-trains", "user-trains"];
+    return layer;
+  });
+
+  return [...new Set(migratedLayers)];
+}
+
 const MainMap: FunctionComponent = () => {
   const { t } = useTranslation();
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
@@ -61,6 +71,15 @@ const MainMap: FunctionComponent = () => {
   const [map, setMap] = useState<L.Map | null>(null);
 
   const [panesCreated, setPanesCreated] = useState(false);
+
+  useEffect(() => {
+    setVisibleLayers((layers) => {
+      const migratedLayers = migrateMarkerLayers(layers);
+      return migratedLayers.length === layers.length && migratedLayers.every((layer, index) => layer === layers[index])
+        ? layers
+        : migratedLayers;
+    });
+  }, [setVisibleLayers]);
 
   useEffect(() => {
     if (!map) return;
@@ -298,14 +317,24 @@ const MainMap: FunctionComponent = () => {
                 <PassiveSignalsLayer />
               </ErrorBoundary>
             )}
-            {visibleLayers.includes("stations") && (
-              <ErrorBoundary location="MainMap - StationsLayer">
-                <StationsLayer />
+            {visibleLayers.includes("bot-stations") && (
+              <ErrorBoundary location="MainMap - BotStationsLayer">
+                <StationsLayer markerType="bot" />
               </ErrorBoundary>
             )}
-            {visibleLayers.includes("trains") && (
-              <ErrorBoundary location="MainMap - TrainsLayer">
-                <TrainsLayer />
+            {visibleLayers.includes("user-stations") && (
+              <ErrorBoundary location="MainMap - UserStationsLayer">
+                <StationsLayer markerType="user" />
+              </ErrorBoundary>
+            )}
+            {visibleLayers.includes("bot-trains") && (
+              <ErrorBoundary location="MainMap - BotTrainsLayer">
+                <TrainsLayer markerType="bot" />
+              </ErrorBoundary>
+            )}
+            {visibleLayers.includes("user-trains") && (
+              <ErrorBoundary location="MainMap - UserTrainsLayer">
+                <TrainsLayer markerType="user" />
               </ErrorBoundary>
             )}
             {visibleLayers.includes("active-signals") && (

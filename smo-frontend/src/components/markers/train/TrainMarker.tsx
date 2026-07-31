@@ -15,6 +15,7 @@ import TrainMarkerPopup from "./TrainMarkerPopup";
 
 export interface TrainMarkerProps {
   train: Train;
+  layerId: string;
 }
 
 const DEFAULT_ICON = new DivIcon({
@@ -51,7 +52,7 @@ function getIcon(
   });
 }
 
-const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
+const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train, layerId }) => {
   const map = useMap();
   const focused = useIsDocumentFocused();
   const { selectedTrain } = useContext(SelectedTrainContext);
@@ -61,6 +62,7 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
   const [disableSlidingMarkers] = useSetting("disableSlidingMarkers");
   const [reduceBackgroundUpdates] = useSetting("reduceBackgroundUpdates");
   const [layerOpacities] = useSetting("layerOpacities");
+  const opacity = layerOpacities[layerId] ?? layerOpacities.trains ?? 1;
 
   const trainMarkerColor = useMemo(() => getColorTrainMarker(train.TrainData.Velocity), [train.TrainData.Velocity]);
 
@@ -128,6 +130,7 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
       <Marker
         position={[train.TrainData.Latitude, train.TrainData.Longitude]}
         icon={icon}
+        opacity={opacity}
         eventHandlers={{
           popupopen: () => setIsPopupOpen(true),
           popupclose: () => setIsPopupOpen(false),
@@ -145,7 +148,7 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train }) => {
       position={[train.TrainData.Latitude, train.TrainData.Longitude]}
       keepAtCenter={shouldFollow}
       icon={icon}
-      opacity={layerOpacities["trains"]}
+      opacity={opacity}
       eventHandlers={{
         popupopen: () => setIsPopupOpen(true),
         popupclose: () => setIsPopupOpen(false),

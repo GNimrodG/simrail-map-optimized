@@ -14,6 +14,7 @@ import StationMarkerPopup from "./StationMarkerPopup";
 
 export interface StationMarkerProps {
   station: Station;
+  layerId: string;
 }
 
 const DEFAULT_ICON = new L.DivIcon({
@@ -42,11 +43,12 @@ function getIcon(stationName: string, lng: string, avatar?: string, osmData?: Os
   });
 }
 
-const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
+const StationMarker: FunctionComponent<StationMarkerProps> = ({ station, layerId }) => {
   const { i18n } = useTranslation();
   const markerRef = useRef<L.Marker>(null);
   const [icon, setIcon] = useState<L.Icon<Partial<L.IconOptions>>>(DEFAULT_ICON);
   const [layerOpacities] = useSetting("layerOpacities");
+  const opacity = layerOpacities[layerId] ?? layerOpacities.stations ?? 1;
   const osmData = useOsmData(station.Name, station.Prefix);
   const [translateStationNames] = useSetting("translateStationNames");
 
@@ -80,7 +82,7 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station }) => {
       key={station.Id}
       position={[station.Latitude, station.Longitude]}
       icon={icon}
-      opacity={layerOpacities["stations"]}
+      opacity={opacity}
       eventHandlers={{
         popupopen: () => setIsPopupOpen(true),
         popupclose: () => setIsPopupOpen(false),

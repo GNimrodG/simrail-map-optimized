@@ -7,6 +7,10 @@
       "Search": "Search",
       "ToggleTheme": "Toggle Theme",
       "Layers": {
+        "Groups": {
+          "stations": "Stations",
+          "trains": "Trains"
+        },
         "Background": {
           "orm-infra": "OpenRailwayMap - Infrastructure",
           "orm-maxspeed": "OpenRailwayMap - Maxspeed",
@@ -14,8 +18,10 @@
           "orm-electrification": "OpenRailwayMap - Electrification"
         },
         "Overlay": {
-          "stations": "Stations",
-          "trains": "Trains",
+          "bot-stations": "Bot-controlled Stations",
+          "user-stations": "Player-controlled Stations",
+          "bot-trains": "Bot-controlled Trains",
+          "user-trains": "Player-controlled Trains",
           "active-signals": "Active Signals",
           "passive-signals": "Passive Signals",
           "signals": "Signals",
@@ -380,6 +386,10 @@
       "Search": "Suche",
       "ToggleTheme": "Farbschema",
       "Layers": {
+        "Groups": {
+          "stations": "Bahnhöfe",
+          "trains": "Züge"
+        },
         "Background": {
           "orm-infra": "OpenRailwayMap - Infrastruktur",
           "orm-maxspeed": "OpenRailwayMap - Höchstgeschwindigkeit",
@@ -387,8 +397,10 @@
           "orm-electrification": "OpenRailwayMap - Elektrifizierung"
         },
         "Overlay": {
-          "stations": "Bahnhöfe",
-          "trains": "Züge",
+          "bot-stations": "Bot-gesteuerte Bahnhöfe",
+          "user-stations": "Spielergesteuerte Bahnhöfe",
+          "bot-trains": "Bot-gesteuerte Züge",
+          "user-trains": "Spielergesteuerte Züge",
           "active-signals": "Aktive Signale",
           "passive-signals": "Passive Signale",
           "signals": "Signale",
@@ -754,6 +766,10 @@
       "Search": "Keresés",
       "ToggleTheme": "Téma váltása",
       "Layers": {
+        "Groups": {
+          "stations": "Állomások",
+          "trains": "Vonatok"
+        },
         "Background": {
           "orm-infra": "OpenRailwayMap - Infrastruktúra",
           "orm-maxspeed": "OpenRailwayMap - Maximális sebesség",
@@ -761,8 +777,10 @@
           "orm-electrification": "OpenRailwayMap - Villamosítás"
         },
         "Overlay": {
-          "stations": "Állomások",
-          "trains": "Vonatok",
+          "bot-stations": "Bot által irányított állomások",
+          "user-stations": "Játékosok által irányított állomások",
+          "bot-trains": "Bot által irányított vonatok",
+          "user-trains": "Játékosok által irányított vonatok",
           "active-signals": "Aktív jelzők",
           "passive-signals": "Passzív jelzők",
           "signals": "Jelzők",
@@ -1132,6 +1150,10 @@
       "Search": "Ara",
       "ToggleTheme": "Temayı Değiştir",
       "Layers": {
+        "Groups": {
+          "stations": "İstasyonlar",
+          "trains": "Trenler"
+        },
         "Background": {
           "orm-infra": "OpenRailwayMap - Altyapı",
           "orm-maxspeed": "OpenRailwayMap - Maksimum Hız",
@@ -1139,8 +1161,10 @@
           "orm-electrification": "OpenRailwayMap - Elektrik Altyapısı"
         },
         "Overlay": {
-          "stations": "İstasyonlar",
-          "trains": "Trenler",
+          "bot-stations": "Bot kontrollü istasyonlar",
+          "user-stations": "Oyuncu kontrollü istasyonlar",
+          "bot-trains": "Bot kontrollü trenler",
+          "user-trains": "Oyuncu kontrollü trenler",
           "active-signals": "Aktif Sinyaller",
           "passive-signals": "Pasif Sinyaller",
           "signals": "Sinyaller",
@@ -1508,6 +1532,10 @@
       "Search": "Szukaj",
       "ToggleTheme": "Zmień Motyw",
       "Layers": {
+        "Groups": {
+          "stations": "Stacje",
+          "trains": "Pociągi"
+        },
         "Background": {
           "orm-infra": "OpenRailwayMap - Infrastruktura",
           "orm-maxspeed": "OpenRailwayMap - Maksymalna Prędkość",
@@ -1515,8 +1543,10 @@
           "orm-electrification": "OpenRailwayMap - Elektryfikacja"
         },
         "Overlay": {
-          "stations": "Stacje",
-          "trains": "Pociągi",
+          "bot-stations": "Stacje obsługiwane przez Boty",
+          "user-stations": "Stacje obsługiwane przez graczy",
+          "bot-trains": "Pociągi sterowane przez Boty",
+          "user-trains": "Pociągi prowadzone przez graczy",
           "active-signals": "Aktywne Sygnały",
           "passive-signals": "Pasywne Sygnały",
           "signals": "Sygnały",
@@ -1881,6 +1911,10 @@
       "Search": "Поиск",
       "ToggleTheme": "Переключить тему",
       "Layers": {
+        "Groups": {
+          "stations": "Станции",
+          "trains": "Поезда"
+        },
         "Background": {
           "orm-infra": "OpenRailwayMap - Инфраструктура",
           "orm-maxspeed": "OpenRailwayMap - Макс. скорость",
@@ -1888,8 +1922,10 @@
           "orm-electrification": "OpenRailwayMap - Электрификация"
         },
         "Overlay": {
-          "stations": "Станции",
-          "trains": "Поезда",
+          "bot-stations": "Станции под управлением Боты",
+          "user-stations": "Станции под управлением игроков",
+          "bot-trains": "Поезда под управлением Боты",
+          "user-trains": "Поезда под управлением игроков",
           "active-signals": "Активные сигналы",
           "passive-signals": "Пассивные сигналы",
           "signals": "Сигналы",
@@ -2254,6 +2290,10 @@
       "Search": "Пошук",
       "ToggleTheme": "Перемкнути тему",
       "Layers": {
+        "Groups": {
+          "stations": "Станції",
+          "trains": "Поїзди"
+        },
         "Background": {
           "orm-infra": "OpenRailwayMap - Інфраструктура",
           "orm-maxspeed": "OpenRailwayMap - Макс. швидкість",
@@ -2261,8 +2301,10 @@
           "orm-electrification": "OpenRailwayMap - Електрифікація"
         },
         "Overlay": {
-          "stations": "Станції",
-          "trains": "Поїзди",
+          "bot-stations": "Станції під керуванням Ботів",
+          "user-stations": "Станції під керуванням гравців",
+          "bot-trains": "Поїзди під керуванням Ботів",
+          "user-trains": "Поїзди під керуванням гравців",
           "active-signals": "Активні сигнали",
           "passive-signals": "Пасивні сигнали",
           "signals": "Сигнали",

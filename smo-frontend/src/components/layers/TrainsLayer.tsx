@@ -9,17 +9,23 @@ import SelectedTrainContext from "../../utils/selected-train-context";
 import { Train } from "../../utils/types";
 import TrainMarker from "../markers/train/TrainMarker";
 
-function getVisibleTrains(trains: Train[], map: LeafletMap | null, selectedTrainNo?: string) {
+function getVisibleTrains(
+  trains: Train[],
+  markerType: Train["Type"],
+  map: LeafletMap | null,
+  selectedTrainNo?: string,
+) {
   try {
+    const matchingTrains = trains.filter((train) => train.Type === markerType);
     const mapBounds = map?.getBounds();
 
     if (!mapBounds) {
       console.error("Map bounds not available for trains!");
-      return trains;
+      return matchingTrains;
     }
 
     // Early return for empty arrays
-    if (!trains.length) return [];
+    if (!matchingTrains.length) return [];
 
     // Extract bounds values once for better performance
     const north = mapBounds.getNorth();
@@ -28,7 +34,7 @@ function getVisibleTrains(trains: Train[], map: LeafletMap | null, selectedTrain
     const west = mapBounds.getWest();
 
     // Filter signals using direct coordinate comparison instead of method calls
-    return trains.filter((train) => {
+    return matchingTrains.filter((train) => {
       // If a train is selected, always show it
       if (selectedTrainNo && train.TrainNoLocal === selectedTrainNo) {
         return true;
@@ -42,11 +48,15 @@ function getVisibleTrains(trains: Train[], map: LeafletMap | null, selectedTrain
     });
   } catch (e) {
     console.error("Failed to filter visible trains: ", e);
-    return trains; // Fallback to showing all trains
+    return trains.filter((train) => train.Type === markerType);
   }
 }
 
-const TrainsLayer: FunctionComponent = () => {
+export interface TrainsLayerProps {
+  markerType: Train["Type"];
+}
+
+const TrainsLayer: FunctionComponent<TrainsLayerProps> = ({ markerType }) => {
   const map = useMap();
   const { selectedTrain } = useContext(SelectedTrainContext);
 
@@ -58,7 +68,7 @@ const TrainsLayer: FunctionComponent = () => {
     if (!map) return; // Early return if map is not available
 
     const handler = debounce(function (this: LeafletMap) {
-      setVisibleTrains(getVisibleTrains(dataProvider.trainsData$.value, this, selectedTrain?.trainNo));
+      setVisibleTrains(getVisibleTrains(dataProvider.trainsData$.value, markerType, this, selectedTrain?.trainNo));
     }, 500);
 
     // Map event handling
@@ -72,18 +82,18 @@ const TrainsLayer: FunctionComponent = () => {
       map.off("zoom", handler);
       map.off("resize", handler);
     };
-  }, [map, selectedTrain?.trainNo]);
+  }, [map, markerType, selectedTrain?.trainNo]);
 
   useEffect(() => {
     if (map) {
-      setVisibleTrains(getVisibleTrains(trains, map, selectedTrain?.trainNo));
+      setVisibleTrains(getVisibleTrains(trains, markerType, map, selectedTrain?.trainNo));
     }
-  }, [trains, map, selectedTrain?.trainNo]);
+  }, [trains, map, markerType, selectedTrain?.trainNo]);
 
   return (
     <LayerGroup pane="trainsPane">
       {visibleTrains.map((train) => (
-        <TrainMarker key={"train_" + train.Id} train={train} />
+        <TrainMarker key={"train_" + train.Id} train={train} layerId={`${markerType}-trains`} />
       ))}
     </LayerGroup>
   );
