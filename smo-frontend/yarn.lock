@@ -1330,17 +1330,17 @@
   integrity sha512-2sK9OdWvrzKBOuWxLfQA5qcAJzxpzqNlKumaP7Uq0i7LDBQeY/sYgNiBWLwtW+iZw6fFXwPf0nI7q5VVpvqnNQ==
 
 "@microsoft/signalr-protocol-msgpack@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@microsoft/signalr-protocol-msgpack/-/signalr-protocol-msgpack-10.0.0.tgz#ac9eff3545149551d73b4fd19b8737c36b8b32dc"
-  integrity sha512-N4h4BD+y9kw/iszpDaDaIRJpxaRSA5uBtveM6HUIwmwkeJIPOoMrPNvmj77UrjZHAsbVwa/acLiWnPDfffO3yQ==
+  version "10.0.11"
+  resolved "https://registry.yarnpkg.com/@microsoft/signalr-protocol-msgpack/-/signalr-protocol-msgpack-10.0.11.tgz#8f1e65b87a8b6ab25c0367fb196e0d4ad8f801ee"
+  integrity sha512-7b8SFwexzaD62fPkO3t3AlYTNCaTLy+0GNndlzYIry8mXCcG4qSwbnI2vkwY623I+YyywPby+d97/jkEl3oGLA==
   dependencies:
-    "@microsoft/signalr" ">=10.0.0"
+    "@microsoft/signalr" ">=10.0.11"
     "@msgpack/msgpack" "^2.7.0"
 
-"@microsoft/signalr@>=10.0.0", "@microsoft/signalr@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@microsoft/signalr/-/signalr-10.0.0.tgz#465837ced767af7f7cc05988ea95afe8bb58d493"
-  integrity sha512-0BRqz/uCx3JdrOqiqgFhih/+hfTERaUfCZXFB52uMaZJrKaPRzHzMuqVsJC/V3pt7NozcNXGspjKiQEK+X7P2w==
+"@microsoft/signalr@>=10.0.11", "@microsoft/signalr@^10.0.0":
+  version "10.0.11"
+  resolved "https://registry.yarnpkg.com/@microsoft/signalr/-/signalr-10.0.11.tgz#2b96b016ed38f9754178d389ca1d7fd89666f471"
+  integrity sha512-FulOJ2EEtKvLQcswe/U7v8pzyXyk7Jua5xgWJPPwyQU/2Z9ORvKcVjyO75VvLsem+CJ1ORRexJ+7Bz1FCei2aw==
   dependencies:
     abort-controller "^3.0.0"
     eventsource "^2.0.2"
@@ -5987,9 +5987,9 @@ serialize-javascript@^7.0.3:
   integrity sha512-F4LcB0UqUl1zErq+1nYEEzSHJnIwb3AF2XWB94b+afhrekOUijwooAYqFyRbjYkm2PAKBabx6oYv/xDxNi8IBw==
 
 set-cookie-parser@^2.4.8:
-  version "2.7.1"
-  resolved "https://registry.yarnpkg.com/set-cookie-parser/-/set-cookie-parser-2.7.1.tgz#3016f150072202dfbe90fadee053573cc89d2943"
-  integrity sha512-IOc8uWeOZgnb3ptbCURJWNjWUPcO3ZnTTdzsurqERrP6nPyv+paC55vJM0LpOlT2ne+Ix+9+CRG1MNLlyZ4GjQ==
+  version "2.7.2"
+  resolved "https://registry.yarnpkg.com/set-cookie-parser/-/set-cookie-parser-2.7.2.tgz#ccd08673a9ae5d2e44ea2a2de25089e67c7edf68"
+  integrity sha512-oeM1lpU/UvhTxw+g3cIfxXHyJRc/uidd3yK1P242gzHds0udQBYzs3y8j4gCCW+ZJ7ad0yctld8RYO+bdurlvw==
 
 set-function-length@^1.2.2:
   version "1.2.2"
@@ -6792,9 +6792,9 @@ workbox-window@7.4.1, workbox-window@^7.4.1:
     workbox-core "7.4.1"
 
 ws@^7.5.10:
-  version "7.5.11"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-7.5.11.tgz#9460daf1812bb81a423c5b9eac746941a86310fa"
-  integrity sha512-zS54Oen9bITtp7kp2XM3AydrCIq1D+HwJOuH+c+e4LfpL/lotP5osijd+UoMnxwAam1GN8R4KtLAyIrIcBNpiA==
+  version "7.5.13"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-7.5.13.tgz#12aa507eaca76c295c278b1aebf4698ab2c1845f"
+  integrity sha512-rsKI6xDBFVf4r/x8XyChGK04QR/XHroxs/jUcoWvtEZM8TPU/X/uIY9B1CsSzYws9ZJb/6bbBu7dPhFW00CAoA==
 
 yallist@^3.0.2:
   version "3.1.1"
