@@ -14,6 +14,7 @@ import {
 
 export interface IDataProvider {
   isConnected$: BehaviorSubject<boolean>;
+  simRailApiAvailable$: BehaviorSubject<boolean | null>;
 
   selectServer(serverCode: string): void;
 

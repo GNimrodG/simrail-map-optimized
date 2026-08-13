@@ -28,6 +28,7 @@ import SearchBar from "./SearchBar";
 import SelectedRouteControl from "./SelectedRouteControl";
 import SelectedTrainInfo from "./SelectedTrainInfo";
 import ServerSelector from "./ServerSelector";
+import SimRailApiWarning from "./SimRailApiWarning";
 import SettingsModal from "./settings/SettingsModal";
 import StatsDisplay from "./StatsDisplay";
 import SelectedStationTimetableModal from "./timetable/SelectedStationTimetableModal";
@@ -354,8 +355,11 @@ const MainMap: FunctionComponent = () => {
           </Suspense>
         )}
 
-        <LowSpeedWarning />
-        <BackgroundUpdatesNotification />
+        <Stack sx={{ position: "fixed", top: 0, right: 0, pt: 1, mr: 8, zIndex: 1000 }} spacing={1} alignItems="end">
+          <SimRailApiWarning />
+          <LowSpeedWarning />
+          <BackgroundUpdatesNotification />
+        </Stack>
         <AutoZoomHandler />
       </MapContainer>
     </>

@@ -54,47 +54,45 @@ const BackgroundUpdatesNotification: FunctionComponent = () => {
   if (!showNotification) return null;
 
   return (
-    <Stack sx={{ position: "fixed", top: 0, right: 0, pt: 1, mr: 8, zIndex: 1000 }} alignItems="end">
-      <Alert
-        variant="soft"
-        color="primary"
-        invertedColors
-        startDecorator={
-          <Box sx={{ width: "3rem", height: "4rem", display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <Box sx={{ fontSize: "2rem" }}>
-              <InfoIcon style={{ height: "2rem", width: "2rem" }} />
-            </Box>
+    <Alert
+      variant="soft"
+      color="primary"
+      invertedColors
+      startDecorator={
+        <Box sx={{ width: "3rem", height: "4rem", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <Box sx={{ fontSize: "2rem" }}>
+            <InfoIcon style={{ height: "2rem", width: "2rem" }} />
           </Box>
-        }
-        endDecorator={
-          <IconButton
-            variant="plain"
-            size="sm"
-            color="primary"
-            onClick={handleDismiss}
-            sx={{ position: "absolute", top: "0.5rem", right: "0.5rem" }}>
-            <XMarkIcon />
-          </IconButton>
-        }
-        sx={{ alignItems: "flex-start", gap: "1rem", width: "min(90vw, 450px)" }}>
-        <Box sx={{ flex: 1 }}>
-          <Typography level="title-lg" sx={{ mb: 1 }}>
-            {t("BackgroundUpdatesNotification.Title")}
-          </Typography>
-          <Typography level="body-md" sx={{ mb: 1.5 }}>
-            {t("BackgroundUpdatesNotification.Description")}
-          </Typography>
-          <Stack direction="row" spacing={1}>
-            <Button size="sm" variant="solid" color="primary" onClick={handleDismiss}>
-              {t("BackgroundUpdatesNotification.GotIt")}
-            </Button>
-            <Button size="sm" variant="outlined" color="primary" onClick={handleDisableFeature}>
-              {t("BackgroundUpdatesNotification.TurnOff")}
-            </Button>
-          </Stack>
         </Box>
-      </Alert>
-    </Stack>
+      }
+      endDecorator={
+        <IconButton
+          variant="plain"
+          size="sm"
+          color="primary"
+          onClick={handleDismiss}
+          sx={{ position: "absolute", top: "0.5rem", right: "0.5rem" }}>
+          <XMarkIcon />
+        </IconButton>
+      }
+      sx={{ alignItems: "flex-start", gap: "1rem", width: "min(90vw, 450px)" }}>
+      <Box sx={{ flex: 1 }}>
+        <Typography level="title-lg" sx={{ mb: 1 }}>
+          {t("BackgroundUpdatesNotification.Title")}
+        </Typography>
+        <Typography level="body-md" sx={{ mb: 1.5 }}>
+          {t("BackgroundUpdatesNotification.Description")}
+        </Typography>
+        <Stack direction="row" spacing={1}>
+          <Button size="sm" variant="solid" color="primary" onClick={handleDismiss}>
+            {t("BackgroundUpdatesNotification.GotIt")}
+          </Button>
+          <Button size="sm" variant="outlined" color="primary" onClick={handleDisableFeature}>
+            {t("BackgroundUpdatesNotification.TurnOff")}
+          </Button>
+        </Stack>
+      </Box>
+    </Alert>
   );
 };
 

@@ -37,6 +37,10 @@ public class MainHub(
 
         if (serverDataService.Data != null)
             await Clients.Caller.SendAsync("ServersReceived", serverDataService.Data);
+
+        if (serverDataService.IsSimRailApiAvailable.HasValue)
+            await Clients.Caller.SendAsync("SimRailApiAvailabilityReceived",
+                serverDataService.IsSimRailApiAvailable.Value);
     }
 
     /// <inheritdoc />

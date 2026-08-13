@@ -35,6 +35,8 @@ internal class ClientDataSenderService(
 
         serverDataService.DataReceived += OnServerDataReceived;
 
+        serverDataService.SimRailApiAvailabilityChanged += OnSimRailApiAvailabilityChanged;
+
         stationDataService.DataReceived += OnStationDataReceived;
 
         trainDataService.PerServerDataReceived += OnTrainDataReceived;
@@ -51,6 +53,8 @@ internal class ClientDataSenderService(
         logger.LogInformation("Stopping ClientDataSenderService");
 
         serverDataService.DataReceived -= OnServerDataReceived;
+
+        serverDataService.SimRailApiAvailabilityChanged -= OnSimRailApiAvailabilityChanged;
 
         stationDataService.DataReceived -= OnStationDataReceived;
 
@@ -75,6 +79,19 @@ internal class ClientDataSenderService(
         catch (Exception e)
         {
             logger.LogError(e, "Error sending servers to clients");
+        }
+    }
+
+    private async void OnSimRailApiAvailabilityChanged(bool isAvailable)
+    {
+        try
+        {
+            logger.LogInformation("SimRail API availability changed to {IsAvailable}", isAvailable);
+            await hub.Clients.All.SendAsync("SimRailApiAvailabilityReceived", isAvailable);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error sending SimRail API availability to clients");
         }
     }
 

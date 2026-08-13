@@ -269,6 +269,10 @@
         "WikiLink": "SimRail Wiki"
       },
       "BugReport": "Report a bug!",
+      "SimRailApiWarning": {
+        "Title": "SimRail API unavailable",
+        "Description": "Live data updates are temporarily unavailable and the map may be outdated. Updates will resume automatically when the API recovers."
+      },
       "LowSpeedWarning": {
         "Title": "Low average train speed",
         "Description": "The average speed of the trains on this server is {{speed}} km/h.",
@@ -648,6 +652,10 @@
         "WikiLink": "SimRail Wiki"
       },
       "BugReport": "Einen Fehler melden!",
+      "SimRailApiWarning": {
+        "Title": "SimRail-API nicht verfügbar",
+        "Description": "Live-Datenaktualisierungen sind vorübergehend nicht verfügbar und die Karte kann veraltet sein. Die Aktualisierungen werden automatisch fortgesetzt, sobald die API wieder erreichbar ist."
+      },
       "LowSpeedWarning": {
         "Title": "Niedrige durchschnittliche Zugsgeschwindigkeit",
         "Description": "Die durchschnittliche Geschwindigkeit der Züge auf diesem Server beträgt {{speed}} km/h.",
@@ -1028,6 +1036,10 @@
         "WikiLink": "SimRail Wiki"
       },
       "BugReport": "Hiba jelentése!",
+      "SimRailApiWarning": {
+        "Title": "A SimRail API nem érhető el",
+        "Description": "Az élő adatok frissítése átmenetileg nem érhető el, ezért a térkép elavult lehet. A frissítések automatikusan folytatódnak, amikor az API helyreáll."
+      },
       "LowSpeedWarning": {
         "Title": "Alacsony átlagos vonatsebesség",
         "Description": "A vonatok átlagos sebessége ezen a szerveren {{speed}} km/h.",
@@ -1412,6 +1424,10 @@
         "WikiLink": "SimRail Wiki"
       },
       "BugReport": "Hata bildir!",
+      "SimRailApiWarning": {
+        "Title": "SimRail API kullanılamıyor",
+        "Description": "Canlı veri güncellemeleri geçici olarak kullanılamıyor ve harita güncel olmayabilir. API yeniden kullanılabilir olduğunda güncellemeler otomatik olarak devam edecek."
+      },
       "LowSpeedWarning": {
         "Title": "Düşük ortalama tren hızı",
         "Description": "Bu sunucudaki trenlerin ortalama hızı {{speed}} km/s.",
@@ -1794,6 +1810,10 @@
         "WikiLink": "SimRail Wiki"
       },
       "BugReport": "Zgłoś błąd!",
+      "SimRailApiWarning": {
+        "Title": "API SimRail jest niedostępne",
+        "Description": "Aktualizacje danych na żywo są tymczasowo niedostępne, a mapa może być nieaktualna. Aktualizacje zostaną automatycznie wznowione, gdy API ponownie zacznie działać."
+      },
       "LowSpeedWarning": {
         "Title": "Niska średnia prędkość pociągów",
         "Description": "Średnia prędkość pociągów na tym serwerze wynosi {{speed}} km/h.",
@@ -2173,6 +2193,10 @@
         "WikiLink": "SimRail Вики"
       },
       "BugReport": "Сообщить об ошибке!",
+      "SimRailApiWarning": {
+        "Title": "API SimRail недоступен",
+        "Description": "Обновления данных в реальном времени временно недоступны, поэтому карта может быть устаревшей. Обновления возобновятся автоматически, когда API снова станет доступен."
+      },
       "LowSpeedWarning": {
         "Title": "Низкая средняя скорость поездов",
         "Description": "Средняя скорость поездов на этом сервере составляет {{speed}} км/ч.",
@@ -2552,6 +2576,10 @@
         "WikiLink": "SimRail Вікі"
       },
       "BugReport": "Повідомити про помилку!",
+      "SimRailApiWarning": {
+        "Title": "API SimRail недоступний",
+        "Description": "Оновлення даних у реальному часі тимчасово недоступні, тому карта може бути застарілою. Оновлення відновляться автоматично, коли API знову стане доступним."
+      },
       "LowSpeedWarning": {
         "Title": "Низька середня швидкість поїздів",
         "Description": "Середня швидкість поїздів на цьому сервері становить {{speed}} км/год.",

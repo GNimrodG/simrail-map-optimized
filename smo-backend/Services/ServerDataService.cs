@@ -29,6 +29,16 @@ public class ServerDataService(
 
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
+    /// <summary>
+    ///     Indicates whether the latest request to the SimRail servers API succeeded.
+    /// </summary>
+    public bool? IsSimRailApiAvailable { get; private set; }
+
+    /// <summary>
+    ///     Raised when availability of the SimRail servers API changes.
+    /// </summary>
+    public event Action<bool>? SimRailApiAvailabilityChanged;
+
     /// <inheritdoc />
     protected override TimeSpan FetchInterval => TimeSpan.FromSeconds(30);
 
@@ -80,9 +90,32 @@ public class ServerDataService(
         }
     }
 
-    private protected override Task<ApiResponseWithAge<ServerStatus[]>> FetchData(CancellationToken stoppingToken)
+    private protected override async Task<ApiResponseWithAge<ServerStatus[]>> FetchData(
+        CancellationToken stoppingToken)
     {
-        return apiClient.GetServersWithAgeAsync(stoppingToken);
+        try
+        {
+            var response = await apiClient.GetServersWithAgeAsync(stoppingToken);
+            SetSimRailApiAvailability(true);
+            return response;
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            SetSimRailApiAvailability(false);
+            throw;
+        }
+    }
+
+    private void SetSimRailApiAvailability(bool isAvailable)
+    {
+        if (IsSimRailApiAvailable == isAvailable) return;
+
+        IsSimRailApiAvailable = isAvailable;
+        SimRailApiAvailabilityChanged?.Invoke(isAvailable);
     }
 
     /// <inheritdoc />

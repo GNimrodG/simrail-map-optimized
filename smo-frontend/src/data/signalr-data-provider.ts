@@ -73,11 +73,13 @@ export class SignalRDataProvider implements IDataProvider {
 
     this.connection.onreconnecting((e) => {
       this.isConnected$.next(false);
+      this.simRailApiAvailable$.next(null);
       console.warn("Reconnecting to server...", e);
     });
 
     this.connection.onclose((e) => {
       this.isConnected$.next(false);
+      this.simRailApiAvailable$.next(null);
       console.warn("Disconnected from server!", e);
     });
 
@@ -91,6 +93,9 @@ export class SignalRDataProvider implements IDataProvider {
     });
 
     this.connection.on("ServersReceived", (servers: ServerStatus[]) => this.serverData$.next(servers));
+    this.connection.on("SimRailApiAvailabilityReceived", (isAvailable: boolean) =>
+      this.simRailApiAvailable$.next(isAvailable),
+    );
 
     this.unplayableStations$
       .pipe(debounceTime(5000), withLatestFrom(this.stationsData$))
@@ -481,6 +486,7 @@ export class SignalRDataProvider implements IDataProvider {
   }
 
   isConnected$ = new BehaviorSubject(false);
+  simRailApiAvailable$ = new BehaviorSubject<boolean | null>(null);
 
   selectServer(serverCode: string): void {
     this.stationsData$.next([]);
