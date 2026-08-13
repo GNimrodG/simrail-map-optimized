@@ -111,7 +111,7 @@ public abstract class BaseServerDataService<T>(
         if (serverDataService.Data == null)
         {
             logger.LogWarning("Server data is not available yet, waiting...");
-            await serverDataService.FirstDataReceived;
+            await serverDataService.FirstDataReceived.WaitAsync(stoppingToken);
             logger.LogInformation("Server data is now available");
         }
 

@@ -31,11 +31,15 @@ public class TrainDelayAnalyzerService(
 
     private bool _isRunning;
     private CancellationTokenSource? _lastCancellationTokenSource;
+    private CancellationTokenSource? _serviceCancellationTokenSource;
+    private Task? _initializationTask;
+    private Task? _periodicSaveTask;
+    private bool _isSubscribed;
 
     /// <inheritdoc />
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
-        logger.LogInformation("Starting timetable data service...");
+        logger.LogInformation("Starting train delay analyzer service...");
         Directory.CreateDirectory(DataDirectory);
 
         try
@@ -68,49 +72,81 @@ public class TrainDelayAnalyzerService(
                 TrainDelaysFile);
         }
 
-        logger.LogInformation("Timetable data service started");
+        logger.LogInformation("Train delay analyzer cache initialized");
 
-        logger.LogInformation("Waiting for time data...");
-        await timeDataService.FirstDataReceived.NoContext();
-        logger.LogInformation("Time data is now available, starting train delay analyzer...");
+        _serviceCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _initializationTask = InitializeWhenTimeDataIsAvailable(_serviceCancellationTokenSource.Token);
+        _periodicSaveTask = SavePeriodically(_serviceCancellationTokenSource.Token);
 
-        trainDataService.DataReceived += AnalyzeTrains;
-        logger.LogInformation("Train delay analyzer started");
+        return Task.CompletedTask;
+    }
 
-        // Save the last timetable index and train delays to file every 5 minutes in the background
-        var thread = new Thread(async void () =>
+    private async Task InitializeWhenTimeDataIsAvailable(CancellationToken cancellationToken)
+    {
+        try
         {
-            try
-            {
-                using var timer = new PeriodicTimer(TimeSpan.FromMinutes(5));
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    await timer.WaitForNextTickAsync(cancellationToken);
-                    await _lastTimetableIndex.SaveToFileAsync(LastTimetableIndexFile);
-                    await _trainDelays.SaveToFileAsync(TrainDelaysFile);
-                    logger.LogInformation("Saved last timetable index and train delays to file");
-                }
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Error saving last timetable index and train delays to file");
-                File.Delete(LastTimetableIndexFile);
-                File.Delete(TrainDelaysFile);
-            }
-        });
+            logger.LogInformation("Waiting for time data in the background...");
+            await timeDataService.FirstDataReceived.WaitAsync(cancellationToken).NoContext();
 
-        thread.Start();
+            trainDataService.DataReceived += AnalyzeTrains;
+            _isSubscribed = true;
+            logger.LogInformation("Time data is available; train delay analyzer started");
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            logger.LogInformation("Stopped waiting for initial time data");
+        }
+    }
+
+    private async Task SavePeriodically(CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromMinutes(5));
+            while (await timer.WaitForNextTickAsync(cancellationToken))
+            {
+                await _lastTimetableIndex.SaveToFileAsync(LastTimetableIndexFile);
+                await _trainDelays.SaveToFileAsync(TrainDelaysFile);
+                logger.LogInformation("Saved last timetable index and train delays to file");
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            logger.LogDebug("Stopped periodic train delay cache saves");
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error saving last timetable index and train delays to file");
+            File.Delete(LastTimetableIndexFile);
+            File.Delete(TrainDelaysFile);
+        }
     }
 
     /// <inheritdoc />
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        trainDataService.DataReceived -= AnalyzeTrains;
+        if (_serviceCancellationTokenSource != null)
+            await _serviceCancellationTokenSource.CancelAsync().NoContext();
+
+        if (_initializationTask != null)
+            await _initializationTask.NoContext();
+
+        if (_periodicSaveTask != null)
+            await _periodicSaveTask.NoContext();
+
+        if (_isSubscribed)
+        {
+            trainDataService.DataReceived -= AnalyzeTrains;
+            _isSubscribed = false;
+        }
+
         if (_lastCancellationTokenSource != null)
         {
             await _lastCancellationTokenSource.CancelAsync().NoContext();
             _lastCancellationTokenSource.Dispose();
         }
+
+        _serviceCancellationTokenSource?.Dispose();
 
         logger.LogInformation("Train delay analyzer stopped");
 

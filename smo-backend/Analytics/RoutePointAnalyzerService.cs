@@ -365,7 +365,7 @@ public partial class RoutePointAnalyzerService : IHostedService
 
             if (activeTrainKeys.Count == 0)
             {
-                await _trainDataService.FirstDataReceived;
+                await _trainDataService.FirstDataReceived.WaitAsync(cancellationToken);
                 var activeTrains = _trainDataService.Data ?? new Dictionary<string, Train[]>();
                 activeTrainKeys = activeTrains.Values
                     .SelectMany(trains => trains)
