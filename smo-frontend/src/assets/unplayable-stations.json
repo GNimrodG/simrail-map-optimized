@@ -1672,15 +1672,22 @@
   },
   {
     "Name": "Bełchów",
-    "Prefix": "113_Be",
+    "Prefix": "Be",
     "DifficultyLevel": -1,
-    "Latitude": 52.0231443,
-    "Longitude": 20.0357737,
+    "Latitude": 52.02604608029528,
+    "Longitude": 20.03349434362785,
+    "MainImageUrl": "https://api.simrail.eu:8083/Thumbnails/Stations/be1m.jpg",
+    "AdditionalImage1Url": "https://api.simrail.eu:8083/Thumbnails/Stations/be2.jpg",
+    "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/be3.jpg",
     "DispatchedBy": [],
-    "Id": "ee9b026b-8eb3-4c19-8292-f0d2e5840481",
+    "Id": "69afffd6bfdac65a96400f0d",
     "PointId": "113",
     "SubStations": [],
-    "IgnoredStations": []
+    "IgnoredStations": [
+      "Bobrowniki",
+      "Mokra",
+      "Sierakowice Skierniewickie"
+    ]
   },
   {
     "Name": "Sieradz",
@@ -1884,28 +1891,48 @@
   },
   {
     "Name": "Glinnik",
-    "Prefix": "1057_Gn",
+    "Prefix": "Gl",
     "DifficultyLevel": -1,
-    "Latitude": 51.8866005,
-    "Longitude": 19.4951234,
+    "Latitude": 51.886605358691604,
+    "Longitude": 19.495131820023865,
+    "MainImageUrl": "https://api.simrail.eu:8083/Thumbnails/Stations/gl1m.jpg",
+    "AdditionalImage1Url": "https://api.simrail.eu:8083/Thumbnails/Stations/gl2.jpg",
+    "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/gl3.jpg",
     "DispatchedBy": [],
-    "Id": "a969cdd0-3bf2-4015-91ed-69ebbe95a0af",
+    "Id": "6a63252d079fdc2fd47c4ab8",
     "PointId": "1057",
-    "SubStations": [],
-    "IgnoredStations": []
+    "SubStations": [
+      "Stryków"
+    ],
+    "IgnoredStations": [
+      "Zgierz Rudunki",
+      "Smardzew",
+      "Glinnik Wieś",
+      "Swędów",
+      "Bratoszewice"
+    ]
   },
   {
     "Name": "Zgierz Północ",
-    "Prefix": "5314_ZgP",
+    "Prefix": "ZP",
     "DifficultyLevel": -1,
-    "Latitude": 51.8691546,
-    "Longitude": 19.3837488,
+    "Latitude": 51.8687703,
+    "Longitude": 19.3858029,
+    "MainImageUrl": "https://api.simrail.eu:8083/Thumbnails/Stations/ZgP1m.jpg",
+    "AdditionalImage1Url": "https://api.simrail.eu:8083/Thumbnails/Stations/ZgP2.jpg",
+    "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/ZgP3.jpg",
     "DispatchedBy": [],
-    "Id": "6c8555e2-9329-4899-a17c-941196e3b702",
+    "Id": "6a59f72f5ecd5d0df2844892",
     "PointId": "5314",
-    "SubStations": [],
+    "SubStations": [
+      "Zgierz Kontrewers",
+      "Chociszew"
+    ],
     "IgnoredStations": [
-      "Zgierz Jaracza"
+      "Zgierz Jaracza",
+      "Jedlicze koło Zgierza",
+      "Grotniki",
+      "Ozorków Nowe Miasto"
     ]
   },
   {
@@ -1995,12 +2022,251 @@
     "Latitude": 51.8650062,
     "Longitude": 19.3416973,
     "DispatchedBy": [],
-    "Id": "5313_ZK",
+    "Id": "2ae8370b-ae25-41b5-95cb-27f658727df8",
     "PointId": 5313,
     "SubStations": [],
     "IgnoredStations": [
       "Jedlicze koło Zgierza",
       "Grotniki"
+    ],
+    "RemoteControlled": "ZP"
+  },
+  {
+    "Name": "Stryków",
+    "Prefix": "4143_St",
+    "DifficultyLevel": -1,
+    "Latitude": 51.9119865,
+    "Longitude": 19.6029715,
+    "DispatchedBy": [],
+    "Id": "d1a7edea-7aeb-4dcd-b98b-800de8beb061",
+    "PointId": "4143",
+    "SubStations": [],
+    "IgnoredStations": [
+      "Swędów",
+      "Bratoszewice"
+    ],
+    "RemoteControlled": "Gl"
+  },
+  {
+    "Name": "Głowno",
+    "Prefix": "Gn",
+    "DifficultyLevel": -1,
+    "Latitude": 51.95966481936948,
+    "Longitude": 19.702507256313176,
+    "MainImageUrl": "https://api.simrail.eu:8083/Thumbnails/Stations/gn1m.jpg",
+    "AdditionalImage1Url": "https://api.simrail.eu:8083/Thumbnails/Stations/gn2.jpg",
+    "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/gn3.jpg",
+    "DispatchedBy": [],
+    "Id": "6a75b684ca00857d36e6ad3f",
+    "PointId": "1092",
+    "SubStations": [
+      "Domaniewice"
+    ],
+    "IgnoredStations": [
+      "Swędów",
+      "Bratoszewice",
+      "Głowno Północne",
+      "Kamień Łowicki",
+      "Domaniewice Centrum",
+      "Stare Grudze"
     ]
+  },
+  {
+    "Name": "Domaniewice",
+    "Prefix": "824_Dm",
+    "DifficultyLevel": -1,
+    "Latitude": 52.0215403,
+    "Longitude": 19.8233284,
+    "DispatchedBy": [],
+    "Id": "872fdd14-5c12-471b-a945-2a932d835778",
+    "PointId": "824",
+    "SubStations": [],
+    "IgnoredStations": [
+      "Głowno Północne",
+      "Kamień Łowicki",
+      "Domaniewice Centrum",
+      "Stare Grudze"
+    ],
+    "RemoteControlled": "Gn"
+  },
+  {
+    "Name": "Łowicz Przedmieście",
+    "Prefix": "LP",
+    "DifficultyLevel": -1,
+    "Latitude": 52.093109690783905,
+    "Longitude": 19.948651364267196,
+    "MainImageUrl": "https://api.simrail.eu:8083/Thumbnails/Stations/lp1m.jpg",
+    "AdditionalImage1Url": "https://api.simrail.eu:8083/Thumbnails/Stations/lp2.jpg",
+    "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/lp3.jpg",
+    "DispatchedBy": [],
+    "Id": "6a73457a92bc0a025e673055",
+    "PointId": "2418",
+    "SubStations": [],
+    "IgnoredStations": [
+      "Stare Grudze"
+    ]
+  },
+  {
+    "Name": "Łowicz Główny",
+    "Prefix": "LG",
+    "DifficultyLevel": -1,
+    "Latitude": 52.1044930936045,
+    "Longitude": 19.956626067322116,
+    "MainImageUrl": "https://api.simrail.eu:8083/Thumbnails/Stations/lg1m.jpg",
+    "AdditionalImage1Url": "https://api.simrail.eu:8083/Thumbnails/Stations/lg2.jpg",
+    "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/lg3.jpg",
+    "DispatchedBy": [],
+    "Id": "6a75df1eca00857d36e6ad41",
+    "PointId": "2412",
+    "SubStations": [
+      "Łowicz Główny PZS R1",
+      "Łowicz Główny PZS R12"
+    ],
+    "IgnoredStations": [
+      "Bobrowniki"
+    ]
+  },
+  {
+    "Name": "Bednary",
+    "Prefix": "108_Bd",
+    "DifficultyLevel": -1,
+    "Latitude": 52.1044371,
+    "Longitude": 20.060318,
+    "DispatchedBy": [],
+    "Id": "57d66a6f-31f8-4c91-9510-46ce6b95bfcb",
+    "PointId": "108",
+    "SubStations": [],
+    "IgnoredStations": []
+  },
+  {
+    "Name": "Jackowice",
+    "Prefix": "1811_Jc",
+    "DifficultyLevel": -1,
+    "Latitude": 52.1589472,
+    "Longitude": 19.7875779,
+    "DispatchedBy": [],
+    "Id": "4d2c99f6-17d1-405e-8f9f-d80c6c90df44",
+    "PointId": "1811",
+    "SubStations": [],
+    "IgnoredStations": []
+  },
+  {
+    "Name": "Żychlin",
+    "Prefix": "5428_Żl",
+    "DifficultyLevel": -1,
+    "Latitude": 52.2139516,
+    "Longitude": 19.6147864,
+    "DispatchedBy": [],
+    "Id": "d219d84f-55fa-446e-8a6b-c49cf4420ac2",
+    "PointId": "5428",
+    "SubStations": [],
+    "IgnoredStations": []
+  },
+  {
+    "Name": "Stara Wieś koło Kutna",
+    "Prefix": "4047_SW",
+    "DifficultyLevel": -1,
+    "Latitude": 52.2274162,
+    "Longitude": 19.4236671,
+    "DispatchedBy": [],
+    "Id": "a9b00344-fa33-4bea-873f-b39e526e585a",
+    "PointId": "4047",
+    "SubStations": [],
+    "IgnoredStations": []
+  },
+  {
+    "Name": "Kutno",
+    "Prefix": "2133_Ku",
+    "DifficultyLevel": -1,
+    "Latitude": 52.2269874,
+    "Longitude": 19.3467190,
+    "DispatchedBy": [],
+    "Id": "8893f340-3aa7-40bb-afae-679816f3e28d",
+    "PointId": "2133",
+    "SubStations": [],
+    "IgnoredStations": []
+  },
+  {
+    "Name": "Krzewie",
+    "Prefix": "2091_Kw",
+    "DifficultyLevel": -1,
+    "Latitude": 52.2345296,
+    "Longitude": 19.1555734,
+    "DispatchedBy": [],
+    "Id": "09a997ef-9e27-405f-9df4-1ac896eed1c4",
+    "PointId": "2091",
+    "SubStations": [],
+    "IgnoredStations": []
+  },
+  {
+    "Name": "Witonia",
+    "Prefix": "Wt",
+    "DifficultyLevel": -1,
+    "Latitude": 52.15684997510119,
+    "Longitude": 19.27690192450433,
+    "MainImageUrl": "https://api.simrail.eu:8083/Thumbnails/Stations/wt1m.jpg",
+    "AdditionalImage1Url": "https://api.simrail.eu:8083/Thumbnails/Stations/wt2.jpg",
+    "AdditionalImage2Url": "https://api.simrail.eu:8083/Thumbnails/Stations/wt3.jpg",
+    "DispatchedBy": [],
+    "Id": "6a61dae2079fdc2fd47c4ab2",
+    "PointId": "4971",
+    "SubStations": [
+      "Łęczyca",
+      "Ozorków"
+    ],
+    "IgnoredStations": [
+      "Gawrony",
+      "Sierpów",
+      "Ozorków Nowe Miasto"
+    ]
+  },
+  {
+    "Name": "Łęczyca",
+    "Prefix": "2385_Le",
+    "DifficultyLevel": -1,
+    "Latitude": 52.0443748,
+    "Longitude": 19.1992579,
+    "DispatchedBy": [],
+    "Id": "04bbd30a-fbdc-4e3f-b491-f87eede474d7",
+    "PointId": "2385",
+    "SubStations": [],
+    "IgnoredStations": [
+      "Gawrony",
+      "Sierpów"
+    ],
+    "RemoteControlled": "Wt"
+  },
+  {
+    "Name": "Ozorków",
+    "Prefix": "3089_Oz",
+    "DifficultyLevel": -1,
+    "Latitude": 51.969238,
+    "Longitude": 19.2670178,
+    "DispatchedBy": [],
+    "Id": "59caa004-ee75-4e65-86cd-41a612383dea",
+    "PointId": "3089",
+    "SubStations": [],
+    "IgnoredStations": [
+      "Sierpów",
+      "Ozorków Nowe Miasto"
+    ],
+    "RemoteControlled": "Wt"
+  },
+  {
+    "Name": "Chociszew",
+    "Prefix": "477_Ch",
+    "DifficultyLevel": -1,
+    "Latitude": 51.9241487,
+    "Longitude": 19.2669147,
+    "DispatchedBy": [],
+    "Id": "e5a59a86-44d5-483e-a4e0-7ccf5691dd20",
+    "PointId": "477",
+    "SubStations": [],
+    "IgnoredStations": [
+      "Grotniki",
+      "Ozorków Nowe Miasto",
+      "Jedlicze koło Zgierza"
+    ],
+    "RemoteControlled": "ZP"
   }
 ]

@@ -113,12 +113,12 @@ public class MainHub(
         {
             await Clients.Caller.SendAsync("TrainsReceived", trains);
 
-            var signals = await signalAnalyzerService.GetSignalsForTrains(trains);
-            await Clients.Caller.SendAsync("SignalsReceived", signals);
-
             var delays = trainDelayAnalyzerService.GetDelaysForTrains(trains);
             await Clients.Caller.SendAsync("DelaysReceived", delays);
         }
+
+        var signals = await signalAnalyzerService.GetSignalsForTrains(trains ?? []);
+        await Clients.Caller.SendAsync("SignalsReceived", signals);
 
 
         var time = timeDataService[serverCode];
@@ -255,9 +255,7 @@ public class MainHub(
                 }
             }
 
-            var trains = trainDataService[serverCode];
-            if (trains == null) return;
-
+            var trains = trainDataService[serverCode] ?? [];
             var signals = await signalAnalyzerService.GetSignalsForTrains(trains);
             await Clients.Caller.SendAsync("SignalsReceived", signals);
         }

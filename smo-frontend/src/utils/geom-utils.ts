@@ -18,6 +18,9 @@ const STATION_PREFIX_OVERRIDES = new Map<string, string[]>([
   ["Skierniewice", ["3877_Sk"]],
   ["Koluszki", ["1803_KO"]],
   ["Kraków Olsza", ["1998_KO", "1998_Ko"]],
+  ["Witonia", ["4971_Wi"]],
+  ["Glinnik", ["1057_Gl"]],
+  ["Głowno", ["1092_Gn"]],
 ]);
 
 export function getSignalsForStation(station: Station, allowNumPrefix = false): SignalStatus[] {

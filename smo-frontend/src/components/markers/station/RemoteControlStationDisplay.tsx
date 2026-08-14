@@ -30,9 +30,10 @@ const RemoteControlStationDisplay: FunctionComponent<RemoteControlStationDisplay
       const subscription = dataProvider.stationsData$
         .pipe(withLatestFrom(dataProvider.unplayableStations$))
         .subscribe(([stations, unplayableStations]) => {
-          const controlStation = [...stations, ...unplayableStations].find(
-            (s) => s.Prefix === station.RemoteControlled,
-          );
+          const allStations = [...stations, ...unplayableStations];
+          const controlStation =
+            allStations.find((s) => s.Prefix === station.RemoteControlled && s.SubStations?.includes(station.Name)) ??
+            allStations.find((s) => s.Prefix === station.RemoteControlled);
 
           if (controlStation) {
             setControlStation(controlStation);
@@ -45,7 +46,13 @@ const RemoteControlStationDisplay: FunctionComponent<RemoteControlStationDisplay
         subscription.unsubscribe();
       };
     } else {
-      setSubStations(dataProvider.unplayableStations$.value.filter((s) => s.RemoteControlled === station.Prefix));
+      setSubStations(
+        dataProvider.unplayableStations$.value.filter(
+          (s) =>
+            s.RemoteControlled === station.Prefix &&
+            (!station.SubStations?.length || station.SubStations.includes(s.Name)),
+        ),
+      );
     }
   }, [station.Prefix, station.RemoteControlled]);
 
