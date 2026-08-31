@@ -82,7 +82,7 @@ const SearchBar: FunctionComponent = () => {
       isOptionEqualToValue={(option, value) => option.type === value?.type && option.data === value?.data}
       renderOption={(props, option) => [{ ...props, color: getColor(option) }, getLabel(option)] as React.ReactNode}
       renderGroup={(params) => params as unknown as React.ReactNode}
-      groupBy={(option) => t(`Layers.Overlay.${option.type.toLowerCase()}`)}
+      groupBy={(option) => t(getGroupTranslationKey(option.type))}
       getOptionLabel={(option) => getLabel(option)}
       value={null}
       onChange={(_e, v) => {
@@ -101,6 +101,16 @@ const SearchBar: FunctionComponent = () => {
     />
   );
 };
+
+function getGroupTranslationKey(type: ListItem["type"]) {
+  switch (type) {
+    case "Trains":
+    case "Stations":
+      return `Layers.Groups.${type.toLowerCase()}`;
+    case "Signals":
+      return "Layers.Overlay.signals";
+  }
+}
 
 type ListItem =
   | { type: "Trains"; data: Train }
