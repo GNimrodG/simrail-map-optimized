@@ -29,6 +29,19 @@
         "devDependencies"
       ],
       "automerge": true
+    },
+    {
+      "description": "The .NET base images must match <TargetFramework> in smo-backend.csproj; a major image bump alone ships a runtime that can't start the app. Do .NET majors by hand, together.",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "mcr.microsoft.com/dotnet/**"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
     }
   ],
   "prHourlyLimit": 5
