@@ -7,12 +7,14 @@ on:
     paths:
       - "smo-backend/**"
       - ".github/workflows/build-backend.yml"
+      - ".github/scripts/smoke-test-backend.sh"
   pull_request:
     branches:
       - master
     paths:
       - "smo-backend/**"
       - ".github/workflows/build-backend.yml"
+      - ".github/scripts/smoke-test-backend.sh"
 
 jobs:
   test-backend:
@@ -83,6 +85,17 @@ jobs:
           registry: ${{ vars.DOCKER_REGISTRY_URL }}
           username: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
           password: ${{ secrets.DOCKER_REGISTRY_TOKEN }}
+      # Boot the real image against a throwaway PostGIS before anything is pushed, so PRs
+      # (incl. Renovate bumps like the .NET 11 base image) that break startup fail here instead.
+      - name: Build image for smoke test
+        uses: docker/build-push-action@v7
+        with:
+          context: ./smo-backend
+          load: true
+          tags: smo-backend:smoke-${{ github.run_id }}
+          cache-from: type=gha,scope=backend
+      - name: Smoke test
+        run: bash .github/scripts/smoke-test-backend.sh smo-backend:smoke-${{ github.run_id }}
       - name: Build
         uses: docker/build-push-action@v7
         with:

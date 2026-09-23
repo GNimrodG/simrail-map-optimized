@@ -16,8 +16,10 @@ namespace SMOBackend.Migrations
                 maxValue: 9223372036854775807L,
                 cyclic: true);
             
-            // set the current value of the sequence to the max id in the table
-            migrationBuilder.Sql("SELECT setval('route_point_id_seq', (SELECT COALESCE(MAX(id), 0) FROM route_points))");
+            // set the current value of the sequence to the max id in the table; on an empty table
+            // setval(..., 0) is out of range, so use 1 with is_called=false (next value is 1)
+            migrationBuilder.Sql(
+                "SELECT setval('route_point_id_seq', COALESCE((SELECT MAX(id) FROM route_points), 1), (SELECT MAX(id) FROM route_points) IS NOT NULL)");
 
             migrationBuilder.AlterColumn<string>(
                 name: "run_id",
