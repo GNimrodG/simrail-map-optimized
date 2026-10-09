@@ -748,7 +748,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                         _trainPassedSignalCache.Set(train.GetTrainId(), prevSignalData.SignalName);
                         // mark the signal as "red after pass" for 30s unless another train overrides it
                         _signalRedAfterPassCache.Set(prevSignalData.SignalName, train.GetTrainId());
-                        _trainLastSignalCache.Set(train.GetTrainId(), signal.Name);
+                        _trainLastSignalCache.Set(train.GetTrainId(), prevSignalData.SignalName);
                     }
 
                     var isValid =

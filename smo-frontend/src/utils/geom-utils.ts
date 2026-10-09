@@ -21,6 +21,11 @@ const STATION_PREFIX_OVERRIDES = new Map<string, string[]>([
   ["Witonia", ["4971_Wi"]],
   ["Glinnik", ["1057_Gl"]],
   ["Głowno", ["1092_Gn"]],
+  ["Rokiciny", ["3594_Ro"]],
+  ["Gajewniki", ["919_Ga"]],
+  ["Zgierz Północ", ["5314_ZP"]],
+  ["Żakowice Południowe", ["5377_ZP"]],
+  ["Żychlin", ["5248_Zy"]],
 ]);
 
 export function getSignalsForStation(station: Station, allowNumPrefix = false): SignalStatus[] {
