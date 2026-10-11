@@ -496,7 +496,7 @@ public class GetSignalsForTrainsTests
     }
 
     [Fact]
-    public async Task EarlierSignalCache_SetsTrainsAhead()
+    public async Task RedAfterPass_SetsTrainsAhead_OnPassedSignal()
     {
         var signals = new[]
         {
@@ -508,7 +508,7 @@ public class GetSignalsForTrainsTests
         var trains = new[] { trainT1 };
 
         var sut = CreateService(signals);
-        sut.SetLastSignalCache(trainT1.GetTrainId(), "SIG_A");
+        sut.SetRedAfterPassCache("SIG_A", trainT1.GetTrainId());
 
         var result = await sut.GetSignalsForTrains(trains);
 
@@ -517,52 +517,134 @@ public class GetSignalsForTrainsTests
     }
 
     [Fact]
-    public async Task EarlierSignalCache_TakesPrecedence_OverNextSignalLookup()
+    public async Task RedAfterPass_IsIgnored_WhenCausingTrainIsGone()
     {
-        // SIG_A has one next signal SIG_B with a train, but also has an earlier signal cache hit
         var signals = new[]
         {
-            MakeSignal("SIG_A", "block",
-                nextSignals: [new("SIG_B", null)]),
+            MakeSignal("SIG_A"),
             MakeSignal("SIG_B")
         };
 
         var trainT1 = MakeTrain("T1", "en1", "SIG_B@extra", id: "id1");
-        var trainT2 = MakeTrain("T2", "en1", "SIG_C@extra", id: "id2");
-        var trains = new[] { trainT1, trainT2 };
 
         var sut = CreateService(signals);
-        sut.SetLastSignalCache(trainT2.GetTrainId(), "SIG_A");
+        sut.SetRedAfterPassCache("SIG_A", "some-train-that-despawned@en1-x");
 
-        var result = await sut.GetSignalsForTrains(trains);
+        var result = await sut.GetSignalsForTrains([trainT1]);
 
         var sigA = result.Single(s => s.Name == "SIG_A");
-        // Earlier signal cache takes precedence (hits the `continue`)
-        sigA.TrainsAhead.Should().BeEquivalentTo("T2");
+        sigA.TrainsAhead.Should().BeNull();
     }
 
     [Fact]
-    public async Task TrainsAheadFromEarlierSignalIndex_ForNextSignal()
+    public async Task RedAfterPass_EndsThirtySecondsAfterTrainLeftSignal()
     {
-        // SIG_A (block, 1 next) -> SIG_B. No direct train at SIG_B,
-        // but train T1 has SIG_B in the earlierSignalIndex.
+        // The pass was only recorded now, but the train left SIG_A 31s ago
+        // (e.g. it had no signal in front for a while), so SIG_A is no longer red.
+        var signals = new[]
+        {
+            MakeSignal("SIG_A"),
+            MakeSignal("SIG_B")
+        };
+
+        var trainT1 = MakeTrain("T1", "en1", "SIG_B@extra", id: "id1");
+
+        var sut = CreateService(signals);
+        sut.SetRedAfterPassCache("SIG_A", trainT1.GetTrainId(), DateTime.UtcNow - TimeSpan.FromSeconds(31));
+
+        var result = await sut.GetSignalsForTrains([trainT1]);
+
+        var sigA = result.Single(s => s.Name == "SIG_A");
+        sigA.TrainsAhead.Should().BeNull();
+    }
+
+    [Fact]
+    public void RedAfterPass_LastsThirtySeconds()
+    {
+        var sut = CreateService();
+
+        sut.GetRedAfterPassTtl().Should().Be(TimeSpan.FromSeconds(30));
+    }
+
+    [Fact]
+    public async Task PassedSignal_IsUnknown_OnceRedAfterPassExpired()
+    {
+        // SIG_A -> SIG_B -> SIG_C, T1 passed SIG_A a while ago and is now approaching SIG_C.
+        // With no red-after-pass entry left, SIG_A must not stay red.
         var signals = new[]
         {
             MakeSignal("SIG_A", "block",
                 nextSignals: [new("SIG_B", null)]),
-            MakeSignal("SIG_B")
+            MakeSignal("SIG_B", "block",
+                nextSignals: [new("SIG_C", null)]),
+            MakeSignal("SIG_C", "block")
         };
 
         var trainT1 = MakeTrain("T1", "en1", "SIG_C@extra", id: "id1");
-        var trains = new[] { trainT1 };
 
         var sut = CreateService(signals);
-        sut.SetLastSignalCache(trainT1.GetTrainId(), "SIG_B");
+        sut.SetPassedSignalCache(trainT1.GetTrainId(), "SIG_B");
 
-        var result = await sut.GetSignalsForTrains(trains);
+        var result = await sut.GetSignalsForTrains([trainT1]);
 
         var sigA = result.Single(s => s.Name == "SIG_A");
-        sigA.TrainsAhead.Should().BeEquivalentTo("T1");
+        sigA.TrainsAhead.Should().BeNull("the train is two blocks ahead, so SIG_A is not stop");
+
+        // SIG_B is stop (T1 in its block), so SIG_A shows caution
+        sigA.NextSignalWithTrainAhead.Should().Be("SIG_B");
+    }
+
+    [Fact]
+    public async Task BlockSignal_ShowsCaution_WhenNextSignalIsRedAfterPass_WithoutTrainAhead()
+    {
+        // SIG_A (block, 1 next) -> SIG_B (main, not finalized, several next signals)
+        // T1 just passed SIG_B; nobody is approaching SIG_B's next signals in a known block,
+        // but SIG_B is red-after-pass, so SIG_A must show caution.
+        var signals = new[]
+        {
+            MakeSignal("SIG_A", "block",
+                nextSignals: [new("SIG_B", null)]),
+            MakeSignal("SIG_B", "main",
+                nextSignals: [new("SIG_C", null), new("SIG_D", null)]),
+            MakeSignal("SIG_C"),
+            MakeSignal("SIG_D")
+        };
+
+        var trainT1 = MakeTrain("T1", "en1", "SIG_C@extra", id: "id1");
+
+        var sut = CreateService(signals);
+        sut.SetRedAfterPassCache("SIG_B", trainT1.GetTrainId());
+
+        var result = await sut.GetSignalsForTrains([trainT1]);
+
+        var sigB = result.Single(s => s.Name == "SIG_B");
+        sigB.TrainsAhead.Should().BeEquivalentTo("T1");
+
+        var sigA = result.Single(s => s.Name == "SIG_A");
+        sigA.TrainsAhead.Should().BeNull();
+        sigA.NextSignalWithTrainAhead.Should().Be("SIG_B");
+    }
+
+    [Fact]
+    public async Task BlockSignal_HasNoCaution_WhenNextSignalIsNotRed()
+    {
+        // SIG_A (block, 1 next) -> SIG_B (main, not finalized, several next signals), no red anywhere
+        var signals = new[]
+        {
+            MakeSignal("SIG_A", "block",
+                nextSignals: [new("SIG_B", null)]),
+            MakeSignal("SIG_B", "main",
+                nextSignals: [new("SIG_C", null), new("SIG_D", null)]),
+            MakeSignal("SIG_C"),
+            MakeSignal("SIG_D")
+        };
+
+        var sut = CreateService(signals);
+        var result = await sut.GetSignalsForTrains([MakeTrain("T1", "en1", "SIG_C@extra", id: "id1")]);
+
+        var sigA = result.Single(s => s.Name == "SIG_A");
+        sigA.TrainsAhead.Should().BeNull();
+        sigA.NextSignalWithTrainAhead.Should().BeNull();
     }
 
     [Fact]
@@ -635,12 +717,10 @@ public class GetSignalsForTrainsTests
     }
 
     [Fact]
-    public async Task BlockChain_EarlierSignalCache_DoesNotLoseNextSignalWithTrainAhead()
+    public async Task BlockChain_TrainTwoBlocksAhead_IsCautionNotStop()
     {
         // Chain: L1_1 → L1_2 → L1_3 → L1_4
-        // T1 at L1_4 (red), T1 previously at L1_3 (in cache)
-        // L1_2 should still show NextSignalWithTrainAhead even though
-        // earlierSignalIndex has a hit for L1_3
+        // T1 passed L1_3 more than 30s ago and is now approaching L1_4 (in block L1_3 → L1_4)
         var signals = new[]
         {
             MakeSignal("L1_1", "block",
@@ -653,37 +733,33 @@ public class GetSignalsForTrainsTests
         };
 
         var trainT1 = MakeTrain("T1", "en1", "L1_4@extra", id: "t1");
-        var trains = new[] { trainT1 };
 
         var sut = CreateService(signals);
-        // T1 previously passed L1_3
-        sut.SetLastSignalCache(trainT1.GetTrainId(), "L1_3");
+        sut.SetPassedSignalCache(trainT1.GetTrainId(), "L1_3");
 
-        var result = await sut.GetSignalsForTrains(trains);
+        var result = await sut.GetSignalsForTrains([trainT1]);
 
-        // L1_3: earlierSignalIndex has T1 → TrainsAhead = ["T1"], then continue.
+        // L1_3: T1 is in its block → stop
         var l13 = result.Single(s => s.Name == "L1_3");
         l13.TrainsAhead.Should().BeEquivalentTo("T1");
 
-        // L1_2: The next signal is L1_3. No train at L1_3 in signalsIndex,
-        // but earlierSignalIndex has L1_3 → TrainsAhead should be ["T1"] from fallback.
-        // NextSignalWithTrainAhead: L1_3's next is L1_4, T1 IS at L1_4 → should be "L1_3"
+        // L1_2: next signal is stop → caution, not stop
         var l12 = result.Single(s => s.Name == "L1_2");
-        l12.TrainsAhead.Should().BeEquivalentTo(["T1"],
-            "L1_2 should show train ahead from earlierSignalIndex fallback");
-        l12.NextSignalWithTrainAhead.Should().Be("L1_3",
-            "L1_2 should know there's also a train 2 signals ahead");
+        l12.TrainsAhead.Should().BeNull();
+        l12.NextSignalWithTrainAhead.Should().Be("L1_3");
+
+        // L1_1: next signal is only caution → unknown
+        var l11 = result.Single(s => s.Name == "L1_1");
+        l11.TrainsAhead.Should().BeNull();
+        l11.NextSignalWithTrainAhead.Should().BeNull();
     }
 
     [Fact]
-    public async Task BlockChain_EarlierCacheOnSignal_SkipsNextSignalWithTrainAhead()
+    public async Task BlockChain_RedAfterPassSignal_StillGetsCaution()
     {
-        // This test demonstrates the bug: when earlierSignalIndex has a hit
-        // for a signal, the `continue` skips the NextSignalWithTrainAhead check.
-        //
         // Chain: L1_1 → L1_2 → L1_3
-        // T1 at L1_3 (red), T2 was previously at L1_1 (in cache)
-        // L1_1 should still get NextSignalWithTrainAhead set
+        // T2 just passed L1_1 (red-after-pass) and is approaching L1_2, T1 is approaching L1_3.
+        // L1_1 is stop, and since L1_2 is stop as well it also carries the caution info.
         var signals = new[]
         {
             MakeSignal("L1_1", "block",
@@ -695,21 +771,15 @@ public class GetSignalsForTrainsTests
 
         var trainT1 = MakeTrain("T1", "en1", "L1_3@extra", id: "t1");
         var trainT2 = MakeTrain("T2", "en1", "L1_2@extra", id: "t2");
-        var trains = new[] { trainT1, trainT2 };
 
         var sut = CreateService(signals);
-        // T2 was previously at L1_1 (just passed it, now at L1_2)
-        sut.SetLastSignalCache(trainT2.GetTrainId(), "L1_1");
+        sut.SetRedAfterPassCache("L1_1", trainT2.GetTrainId());
 
-        var result = await sut.GetSignalsForTrains(trains);
+        var result = await sut.GetSignalsForTrains([trainT1, trainT2]);
 
-        // L1_1: earlierSignalIndex hit → TrainsAhead = ["T2"] → continue
-        // This means NextSignalWithTrainAhead is never set!
         var l11 = result.Single(s => s.Name == "L1_1");
         l11.TrainsAhead.Should().BeEquivalentTo("T2");
-
-        l11.NextSignalWithTrainAhead.Should().Be("L1_2",
-            "L1_1 should know there's a train 2 signals ahead even when earlierSignalIndex has data");
+        l11.NextSignalWithTrainAhead.Should().Be("L1_2");
     }
 
     // ──────────────────────────────────────────────
@@ -734,13 +804,25 @@ public class GetSignalsForTrainsTests
             return Task.FromResult(_signals);
         }
 
-        public void SetLastSignalCache(string trainId, string signalName)
+        public void SetRedAfterPassCache(string signalName, string trainId, DateTime? leftAt = null)
+        {
+            GetRedAfterPassCache().Set(signalName, new(trainId, leftAt ?? DateTime.UtcNow));
+        }
+
+        public TimeSpan? GetRedAfterPassTtl()
+        {
+            var cache = GetRedAfterPassCache();
+            return (TimeSpan?)typeof(TtlCache<string, SignalPass>)
+                .GetField("_ttl", BindingFlags.NonPublic | BindingFlags.Instance)!
+                .GetValue(cache);
+        }
+
+        private TtlCache<string, SignalPass> GetRedAfterPassCache()
         {
             var field = typeof(SignalAnalyzerService)
-                .GetField("_trainLastSignalCache",
+                .GetField("_signalRedAfterPassCache",
                     BindingFlags.NonPublic | BindingFlags.Instance)!;
-            var cache = (TtlCache<string, string>)field.GetValue(this)!;
-            cache.Set(trainId, signalName);
+            return (TtlCache<string, SignalPass>)field.GetValue(this)!;
         }
 
         public void SetPassedSignalCache(string trainId, string signalName)
