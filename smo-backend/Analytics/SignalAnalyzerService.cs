@@ -84,6 +84,17 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     private byte _runCount;
     private SignalStatus[]? _signalsSnapshot;
 
+    /// <summary>
+    ///     Incremented on every invalidation, so a load that overlaps an invalidation is not cached.
+    /// </summary>
+    private int _signalsSnapshotVersion;
+
+    /// <summary>
+    ///     Guards storing and invalidating the snapshot, so an invalidation can't land between the version check
+    ///     and the store.
+    /// </summary>
+    private readonly Lock _signalsSnapshotStateLock = new();
+
     private DateTime _signalsSnapshotUpdatedAt = DateTime.MinValue;
 
     /// <summary>
@@ -243,10 +254,26 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 }
                 else
                 {
-                    var loaded = await LoadSignalsFromDatabase().NoContext();
+                    // If the snapshot was invalidated while loading (e.g. a signal was edited), the loaded data may
+                    // predate the change: load again instead of caching (and returning) the old state.
+                    SignalStatus[] loaded;
+                    int version;
+                    var attempts = 0;
+                    do
+                    {
+                        version = Volatile.Read(ref _signalsSnapshotVersion);
+                        loaded = await LoadSignalsFromDatabase().NoContext();
+                    } while (version != Volatile.Read(ref _signalsSnapshotVersion) && ++attempts < 3);
 
-                    _signalsSnapshot = loaded;
-                    _signalsSnapshotUpdatedAt = DateTime.UtcNow;
+                    lock (_signalsSnapshotStateLock)
+                    {
+                        if (version == _signalsSnapshotVersion)
+                        {
+                            _signalsSnapshot = loaded;
+                            _signalsSnapshotUpdatedAt = DateTime.UtcNow;
+                        }
+                    }
+
                     snapshotToClone = loaded;
                 }
             }
@@ -263,7 +290,10 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         return CloneSignals(snapshotToClone);
     }
 
-    private async Task<SignalStatus[]> LoadSignalsFromDatabase()
+    /// <summary>
+    ///     Loads all signals with their connections from the database.
+    /// </summary>
+    protected virtual async Task<SignalStatus[]> LoadSignalsFromDatabase()
     {
         using var scope = _scopeFactory.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
@@ -357,10 +387,18 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         return clone;
     }
 
-    private void InvalidateSignalsSnapshot()
+    /// <summary>
+    ///     Drops the cached signals, so the next request reads them from the database.
+    ///     Call it after changing signals or their connections outside of this service (e.g. admin edits).
+    /// </summary>
+    public void InvalidateSignalsSnapshot()
     {
-        _signalsSnapshot = null;
-        _signalsSnapshotUpdatedAt = DateTime.MinValue;
+        lock (_signalsSnapshotStateLock)
+        {
+            _signalsSnapshotVersion++;
+            _signalsSnapshot = null;
+            _signalsSnapshotUpdatedAt = DateTime.MinValue;
+        }
     }
 
 

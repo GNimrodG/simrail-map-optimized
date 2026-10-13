@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SMOBackend.Analytics;
 using SMOBackend.Data;
 using SMOBackend.Models;
 using SMOBackend.Utils;
@@ -12,7 +13,7 @@ namespace SMOBackend.Controllers;
 [ApiController]
 [Route("signals")]
 [Produces("application/json")]
-public class SignalsController(SmoContext context) : Controller
+public class SignalsController(SmoContext context, SignalAnalyzerService signalAnalyzerService) : Controller
 {
     private static bool ValidatePassword(string? password) =>
         !string.IsNullOrWhiteSpace(StdUtils.GetEnvVar("ADMIN_PASSWORD", "")) &&
@@ -64,6 +65,8 @@ public class SignalsController(SmoContext context) : Controller
         signal.UpdatedAt = DateTime.UtcNow;
 
         await context.SaveChangesAsync();
+        // otherwise clients get the cached pre-edit signals for a while and the edit seems to revert
+        signalAnalyzerService.InvalidateSignalsSnapshot();
 
         return Ok(new SignalStatus(signal));
     }
@@ -92,6 +95,8 @@ public class SignalsController(SmoContext context) : Controller
         signal.UpdatedAt = DateTime.UtcNow;
 
         await context.SaveChangesAsync();
+        // otherwise clients get the cached pre-edit signals for a while and the edit seems to revert
+        signalAnalyzerService.InvalidateSignalsSnapshot();
 
         return Ok(new SignalStatus(signal));
     }
@@ -127,6 +132,8 @@ public class SignalsController(SmoContext context) : Controller
         context.SignalConnections.Remove(nextSignal);
 
         await context.SaveChangesAsync();
+        // otherwise clients get the cached pre-edit signals for a while and the edit seems to revert
+        signalAnalyzerService.InvalidateSignalsSnapshot();
 
         return Ok(new SignalStatus(signal));
     }
@@ -158,6 +165,8 @@ public class SignalsController(SmoContext context) : Controller
         signal.UpdatedAt = DateTime.UtcNow;
 
         await context.SaveChangesAsync();
+        // otherwise clients get the cached pre-edit signals for a while and the edit seems to revert
+        signalAnalyzerService.InvalidateSignalsSnapshot();
 
         return Ok(new SignalStatus(signal));
     }
@@ -186,6 +195,8 @@ public class SignalsController(SmoContext context) : Controller
         signal.UpdatedAt = DateTime.UtcNow;
 
         await context.SaveChangesAsync();
+        // otherwise clients get the cached pre-edit signals for a while and the edit seems to revert
+        signalAnalyzerService.InvalidateSignalsSnapshot();
 
         return Ok(new SignalStatus(signal));
     }
@@ -221,6 +232,8 @@ public class SignalsController(SmoContext context) : Controller
         context.SignalConnections.Remove(prevSignal);
 
         await context.SaveChangesAsync();
+        // otherwise clients get the cached pre-edit signals for a while and the edit seems to revert
+        signalAnalyzerService.InvalidateSignalsSnapshot();
 
         return Ok(new SignalStatus(signal));
     }
@@ -247,6 +260,8 @@ public class SignalsController(SmoContext context) : Controller
 
         context.Signals.Remove(signal);
         await context.SaveChangesAsync();
+        // otherwise clients get the cached pre-edit signals for a while and the edit seems to revert
+        signalAnalyzerService.InvalidateSignalsSnapshot();
 
         return Ok(new SignalStatus(signal));
     }
