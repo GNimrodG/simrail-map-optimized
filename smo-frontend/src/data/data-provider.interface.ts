@@ -56,12 +56,11 @@ export interface IDataProvider {
   getLinesForSignal(signal: string): Promise<string[] | null>;
 
   /**
-   * Get lines for a connection between two signals in WKT format.
-   * @param prevSignal The name of the previous signal.
-   * @param nextSignal The name of the next signal.
-   * @return A promise that resolves to an array of WKT lines or null if not found.
+   * Get lines for many connections between two signals in WKT format, in one request.
+   * @param connections The [previous signal, next signal] pairs.
+   * @return A promise that resolves to the WKT lines of each connection, in the same order (null where unavailable).
    */
-  getLinesForSignalConnection(prevSignal: string, nextSignal: string): Promise<string[] | null>;
+  getLinesForSignalConnections(connections: [string, string][]): Promise<(string[] | null)[]>;
 
   getSteamProfileData(steamId: string): Promise<UserProfileResponse | null>;
   getSteamProfileStats(steamId: string): Promise<SteamProfileStats | null>;

@@ -481,4 +481,23 @@ public class MainHub(
             return [];
         }
     }
+
+    /// <summary>
+    ///     Gets the possible path lines in WKT for many signal connections in one call
+    ///     (<paramref name="prevSignals" />[i] -> <paramref name="nextSignals" />[i]).
+    /// </summary>
+    /// <param name="prevSignals">The previous signal of each connection.</param>
+    /// <param name="nextSignals">The next signal of each connection, same length as <paramref name="prevSignals" />.</param>
+    /// <returns>The WKT lines of each connection, in the same order (empty if none).</returns>
+    public async Task<string[][]> GetLinesForSignalConnections(string[] prevSignals, string[] nextSignals)
+    {
+        if (prevSignals.Length != nextSignals.Length ||
+            prevSignals.Length > RoutePointAnalyzerService.MaxConnectionsPerRequest)
+            throw new HubException(
+                $"Expected the same number of previous and next signals, at most {RoutePointAnalyzerService.MaxConnectionsPerRequest}.");
+
+        var connections = prevSignals.Zip(nextSignals, (prev, next) => (prev, next)).ToArray();
+
+        return await routePointAnalyzerService.GetLinesForSignalConnections(connections);
+    }
 }

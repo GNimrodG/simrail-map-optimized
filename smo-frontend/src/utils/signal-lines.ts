@@ -23,7 +23,10 @@ const DEFAULT_MAX_STACK_SIZE = 10;
 const SPEED_UNKNOWN_LABEL = "?";
 
 type SignalLookup = (name: string) => SignalStatus | undefined;
-type GetLinesForConnection = (from: string, to: string) => Promise<string[] | null>;
+/** Fetches the lines of many connections in one request, in the order of the given [from, to] pairs. */
+export type GetLinesForConnections = (connections: [string, string][]) => Promise<(string[] | null)[]>;
+/** Lines of an already fetched connection. */
+type ConnectionLinesLookup = (from: string, to: string) => string[] | null;
 
 type AppendResult = {
   lines: MapLineData["lines"];
@@ -99,10 +102,10 @@ const appendDirectLines = ({ signal, lookupSignal, startIndex }: AppendContext):
   return { lines, nextIndex: index };
 };
 
-const appendConnectionLines = async (
+const appendConnectionLines = (
   { signal, lookupSignal, startIndex }: AppendContext,
-  getLinesForConnection: GetLinesForConnection,
-): Promise<AppendResult> => {
+  getLines: ConnectionLinesLookup,
+): AppendResult => {
   const lines: MapLineData["lines"] = [];
   let index = startIndex;
 
@@ -112,32 +115,28 @@ const appendConnectionLines = async (
       continue;
     }
 
-    try {
-      const signalLines = await getLinesForConnection(prevSignal.Name, signal.Name);
-      if (!signalLines) {
-        continue;
-      }
-
-      signalLines.forEach((line, lineIndex) => {
-        const coords = [
-          [prevSignalData.Location.Y, prevSignalData.Location.X] as [number, number],
-          ...getCoordsFromLineString(line),
-          [signal.Location.Y, signal.Location.X] as [number, number],
-        ];
-
-        lines.push({
-          color: PREV_COLOR,
-          color2: getSpeedColor(prevSignal.Vmax),
-          coords,
-          index: index++,
-          width: 3,
-          label:
-              lineIndex === 0 ? `${prevSignal.Name} -> ${signal.Name} (${formatVmaxLabel(prevSignal.Vmax)})` : undefined,
-        });
-      });
-    } catch (error) {
-      console.warn(`Failed to get lines for signal ${signal.Name}`, error);
+    const signalLines = getLines(prevSignal.Name, signal.Name);
+    if (!signalLines) {
+      continue;
     }
+
+    signalLines.forEach((line, lineIndex) => {
+      const coords = [
+        [prevSignalData.Location.Y, prevSignalData.Location.X] as [number, number],
+        ...getCoordsFromLineString(line),
+        [signal.Location.Y, signal.Location.X] as [number, number],
+      ];
+
+      lines.push({
+        color: PREV_COLOR,
+        color2: getSpeedColor(prevSignal.Vmax),
+        coords,
+        index: index++,
+        width: 3,
+        label:
+          lineIndex === 0 ? `${prevSignal.Name} -> ${signal.Name} (${formatVmaxLabel(prevSignal.Vmax)})` : undefined,
+      });
+    });
   }
 
   for (const nextSignal of signal.NextSignals) {
@@ -146,35 +145,64 @@ const appendConnectionLines = async (
       continue;
     }
 
-    try {
-      const signalLines = await getLinesForConnection(signal.Name, nextSignal.Name);
-      if (!signalLines) {
-        continue;
-      }
-
-      signalLines.forEach((line, lineIndex) => {
-        const coords = [
-          [signal.Location.Y, signal.Location.X] as [number, number],
-          ...getCoordsFromLineString(line),
-          [nextSignalData.Location.Y, nextSignalData.Location.X] as [number, number],
-        ];
-
-        lines.push({
-          color: NEXT_COLOR,
-          color2: getSpeedColor(nextSignal.Vmax),
-          coords,
-          index: index++,
-          width: 3,
-          label:
-            lineIndex === 0 ? `${signal.Name} -> ${nextSignal.Name} (${formatVmaxLabel(nextSignal.Vmax)})` : undefined,
-        });
-      });
-    } catch (error) {
-      console.warn(`Failed to get lines for signal connections from ${signal.Name}`, error);
+    const signalLines = getLines(signal.Name, nextSignal.Name);
+    if (!signalLines) {
+      continue;
     }
+
+    signalLines.forEach((line, lineIndex) => {
+      const coords = [
+        [signal.Location.Y, signal.Location.X] as [number, number],
+        ...getCoordsFromLineString(line),
+        [nextSignalData.Location.Y, nextSignalData.Location.X] as [number, number],
+      ];
+
+      lines.push({
+        color: NEXT_COLOR,
+        color2: getSpeedColor(nextSignal.Vmax),
+        coords,
+        index: index++,
+        width: 3,
+        label:
+          lineIndex === 0 ? `${signal.Name} -> ${nextSignal.Name} (${formatVmaxLabel(nextSignal.Vmax)})` : undefined,
+      });
+    });
   }
 
   return { lines, nextIndex: index };
+};
+
+/**
+ * Runs `build` twice: first only to collect the connections it needs lines for, then, after fetching all of them
+ * with a single request, to build the result. Building is cheap and deterministic, a request per connection is not.
+ */
+const withConnectionLines = async (
+  build: (getLines: ConnectionLinesLookup) => AppendResult,
+  getLinesForConnections: GetLinesForConnections,
+): Promise<AppendResult> => {
+  const key = (from: string, to: string) => `${from}\u0000${to}`;
+
+  const wanted = new Map<string, [string, string]>();
+  build((from, to) => {
+    wanted.set(key(from, to), [from, to]);
+    return null;
+  });
+
+  if (wanted.size === 0) {
+    return build(() => null);
+  }
+
+  const connections = [...wanted.values()];
+  let fetched: (string[] | null)[] = [];
+  try {
+    fetched = await getLinesForConnections(connections);
+  } catch (error) {
+    console.warn(`Failed to get lines for ${connections.length} signal connections`, error);
+  }
+
+  const linesByConnection = new Map(connections.map(([from, to], i) => [key(from, to), fetched[i] ?? null]));
+
+  return build((from, to) => linesByConnection.get(key(from, to)) ?? null);
 };
 
 /** Darkens a hex color by the given percentage. */
@@ -188,14 +216,14 @@ const darkenColor = (color: string, percent: number): string => {
   return `#${(0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1)}`;
 };
 
-const appendNextSignalLayers = async (
+const appendNextSignalLayers = (
   { signal, lookupSignal, startIndex }: AppendContext,
-  getLinesForConnection: GetLinesForConnection,
+  getLines: ConnectionLinesLookup,
   maxLayer: number,
   maxStackSize: number,
   skipDirect: boolean,
   skipConnections: boolean,
-): Promise<AppendResult> => {
+): AppendResult => {
   const lines: MapLineData["lines"] = [];
   let index = startIndex;
 
@@ -228,29 +256,23 @@ const appendNextSignalLayers = async (
         }
 
         if (!skipConnections) {
-          try {
-            const signalLines = await getLinesForConnection(currentSignal.Name, nextSignal.Name);
-            if (signalLines) {
-              signalLines.forEach((line) => {
-                const coords = [
-                  [currentSignal.Location.Y, currentSignal.Location.X] as [number, number],
-                  ...getCoordsFromLineString(line),
-                  [nextSignalData.Location.Y, nextSignalData.Location.X] as [number, number],
-                ];
+          const signalLines = getLines(currentSignal.Name, nextSignal.Name);
+          signalLines?.forEach((line) => {
+            const coords = [
+              [currentSignal.Location.Y, currentSignal.Location.X] as [number, number],
+              ...getCoordsFromLineString(line),
+              [nextSignalData.Location.Y, nextSignalData.Location.X] as [number, number],
+            ];
 
-                lines.push({
-                  color,
-                  color2,
-                  coords,
-                  index: index++,
-                  width: 1,
-                  label: undefined,
-                });
-              });
-            }
-          } catch (error) {
-            console.warn(`Failed to get lines for signal connections from ${currentSignal.Name}`, error);
-          }
+            lines.push({
+              color,
+              color2,
+              coords,
+              index: index++,
+              width: 1,
+              label: undefined,
+            });
+          });
         }
 
         if (newStack.length < maxStackSize) {
@@ -267,14 +289,14 @@ const appendNextSignalLayers = async (
   return { lines, nextIndex: index };
 };
 
-const appendPreviousSignalLayers = async (
+const appendPreviousSignalLayers = (
   { signal, lookupSignal, startIndex }: AppendContext,
-  getLinesForConnection: GetLinesForConnection,
+  getLines: ConnectionLinesLookup,
   maxLayer: number,
   maxStackSize: number,
   skipDirect: boolean,
   skipConnections: boolean,
-): Promise<AppendResult> => {
+): AppendResult => {
   const lines: MapLineData["lines"] = [];
   let index = startIndex;
 
@@ -307,29 +329,23 @@ const appendPreviousSignalLayers = async (
         }
 
         if (!skipConnections) {
-          try {
-            const signalLines = await getLinesForConnection(prevSignalData.Name, currentSignal.Name);
-            if (signalLines) {
-              signalLines.forEach((line) => {
-                const coords = [
-                  [currentSignal.Location.Y, currentSignal.Location.X] as [number, number],
-                  ...getCoordsFromLineString(line),
-                  [prevSignalData.Location.Y, prevSignalData.Location.X] as [number, number],
-                ];
+          const signalLines = getLines(prevSignalData.Name, currentSignal.Name);
+          signalLines?.forEach((line) => {
+            const coords = [
+              [currentSignal.Location.Y, currentSignal.Location.X] as [number, number],
+              ...getCoordsFromLineString(line),
+              [prevSignalData.Location.Y, prevSignalData.Location.X] as [number, number],
+            ];
 
-                lines.push({
-                  color,
-                  color2,
-                  coords,
-                  index: index++,
-                  width: 1,
-                  label: undefined,
-                });
-              });
-            }
-          } catch (error) {
-            console.warn(`Failed to get lines for signal ${signal.Name}`, error);
-          }
+            lines.push({
+              color,
+              color2,
+              coords,
+              index: index++,
+              width: 1,
+              label: undefined,
+            });
+          });
         }
 
         if (newStack.length < maxStackSize) {
@@ -364,24 +380,27 @@ export const calculateSignalDirectLines = ({
 export interface CalculateSignalConnectionLinesParams {
   signal: SignalStatus;
   signalsData: SignalStatus[];
-  getLinesForConnection: GetLinesForConnection;
+  getLinesForConnections: GetLinesForConnections;
   startIndex?: number;
 }
 
 export const calculateSignalConnectionLines = async ({
   signal,
   signalsData,
-  getLinesForConnection,
+  getLinesForConnections,
   startIndex = 0,
 }: CalculateSignalConnectionLinesParams): Promise<AppendResult> => {
   const lookupSignal = createLookup(signalsData);
-  return appendConnectionLines({ signal, lookupSignal, startIndex }, getLinesForConnection);
+  return withConnectionLines(
+    (getLines) => appendConnectionLines({ signal, lookupSignal, startIndex }, getLines),
+    getLinesForConnections,
+  );
 };
 
 export interface CalculateFurtherSignalLinesParams {
   signal: SignalStatus;
   signalsData: SignalStatus[];
-  getLinesForConnection: GetLinesForConnection;
+  getLinesForConnections: GetLinesForConnections;
   skipDirect?: boolean;
   skipConnections?: boolean;
   maxLayer?: number;
@@ -392,7 +411,7 @@ export interface CalculateFurtherSignalLinesParams {
 export const calculateFurtherSignalLines = async ({
   signal,
   signalsData,
-  getLinesForConnection,
+  getLinesForConnections,
   skipDirect = false,
   skipConnections = false,
   maxLayer = DEFAULT_MAX_LAYER,
@@ -400,30 +419,27 @@ export const calculateFurtherSignalLines = async ({
   startIndex = 0,
 }: CalculateFurtherSignalLinesParams): Promise<AppendResult> => {
   const lookupSignal = createLookup(signalsData);
-  let nextIndex = startIndex;
-  const lines: MapLineData["lines"] = [];
 
-  const nextResult = await appendNextSignalLayers(
-    { signal, lookupSignal, startIndex: nextIndex },
-    getLinesForConnection,
-    maxLayer,
-    maxStackSize,
-    skipDirect,
-    skipConnections,
-  );
-  lines.push(...nextResult.lines);
-  nextIndex = nextResult.nextIndex;
+  // both directions in one build, so all their connections are fetched in a single request
+  return withConnectionLines((getLines) => {
+    const nextResult = appendNextSignalLayers(
+      { signal, lookupSignal, startIndex },
+      getLines,
+      maxLayer,
+      maxStackSize,
+      skipDirect,
+      skipConnections,
+    );
 
-  const prevResult = await appendPreviousSignalLayers(
-    { signal, lookupSignal, startIndex: nextIndex },
-    getLinesForConnection,
-    maxLayer,
-    maxStackSize,
-    skipDirect,
-    skipConnections,
-  );
-  lines.push(...prevResult.lines);
-  nextIndex = prevResult.nextIndex;
+    const prevResult = appendPreviousSignalLayers(
+      { signal, lookupSignal, startIndex: nextResult.nextIndex },
+      getLines,
+      maxLayer,
+      maxStackSize,
+      skipDirect,
+      skipConnections,
+    );
 
-  return { lines, nextIndex };
+    return { lines: [...nextResult.lines, ...prevResult.lines], nextIndex: prevResult.nextIndex };
+  }, getLinesForConnections);
 };

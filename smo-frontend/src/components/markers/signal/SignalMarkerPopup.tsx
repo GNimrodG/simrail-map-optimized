@@ -129,7 +129,7 @@ const SignalMarkerPopup: FunctionComponent<SignalMarkerPopupProps> = ({
                     const {lines} = await calculateSignalConnectionLines({
                         signal,
                         signalsData,
-                        getLinesForConnection: dataProvider.getLinesForSignalConnection.bind(dataProvider),
+                        getLinesForConnections: dataProvider.getLinesForSignalConnections.bind(dataProvider),
                         startIndex: nextIndex,
                     });
 
@@ -159,7 +159,7 @@ const SignalMarkerPopup: FunctionComponent<SignalMarkerPopupProps> = ({
                 const {lines} = await calculateFurtherSignalLines({
                     signal,
                     signalsData: dataProvider.signalsData$.value,
-                    getLinesForConnection: (from, to) => dataProvider.getLinesForSignalConnection(from, to),
+                    getLinesForConnections: (connections) => dataProvider.getLinesForSignalConnections(connections),
                     skipDirect: e.shiftKey,
                     skipConnections: e.altKey,
                 });

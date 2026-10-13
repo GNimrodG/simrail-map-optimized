@@ -23,6 +23,9 @@ import {
 } from "../utils/types";
 import { IDataProvider } from "./data-provider.interface";
 
+/** Must match RoutePointAnalyzerService.MaxConnectionsPerRequest on the backend. */
+const MAX_CONNECTIONS_PER_REQUEST = 1000;
+
 export class SignalRDataProvider implements IDataProvider {
   private readonly serverApiUrl: string;
   private readonly connection: HubConnection;
@@ -785,24 +788,34 @@ export class SignalRDataProvider implements IDataProvider {
     }
   }
 
-  async getLinesForSignalConnection(prevSignal: string, nextSignal: string): Promise<string[] | null> {
-    // Fetch the lines with the GetLinesForSignalConnection SignalR method
-    try {
-      const lines = await this.connection.invoke<string[] | null>(
-        "GetLinesForSignalConnection",
-        prevSignal,
-        nextSignal,
-      );
-      if (lines) {
-        return lines;
-      } else {
-        console.warn(`No lines found for connection ${prevSignal} -> ${nextSignal}`);
-        return null;
-      }
-    } catch (e) {
-      console.error(`Failed to get lines for connection ${prevSignal} -> ${nextSignal}`, e);
-      return null;
+  async getLinesForSignalConnections(connections: [string, string][]): Promise<(string[] | null)[]> {
+    if (!connections.length) return [];
+
+    // One GetLinesForSignalConnections call for all of them instead of a round trip per connection
+    // (chunked, the server accepts at most MAX_CONNECTIONS_PER_REQUEST at once)
+    const chunks: [string, string][][] = [];
+    for (let i = 0; i < connections.length; i += MAX_CONNECTIONS_PER_REQUEST) {
+      chunks.push(connections.slice(i, i + MAX_CONNECTIONS_PER_REQUEST));
     }
+
+    const results = await Promise.all(
+      chunks.map(async (chunk) => {
+        try {
+          const lines = await this.connection.invoke<(string[] | null)[] | null>(
+            "GetLinesForSignalConnections",
+            chunk.map(([prev]) => prev),
+            chunk.map(([, next]) => next),
+          );
+
+          return chunk.map((_, i) => (lines?.[i]?.length ? lines[i] : null));
+        } catch (e) {
+          console.error(`Failed to get lines for ${chunk.length} signal connections`, e);
+          return chunk.map(() => null);
+        }
+      }),
+    );
+
+    return results.flat();
   }
 
   async getStationTimetable(stationName: string): Promise<SimplifiedTimtableEntry[] | null> {

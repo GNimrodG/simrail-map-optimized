@@ -1060,6 +1060,115 @@ public partial class RoutePointAnalyzerService : IHostedService
     }
 
     /// <summary>
+    ///     The most connections <see cref="GetLinesForSignalConnections" /> accepts in one request.
+    /// </summary>
+    public const int MaxConnectionsPerRequest = 1000;
+
+    /// <summary>
+    /// Gets the lines for many signal connections at once, with the same result per connection as
+    /// <see cref="GetLinesForSignalConnection" />: one query for the stored lines and one for the route points of
+    /// the rest, instead of a round trip and two queries per connection.
+    /// </summary>
+    /// <returns>The lines of each connection, in the order of <paramref name="connections" /> (empty if none).</returns>
+    public async Task<string[][]> GetLinesForSignalConnections(IReadOnlyList<(string Prev, string Next)> connections,
+        int maxLines = 5)
+    {
+        var linesByConnection = new Dictionary<(string Prev, string Next), string[]>();
+        var distinct = connections.Distinct().ToArray();
+
+        if (distinct.Length > 0)
+        {
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
+
+                var storedLines = await context.Database
+                    .SqlQueryRaw<ConnectionLineRow>(
+                        """
+                        SELECT s.prev_signal, s.next_signal, ST_AsText(s.line) AS line
+                        FROM signal_lines s
+                        JOIN unnest(@prevSignals, @nextSignals) AS c(prev_signal, next_signal)
+                          ON s.prev_signal = c.prev_signal AND s.next_signal = c.next_signal
+                        """,
+                        new NpgsqlParameter("@prevSignals", distinct.Select(c => c.Prev).ToArray()),
+                        new NpgsqlParameter("@nextSignals", distinct.Select(c => c.Next).ToArray()))
+                    .ToArrayAsync();
+
+                // re-format with NTS, so the WKT is exactly what GetLinesForSignalConnection returns
+                var wktReader = new WKTReader(NtsGeometryServices.Instance);
+                foreach (var row in storedLines)
+                    linesByConnection[(row.PrevSignal, row.NextSignal)] = [wktReader.Read(row.Line).AsText()];
+
+                var missing = distinct.Where(c => !linesByConnection.ContainsKey(c)).ToArray();
+
+                if (missing.Length > 0)
+                {
+                    // same as GetFilteredRouteLines, but for every missing connection at once
+                    var routeLines = await context.Database
+                        .SqlQueryRaw<ConnectionLineRow>(
+                            """
+                            WITH wanted AS (
+                                SELECT * FROM unnest(@prevSignals, @nextSignals) AS w(prev_signal, next_signal)
+                            ),
+                            grouped_lines AS (
+                                SELECT rp.prev_signal, rp.next_signal,
+                                       ST_AsText(ST_MakeLine(rp.point ORDER BY rp.created_at)) AS line,
+                                       COUNT(*) AS point_count
+                                FROM route_points rp
+                                JOIN wanted w ON rp.prev_signal = w.prev_signal AND rp.next_signal = w.next_signal
+                                GROUP BY rp.prev_signal, rp.next_signal, rp.train_id, rp.run_id
+                                HAVING COUNT(*) > 2
+                            ),
+                            ranked AS (
+                                SELECT prev_signal, next_signal, line,
+                                       ROW_NUMBER() OVER (PARTITION BY prev_signal, next_signal ORDER BY point_count DESC) AS rn
+                                FROM grouped_lines
+                            )
+                            SELECT prev_signal, next_signal, line
+                            FROM ranked
+                            WHERE rn <= @maxLines
+                            """,
+                            new NpgsqlParameter("@prevSignals", missing.Select(c => c.Prev).ToArray()),
+                            new NpgsqlParameter("@nextSignals", missing.Select(c => c.Next).ToArray()),
+                            new NpgsqlParameter("@maxLines", maxLines))
+                        .ToArrayAsync();
+
+                    foreach (var group in routeLines.GroupBy(r => (r.PrevSignal, r.NextSignal)))
+                    {
+                        try
+                        {
+                            linesByConnection[group.Key] = [MergeByProjectionSort(group.Select(r => r.Line)).AsText()];
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to merge lines for signal connection {PrevSignalId} -> {NextSignalId}",
+                                group.Key.PrevSignal, group.Key.NextSignal);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting lines for {Count} signal connections", distinct.Length);
+            }
+        }
+
+        var result = new string[connections.Count][];
+        for (var i = 0; i < connections.Count; i++)
+            result[i] = linesByConnection.GetValueOrDefault(connections[i]) ?? [];
+
+        return result;
+    }
+
+    private sealed class ConnectionLineRow
+    {
+        public required string PrevSignal { get; init; }
+        public required string NextSignal { get; init; }
+        public required string Line { get; init; }
+    }
+
+    /// <summary>
     /// Optimized helper method using raw SQL for better performance.
     /// </summary>
     private async Task<string[]> GetFilteredRouteLines(string whereClause, NpgsqlParameter[] parameters, int maxLines)
