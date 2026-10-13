@@ -216,7 +216,15 @@ export class SignalRDataProvider implements IDataProvider {
     });
     this.connection.on(
       "TrainPositionsReceived",
-      (trainPositions: { Id: string; Latitude: number; Longitude: number; Velocity: number }[]) => {
+      (
+        trainPositions: {
+          Id: string;
+          Latitude: number;
+          Longitude: number;
+          Velocity: number;
+          Heading?: number | null;
+        }[],
+      ) => {
         const currentTrains = this.trainsData$.value;
 
         if (!currentTrains.length) {
@@ -238,6 +246,7 @@ export class SignalRDataProvider implements IDataProvider {
               Latitude: trainPosition.Latitude,
               Longitude: trainPosition.Longitude,
               Velocity: trainPosition.Velocity,
+              Heading: trainPosition.Heading ?? train.TrainData.Heading,
             },
           };
         });

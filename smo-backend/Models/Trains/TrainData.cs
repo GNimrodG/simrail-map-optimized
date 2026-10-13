@@ -45,6 +45,13 @@ public class TrainData : BaseTrainData
     [JsonProperty("Longitute")] public double? Longitude { get; set; }
 
     /// <summary>
+    /// The direction of travel in whole degrees (0 = north, clockwise), or null if not known yet.
+    /// </summary>
+    /// <remarks>Not part of the SimRail data, set from <see cref="TrainPosition.Heading"/>.</remarks>
+    [JsonProperty(nameof(Heading))]
+    public short? Heading { get; set; }
+
+    /// <summary>
     /// The index of the next station in the train's timetable.
     /// </summary>
     /// <remarks>

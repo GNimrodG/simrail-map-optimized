@@ -35,6 +35,13 @@ public class TrainPosition : IEntityWithTimestamp
     [JsonProperty(nameof(Velocity))]
     public required double Velocity { get; set; }
 
+    /// <summary>
+    /// The direction of travel in whole degrees (0 = north, clockwise), or null if not known yet.
+    /// </summary>
+    /// <remarks>Not part of the SimRail data, calculated from consecutive positions.</remarks>
+    [JsonProperty(nameof(Heading))]
+    public short? Heading { get; set; }
+
     /// <inheritdoc />
     [JsonIgnore]
     public DateTime Timestamp { get; set; }
@@ -51,5 +58,8 @@ public class TrainPosition : IEntityWithTimestamp
         train.TrainData.Latitude = Latitude.Value;
         train.TrainData.Longitude = Longitude.Value;
         train.TrainData.Velocity = Velocity;
+
+        if (Heading.HasValue)
+            train.TrainData.Heading = Heading;
     }
 }

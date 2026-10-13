@@ -30,6 +30,8 @@ export interface TrainData {
   InBorderStationArea: boolean;
   Latitude: number;
   Longitude: number;
+  /** Direction of travel in degrees (0 = north, clockwise), null until the train moved */
+  Heading?: number | null;
   VDDelayedTimetableIndex: number;
   RequiredMapDLCs: number[][] | null;
 }
@@ -47,6 +49,8 @@ export interface PartialTrainData {
   InBorderStationArea: boolean;
   Latitude: number;
   Longitude: number;
+  /** Direction of travel in degrees (0 = north, clockwise), null until the train moved */
+  Heading?: number | null;
   VDDelayedTimetableIndex: number;
   RequiredMapDLCs: number[][] | null;
 }

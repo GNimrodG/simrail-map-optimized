@@ -22,6 +22,7 @@ const SETTINGS = {
   showDelayInfoCollapsed: true,
   alternativeTheme: false,
   disableSlidingMarkers: false,
+  showTrainHeadings: true,
   layerOpacities: {
     "orm-infra": 1,
     "orm-maxspeed": 1,

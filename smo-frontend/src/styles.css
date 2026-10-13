@@ -165,6 +165,33 @@
   border-radius: 50%;
 }
 
+/* Heading arrow: a box over the icon rotated around its centre, with the arrow drawn just outside the border.
+   Only transform is changed, so updates stay on the compositor. */
+.icon.train .heading {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-color: inherit;
+  transform: rotate(var(--heading, 0deg));
+}
+
+.icon.train.has-heading .heading {
+  display: block;
+}
+
+.icon.train .heading::before {
+  content: "";
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 8px solid;
+  border-bottom-color: inherit;
+}
+
 .icon.station.player {
   border-color: var(--joy-palette-primary-600);
 }

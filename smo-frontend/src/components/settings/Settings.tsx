@@ -84,6 +84,7 @@ const Settings: FunctionComponent = () => {
         <Stack direction="column" spacing={1}>
           <SettingCheckbox settingKey="useAltTracking" />
           <SettingCheckbox settingKey="disableSlidingMarkers" />
+          <SettingCheckbox settingKey="showTrainHeadings" />
           <SettingCheckbox settingKey="disableLowSpeedWarning" />
           <SettingCheckbox settingKey="reduceBackgroundUpdates" />
           <SettingSlider settingKey="autoZoomLimits" min={100} max={300} step={1} minDistance={20} />

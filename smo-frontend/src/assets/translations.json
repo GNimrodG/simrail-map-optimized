@@ -53,6 +53,10 @@
           "Label": "Disable sliding markers",
           "Description": "Disable sliding markers for trains. This can improve performance on some devices."
         },
+        "showTrainHeadings": {
+          "Label": "Show train headings",
+          "Description": "Show an arrow on train markers pointing in their direction of travel."
+        },
         "passiveSignalOpacity": {
           "Label": "Passive signal layer opacity"
         },
@@ -435,6 +439,10 @@
         "disableSlidingMarkers": {
           "Label": "Schiebemarkierungen deaktivieren",
           "Description": "Schiebemarkierungen für Züge deaktivieren. Dies kann die Leistung auf einigen Geräten verbessern."
+        },
+        "showTrainHeadings": {
+          "Label": "Fahrtrichtung der Züge anzeigen",
+          "Description": "Zeigt einen Pfeil an den Zugmarkierungen, der in die Fahrtrichtung zeigt."
         },
         "passiveSignalOpacity": {
           "Label": "Deckkraft der passiven Signal-Ebene"
@@ -819,6 +827,10 @@
         "disableSlidingMarkers": {
           "Label": "Csúszó jelölők letiltása",
           "Description": "Csúszó jelölők letiltása a vonatokhoz. Ez javíthatja a teljesítményt néhány eszközön."
+        },
+        "showTrainHeadings": {
+          "Label": "Vonatok haladási irányának mutatása",
+          "Description": "Nyíl megjelenítése a vonatjelölőkön, amely a haladási irányba mutat."
         },
         "passiveSignalOpacity": {
           "Label": "Passzív jelző réteg átlátszósága"
@@ -1208,6 +1220,10 @@
           "Label": "Kayan işaretçileri devre dışı bırak",
           "Description": "Trenler için kayan işaret animasyonlarını devre dışı bırakın. Bu, bazı cihazlarda performansı artırabilir."
         },
+        "showTrainHeadings": {
+          "Label": "Tren yönlerini göster",
+          "Description": "Tren işaretçilerinde hareket yönünü gösteren bir ok gösterin."
+        },
         "passiveSignalOpacity": {
           "Label": "Pasif sinyal katmanı opaklığı"
         },
@@ -1594,6 +1610,10 @@
           "Label": "Wyłącz przesuwane markery",
           "Description": "Wyłącz przesuwane markery dla pociągów. Może to poprawić wydajność na niektórych urządzeniach."
         },
+        "showTrainHeadings": {
+          "Label": "Pokaż kierunek jazdy pociągów",
+          "Description": "Wyświetla strzałkę na markerach pociągów, wskazującą kierunek jazdy."
+        },
         "passiveSignalOpacity": {
           "Label": "Przezroczystość pasywnej warstwy sygnałów"
         },
@@ -1977,6 +1997,10 @@
           "Label": "Отключить скользящие маркеры",
           "Description": "Отключить скользящие маркеры для поездов. Это может улучшить производительность на некоторых устройствах."
         },
+        "showTrainHeadings": {
+          "Label": "Показывать направление движения поездов",
+          "Description": "Показывать стрелку на маркерах поездов, указывающую направление движения."
+        },
         "passiveSignalOpacity": {
           "Label": "Непрозрачность слоя пассивных сигналов"
         },
@@ -2359,6 +2383,10 @@
         "disableSlidingMarkers": {
           "Label": "Вимкнути ковзні маркери",
           "Description": "Вимкнути ковзні маркери для поїздів. Це може покращити продуктивність на деяких пристроях."
+        },
+        "showTrainHeadings": {
+          "Label": "Показувати напрямок руху поїздів",
+          "Description": "Показувати стрілку на маркерах поїздів, що вказує напрямок руху."
         },
         "passiveSignalOpacity": {
           "Label": "Непрозорість шару пасивних сигналів"

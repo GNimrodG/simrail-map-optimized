@@ -105,6 +105,7 @@ public class Train : IEntityWithTimestamp
             InBorderStationArea = train.TrainData.InBorderStationArea;
             Latitude = train.TrainData.Latitude;
             Longitude = train.TrainData.Longitude;
+            Heading = train.TrainData.Heading;
             VdDelayedTimetableIndex = train.TrainData.VDDelayedTimetableIndex;
             RequiredMapDlCs = train.TrainData.RequiredMapDLCs;
         }
@@ -143,6 +144,9 @@ public class Train : IEntityWithTimestamp
 
         /// <inheritdoc cref="TrainData.Longitude"/>
         public double? Longitude { get; set; }
+
+        /// <inheritdoc cref="TrainData.Heading"/>
+        public short? Heading { get; set; }
 
         /// <inheritdoc cref="TrainData.VDDelayedTimetableIndex"/>
         [JsonProperty("VDDelayedTimetableIndex")]

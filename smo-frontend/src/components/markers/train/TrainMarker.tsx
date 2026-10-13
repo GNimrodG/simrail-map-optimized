@@ -1,5 +1,5 @@
-import { DivIcon, Icon, IconOptions } from "leaflet";
-import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
+import { DivIcon, Icon, IconOptions, type Marker as LeafletMarker } from "leaflet";
+import { type FunctionComponent, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Marker, Popup, useMap } from "react-leaflet";
 
 import { useIsDocumentFocused } from "../../../hooks/useIsDocumentFocused";
@@ -18,9 +18,13 @@ export interface TrainMarkerProps {
   layerId: string;
 }
 
+// Rotated with the --heading CSS variable on the marker element (see useEffect below),
+// so a heading change never rebuilds the icon
+const HEADING_ARROW = `<span class="heading"></span>`;
+
 const DEFAULT_ICON = new DivIcon({
   iconSize: [40, 40],
-  html: BotIcon,
+  html: BotIcon + HEADING_ARROW,
   className: "icon train bot",
 });
 
@@ -34,8 +38,8 @@ function getIcon(
   if (avatar) {
     return new DivIcon({
       html: avatar.startsWith("http")
-        ? `<img src="${avatar}" /><span class="tooltip">${trainNo}</span>`
-        : `${PersonIcon}<span class="tooltip">${trainNo}</span>`,
+        ? `<img src="${avatar}" /><span class="tooltip">${trainNo}</span>${HEADING_ARROW}`
+        : `${PersonIcon}<span class="tooltip">${trainNo}</span>${HEADING_ARROW}`,
       iconSize: [40, 40],
       popupAnchor: [0, -20],
       className: `icon train player ${colorClass} ${isSelected ? "selected" : ""}`,
@@ -43,7 +47,7 @@ function getIcon(
   }
 
   return new DivIcon({
-    html: `${BotIcon}<span class="tooltip">${trainNo}</span>`,
+    html: `${BotIcon}<span class="tooltip">${trainNo}</span>${HEADING_ARROW}`,
     iconSize: [40, 40],
     popupAnchor: [0, -20],
     className: `icon train bot ${colorClass} ${inBorderStationArea ? "non-playable" : ""} ${
@@ -60,6 +64,7 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train, layerId }) =>
   const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(DEFAULT_ICON);
   const [useAltTracking] = useSetting("useAltTracking");
   const [disableSlidingMarkers] = useSetting("disableSlidingMarkers");
+  const [showTrainHeadings] = useSetting("showTrainHeadings");
   const [reduceBackgroundUpdates] = useSetting("reduceBackgroundUpdates");
   const [layerOpacities] = useSetting("layerOpacities");
   const opacity = layerOpacities[layerId] ?? layerOpacities.trains ?? 1;
@@ -117,6 +122,29 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train, layerId }) =>
     train.TrainData.Longitude,
   ]);
 
+  const markerRef = useRef<LeafletMarker | null>(null);
+  // callback ref, so it fits both the plain and the drift marker
+  const setMarkerRef = useCallback((marker: LeafletMarker | null) => {
+    markerRef.current = marker;
+  }, []);
+  // with the setting off the heading stays null, so heading updates don't even run the effect below
+  const heading = showTrainHeadings ? train.TrainData.Heading : null;
+
+  // Runs after react-leaflet swapped the icon element (child effects run first), so it also re-applies
+  // the heading to a freshly created icon element. Only the CSS variable changes, the icon is not rebuilt.
+  useEffect(() => {
+    const element = markerRef.current?.getElement();
+    if (!element) return;
+
+    if (heading == null) {
+      element.classList.remove("has-heading");
+      return;
+    }
+
+    element.style.setProperty("--heading", `${heading}deg`);
+    element.classList.add("has-heading");
+  }, [heading, icon, disableSlidingMarkers, reduceBackgroundUpdates, focused]);
+
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const popup = !isSelected && (
@@ -128,6 +156,7 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train, layerId }) =>
   if (disableSlidingMarkers || (reduceBackgroundUpdates && !focused)) {
     return (
       <Marker
+        ref={setMarkerRef}
         position={[train.TrainData.Latitude, train.TrainData.Longitude]}
         icon={icon}
         opacity={opacity}
@@ -143,6 +172,7 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train, layerId }) =>
 
   return (
     <ReactLeafletDriftMarker
+      ref={setMarkerRef}
       key={train.Id}
       duration={1000}
       position={[train.TrainData.Latitude, train.TrainData.Longitude]}
