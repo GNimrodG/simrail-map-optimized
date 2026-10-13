@@ -93,6 +93,16 @@ public partial class RoutePointAnalyzerService : IHostedService
     private readonly double _minDistance = StdUtils.GetEnvVar("ROUTE_POINT_MIN_DISTANCE_METERS", 100.0);
 
     /// <summary>
+    ///     Distance between consecutive route points in meters above which a route line is split into segments.
+    /// </summary>
+    /// <remarks>
+    ///     This value can be configured via the environment variable ROUTE_POINT_MAX_GAP_METERS. Defaults to 1000 meters:
+    ///     with a point every 5 s, normal driving puts points up to ~700 m apart, bigger gaps are missing data or a train
+    ///     moved (a lower value split the lines of fast trains into hundreds of segments, most of them then cleaned up).
+    /// </remarks>
+    private readonly double _maxGapDistance = StdUtils.GetEnvVar("ROUTE_POINT_MAX_GAP_METERS", 1000.0);
+
+    /// <summary>
     ///     Queue processor for handling train data asynchronously.
     /// </summary>
     private readonly QueueProcessor<Dictionary<string, Train[]>> _queueProcessor;
@@ -471,7 +481,7 @@ public partial class RoutePointAnalyzerService : IHostedService
 
             if (points.Count <= 1) continue;
 
-            var segments = SplitPointsAtGaps(points, _minDistance * 2);
+            var segments = SplitPointsAtGaps(points, _maxGapDistance);
 
             if (segments.Count is <= 1 or > 999) continue;
 
@@ -504,7 +514,7 @@ public partial class RoutePointAnalyzerService : IHostedService
     /// <param name="points">The ordered list of route points</param>
     /// <param name="maxGapDistance">Maximum allowed distance between consecutive points</param>
     /// <returns>List of point segments</returns>
-    private static List<List<RoutePoint>> SplitPointsAtGaps(List<RoutePoint> points, double maxGapDistance)
+    internal static List<List<RoutePoint>> SplitPointsAtGaps(List<RoutePoint> points, double maxGapDistance)
     {
         var segments = new List<List<RoutePoint>>();
         var currentSegment = new List<RoutePoint>();
@@ -547,20 +557,25 @@ public partial class RoutePointAnalyzerService : IHostedService
         {
             _logger.LogInformation("Removing route lines with too many points...");
 
-            // Use a single optimized query with bulk delete
+            // Keeps the 3 latest runs of each route, with all the segments of a run split at gaps counted as one run
+            // (ranking the segments separately kept only the last 3 segments of a split run), and never deletes a run
+            // still in progress: the same route runs on several servers at once, deleting the 4th+ of those hourly
+            // cut off the start of their lines
             const string sql = """
                                WITH route_rankings AS (
-                                   SELECT route_id, run_id, train_id,
+                                   SELECT route_id, split_part(run_id, '_seg', 1) AS base_run_id, train_id,
+                                          MAX(created_at) AS latest,
                                           ROW_NUMBER() OVER (PARTITION BY route_id ORDER BY MAX(created_at) DESC) as rn
                                    FROM route_points
-                                   GROUP BY route_id, run_id, train_id
+                                   GROUP BY route_id, split_part(run_id, '_seg', 1), train_id
                                )
-                               DELETE FROM route_points
-                               WHERE (route_id, run_id, train_id) IN (
-                                   SELECT route_id, run_id, train_id
-                                   FROM route_rankings
-                                   WHERE rn > 3
-                               )
+                               DELETE FROM route_points rp
+                               USING route_rankings r
+                               WHERE r.rn > 3
+                                 AND r.latest < now() - interval '10 minutes'
+                                 AND rp.route_id = r.route_id
+                                 AND rp.train_id = r.train_id
+                                 AND split_part(rp.run_id, '_seg', 1) = r.base_run_id
                                """;
 
             var deletedCount = await context.Database.ExecuteSqlRawAsync(sql, cancellationToken);
@@ -830,38 +845,40 @@ public partial class RoutePointAnalyzerService : IHostedService
             using var scope = _scopeFactory.CreateScope();
             await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-            // Optimized query with better indexing hints
+            // the latest runs with all their segments (a run split at gaps counts as one run: filtering the segments
+            // by their own size hid the shorter segments of a run, leaving holes in the route)
             const string sql = """
                                WITH valid_runs AS (
-                                   SELECT 
-                                       route_id, 
-                                       train_id, 
-                                       run_id, 
+                                   SELECT
+                                       route_id,
+                                       train_id,
+                                       split_part(run_id, '_seg', 1) AS base_run_id,
                                        MAX(created_at) as latest
-                                   FROM route_points 
+                                   FROM route_points
                                    WHERE route_id = @trainNoLocal
-                                   GROUP BY route_id, train_id, run_id
+                                   GROUP BY route_id, train_id, split_part(run_id, '_seg', 1)
                                    HAVING COUNT(*) > 20
                                    ORDER BY latest DESC
                                    LIMIT 10
                                ),
                                route_coords AS (
-                                   SELECT 
-                                       rp.route_id, 
-                                       rp.train_id, 
-                                       rp.run_id, 
+                                   SELECT
+                                       rp.route_id,
+                                       rp.train_id,
+                                       rp.run_id,
                                        ST_X(rp.point) as x,
                                        ST_Y(rp.point) as y,
                                        rp.created_at
                                    FROM route_points rp
-                                   INNER JOIN valid_runs vr ON rp.route_id = vr.route_id 
-                                                           AND rp.train_id = vr.train_id 
-                                                           AND rp.run_id = vr.run_id
-                                   ORDER BY rp.run_id, rp.created_at
+                                   INNER JOIN valid_runs vr ON rp.route_id = vr.route_id
+                                                           AND rp.train_id = vr.train_id
+                                                           AND split_part(rp.run_id, '_seg', 1) = vr.base_run_id
+                                   WHERE rp.route_id = @trainNoLocal
                                )
                                SELECT ST_AsText(ST_MakeLine(ST_Point(x, y) ORDER BY created_at)) as line_wkt
                                FROM route_coords
                                GROUP BY route_id, train_id, run_id
+                               HAVING COUNT(*) > 1
                                """;
 
             var results = await context.Database
@@ -890,7 +907,7 @@ public partial class RoutePointAnalyzerService : IHostedService
             const string sql = """
                                SELECT DISTINCT route_id
                                FROM route_points
-                               GROUP BY route_id, train_id, run_id
+                               GROUP BY route_id, train_id, split_part(run_id, '_seg', 1)
                                HAVING COUNT(*) > 20
                                ORDER BY route_id
                                """;
