@@ -64,6 +64,18 @@ public class TrainPositionDataService(
     }
 
     /// <inheritdoc />
+    protected override void OnPerServerDataReceived(PerServerData<TrainPosition[]> data)
+    {
+        // Update the index before the positions are sent to clients, so train data sent afterwards
+        // (see ApplyToTrains) never carries an older position than the clients already have
+        _trainPositionIndex[data.ServerCode] = data.Data
+            .GroupBy(t => t.Id)
+            .ToDictionary(g => g.Key, g => g.First());
+
+        base.OnPerServerDataReceived(data);
+    }
+
+    /// <inheritdoc />
     protected override void OnDataReceived(Dictionary<string, TrainPosition[]> data)
     {
         base.OnDataReceived(data);
@@ -73,10 +85,6 @@ public class TrainPositionDataService(
 
         foreach (var (server, trains) in data)
         {
-            _trainPositionIndex[server] = trains
-                .GroupBy(t => t.Id)
-                .ToDictionary(g => g.Key, g => g.First());
-
             if (trains.Length == 0)
                 continue;
 

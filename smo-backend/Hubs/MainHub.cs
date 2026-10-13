@@ -16,6 +16,7 @@ public class MainHub(
     ServerDataService serverDataService,
     StationDataService stationDataService,
     TrainDataService trainDataService,
+    TrainPositionDataService trainPositionDataService,
     TimeDataService timeDataService,
     TimetableDataService timetableDataService,
     SignalAnalyzerService signalAnalyzerService,
@@ -111,6 +112,8 @@ public class MainHub(
         var trains = trainDataService[serverCode];
         if (trains != null)
         {
+            // the cached train data is up to 5s old, use the latest positions
+            trainPositionDataService.ApplyToTrains(trains);
             await Clients.Caller.SendAsync("TrainsReceived", trains);
 
             var delays = trainDelayAnalyzerService.GetDelaysForTrains(trains);
@@ -228,6 +231,9 @@ public class MainHub(
             var trains = trainDataService[serverCode];
             if (trains != null)
             {
+                // the cached train data is up to 5s old, use the latest positions
+                // (otherwise trains jump back on the map until the next position update)
+                trainPositionDataService.ApplyToTrains(trains);
                 await Clients.Caller.SendAsync("TrainsReceived", trains);
             }
         }
