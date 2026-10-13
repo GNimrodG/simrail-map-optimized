@@ -58,6 +58,12 @@ public partial class RoutePointAnalyzerService : IHostedService
     private readonly ConcurrentDictionary<string, DateTime> _activeTrainCache = new();
 
     /// <summary>
+    ///     The latest previous and next signal of each run, to set on its route points that have none.
+    /// </summary>
+    private readonly ConcurrentDictionary<RoutePointGroup, (string PrevSignal, string NextSignal)>
+        _pendingSignalBackfills = new();
+
+    /// <summary>
     ///     Cleanup interval for old route lines in hours.
     /// </summary>
     /// <remarks>
@@ -71,22 +77,12 @@ public partial class RoutePointAnalyzerService : IHostedService
     private readonly ILogger<RoutePointAnalyzerService> _logger;
 
     /// <summary>
-    ///     Maximum batch size for database operations to optimize memory usage and performance.
+    ///     Maximum batch size for database operations (trains per nearest-point query, points per insert).
     /// </summary>
     /// <remarks>
     ///     This value can be configured via the environment variable ROUTE_POINT_MAX_BATCH_SIZE. Defaults to 500.
     /// </remarks>
     private readonly int _maxBatchSize = StdUtils.GetEnvVar("ROUTE_POINT_MAX_BATCH_SIZE", 500);
-
-    /// <summary>
-    ///     Maximum degree of parallelism for train data processing.
-    /// </summary>
-    /// <remarks>
-    ///     This value can be configured via the environment variable ROUTE_POINT_MAX_CONCURRENCY. Defaults to 4 or double the
-    ///     number of CPU cores, whichever is lower.
-    /// </remarks>
-    private readonly int _maxConcurrency =
-        StdUtils.GetEnvVar("ROUTE_POINT_MAX_CONCURRENCY", Math.Min(Environment.ProcessorCount * 2, 4));
 
     /// <summary>
     ///     Minimum distance between route points in meters to avoid duplicate entries.
@@ -277,33 +273,56 @@ public partial class RoutePointAnalyzerService : IHostedService
         }
     }
 
-    private async void OnSignalChanged(SignalAnalyzerService.SignalChangeData data)
+    private void OnSignalChanged(SignalAnalyzerService.SignalChangeData data)
     {
+        // Backfill the past route points signal data if it was null
+        if (data.PrevSignalId is null || data.CurrentSignalId is null) return;
+
+        // the event fires for every train with a signal on every tick, a query per event used a connection per train
+        // and exhausted the database's connections, so they're collected and applied in one query per tick
+        _pendingSignalBackfills[new(data.Train.TrainNoLocal, data.Train.RunId, data.Train.Id)] =
+            (data.PrevSignalId, data.CurrentSignalId);
+    }
+
+    /// <summary>
+    ///     Sets the signals collected by <see cref="OnSignalChanged" /> on the route points of each run that have none.
+    /// </summary>
+    private async Task BackfillRoutePointSignals(SmoContext context)
+    {
+        var backfills = new List<(RoutePointGroup Run, string PrevSignal, string NextSignal)>();
+        foreach (var run in _pendingSignalBackfills.Keys)
+            if (_pendingSignalBackfills.TryRemove(run, out var signals))
+                backfills.Add((run, signals.PrevSignal, signals.NextSignal));
+
+        if (backfills.Count == 0) return;
+
         try
         {
-            // Backfill the past route points signal data if it was null
-            if (data.PrevSignalId is null || data.CurrentSignalId is null) return;
-
-            using var scope = _scopeFactory.CreateScope();
-            await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
+            var updatedCount = 0;
 
             // a single UPDATE: loading and saving the rows raced with the route point cleanup deleting them
             // (DbUpdateConcurrencyException), rows deleted in the meantime are now simply not updated
-            var updatedCount = await context.RoutePoints
-                .Where(x =>
-                    x.RouteId == data.Train.TrainNoLocal && x.RunId == data.Train.RunId && x.TrainId == data.Train.Id &&
-                    x.PrevSignal == null && x.NextSignal == null)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(x => x.PrevSignal, data.PrevSignalId)
-                    .SetProperty(x => x.NextSignal, data.CurrentSignalId));
+            foreach (var batch in backfills.Chunk(_maxBatchSize))
+                updatedCount += await context.Database.ExecuteSqlRawAsync(
+                    """
+                    UPDATE route_points rp
+                    SET prev_signal = b.prev_signal, next_signal = b.next_signal
+                    FROM unnest(@routeIds, @runIds, @trainIds, @prevSignals, @nextSignals)
+                        AS b(route_id, run_id, train_id, prev_signal, next_signal)
+                    WHERE rp.route_id = b.route_id AND rp.run_id = b.run_id AND rp.train_id = b.train_id
+                      AND rp.prev_signal IS NULL AND rp.next_signal IS NULL
+                    """,
+                    new NpgsqlParameter("@routeIds", batch.Select(b => b.Run.RouteId).ToArray()),
+                    new NpgsqlParameter("@runIds", batch.Select(b => b.Run.RunId).ToArray()),
+                    new NpgsqlParameter("@trainIds", batch.Select(b => b.Run.TrainId).ToArray()),
+                    new NpgsqlParameter("@prevSignals", batch.Select(b => b.PrevSignal).ToArray()),
+                    new NpgsqlParameter("@nextSignals", batch.Select(b => b.NextSignal).ToArray()));
 
-            if (updatedCount == 0) return;
-
-            LogUpdatedCountRoutePointsForTrain(updatedCount, data.Train.GetTrainId());
+            if (updatedCount > 0) LogBackfilledRoutePointSignals(updatedCount, backfills.Count);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error updating route points for signal change");
+            _logger.LogError(e, "Error updating route points for signal changes");
         }
     }
 
@@ -651,7 +670,7 @@ public partial class RoutePointAnalyzerService : IHostedService
     }
 
     /// <summary>
-    ///     Processes train data with optimized parallel processing and bulk database operations.
+    ///     Processes train data: one nearest-point query per batch of trains, then a bulk insert of the new points.
     /// </summary>
     private async Task ProcessTrainData(Dictionary<string, Train[]> data)
     {
@@ -672,48 +691,50 @@ public partial class RoutePointAnalyzerService : IHostedService
             .Where(t => t.TrainData.Location != null)
             .ToList();
 
-        // Process in optimized batches
-        var pointsToAdd = new ConcurrentBag<RoutePoint>();
+        var pointsToAdd = new List<RoutePoint>();
         var processedCount = 0;
         var discardedCount = 0;
 
-        var semaphore = new SemaphoreSlim(_maxConcurrency, _maxConcurrency);
-        var tasks = new List<Task>();
-
-        // Process trains in parallel with controlled concurrency
-        foreach (var trainBatch in trainsWithLocation.Chunk(50))
+        using (var scope = _scopeFactory.CreateScope())
         {
-            await semaphore.WaitAsync();
+            await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-            tasks.Add(Task.Run(async () =>
+            await BackfillRoutePointSignals(context);
+
+            // a query per train (in parallel) used a connection per train and exhausted the database's connections
+            foreach (var trainBatch in trainsWithLocation.Chunk(_maxBatchSize))
             {
+                double?[] distances;
+
                 try
                 {
-                    var batchResults = await ProcessTrainBatch(trainBatch);
-
-                    foreach (var point in batchResults.PointsToAdd) pointsToAdd.Add(point);
-
-                    Interlocked.Add(ref processedCount, batchResults.ProcessedCount);
-                    Interlocked.Add(ref discardedCount, batchResults.DiscardedCount);
+                    distances = await GetNearestPointDistances(context, trainBatch);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error processing train batch");
+                    _logger.LogError(ex, "Error getting the nearest route points of {Count} trains", trainBatch.Length);
+                    discardedCount += trainBatch.Length;
+                    continue;
                 }
-                finally
+
+                processedCount += trainBatch.Length;
+
+                for (var i = 0; i < trainBatch.Length; i++)
                 {
-                    // ReSharper disable once AccessToDisposedClosure
-                    semaphore.Release();
+                    // no recent point of this run means the start of a new line
+                    if (distances[i] is { } distance && distance < _minDistance)
+                    {
+                        discardedCount++;
+                        continue;
+                    }
+
+                    var train = trainBatch[i];
+                    pointsToAdd.Add(new(train, _signalAnalyzerService.GetTrainPassedSignalName(train.GetTrainId())));
                 }
-            }));
+            }
         }
 
-        await Task.WhenAll(tasks);
-        semaphore.Dispose();
-
-        // Bulk insert all points
-        var allPointsToAdd = pointsToAdd.ToList();
-        if (allPointsToAdd.Count > 0) await BulkInsertRoutePoints(allPointsToAdd);
+        if (pointsToAdd.Count > 0) await BulkInsertRoutePoints(pointsToAdd);
 
         stopwatch.Stop();
 
@@ -721,54 +742,9 @@ public partial class RoutePointAnalyzerService : IHostedService
 
         _logger.LogInformation(
             "Processed {AddedPoints} added and {DiscardedPoints} discarded route points in {ElapsedMilliseconds} ms",
-            allPointsToAdd.Count, discardedCount, stopwatch.ElapsedMilliseconds);
+            pointsToAdd.Count, discardedCount, stopwatch.ElapsedMilliseconds);
 
         await _scopeFactory.LogStat("ROUTEPOINT", (int)stopwatch.ElapsedMilliseconds);
-    }
-
-    /// <summary>
-    ///     Processes a batch of trains with optimized database queries.
-    /// </summary>
-    private async Task<(List<RoutePoint> PointsToAdd, int ProcessedCount, int DiscardedCount)> ProcessTrainBatch(
-        Train[] trains)
-    {
-        var pointsToAdd = new List<RoutePoint>();
-        var processedCount = 0;
-        var discardedCount = 0;
-
-        // Batch the distance calculations for better performance
-        var trainQueries = trains.Select(train => new
-        {
-            Train = train,
-            Query = GetNearestPointQuery(train.TrainNoLocal, train.RunId, train.Id, train.TrainData.Location!)
-        }).ToList();
-
-        foreach (var item in trainQueries)
-        {
-            try
-            {
-                var distance = await item.Query;
-                processedCount++;
-
-                if (distance >= _minDistance)
-                {
-                    var routePoint = new RoutePoint(item.Train,
-                        _signalAnalyzerService.GetTrainPassedSignalName(item.Train.GetTrainId()));
-                    pointsToAdd.Add(routePoint);
-                }
-                else
-                {
-                    discardedCount++;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing train {TrainId}", item.Train.GetTrainId());
-                discardedCount++;
-            }
-        }
-
-        return (pointsToAdd, processedCount, discardedCount);
     }
 
     /// <summary>
@@ -801,69 +777,45 @@ public partial class RoutePointAnalyzerService : IHostedService
     }
 
     /// <summary>
-    /// Gets the distance to the nearest route point with optimized query.
+    ///     Gets the distance of each train to the nearest recent route point of its own run, in a single query.
     /// </summary>
-    /// <param name="routeId">The route identifier</param>
-    /// <param name="runId">The run identifier</param>
-    /// <param name="trainId">The train identifier</param>
-    /// <param name="point">The point to check distance from</param>
-    /// <returns>A task that returns the distance to the nearest route point in meters</returns>
-    private async Task<double> GetNearestPointQuery(string routeId, string runId, string trainId, Point point)
+    /// <returns>
+    ///     The distances in the order of <paramref name="trains" />, null for a train without a recent route point.
+    /// </returns>
+    private static async Task<double?[]> GetNearestPointDistances(SmoContext context, Train[] trains)
     {
-        using var scope = _scopeFactory.CreateScope();
-        await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
-
-        // Use spatial query to find the nearest point efficiently
         const string sql = """
-                           SELECT COALESCE(
-                               MIN(ST_Distance(ST_Transform(point, 3857), ST_Transform(ST_GeomFromText($1, 4326), 3857))),
-                               $6
-                           ) as distance
-                           FROM route_points
-                           WHERE route_id = $2
-                             AND run_id = $3
-                             AND train_id = $4
-                             AND created_at > $5
+                           SELECT (
+                               SELECT MIN(ST_Distance(
+                                   ST_Transform(rp.point, 3857),
+                                   ST_Transform(ST_SetSRID(ST_MakePoint(t.x, t.y), 4326), 3857)))
+                               FROM route_points rp
+                               WHERE rp.route_id = t.route_id
+                                 AND rp.run_id = t.run_id
+                                 AND rp.train_id = t.train_id
+                                 AND rp.created_at > @cutoffTime
+                           ) AS "Value"
+                           FROM unnest(@routeIds, @runIds, @trainIds, @xs, @ys)
+                               WITH ORDINALITY AS t(route_id, run_id, train_id, x, y, idx)
+                           ORDER BY t.idx
                            """;
 
-        var pointWkt = point.AsText();
-        var cutoffTime = DateTime.UtcNow.AddMinutes(-10); // Only check recent points
-        var maxDistance = _minDistance * 2; // Use a large enough max distance to ensure we get a valid result
+        var distances = await context.Database
+            .SqlQueryRaw<double?>(sql,
+                new NpgsqlParameter("@routeIds", trains.Select(t => t.TrainNoLocal).ToArray()),
+                new NpgsqlParameter("@runIds", trains.Select(t => t.RunId).ToArray()),
+                new NpgsqlParameter("@trainIds", trains.Select(t => t.Id).ToArray()),
+                new NpgsqlParameter("@xs", trains.Select(t => t.TrainData.Location!.X).ToArray()),
+                new NpgsqlParameter("@ys", trains.Select(t => t.TrainData.Location!.Y).ToArray()),
+                // only the recent points of the run count
+                new NpgsqlParameter("@cutoffTime", DateTime.UtcNow.AddMinutes(-10)))
+            .ToArrayAsync();
 
-        await using var command = context.Database.GetDbConnection().CreateCommand();
-        command.CommandText = sql;
+        if (distances.Length != trains.Length)
+            throw new InvalidOperationException(
+                $"Expected {trains.Length} nearest point distances, got {distances.Length}");
 
-        var p1 = command.CreateParameter();
-        p1.Value = pointWkt;
-        command.Parameters.Add(p1);
-
-        var p2 = command.CreateParameter();
-        p2.Value = routeId;
-        command.Parameters.Add(p2);
-
-        var p3 = command.CreateParameter();
-        p3.Value = runId;
-        command.Parameters.Add(p3);
-
-        var p4 = command.CreateParameter();
-        p4.Value = trainId;
-        command.Parameters.Add(p4);
-
-        var p5 = command.CreateParameter();
-        p5.Value = cutoffTime;
-        command.Parameters.Add(p5);
-
-        var p6 = command.CreateParameter();
-        p6.Value = maxDistance;
-        command.Parameters.Add(p6);
-
-        await context.Database.OpenConnectionAsync();
-        await using var reader = await command.ExecuteReaderAsync();
-
-        if (await reader.ReadAsync())
-            return reader.GetDouble(0);
-
-        return maxDistance;
+        return distances;
     }
 
     /// <summary>
@@ -1211,8 +1163,8 @@ public partial class RoutePointAnalyzerService : IHostedService
     [LoggerMessage(LogLevel.Trace, "Received train data for {ServerCount} servers")]
     partial void LogReceivedTrainDataForServers(int serverCount);
 
-    [LoggerMessage(LogLevel.Information, "Updated {Count} route points for train {TrainId} with new signal data")]
-    partial void LogUpdatedCountRoutePointsForTrain(int count, string trainId);
+    [LoggerMessage(LogLevel.Information, "Updated {Count} route points of {RunCount} runs with new signal data")]
+    partial void LogBackfilledRoutePointSignals(int count, int runCount);
 
     [LoggerMessage(LogLevel.Information, "Updated {Count} signal lines in {ElapsedMilliseconds} ms")]
     partial void LogUpdatedCountSignalLines(int count, long elapsedMilliseconds);

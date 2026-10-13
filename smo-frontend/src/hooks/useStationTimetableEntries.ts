@@ -125,14 +125,8 @@ const useStationTimetableEntries = (mainStation: string) => {
 
     const fetchTimetableData = async () => {
       try {
-        const promises = stationNames.map((name) =>
-          dataProvider.getStationTimetable(name).catch((err) => {
-            console.warn(`Failed to fetch timetable for station ${name}:`, err);
-            return null;
-          }),
-        );
-
-        const results = await Promise.all(promises);
+        // one request for the station with all its sub-stations, a request each was an N+1
+        const results = await dataProvider.getStationTimetables(stationNames);
 
         if (abortController.signal.aborted) return;
 

@@ -247,6 +247,37 @@ public class StatusController(
     }
 
     /// <summary>
+    ///     The most stations <see cref="GetStationTimetables" /> accepts in one request.
+    /// </summary>
+    public const int MaxStationsPerTimetableRequest = 50;
+
+    /// <summary>
+    /// Get the timetable entries for multiple stations at once (e.g. a station with its sub-stations)
+    /// </summary>
+    /// <param name="serverCode">The server code</param>
+    /// <param name="names">The station names (at most 50)</param>
+    /// <returns>The timetable entries of each station, by station name (empty if none)</returns>
+    [HttpGet("{serverCode}/stations/timetables")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(NotFoundError))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(NotFoundError))]
+    public ActionResult<Dictionary<string, SimplifiedTimetableEntry[]>> GetStationTimetables(string serverCode,
+        [FromQuery] string[] names)
+    {
+        if (names.Length is 0 or > MaxStationsPerTimetableRequest)
+            return BadRequest(new NotFoundError($"Expected 1 to {MaxStationsPerTimetableRequest} station names",
+                "invalid_station_count"));
+
+        if (!CheckServer(serverCode))
+            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+
+        var timetables = names.Distinct()
+            .ToDictionary(name => name, name => timetableAnalyzerService.GetTimetableEntries(serverCode, name));
+
+        return Ok(timetables);
+    }
+
+    /// <summary>
     /// The time data for a specific server
     /// </summary>
     /// <param name="serverCode">The server code</param>

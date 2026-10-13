@@ -818,9 +818,40 @@ export class SignalRDataProvider implements IDataProvider {
     return results.flat();
   }
 
-  async getStationTimetable(stationName: string): Promise<SimplifiedTimtableEntry[] | null> {
-    const selectedServer = readLocalStorageValue<string>({ key: "selectedServer" }) || this.defaultServer;
+  async getStationTimetables(stationNames: string[]): Promise<(SimplifiedTimtableEntry[] | null)[]> {
+    if (stationNames.length === 0) return [];
 
+    const selectedServer = readLocalStorageValue<string>({ key: "selectedServer" }) || this.defaultServer;
+    const query = stationNames.map((name) => `names=${encodeURIComponent(name)}`).join("&");
+
+    try {
+      const res = await fetch(
+        `${this.serverApiUrl}/status/${encodeURIComponent(selectedServer)}/stations/timetables?${query}`,
+      );
+
+      // TODO: remove the fallback once every backend has the batch endpoint
+      if (res.status === 404 || res.status === 405) {
+        return Promise.all(stationNames.map((name) => this.getStationTimetable(selectedServer, name)));
+      }
+
+      if (!res.ok) {
+        console.error(`Failed to fetch timetables for stations ${stationNames.join(", ")}`, res.statusText);
+        return stationNames.map(() => null);
+      }
+
+      const timetables = (await res.json()) as Record<string, SimplifiedTimtableEntry[]>;
+
+      return stationNames.map((name) => timetables[name] ?? null);
+    } catch (e) {
+      console.error(`Failed to get timetables for stations ${stationNames.join(", ")}`, e);
+      return stationNames.map(() => null);
+    }
+  }
+
+  private async getStationTimetable(
+    selectedServer: string,
+    stationName: string,
+  ): Promise<SimplifiedTimtableEntry[] | null> {
     try {
       const res = await fetch(
         `${this.serverApiUrl}/status/${encodeURIComponent(selectedServer)}/stations/${encodeURIComponent(stationName)}/timetable`,

@@ -108,8 +108,7 @@ Route point analyzer
 - `ROUTE_POINT_ANALYZER_DISABLED`: Disable the route point analyzer (`false`)
 - `ROUTE_POINT_ANALYZER_ALLOWED_SERVERS`: Comma-separated whitelist of server codes (empty = all)
 - `ROUTE_POINT_CLEANUP_INTERVAL_HOURS`: Hours before old route lines are removed (`72` = 3 days)
-- `ROUTE_POINT_MAX_BATCH_SIZE`: Batch size for DB inserts (`500`)
-- `ROUTE_POINT_MAX_CONCURRENCY`: Parallelism for processing (`min(4, 2x CPU)`)
+- `ROUTE_POINT_MAX_BATCH_SIZE`: Batch size for nearest-point queries and DB inserts (`500`)
 - `ROUTE_POINT_MIN_DISTANCE_METERS`: Min distance between points on a route (`100.0`)
 
 Notes

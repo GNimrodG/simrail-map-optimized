@@ -25,7 +25,12 @@ export interface IDataProvider {
   stationsData$: BehaviorSubject<Station[]>;
   unplayableStations$: BehaviorSubject<Station[]>;
 
-  getStationTimetable(stationName: string): Promise<SimplifiedTimtableEntry[] | null>;
+  /**
+   * Get the timetable entries of many stations (e.g. a station with its sub-stations), in one request.
+   * @param stationNames The names of the stations.
+   * @return A promise that resolves to the entries of each station, in the same order (null where unavailable).
+   */
+  getStationTimetables(stationNames: string[]): Promise<(SimplifiedTimtableEntry[] | null)[]>;
 
   trainsData$: BehaviorSubject<Train[]>;
   signalsData$: BehaviorSubject<SignalStatus[]>;
