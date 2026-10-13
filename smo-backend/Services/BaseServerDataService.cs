@@ -24,9 +24,9 @@ public abstract class BaseServerDataService<T>(
     private protected virtual TimeSpan DelayBetweenServers => TimeSpan.Zero;
 
     /// <summary>
-    ///     The latest data received from the service for a specific server.
+    ///     The latest data received from the service for a specific server, or null if there is none (yet).
     /// </summary>
-    public T? this[string serverCode] => Data?[serverCode];
+    public T? this[string serverCode] => Data?.GetValueOrDefault(serverCode);
 
     /// <inheritdoc />
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -125,23 +125,57 @@ public abstract class BaseServerDataService<T>(
             foreach (var server in serverDataService.Data!)
             {
                 var serverCode = server.ServerCode;
-                var task = FetchServerData(serverCode, stoppingToken)
-                    .ContinueWith(t =>
-                    {
-                        var data = t.Result;
-                        // Emit the event when this specific server's data is fetched
-                        OnPerServerDataReceived(new(serverCode, data));
-                        return data;
-                    }, TaskContinuationOptions.OnlyOnRanToCompletion);
-
-                fetchTasks[serverCode] = task;
+                fetchTasks[serverCode] = FetchAndEmit(serverCode);
             }
 
-            await Task.WhenAll(fetchTasks.Values);
+            try
+            {
+                await Task.WhenAll(fetchTasks.Values);
+            }
+            catch (Exception) when (!stoppingToken.IsCancellationRequested)
+            {
+                // handled per server below
+            }
+
+            stoppingToken.ThrowIfCancellationRequested();
+
+            var previousData = Data;
 
             foreach (var (serverCode, task) in fetchTasks)
             {
-                result.Add(serverCode, await task);
+                if (task.IsCompletedSuccessfully)
+                {
+                    result.Add(serverCode, task.Result);
+                    continue;
+                }
+
+                // reading Exception marks it as observed (it was reported as an unobserved task exception before)
+                var error = task.Exception?.GetBaseException();
+
+                // one failing server must not stop the update of the others: keep its last data
+                logger.LogWarning("Failed to fetch {ServiceId} data for server {ServerCode}, keeping its last data: {Message}",
+                    _serviceId, serverCode, error?.Message ?? "canceled");
+
+                if (previousData == null) continue;
+
+                T? previous;
+                lock (previousData)
+                    previous = previousData.GetValueOrDefault(serverCode);
+
+                if (previous != null)
+                    result.Add(serverCode, previous);
+            }
+
+            // nothing new at all (e.g. the SimRail API is down): skip this run like before (null = failed fetch)
+            if (fetchTasks.Count > 0 && fetchTasks.Values.All(t => !t.IsCompletedSuccessfully))
+                return null!;
+
+            async Task<T> FetchAndEmit(string serverCode)
+            {
+                var data = await FetchServerData(serverCode, stoppingToken);
+                // Emit the event when this specific server's data is fetched
+                OnPerServerDataReceived(new(serverCode, data));
+                return data;
             }
         }
         else

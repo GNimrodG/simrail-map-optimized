@@ -143,7 +143,13 @@ builder.Services.AddOpenApi(options =>
     );
 }).AddSwaggerGenNewtonsoftSupport();
 
-builder.Services.AddSignalR().AddMessagePackProtocol();
+builder.Services.AddSignalR(options =>
+    {
+        // MessagePack only: the JSON protocol can't serialize the hub's geometry (NetTopologySuite) values,
+        // JSON clients would be dropped on the first signal update instead of being refused at the handshake
+        options.SupportedProtocols = ["messagepack"];
+    })
+    .AddMessagePackProtocol();
 
 builder.Services.AddLogging(loggingBuilder =>
 {

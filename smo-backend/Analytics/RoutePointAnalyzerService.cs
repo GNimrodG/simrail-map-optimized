@@ -287,20 +287,19 @@ public partial class RoutePointAnalyzerService : IHostedService
             using var scope = _scopeFactory.CreateScope();
             await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
-            var routePoints = await context.RoutePoints.Where(x =>
-                x.RouteId == data.Train.TrainNoLocal && x.RunId == data.Train.RunId && x.TrainId == data.Train.Id &&
-                x.PrevSignal == null && x.NextSignal == null).ToListAsync();
+            // a single UPDATE: loading and saving the rows raced with the route point cleanup deleting them
+            // (DbUpdateConcurrencyException), rows deleted in the meantime are now simply not updated
+            var updatedCount = await context.RoutePoints
+                .Where(x =>
+                    x.RouteId == data.Train.TrainNoLocal && x.RunId == data.Train.RunId && x.TrainId == data.Train.Id &&
+                    x.PrevSignal == null && x.NextSignal == null)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(x => x.PrevSignal, data.PrevSignalId)
+                    .SetProperty(x => x.NextSignal, data.CurrentSignalId));
 
-            if (routePoints.Count == 0) return;
+            if (updatedCount == 0) return;
 
-            foreach (var routePoint in routePoints)
-            {
-                routePoint.PrevSignal = data.PrevSignalId;
-                routePoint.NextSignal = data.CurrentSignalId;
-            }
-
-            await context.SaveChangesAsync();
-            LogUpdatedCountRoutePointsForTrain(routePoints.Count, data.Train.GetTrainId());
+            LogUpdatedCountRoutePointsForTrain(updatedCount, data.Train.GetTrainId());
         }
         catch (Exception e)
         {
