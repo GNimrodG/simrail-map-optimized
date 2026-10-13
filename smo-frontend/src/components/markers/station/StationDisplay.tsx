@@ -113,7 +113,8 @@ const StationDisplay: FunctionComponent<StationDisplayProps> = ({
         <>
           {" "}
           <Tooltip arrow title={timeText} color={timeColor}>
-            <Typography variant="outlined" level="body-xs" color={timeColor}>
+            {/* translate="no": browser page translation replaces text nodes, which crashes React when the value changes */}
+            <Typography translate="no" variant="outlined" level="body-xs" color={timeColor}>
               {timeUntil || 0}'
             </Typography>
           </Tooltip>
@@ -207,7 +208,8 @@ const StationTimes: FunctionComponent<{
   delayDisplay: ReactNode;
   timeUntilDisplay: ReactNode;
 }> = ({ station, mainStation, isSmallHeight, delayDisplay, timeUntilDisplay }) => (
-  <Typography level={mainStation ? "body-sm" : "body-xs"}>
+  // only times and delays, which change while the train runs: keep browser translation out of it
+  <Typography translate="no" level={mainStation ? "body-sm" : "body-xs"}>
     {station.ArrivalTime && <TimeDisplay time={station.ArrivalTime} noSeconds={isSmallHeight} />}
     {station.DepartureTime && station.DepartureTime !== station.ArrivalTime && (
       <>

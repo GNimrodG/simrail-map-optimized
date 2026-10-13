@@ -13,7 +13,8 @@ export interface SteamProfileDisplayProps {
 
 const SteamProfileDisplay: FunctionComponent<SteamProfileDisplayProps> = ({ profile, steamId }) => {
   return (
-    <Sheet variant="outlined" sx={{ p: 1, borderRadius: 10 }}>
+    // translate="no": a player name, browser translation would only mangle it
+    <Sheet translate="no" variant="outlined" sx={{ p: 1, borderRadius: 10 }}>
       <Stack
         component="a"
         href={`https://steamcommunity.com/profiles/${steamId}`}

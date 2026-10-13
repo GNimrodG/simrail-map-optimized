@@ -12,7 +12,8 @@ export interface XboxProfileDisplayProps {
 
 const XboxProfileDisplay: FunctionComponent<XboxProfileDisplayProps> = ({ profile, xboxId }) => {
   return (
-    <Sheet variant="outlined" sx={{ p: 1, borderRadius: 10 }}>
+    // translate="no": a player name, which also changes from the ID to the gamertag once the profile loads
+    <Sheet translate="no" variant="outlined" sx={{ p: 1, borderRadius: 10 }}>
       <Stack
         component="a"
         href={profile.PersonaName ? `https://www.xbox.com/en-US/play/user/${profile.PersonaName}` : undefined}
