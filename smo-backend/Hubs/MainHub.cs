@@ -148,10 +148,16 @@ public class MainHub(
     /// <returns>The timetable for the train, or null if not found.</returns>
     public async Task<Timetable?> GetTimetable(string trainNoLocal)
     {
-        string serverCode;
+        string? serverCode;
         lock (clientManagerService.SelectedServers)
         {
-            serverCode = clientManagerService.SelectedServers[Context.ConnectionId];
+            // e.g. right after a reconnect, before the client switched to its server again
+            if (!clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out serverCode))
+            {
+                logger.LogWarning("Client {ConnectionId} tried to get a timetable without a selected server",
+                    Context.ConnectionId);
+                return null;
+            }
         }
 
         for (var attempt = 1; attempt <= 3; attempt++)
@@ -401,7 +407,13 @@ public class MainHub(
     {
         try
         {
-            var serverCode = clientManagerService.SelectedServers[Context.ConnectionId];
+            string? serverCode;
+            lock (clientManagerService.SelectedServers)
+            {
+                if (!clientManagerService.SelectedServers.TryGetValue(Context.ConnectionId, out serverCode))
+                    return null;
+            }
+
             var nextRestart = serverRestartAnalyzerService.PredictNextRestart(serverCode);
             if (nextRestart != null) return nextRestart;
         }

@@ -10,7 +10,7 @@ import { type FunctionComponent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useSetting } from "../../hooks/useSetting";
-import { SUPPORTED_LANGUAGES } from "../../i18n";
+import { setLanguage, SUPPORTED_LANGUAGES } from "../../i18n";
 import LayerOpacitySlider from "./LayerOpacitySlider";
 import SettingCheckbox from "./SettingCheckbox";
 import SettingSlider from "./SettingSlider";
@@ -65,7 +65,7 @@ const Settings: FunctionComponent = () => {
           {t("Language")}
         </Typography>
         <Stack direction="column" spacing={1}>
-          <Select value={i18n.language} onChange={(_e, v) => v && i18n.changeLanguage(v)} size="sm">
+          <Select value={i18n.resolvedLanguage} onChange={(_e, v) => v && setLanguage(v)} size="sm">
             {SUPPORTED_LANGUAGES.map((lang) => (
               <Option key={lang} value={lang}>
                 {t("LanguageName", { lng: lang })}

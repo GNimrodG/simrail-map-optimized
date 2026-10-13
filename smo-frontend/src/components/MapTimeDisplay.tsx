@@ -12,7 +12,9 @@ const MapTimeDisplay: FunctionComponent = () => {
   const timezone = timeData?.Timezone ?? 0;
 
   return (
+    // translate="no": browser page translation replaces text nodes, which crashes React when the value changes
     <Typography
+      translate="no"
       variant="outlined"
       textAlign="center"
       level="h4"

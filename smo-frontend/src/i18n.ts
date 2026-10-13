@@ -35,6 +35,38 @@ for (const lng of SUPPORTED_LANGUAGES) {
   }
 }
 
+// Only a language the user picked in the settings is remembered (see setLanguage), otherwise the browser language
+// is used on every visit. The detector used to cache whatever it resolved, including the "en" fallback, so users
+// who first visited before their language was translated stayed on English (and used browser translation instead).
+const LANGUAGE_STORAGE_KEY = "language";
+const LEGACY_LANGUAGE_STORAGE_KEY = "i18nextLng";
+
+try {
+  const legacy = localStorage.getItem(LEGACY_LANGUAGE_STORAGE_KEY);
+  if (legacy !== null) {
+    // a stored non-English language was chosen or matched the browser, keep it; "en" may just be the old fallback
+    if (legacy && !legacy.startsWith("en") && localStorage.getItem(LANGUAGE_STORAGE_KEY) === null) {
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, legacy);
+    }
+    localStorage.removeItem(LEGACY_LANGUAGE_STORAGE_KEY);
+  }
+} catch {
+  // storage unavailable, the browser language is used
+}
+
+/**
+ * Switches the language and remembers it as the user's choice.
+ */
+export function setLanguage(lng: string) {
+  try {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, lng);
+  } catch {
+    // storage unavailable, the choice lasts until reload
+  }
+
+  return i18n.changeLanguage(lng);
+}
+
 i18n
   // detect user language
   // learn more: https://github.com/i18next/i18next-browser-languageDetector
@@ -53,12 +85,21 @@ i18n
 
     detection: {
       order: ["querystring", "localStorage", "navigator"],
+      lookupLocalStorage: LANGUAGE_STORAGE_KEY,
+      caches: [],
     },
-  });
+  })
+  // resources are bundled, so init finishes synchronously; this only rejects on a setup error
+  .catch((error) => console.error("Failed to initialize i18n", error));
+
+// Keep <html lang> in sync, otherwise browsers treat the page as English and offer (or auto-run) translation
+// even when it's already shown in the user's language.
+document.documentElement.lang = i18n.resolvedLanguage ?? i18n.language;
 
 i18n.on("languageChanged", (lng) => {
   console.log("Language changed to", lng);
   moment.locale(lng);
+  document.documentElement.lang = i18n.resolvedLanguage ?? lng;
 });
 
 i18n.on("missingKey", (lngs, namespace, key) => {

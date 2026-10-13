@@ -47,6 +47,7 @@ const DelayDisplay: FunctionComponent<DelayDisplayProps> = ({
       <>
         {!!actualDeparture && (alwaysShowTime || normalizedDelayMinutes >= 1) && (
           <Typography
+            translate="no"
             level={isPredicted ? "body-xs" : "body-sm"}
             color={delayColor}
             sx={{ opacity: isPredicted ? 0.6 : 1 }}>
@@ -72,7 +73,8 @@ const DelayDisplay: FunctionComponent<DelayDisplayProps> = ({
                   delay: moment.duration({ m: normalizedDelayMinutes }).humanize(),
                 })
           }>
-          <Typography variant={isPredicted ? "soft" : "outlined"} level="body-xs" color={delayColor}>
+          {/* translate="no": browser page translation replaces text nodes, which crashes React when the value changes */}
+          <Typography translate="no" variant={isPredicted ? "soft" : "outlined"} level="body-xs" color={delayColor}>
             {delayMinutes > 0 ? "+" : ""}
             {delayMinutes}'
           </Typography>

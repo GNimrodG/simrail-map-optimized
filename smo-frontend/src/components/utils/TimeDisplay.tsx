@@ -22,7 +22,8 @@ const TimeDisplay: FunctionComponent<TimeDisplayProps> = ({ time, noSeconds }) =
     [time, noSeconds],
   );
 
-  return timeString;
+  // translate="no": browser page translation replaces text nodes, which crashes React when the value changes
+  return <span translate="no">{timeString}</span>;
 };
 
 export default memo(TimeDisplay);

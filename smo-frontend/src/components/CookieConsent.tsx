@@ -4,6 +4,7 @@ import { type FunctionComponent, useEffect } from "react";
 import ReactCookieConsent, { getCookieConsentValue } from "react-cookie-consent";
 import { Trans, useTranslation } from "react-i18next";
 
+import i18n from "../i18n";
 import { isSentryLoaded$ } from "../utils/data-manager";
 import { VERSION } from "../version";
 
@@ -50,6 +51,10 @@ function initializeSentry() {
       replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
       replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
     });
+
+    // the UI language, to tell apart users of the built-in translations from browser translation
+    Sentry.setTag("app.language", i18n.resolvedLanguage ?? i18n.language);
+    i18n.on("languageChanged", () => Sentry.setTag("app.language", i18n.resolvedLanguage ?? i18n.language));
   });
 }
 

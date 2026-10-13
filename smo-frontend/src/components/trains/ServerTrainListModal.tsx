@@ -426,6 +426,7 @@ const ServerTrainListModal: FunctionComponent = () => {
                     const speedChip = (
                       <Chip
                         key="speed"
+                        translate="no"
                         size="sm"
                         variant="soft"
                         startDecorator={<SpeedIcon />}
@@ -439,6 +440,7 @@ const ServerTrainListModal: FunctionComponent = () => {
                     const maxSpeedChip = (prevTimetableEntry?.MaxSpeed || 0) > 0 && (
                       <Chip
                         key="max-speed"
+                        translate="no"
                         size="sm"
                         variant="soft"
                         startDecorator={<SpeedIcon />}
@@ -468,6 +470,7 @@ const ServerTrainListModal: FunctionComponent = () => {
                       return (
                         <Chip
                           key="signal"
+                          translate="no"
                           size="sm"
                           variant="outlined"
                           sx={{

@@ -475,7 +475,10 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 .GroupBy(train => train.data!)
                 .ToDictionary(g => g.Key, g => g.Select(x => x.train).ToArray());
 
-            var trainsById = trains.ToDictionary(t => t.GetTrainId());
+            // SimRail sometimes lists the same train twice, ToDictionary would throw and fail the whole run
+            var trainsById = new Dictionary<string, Train>(trains.Length);
+            foreach (var train in trains)
+                trainsById.TryAdd(train.GetTrainId(), train);
 
             var signals = await GetSignals();
             var signalLookup = signals.ToDictionary(s => s.Name);
@@ -1208,13 +1211,16 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
             _logger.LogWarning("Signal connection error: {ErrorMessage}", error);
-            context.SignalConnectionErrors.Add(new(prev, next, error, trainId, vmax));
-            await context.SaveChangesAsync();
-        }
-        catch (DbUpdateException ex)
-            when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
-        {
-            // Duplicate error row (PK on Prev/Next/Error) - ignore without extra pre-check query.
+
+            // The same error is reported over and over (PK on prev/next/error). ON CONFLICT skips duplicates without
+            // a failing command, which EF would log as an error (and Sentry would report) even when caught.
+            var now = DateTime.UtcNow;
+            await context.Database.ExecuteSqlInterpolatedAsync(
+                $"""
+                 INSERT INTO signal_connection_errors (prev, next, error, vmax, checked, distance, created_by, created_at, updated_at)
+                 VALUES ({prev}, {next}, {errorText}, {vmax}, FALSE, 0, {trainId}, {now}, {now})
+                 ON CONFLICT DO NOTHING
+                 """);
         }
         catch (Exception e)
         {

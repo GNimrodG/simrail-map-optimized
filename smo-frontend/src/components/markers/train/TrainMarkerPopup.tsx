@@ -184,8 +184,10 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
 
   const prevStation = stationData?.prev || stationData?.first;
 
+  // translate="no" on live values: browser page translation replaces text nodes, which crashes React when they change
   const trainSpeed = (
     <Typography
+      translate="no"
       level="body-lg"
       startDecorator={<SpeedIcon />}
       sx={{ display: "inline-flex", alignItems: "center", gap: 0.25, flexDirection: "column" }}>
@@ -213,7 +215,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
       {train.TrainData.SignalInFront && (
         <>
           {!isCollapsed && <Typography level="body-sm">{t("NextSignal")}</Typography>}
-          <Typography level="body-lg">
+          <Typography translate="no" level="body-lg">
             {train.TrainData.SignalInFront?.split("@")[0]}{" "}
             {train.TrainData.SignalInFrontSpeed !== null && <SignalSpeedDisplay train={train} />}{" "}
             <Typography color={getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront)}>
@@ -632,7 +634,7 @@ const LastDelayInfo = ({ lastDelay }: { lastDelay: number }) => {
 
   return (
     <Stack justifyContent="center" direction="row">
-      <Typography level="body-md" color={lastDelayColor} variant="outlined" noWrap textAlign="center">
+      <Typography translate="no" level="body-md" color={lastDelayColor} variant="outlined" noWrap textAlign="center">
         {t(lastDelay === 0 ? "OnTime" : lastDelay < 0 ? "Early" : "Delay", {
           delay: moment.duration({ m: lastDelay }).humanize(),
         })}

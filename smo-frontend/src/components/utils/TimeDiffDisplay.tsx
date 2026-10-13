@@ -25,7 +25,8 @@ const TimeDiffDisplay: FunctionComponent<TimeDiffDisplayProps> = ({ start, end }
     return endDate.diff(startDate, "seconds");
   }, [timeDiffMins, start, end]);
 
-  return timeDiffMins ? `${timeDiffMins}'` : `${timeDiffSecs}"`;
+  // translate="no": browser page translation replaces text nodes, which crashes React when the value changes
+  return <span translate="no">{timeDiffMins ? `${timeDiffMins}'` : `${timeDiffSecs}"`}</span>;
 };
 
 export default memo(TimeDiffDisplay);

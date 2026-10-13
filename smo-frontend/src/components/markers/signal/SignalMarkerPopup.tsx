@@ -239,15 +239,17 @@ const SignalMarkerPopup: FunctionComponent<SignalMarkerPopupProps> = ({
                     <>
                         <Typography level="body-lg">
                             {t("SignalSpeed")}
+                            {/* translate="no" on live values: browser page translation replaces text nodes,
+                                which crashes React when they change */}
                             {trains[0].TrainData.SignalInFrontSpeed > 200 ? (
-                                <Typography color="success">VMAX</Typography>
+                                <Typography translate="no" color="success">VMAX</Typography>
                             ) : (
-                                <Typography color={getSpeedColorForSignal(trains[0].TrainData.SignalInFrontSpeed)}>
+                                <Typography translate="no" color={getSpeedColorForSignal(trains[0].TrainData.SignalInFrontSpeed)}>
                                     {Math.round(trains[0].TrainData.SignalInFrontSpeed)} km/h
                                 </Typography>
                             )}
                         </Typography>
-                        <Typography textAlign="center">
+                        <Typography translate="no" textAlign="center">
                             <Trans
                                 i18nKey="SignalMarker.TrainApproaching"
                                 values={{
@@ -271,7 +273,7 @@ const SignalMarkerPopup: FunctionComponent<SignalMarkerPopupProps> = ({
                     </>
                 )}{" "}
                 {!!trainsAhead?.length && (
-                    <Typography level="body-lg" textAlign="center">
+                    <Typography translate="no" level="body-lg" textAlign="center">
                         <Trans
                             i18nKey="SignalMarker.TrainAhead"
                             values={{

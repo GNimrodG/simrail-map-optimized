@@ -1044,6 +1044,9 @@ public partial class RoutePointAnalyzerService : IHostedService
                 [new("@prevSignalId", prevSignalId), new("@nextSignalId", nextSignalId)],
                 maxLines);
 
+            // no recorded route between these signals yet, that's not an error
+            if (routeLines.Length == 0) return [];
+
             var result = MergeByProjectionSort(routeLines);
 
             return [result.AsText()];

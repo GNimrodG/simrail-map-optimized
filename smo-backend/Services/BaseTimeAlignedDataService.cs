@@ -78,6 +78,10 @@ public abstract class BaseTimeAlignedDataService<T>(
 
                     shouldRefetchIn = shouldRefetchIn.Subtract(TimeSpan.FromMilliseconds(elapsed));
 
+                    // the fetch itself may have taken longer than the time left, Task.Delay rejects negative delays
+                    if (shouldRefetchIn < TimeSpan.Zero)
+                        shouldRefetchIn = TimeSpan.Zero;
+
                     logger.LogInformation("{ServiceId} data age is {Age}s, refetching in {ShouldRefetchIn}s",
                         ServiceId, data.Age.Value.TotalSeconds, shouldRefetchIn.TotalSeconds);
 

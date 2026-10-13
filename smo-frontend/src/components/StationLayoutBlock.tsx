@@ -195,6 +195,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                       <>
                         <SignalSpeedDisplay train={train} />
                         <Typography
+                          translate="no"
                           textAlign="center"
                           color={getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront)}>
                           {Math.round(train.TrainData.DistanceToSignalInFront)}m
@@ -257,6 +258,7 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
                         <>
                           <SignalSpeedDisplay train={train} />
                           <Typography
+                            translate="no"
                             textAlign="center"
                             color={getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront)}>
                             {Math.round(train.TrainData.DistanceToSignalInFront)}m

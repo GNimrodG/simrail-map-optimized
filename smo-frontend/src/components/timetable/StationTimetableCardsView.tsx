@@ -189,7 +189,7 @@ const StationTimetableCardsView: FunctionComponent<StationTimetableCardsViewProp
             : []),
           ...(train
             ? [
-                <Chip key="info-speed" size="sm" variant="soft" startDecorator={<SpeedIcon />}>
+                <Chip key="info-speed" translate="no" size="sm" variant="soft" startDecorator={<SpeedIcon />}>
                   {`${Math.round(train.TrainData.Velocity)} km/h`}
                 </Chip>,
                 <Chip
@@ -223,6 +223,7 @@ const StationTimetableCardsView: FunctionComponent<StationTimetableCardsViewProp
                       return [
                         <Chip
                           key="info-signal"
+                          translate="no"
                           size="sm"
                           variant="outlined"
                           sx={{ "& .distance": { color: signalDistanceColor, fontWeight: 600 } }}>
