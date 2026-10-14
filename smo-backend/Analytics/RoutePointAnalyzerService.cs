@@ -846,7 +846,9 @@ public partial class RoutePointAnalyzerService : IHostedService
             await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
             // the latest runs with all their segments (a run split at gaps counts as one run: filtering the segments
-            // by their own size hid the shorter segments of a run, leaving holes in the route)
+            // by their own size hid the shorter segments of a run, leaving holes in the route), and the lines broken
+            // at gaps right away: runs are only split once they ended, until then a train SimRail moved back along
+            // its route (or missing data) drew a straight line across the map
             const string sql = """
                                WITH valid_runs AS (
                                    SELECT
@@ -868,21 +870,31 @@ public partial class RoutePointAnalyzerService : IHostedService
                                        rp.run_id,
                                        ST_X(rp.point) as x,
                                        ST_Y(rp.point) as y,
-                                       rp.created_at
+                                       rp.created_at,
+                                       ST_DistanceSphere(rp.point, lag(rp.point) OVER w) AS gap
                                    FROM route_points rp
                                    INNER JOIN valid_runs vr ON rp.route_id = vr.route_id
                                                            AND rp.train_id = vr.train_id
                                                            AND split_part(rp.run_id, '_seg', 1) = vr.base_run_id
                                    WHERE rp.route_id = @trainNoLocal
+                                   WINDOW w AS (PARTITION BY rp.train_id, rp.run_id ORDER BY rp.created_at)
+                               ),
+                               segmented_coords AS (
+                                   SELECT *,
+                                          SUM(CASE WHEN gap > @maxGapDistance THEN 1 ELSE 0 END)
+                                              OVER (PARTITION BY train_id, run_id ORDER BY created_at) AS segment
+                                   FROM route_coords
                                )
                                SELECT ST_AsText(ST_MakeLine(ST_Point(x, y) ORDER BY created_at)) as line_wkt
-                               FROM route_coords
-                               GROUP BY route_id, train_id, run_id
+                               FROM segmented_coords
+                               GROUP BY route_id, train_id, run_id, segment
                                HAVING COUNT(*) > 1
                                """;
 
             var results = await context.Database
-                .SqlQueryRaw<string>(sql, new NpgsqlParameter("@trainNoLocal", trainNoLocal))
+                .SqlQueryRaw<string>(sql,
+                    new NpgsqlParameter("@trainNoLocal", trainNoLocal),
+                    new NpgsqlParameter("@maxGapDistance", _maxGapDistance))
                 .ToArrayAsync();
 
             return results;
