@@ -3,9 +3,8 @@ import { type FunctionComponent, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Marker, Popup } from "react-leaflet";
 
-import { useOsmData } from "../../../hooks/useOsmData";
 import { useSetting } from "../../../hooks/useSetting";
-import { getOsmNodeName } from "../../../utils/osm-utils";
+import { getOsmNodeName, getStationOsmData } from "../../../utils/osm-utils";
 import { Station } from "../../../utils/types";
 import TrainIcon from "../icons/train.svg?raw";
 import StationMarkerPopup from "./StationMarkerPopup";
@@ -18,7 +17,7 @@ const UnplayableStation: FunctionComponent<UnplayableStationProps> = ({ station 
   const { i18n } = useTranslation();
   const markerRef = useRef<L.Marker>(null);
   const [layerOpacities] = useSetting("layerOpacities");
-  const osmData = useOsmData(station.Name, station.Prefix);
+  const osmData = getStationOsmData(station.Name);
   const [translateStationNames] = useSetting("translateStationNames");
 
   const icon = useMemo(() => {

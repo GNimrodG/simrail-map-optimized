@@ -1,0 +1,64 @@
+{
+  "stoppingPoints": {
+    "Bohumin": {
+      "osmName": "Bohumín"
+    },
+    "Dziadówki": {
+      "osmName": "Pstroszyce",
+      "note": "Renamed, OSM has Dziadówki as its old_name"
+    },
+    "Grudze": {
+      "osmName": "Stare Grudze",
+      "note": "Xbox name of Stare Grudze (same point id 1263)"
+    },
+    "Katowice Brynów": {
+      "exclude": true,
+      "note": "No such stop in OSM, only the Brynów junction, where the Brynów station marker is"
+    },
+    "Kielce": {
+      "osmName": "Kielce Główne"
+    },
+    "Lublin": {
+      "osmName": "Lublin Główny"
+    },
+    "Mąkołowiec": {
+      "lat": 50.1612,
+      "lon": 18.9716,
+      "note": "Only tagged as railway=junction in OSM"
+    },
+    "Olomouc Hlavní Nádraží": {
+      "osmName": "Olomouc hlavní nádraží"
+    },
+    "Ostrava Hlavní Nádraží": {
+      "osmName": "Ostrava hlavní nádraží"
+    },
+    "Parubice Hlavní Nádraží": {
+      "osmName": "Pardubice hlavní nádraží",
+      "note": "Typo in the SimRail timetables"
+    },
+    "Praha Hlavní Nádraží": {
+      "osmName": "Praha hlavní nádraží"
+    },
+    "Radom": {
+      "osmName": "Radom Główny"
+    },
+    "Staré Město u Uher. Hradiště": {
+      "osmName": "Staré Město u Uherského Hradiště"
+    },
+    "Tychy Miasto": {
+      "lat": 50.1117,
+      "lon": 18.9914,
+      "note": "Only tagged as railway=service_station in OSM"
+    },
+    "Warszawa Zachodnia peron 8": {
+      "lat": 52.2207,
+      "lon": 20.9651,
+      "note": "The 'peron 8' platform relation in OSM"
+    },
+    "Wien Hauptbahnhoh": {
+      "osmName": "Wien Hauptbahnhof",
+      "note": "Typo in the SimRail timetables"
+    }
+  },
+  "stations": {}
+}

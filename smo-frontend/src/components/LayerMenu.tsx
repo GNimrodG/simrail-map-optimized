@@ -6,8 +6,6 @@ import Tooltip from "@mui/joy/Tooltip";
 import { type FunctionComponent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import useBehaviorSubj from "../hooks/useBehaviorSubj";
-import { isOsmAvailable$ } from "../utils/osm-utils";
 import LayersIcon from "./icons/LayersIcon";
 
 const BACKGROUND_LAYERS = ["orm-infra", "orm-maxspeed", "orm-signals", "orm-electrification"];
@@ -34,7 +32,6 @@ export interface LayerMenuProps {
 const LayerMenu: FunctionComponent<LayerMenuProps> = ({ visibleLayers, setVisibleLayers }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const isOsmAvailable = useBehaviorSubj(isOsmAvailable$);
   const hasPartiallyVisibleMarkerGroup = MARKER_LAYER_GROUPS.some((group) => {
     const visibleLayerCount = group.layers.filter((layer) => visibleLayers.includes(layer)).length;
     return visibleLayerCount === 1;
@@ -52,7 +49,6 @@ const LayerMenu: FunctionComponent<LayerMenuProps> = ({ visibleLayers, setVisibl
       }}
       label={t(`Layers.Overlay.${layer}`)}
       size="sm"
-      disabled={!isOsmAvailable && layer === "stoppingpoints"}
     />
   );
 
