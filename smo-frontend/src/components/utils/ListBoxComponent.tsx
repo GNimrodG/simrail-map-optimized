@@ -3,55 +3,33 @@ import { Popper } from "@mui/base/Popper";
 import AutocompleteListbox from "@mui/joy/AutocompleteListbox";
 import AutocompleteOption from "@mui/joy/AutocompleteOption";
 import ListSubheader from "@mui/joy/ListSubheader";
-import { createContext, forwardRef, HTMLAttributes, ReactElement, useContext } from "react";
-import { FixedSizeList, ListChildComponentProps } from "react-window";
-const LISTBOX_PADDING = 6; // px
+import { forwardRef, HTMLAttributes, ReactElement } from "react";
+import { List, RowComponentProps } from "react-window";
 
-function renderRow(props: ListChildComponentProps) {
-  const { data, index, style } = props;
-  const dataSet = data[index];
-  const inlineStyle = {
-    ...style,
-    top: (style.top as number) + LISTBOX_PADDING,
-  };
+const LISTBOX_PADDING = 6; // px
+const ITEM_SIZE = 46; // px
+const VISIBLE_ITEMS = 8;
+
+function ListboxRow({ index, style, itemData }: RowComponentProps<{ itemData: Array<any> }>) {
+  const dataSet = itemData[index];
 
   if (Object.hasOwn(dataSet, "group")) {
     return (
-      <ListSubheader key={dataSet.key} component="li" style={inlineStyle}>
+      <ListSubheader key={dataSet.key} component="li" style={style}>
         {dataSet.group}
       </ListSubheader>
     );
   }
 
   return (
-    <AutocompleteOption {...dataSet[0]} key={dataSet[0].key} style={inlineStyle}>
+    <AutocompleteOption {...dataSet[0]} key={dataSet[0].key} style={style}>
       {dataSet[1]}
     </AutocompleteOption>
   );
 }
 
-const OuterElementContext = createContext({});
-
-const OuterElementType = forwardRef<HTMLDivElement>((props, ref) => {
-  const outerProps = useContext(OuterElementContext);
-  return (
-    <AutocompleteListbox
-      {...props}
-      {...outerProps}
-      component="div"
-      ref={ref}
-      sx={{
-        "& ul": {
-          padding: 0,
-          margin: 0,
-          flexShrink: 0,
-        },
-      }}
-    />
-  );
-});
-
-// Adapter for react-window
+// Adapter for react-window: the Joy listbox (with the props of the autocomplete) holds the virtualized list,
+// which scrolls inside it
 const ListboxComponent = forwardRef<
   HTMLDivElement,
   {
@@ -61,7 +39,7 @@ const ListboxComponent = forwardRef<
   } & HTMLAttributes<HTMLElement>
 >(function ListboxComponent(props, ref) {
   const { children, anchorEl, open, modifiers, ...other } = props;
-  const itemData: Array<unknown> = [];
+  const itemData: Array<any> = [];
   (children as [Array<{ children: Array<ReactElement> | undefined }>])[0].forEach((item) => {
     if (item) {
       itemData.push(item);
@@ -69,24 +47,28 @@ const ListboxComponent = forwardRef<
     }
   });
 
-  const itemCount = itemData.length;
-  const itemSize = 46;
-
   return (
     <Popper ref={ref} anchorEl={anchorEl} open={open} modifiers={modifiers} style={{ zIndex: 1000 }}>
-      <OuterElementContext.Provider value={other}>
-        <FixedSizeList
-          itemData={itemData}
-          height={itemSize * 8}
-          width="100%"
-          outerElementType={OuterElementType}
-          innerElementType="ul"
-          itemSize={itemSize}
+      <AutocompleteListbox
+        // the autocomplete's listbox props (their HTML `color` type clashes with Joy's `color` prop)
+        {...(other as any)}
+        component="div"
+        sx={{
+          height: ITEM_SIZE * VISIBLE_ITEMS,
+          // the list scrolls (with the padding), not the listbox
+          overflow: "hidden",
+          padding: 0,
+        }}>
+        <List
+          tagName="ul"
+          rowComponent={ListboxRow}
+          rowCount={itemData.length}
+          rowHeight={ITEM_SIZE}
+          rowProps={{ itemData }}
           overscanCount={10}
-          itemCount={itemCount}>
-          {renderRow}
-        </FixedSizeList>
-      </OuterElementContext.Provider>
+          style={{ margin: 0, paddingInline: 0, paddingBlock: LISTBOX_PADDING }}
+        />
+      </AutocompleteListbox>
     </Popper>
   );
 });
