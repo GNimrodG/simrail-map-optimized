@@ -3,11 +3,10 @@ import { type FunctionComponent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Marker, Popup } from "react-leaflet";
 
-import { useOsmData } from "../../../hooks/useOsmData";
 import { useSetting } from "../../../hooks/useSetting";
 import { useProfileData } from "../../../hooks/useProfileData";
-import { getOsmNodeName } from "../../../utils/osm-utils";
-import { OsmNode, Station } from "../../../utils/types";
+import { getOsmNodeName, getStationOsmData } from "../../../utils/osm-utils";
+import { OsmTagged, Station } from "../../../utils/types";
 import PersonIcon from "../../icons/person.svg?raw";
 import BotIcon from "../icons/bot.svg?raw";
 import StationMarkerPopup from "./StationMarkerPopup";
@@ -23,7 +22,7 @@ const DEFAULT_ICON = new L.DivIcon({
   className: "icon station bot",
 });
 
-function getIcon(stationName: string, lng: string, avatar?: string, osmData?: OsmNode | null) {
+function getIcon(stationName: string, lng: string, avatar?: string, osmData?: OsmTagged | null) {
   if (avatar) {
     return new L.DivIcon({
       html: avatar.toString().startsWith("http")
@@ -49,7 +48,7 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station, layerId
   const [icon, setIcon] = useState<L.Icon<Partial<L.IconOptions>>>(DEFAULT_ICON);
   const [layerOpacities] = useSetting("layerOpacities");
   const opacity = layerOpacities[layerId] ?? layerOpacities.stations ?? 1;
-  const osmData = useOsmData(station.Name, station.Prefix);
+  const osmData = getStationOsmData(station.Name);
   const [translateStationNames] = useSetting("translateStationNames");
 
   const { userData } = useProfileData(station.DispatchedBy?.[0]?.SteamId, station.DispatchedBy?.[0]?.XboxId);

@@ -1,0 +1,3466 @@
+[
+  {
+    "id": 3459334926,
+    "lat": 52.875865,
+    "lon": 18.696391,
+    "tags": {
+      "name": "Aleksandrów Kujawski",
+      "name:ru": "Александрув Куявски",
+      "name:uk": "Александрув Куявський",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2758085364,
+    "lat": 51.475797,
+    "lon": 20.198351,
+    "tags": {
+      "name": "Antoniów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1836363894,
+    "lat": 50.179049,
+    "lon": 19.383406,
+    "tags": {
+      "name": "Balin",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2364819174,
+    "lat": 50.146578,
+    "lon": 20.09541,
+    "tags": {
+      "name": "Baranówka",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1651732417,
+    "lat": 51.731996,
+    "lon": 19.642349,
+    "tags": {
+      "name": "Bedoń",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3856100103,
+    "lat": 52.524945,
+    "lon": 13.369661,
+    "tags": {
+      "name": "Berlin Hauptbahnhof",
+      "name:en": "Berlin Central Station",
+      "name:hu": "Berlini főpályaudvar",
+      "operator": "DB InfraGO AG"
+    }
+  },
+  {
+    "id": 3419894993,
+    "lat": 52.510382,
+    "lon": 13.434911,
+    "tags": {
+      "name": "Berlin Ostbahnhof",
+      "name:en": "Berlin Eastern Station",
+      "operator": "DB InfraGO AG"
+    }
+  },
+  {
+    "id": 471295854,
+    "lat": 50.330519,
+    "lon": 19.157934,
+    "tags": {
+      "name": "Będzin Ksawera",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 471203304,
+    "lat": 50.319188,
+    "lon": 19.135537,
+    "tags": {
+      "name": "Będzin Miasto",
+      "name:de": "Bendsburg Stadt",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3298971170,
+    "lat": 53.133621,
+    "lon": 23.135437,
+    "tags": {
+      "name": "Białystok",
+      "name:ru": "Белосток",
+      "name:uk": "Бiлосток",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2030626848,
+    "lat": 51.424001,
+    "lon": 20.502071,
+    "tags": {
+      "name": "Bieliny Opoczyńskie",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 563872204,
+    "lat": 49.829861,
+    "lon": 19.045316,
+    "tags": {
+      "name": "Bielsko-Biała Główna",
+      "name:en": "Bielsko-Biala Main Station",
+      "name:de": "Bielitz-Biala Hauptbahnhof",
+      "name:ru": "Белско-Бяла Главная",
+      "name:uk": "Белско-Бяла Головна",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2003323592,
+    "lat": 51.738947,
+    "lon": 17.792401,
+    "tags": {
+      "name": "Biniew",
+      "name:ru": "Бинев",
+      "name:uk": "Бінев",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2183653692,
+    "lat": 51.673683,
+    "lon": 18.471086,
+    "tags": {
+      "name": "Błaszki",
+      "name:de": "Schwarzau",
+      "name:ru": "Блащки",
+      "name:uk": "Блащкі",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3456911564,
+    "lat": 52.186523,
+    "lon": 20.607402,
+    "tags": {
+      "name": "Błonie",
+      "name:ru": "Блоне",
+      "name:uk": "Блонє",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2181005144,
+    "lat": 52.05858,
+    "lon": 20.01041,
+    "tags": {
+      "name": "Bobrowniki",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2183760748,
+    "lat": 51.028721,
+    "lon": 19.404816,
+    "tags": {
+      "name": "Bobry",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 48267476,
+    "lat": 49.977339,
+    "lon": 20.430973,
+    "tags": {
+      "name": "Bochnia",
+      "name:de": "Salzberg",
+      "name:ru": "Бохня",
+      "name:uk": "Бохня",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3271358589,
+    "lat": 49.90075,
+    "lon": 18.359597,
+    "tags": {
+      "name": "Bohumin",
+      "name:de": "Oderberg",
+      "name:pl": "Bogumin",
+      "name:ru": "Богумин",
+      "operator": "Správa železnic"
+    }
+  },
+  {
+    "id": 2728456731,
+    "lat": 51.609749,
+    "lon": 19.035664,
+    "tags": {
+      "name": "Borszewice",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 60120651,
+    "lat": 51.938509,
+    "lon": 19.652795,
+    "tags": {
+      "name": "Bratoszewice"
+    }
+  },
+  {
+    "id": 3315724401,
+    "lat": 48.753971,
+    "lon": 16.893266,
+    "tags": {
+      "name": "Břeclav",
+      "name:de": "Lundenburg",
+      "name:hu": "Leventevár",
+      "name:pl": "Brzecław",
+      "name:ru": "Бржецлав",
+      "name:uk": "Бржецлав",
+      "operator": "Správa železnic"
+    }
+  },
+  {
+    "id": 2003324668,
+    "lat": 51.794496,
+    "lon": 17.774308,
+    "tags": {
+      "name": "Bronów",
+      "name:ru": "Бронув",
+      "name:uk": "Бронув",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 365228404,
+    "lat": 52.141911,
+    "lon": 20.719008,
+    "tags": {
+      "name": "Brwinów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3037185178,
+    "lat": 50.852901,
+    "lon": 17.470893,
+    "tags": {
+      "name": "Brzeg",
+      "name:ru": "Бжег",
+      "name:uk": "Бжег",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2187736257,
+    "lat": 51.493499,
+    "lon": 20.146695,
+    "tags": {
+      "name": "Brzustów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3488638636,
+    "lat": 50.27538,
+    "lon": 19.409768,
+    "tags": {
+      "name": "Bukowno Przymiarki",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3437310369,
+    "lat": 53.135291,
+    "lon": 17.991601,
+    "tags": {
+      "name": "Bydgoszcz Główna",
+      "name:en": "Bydgoszcz main railway station",
+      "name:ru": "Быдгощ Главный",
+      "name:uk": "Бидгощ Головний",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 6093920533,
+    "lat": 53.144322,
+    "lon": 18.030908,
+    "tags": {
+      "name": "Bydgoszcz Leśna",
+      "name:ru": "Быдгощ Лещна",
+      "name:uk": "Бидгощ Лещна",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 589834220,
+    "lat": 53.127904,
+    "lon": 18.082732,
+    "tags": {
+      "name": "Bydgoszcz Wschód",
+      "name:de": "Bromberg Ost",
+      "name:ru": "Быдгощ Восток",
+      "name:uk": "Бидгощ Схід",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3129289404,
+    "lat": 49.897076,
+    "lon": 16.446678,
+    "tags": {
+      "name": "Česká Třebová",
+      "operator": "Správa železnic"
+    }
+  },
+  {
+    "id": 11442956158,
+    "lat": 49.589956,
+    "lon": 19.920445,
+    "tags": {
+      "name": "Chabówka Stadion"
+    }
+  },
+  {
+    "id": 3725887739,
+    "lat": 49.925801,
+    "lon": 18.311407,
+    "tags": {
+      "name": "Chałupki",
+      "name:de": "Annaberg",
+      "name:ru": "Халупки",
+      "name:uk": "Халупки",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2726746707,
+    "lat": 51.644946,
+    "lon": 19.286515,
+    "tags": {
+      "name": "Chechło",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 826919348,
+    "lat": 52.070248,
+    "lon": 17.349569,
+    "tags": {
+      "name": "Chocicza",
+      "name:ru": "Хоцича",
+      "name:uk": "Хоціча",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 603760755,
+    "lat": 53.164855,
+    "lon": 15.404033,
+    "tags": {
+      "name": "Choszczno",
+      "name:de": "Arnswalde",
+      "name:ru": "Хощно",
+      "name:uk": "Хощно",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1897979041,
+    "lat": 51.358135,
+    "lon": 20.929883,
+    "tags": {
+      "name": "Chronów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2183713027,
+    "lat": 51.694866,
+    "lon": 19.794326,
+    "tags": {
+      "name": "Chrusty Nowe",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2196270111,
+    "lat": 50.400381,
+    "lon": 19.329069,
+    "tags": {
+      "name": "Chruszczobród",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1713216893,
+    "lat": 50.133283,
+    "lon": 19.398201,
+    "tags": {
+      "name": "Chrzanów",
+      "name:ru": "Хшанув",
+      "name:uk": "Хшанів",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2294889671,
+    "lat": 50.344354,
+    "lon": 19.685707,
+    "tags": {
+      "name": "Chrząstowice Olkuskie",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 476211469,
+    "lat": 52.883763,
+    "lon": 20.590765,
+    "tags": {
+      "name": "Ciechanów",
+      "name:ru": "Чеханув",
+      "name:uk": "Чеханув",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2499395831,
+    "lat": 51.967711,
+    "lon": 21.077726,
+    "tags": {
+      "name": "Czachówek Górny",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3553581200,
+    "lat": 49.91549,
+    "lon": 19.007327,
+    "tags": {
+      "name": "Czechowice-Dziedzice",
+      "name:de": "Czechowitz Dzieditz",
+      "name:ru": "Чеховице-Джежице",
+      "name:uk": "Чеховіце-Джежіце",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3459073052,
+    "lat": 51.685469,
+    "lon": 17.860597,
+    "tags": {
+      "name": "Czekanów",
+      "name:ru": "Чеканув",
+      "name:uk": "Чеканув",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3233345002,
+    "lat": 50.835284,
+    "lon": 19.151635,
+    "tags": {
+      "name": "Częstochowa Aniołów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2495645644,
+    "lat": 50.787629,
+    "lon": 19.155433,
+    "tags": {
+      "name": "Częstochowa Raków",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 417385664,
+    "lat": 50.797321,
+    "lon": 19.107,
+    "tags": {
+      "name": "Częstochowa Stradom",
+      "name:ru": "Ченстохова-Страдом",
+      "name:uk": "Ченстохова-Страдом",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3277530800,
+    "lat": 52.800216,
+    "lon": 22.343485,
+    "tags": {
+      "name": "Czyżew",
+      "name:ru": "Чижев",
+      "name:uk": "Чижев",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 470404748,
+    "lat": 50.343882,
+    "lon": 19.225988,
+    "tags": {
+      "name": "Dąbrowa Górnicza Gołonóg",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 8184059841,
+    "lat": 50.350471,
+    "lon": 19.240787,
+    "tags": {
+      "name": "Dąbrowa Górnicza Pogoria",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 481326992,
+    "lat": 50.388663,
+    "lon": 19.297465,
+    "tags": {
+      "name": "Dąbrowa Górnicza Sikorka",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2094092555,
+    "lat": 51.933374,
+    "lon": 20.102308,
+    "tags": {
+      "name": "Dąbrowice Skierniewickie",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 9994755948,
+    "lat": 51.309309,
+    "lon": 21.045901,
+    "tags": {
+      "name": "Dąbrówka Zabłotnia",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2187734546,
+    "lat": 51.481921,
+    "lon": 20.258281,
+    "tags": {
+      "name": "Dęba Opoczyńska",
+      "name:ru": "Демба Опочинска",
+      "name:uk": "Демба Опочинска"
+    }
+  },
+  {
+    "id": 3442849471,
+    "lat": 50.053931,
+    "lon": 21.404146,
+    "tags": {
+      "name": "Dębica",
+      "name:de": "Dembitza",
+      "name:ru": "Дембица",
+      "name:uk": "Дембиця",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1278165711,
+    "lat": 52.968973,
+    "lon": 15.745427,
+    "tags": {
+      "name": "Dobiegniew",
+      "name:de": "Woldenberg",
+      "name:ru": "Добегнев",
+      "name:uk": "Добегнів"
+    }
+  },
+  {
+    "id": 2003309188,
+    "lat": 51.270506,
+    "lon": 17.363798,
+    "tags": {
+      "name": "Dobroszyce",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2183756219,
+    "lat": 51.124291,
+    "lon": 19.444323,
+    "tags": {
+      "name": "Dobryszyce koło Radomska",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3693106986,
+    "lat": 52.011912,
+    "lon": 19.791896,
+    "tags": {
+      "name": "Domaniewice Centrum",
+      "name:ru": "Доманевице Центр",
+      "name:uk": "Доманевіце Центр"
+    }
+  },
+  {
+    "id": 2030626324,
+    "lat": 51.436986,
+    "lon": 20.4657,
+    "tags": {
+      "name": "Drzewica",
+      "name:ru": "Джевиця",
+      "name:uk": "Джевіця",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 599222836,
+    "lat": 50.140469,
+    "lon": 19.52066,
+    "tags": {
+      "name": "Dulowa",
+      "name:ru": "Дулёва",
+      "name:uk": "Дульова",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2187711691,
+    "lat": 50.399201,
+    "lon": 20.008376,
+    "tags": {
+      "name": "Dziadówki",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2261901826,
+    "lat": 53.238858,
+    "lon": 20.167319,
+    "tags": {
+      "name": "Działdowo",
+      "name:ru": "Дзялдово",
+      "name:uk": "Дзялдово",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 413346673,
+    "lat": 54.150983,
+    "lon": 19.415551,
+    "tags": {
+      "name": "Elbląg",
+      "name:de": "Elbing",
+      "name:ru": "Эльблонг",
+      "name:uk": "Ельблонг",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 321555238,
+    "lat": 52.336536,
+    "lon": 14.546694,
+    "tags": {
+      "name": "Frankfurt (Oder)",
+      "name:pl": "Frankfurt nad Odrą",
+      "operator": "DB InfraGO AG"
+    }
+  },
+  {
+    "id": 29830442,
+    "lat": 52.112341,
+    "lon": 19.219563,
+    "tags": {
+      "name": "Gawrony",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 253705450,
+    "lat": 52.301963,
+    "lon": 17.045501,
+    "tags": {
+      "name": "Gądki",
+      "name:ru": "Гондки",
+      "name:uk": "Ґондкі",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2183593662,
+    "lat": 51.231808,
+    "lon": 20.947331,
+    "tags": {
+      "name": "Gąsawy Plebańskie",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3784638270,
+    "lat": 54.356434,
+    "lon": 18.644195,
+    "tags": {
+      "name": "Gdańsk Główny",
+      "name:en": "Gdańsk railway station",
+      "name:de": "Danzig Hauptbahnhof",
+      "name:ru": "Гданьск Главный",
+      "name:uk": "Ґданськ Головний",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3786011913,
+    "lat": 54.409488,
+    "lon": 18.571977,
+    "tags": {
+      "name": "Gdańsk Oliwa",
+      "name:de": "Danzig Oliva",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3785967847,
+    "lat": 54.38177,
+    "lon": 18.605511,
+    "tags": {
+      "name": "Gdańsk Wrzeszcz",
+      "name:de": "Danzig Wrzeszcz",
+      "name:ru": "Гданьск Вжещч",
+      "name:uk": "Гданськ Вжещч",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1964369654,
+    "lat": 54.521788,
+    "lon": 18.526826,
+    "tags": {
+      "name": "Gdynia Główna",
+      "name:de": "Gdingen Hauptbahnhof",
+      "name:ru": "Гдыня Главная",
+      "name:uk": "Гдиня Головний",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2517955024,
+    "lat": 51.882542,
+    "lon": 19.48164,
+    "tags": {
+      "name": "Glinnik Wieś"
+    }
+  },
+  {
+    "id": 2987517884,
+    "lat": 50.301159,
+    "lon": 18.67704,
+    "tags": {
+      "name": "Gliwice",
+      "name:ru": "Гливице",
+      "name:uk": "Глівіце",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 12160666277,
+    "lat": 51.979013,
+    "lon": 19.72202,
+    "tags": {
+      "name": "Głowno Północne",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2183742243,
+    "lat": 51.19705,
+    "lon": 19.544016,
+    "tags": {
+      "name": "Gorzędów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2364491515,
+    "lat": 50.184651,
+    "lon": 20.061227,
+    "tags": {
+      "name": "Goszcza",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 29830245,
+    "lat": 51.887239,
+    "lon": 19.311037,
+    "tags": {
+      "name": "Grotniki",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2517728018,
+    "lat": 52.046683,
+    "lon": 19.899975,
+    "tags": {
+      "name": "Grudze"
+    }
+  },
+  {
+    "id": 5278533873,
+    "lat": 48.856316,
+    "lon": 17.122051,
+    "tags": {
+      "name": "Hodonín",
+      "operator": "Správa železnic"
+    }
+  },
+  {
+    "id": 3266743006,
+    "lat": 49.56544,
+    "lon": 17.742001,
+    "tags": {
+      "name": "Hranice na Moravě",
+      "name:de": "Mährisch Weißkirchen",
+      "operator": "Správa železnic"
+    }
+  },
+  {
+    "id": 597568110,
+    "lat": 53.581082,
+    "lon": 19.573121,
+    "tags": {
+      "name": "Iława Główna",
+      "name:ru": "Илава Глувна",
+      "name:uk": "Ілава Глувна",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 12604302798,
+    "lat": 51.61013,
+    "lon": 18.914222,
+    "tags": {
+      "name": "Izabelów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3233117250,
+    "lat": 50.964373,
+    "lon": 19.354678,
+    "tags": {
+      "name": "Jacków",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3372960452,
+    "lat": 52.086665,
+    "lon": 20.551879,
+    "tags": {
+      "name": "Jaktorów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3203653735,
+    "lat": 51.96831,
+    "lon": 17.494719,
+    "tags": {
+      "name": "Jarocin",
+      "name:ru": "Ярочин",
+      "name:uk": "Яроцін",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 368143772,
+    "lat": 51.248815,
+    "lon": 20.984561,
+    "tags": {
+      "name": "Jastrząb",
+      "name:ru": "Ястшомб",
+      "name:uk": "Ястшомб",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 599222835,
+    "lat": 50.21298,
+    "lon": 19.337076,
+    "tags": {
+      "name": "Jaworzno Ciężkowice",
+      "name:ru": "Явожно-Ценжковице",
+      "name:uk": "Явожно-Ценжковіце",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3683522126,
+    "lat": 50.912493,
+    "lon": 16.428885,
+    "tags": {
+      "name": "Jaworzyna Śląska",
+      "name:ru": "Явожина Шльонска",
+      "name:uk": "Явожина Шлёнска"
+    }
+  },
+  {
+    "id": 10815939000,
+    "lat": 51.869388,
+    "lon": 19.320737,
+    "tags": {
+      "name": "Jedlicze koło Zgierza",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1642733781,
+    "lat": 50.902588,
+    "lon": 15.755987,
+    "tags": {
+      "name": "Jelenia Góra",
+      "name:de": "Hirschberg",
+      "name:ru": "Еленя-Гура",
+      "name:uk": "Єленя Ґура"
+    }
+  },
+  {
+    "id": 2503070020,
+    "lat": 52.01482,
+    "lon": 20.334722,
+    "tags": {
+      "name": "Jesionka",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2301941695,
+    "lat": 50.39929,
+    "lon": 19.815659,
+    "tags": {
+      "name": "Jeżówka",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3457944096,
+    "lat": 50.64451,
+    "lon": 20.275673,
+    "tags": {
+      "name": "Jędrzejów",
+      "name:ru": "Енджеюв",
+      "name:uk": "Єнджеюв"
+    }
+  },
+  {
+    "id": 1313517188,
+    "lat": 51.730861,
+    "lon": 19.683521,
+    "tags": {
+      "name": "Justynów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3459064660,
+    "lat": 51.742827,
+    "lon": 18.071365,
+    "tags": {
+      "name": "Kalisz",
+      "name:de": "Kalisch",
+      "name:ru": "Калиш",
+      "name:uk": "Каліш",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 10186515423,
+    "lat": 51.725933,
+    "lon": 18.027267,
+    "tags": {
+      "name": "Kalisz Szczypiorno",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3459063306,
+    "lat": 51.733492,
+    "lon": 18.141319,
+    "tags": {
+      "name": "Kalisz Winiary",
+      "name:de": "Kalisch Weinbergen",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 551582982,
+    "lat": 49.871179,
+    "lon": 19.688619,
+    "tags": {
+      "name": "Kalwaria Zebrzydowska Lanckorona",
+      "name:ru": "Кальвария Зебжидовская Ланцкорона",
+      "name:uk": "Кальваріа Зебжидовска Ланцкорона",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3433334414,
+    "lat": 51.988703,
+    "lon": 19.753151,
+    "tags": {
+      "name": "Kamień Łowicki"
+    }
+  },
+  {
+    "id": 2060595875,
+    "lat": 50.327349,
+    "lon": 20.005748,
+    "tags": {
+      "name": "Kamieńczyce",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 242219670,
+    "lat": 51.186298,
+    "lon": 19.499144,
+    "tags": {
+      "name": "Kamieńsk",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2181332758,
+    "lat": 50.225953,
+    "lon": 18.978518,
+    "tags": {
+      "name": "Katowice Ligota",
+      "name:de": "Kattowitz-Ellguth",
+      "name:ru": "Катовице Лигота",
+      "name:uk": "Катовіце Ліґота"
+    }
+  },
+  {
+    "id": 2183319562,
+    "lat": 50.213453,
+    "lon": 18.970394,
+    "tags": {
+      "name": "Katowice Piotrowice",
+      "name:de": "Kattowitz Petrowitz"
+    }
+  },
+  {
+    "id": 2183370683,
+    "lat": 50.182929,
+    "lon": 18.960329,
+    "tags": {
+      "name": "Katowice Podlesie"
+    }
+  },
+  {
+    "id": 3343374528,
+    "lat": 50.258915,
+    "lon": 19.092466,
+    "tags": {
+      "name": "Katowice Szopienice Południowe",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3315064602,
+    "lat": 50.263866,
+    "lon": 18.989581,
+    "tags": {
+      "name": "Katowice Załęże",
+      "name:de": "Kattowitz Zalenze"
+    }
+  },
+  {
+    "id": 1953748941,
+    "lat": 50.874308,
+    "lon": 20.617932,
+    "tags": {
+      "name": "Kielce",
+      "name:pl": "Kielce Główne",
+      "name:ru": "Кельце",
+      "name:uk": "Кельце",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2210361337,
+    "lat": 50.855261,
+    "lon": 20.574519,
+    "tags": {
+      "name": "Kielce Białogon",
+      "name:ru": "Кельце Бялогон",
+      "name:uk": "Кельце Бялогон",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1953748941,
+    "lat": 50.874308,
+    "lon": 20.617932,
+    "tags": {
+      "name": "Kielce Główne",
+      "name:ru": "Кельце",
+      "name:uk": "Кельце",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 8261972249,
+    "lat": 50.833507,
+    "lon": 20.538675,
+    "tags": {
+      "name": "Kielce Słowik",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2305638391,
+    "lat": 50.525093,
+    "lon": 20.02999,
+    "tags": {
+      "name": "Klimontów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1278165710,
+    "lat": 53.245004,
+    "lon": 15.123883,
+    "tags": {
+      "name": "Kolin",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2109441456,
+    "lat": 52.210969,
+    "lon": 18.632147,
+    "tags": {
+      "name": "Koło",
+      "name:de": "Kolo",
+      "name:ru": "Коло",
+      "name:uk": "Коло",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3006832228,
+    "lat": 54.18225,
+    "lon": 15.57155,
+    "tags": {
+      "name": "Kołobrzeg",
+      "name:de": "Kolberg",
+      "name:ru": "Колобжег",
+      "name:uk": "Колобжег",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 29830753,
+    "lat": 52.231098,
+    "lon": 18.2541,
+    "tags": {
+      "name": "Konin",
+      "name:ru": "Конин",
+      "name:uk": "Конін",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3455675995,
+    "lat": 50.73828,
+    "lon": 19.176676,
+    "tags": {
+      "name": "Korwinów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 293360032,
+    "lat": 54.190675,
+    "lon": 16.169716,
+    "tags": {
+      "name": "Koszalin",
+      "name:de": "Köslin",
+      "name:ru": "Кошалин",
+      "name:uk": "Кошалін",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2003325756,
+    "lat": 51.914605,
+    "lon": 17.648956,
+    "tags": {
+      "name": "Kotlin",
+      "name:ru": "Котлин",
+      "name:uk": "Котлін",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 353432408,
+    "lat": 52.282072,
+    "lon": 17.103194,
+    "tags": {
+      "name": "Kórnik",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 6519017988,
+    "lat": 50.082988,
+    "lon": 19.892615,
+    "tags": {
+      "name": "Kraków Bronowice",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1369877098,
+    "lat": 50.081946,
+    "lon": 19.917726,
+    "tags": {
+      "name": "Kraków Łobzów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 41943557,
+    "lat": 50.083587,
+    "lon": 19.859786,
+    "tags": {
+      "name": "Kraków Mydlniki",
+      "name:ru": "Краков Мыдлинки",
+      "name:uk": "Краків Мидлнікі",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1191001097,
+    "lat": 50.091177,
+    "lon": 19.844474,
+    "tags": {
+      "name": "Kraków Mydlniki Wapiennik",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 206270914,
+    "lat": 50.035021,
+    "lon": 19.974785,
+    "tags": {
+      "name": "Kraków Płaszów",
+      "name:ru": "Краков Плашув",
+      "name:uk": "Краків Плашув",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1481757256,
+    "lat": 50.048441,
+    "lon": 19.956983,
+    "tags": {
+      "name": "Kraków Zabłocie",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2510050403,
+    "lat": 51.863412,
+    "lon": 19.923203,
+    "tags": {
+      "name": "Krosnowa",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2210347131,
+    "lat": 50.587563,
+    "lon": 20.140605,
+    "tags": {
+      "name": "Krzcięcice"
+    }
+  },
+  {
+    "id": 1661872853,
+    "lat": 50.130831,
+    "lon": 19.635089,
+    "tags": {
+      "name": "Krzeszowice",
+      "name:de": "Kressendorf",
+      "name:ru": "Кжешовице",
+      "name:uk": "Крешовиці",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 727366743,
+    "lat": 52.877643,
+    "lon": 16.019422,
+    "tags": {
+      "name": "Krzyż",
+      "name:de": "Kreuz",
+      "name:ru": "Кжиж",
+      "name:uk": "Кжиж",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2744361670,
+    "lat": 52.239719,
+    "lon": 19.304701,
+    "tags": {
+      "name": "Kutno Azory",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3655615069,
+    "lat": 53.491047,
+    "lon": 18.455914,
+    "tags": {
+      "name": "Laskowice Pomorskie",
+      "name:ru": "Ласковице Поморское",
+      "name:uk": "Ласковіце Поморське",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 293143821,
+    "lat": 54.53362,
+    "lon": 17.750236,
+    "tags": {
+      "name": "Lębork",
+      "name:de": "Lauenburg in Pommern",
+      "name:ru": "Ленборк",
+      "name:uk": "Ленборк",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2510050404,
+    "lat": 51.90523,
+    "lon": 19.943241,
+    "tags": {
+      "name": "Lipce Reymontowskie",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 417908787,
+    "lat": 51.155244,
+    "lon": 20.901088,
+    "tags": {
+      "name": "Lipowe Pole",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3457415162,
+    "lat": 51.231292,
+    "lon": 22.568964,
+    "tags": {
+      "name": "Lublin",
+      "name:ru": "Люблин Глувны",
+      "name:uk": "Люблін Головний",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3457415162,
+    "lat": 51.231292,
+    "lon": 22.568964,
+    "tags": {
+      "name": "Lublin Główny",
+      "name:ru": "Люблин Глувны",
+      "name:uk": "Люблін Головний",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 6814014754,
+    "lat": 51.218934,
+    "lon": 22.508927,
+    "tags": {
+      "name": "Lublin Zachodni",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3487315240,
+    "lat": 50.672558,
+    "lon": 18.691044,
+    "tags": {
+      "name": "Lubliniec",
+      "name:de": "Lublinitz",
+      "name:ru": "Люблинец",
+      "name:uk": "Люблінець",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 634988099,
+    "lat": 51.277218,
+    "lon": 19.648175,
+    "tags": {
+      "name": "Luciążanka",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3293181207,
+    "lat": 52.989917,
+    "lon": 22.883513,
+    "tags": {
+      "name": "Łapy",
+      "name:ru": "Лапы",
+      "name:uk": "Лапи",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1596777158,
+    "lat": 52.533967,
+    "lon": 21.687522,
+    "tags": {
+      "name": "Łochów",
+      "name:ru": "Лохув",
+      "name:uk": "Лохув",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2661065522,
+    "lat": 51.741564,
+    "lon": 19.612907,
+    "tags": {
+      "name": "Łódź Andrzejów Szosa",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3327705582,
+    "lat": 51.815446,
+    "lon": 19.456629,
+    "tags": {
+      "name": "Łódź Arturówek",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2632777972,
+    "lat": 51.735895,
+    "lon": 19.510606,
+    "tags": {
+      "name": "Łódź Dąbrowa",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 4154073847,
+    "lat": 51.766815,
+    "lon": 19.507437,
+    "tags": {
+      "name": "Łódź Niciarniana",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2661065524,
+    "lat": 51.723689,
+    "lon": 19.543687,
+    "tags": {
+      "name": "Łódź Olechów Wiadukt",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2504014859,
+    "lat": 51.729793,
+    "lon": 19.594768,
+    "tags": {
+      "name": "Łódź Olechów Wschód",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2661065525,
+    "lat": 51.724905,
+    "lon": 19.559016,
+    "tags": {
+      "name": "Łódź Olechów Zachód",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2532020979,
+    "lat": 51.726224,
+    "lon": 19.4453,
+    "tags": {
+      "name": "Łódź Pabianicka",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 7555695061,
+    "lat": 51.826657,
+    "lon": 19.443382,
+    "tags": {
+      "name": "Łódź Radogoszcz Wschód",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 7574816367,
+    "lat": 51.740348,
+    "lon": 19.40658,
+    "tags": {
+      "name": "Łódź Retkinia",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3328426044,
+    "lat": 51.776563,
+    "lon": 19.510562,
+    "tags": {
+      "name": "Łódź Stoki",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 7555695062,
+    "lat": 51.808002,
+    "lon": 19.47123,
+    "tags": {
+      "name": "Łódź Warszawska",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 4427043684,
+    "lat": 51.751705,
+    "lon": 19.513239,
+    "tags": {
+      "name": "Łódź Zarzew"
+    }
+  },
+  {
+    "id": 1438428007,
+    "lat": 50.162609,
+    "lon": 20.0745,
+    "tags": {
+      "name": "Łuczyce",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3232162495,
+    "lat": 51.942242,
+    "lon": 20.045634,
+    "tags": {
+      "name": "Maków",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2184484187,
+    "lat": 49.726926,
+    "lon": 19.676881,
+    "tags": {
+      "name": "Maków Podhalański",
+      "name:ru": "Макув Подхалянский",
+      "name:uk": "Маків Подгалянський"
+    }
+  },
+  {
+    "id": 3820647726,
+    "lat": 54.035971,
+    "lon": 19.04315,
+    "tags": {
+      "name": "Malbork",
+      "name:de": "Marienburg",
+      "name:ru": "Мальборк",
+      "name:uk": "Мальборк",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3275141671,
+    "lat": 52.694601,
+    "lon": 22.034857,
+    "tags": {
+      "name": "Małkinia",
+      "name:ru": "Малкиня",
+      "name:uk": "Малкіня",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3455681328,
+    "lat": 50.651115,
+    "lon": 19.253194,
+    "tags": {
+      "name": "Masłońskie Natalin",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": -163,
+    "lat": 50.1612,
+    "lon": 18.9716,
+    "tags": {
+      "name": "Mąkołowiec"
+    }
+  },
+  {
+    "id": 2730943621,
+    "lat": 51.609109,
+    "lon": 18.846659,
+    "tags": {
+      "name": "Męcka Wola",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3457936668,
+    "lat": 50.719406,
+    "lon": 20.365133,
+    "tags": {
+      "name": "Miąsowa",
+      "name:ru": "Мёнсова",
+      "name:uk": "Міонсова"
+    }
+  },
+  {
+    "id": 826919336,
+    "lat": 52.023158,
+    "lon": 17.440587,
+    "tags": {
+      "name": "Mieszków",
+      "name:ru": "Мешкув",
+      "name:uk": "Мєшкув",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2189093926,
+    "lat": 52.063606,
+    "lon": 20.482469,
+    "tags": {
+      "name": "Międzyborów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2420827497,
+    "lat": 52.125148,
+    "lon": 20.668176,
+    "tags": {
+      "name": "Milanówek",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 476214646,
+    "lat": 53.12608,
+    "lon": 20.35096,
+    "tags": {
+      "name": "Mława",
+      "name:ru": "Млава",
+      "name:uk": "Млава",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 13408909856,
+    "lat": 50.707895,
+    "lon": 20.333614,
+    "tags": {
+      "name": "Mnichów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 6586706975,
+    "lat": 52.443946,
+    "lon": 20.704995,
+    "tags": {
+      "name": "Modlin",
+      "name:ru": "Модлин",
+      "name:uk": "Модлін",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3232189638,
+    "lat": 51.978783,
+    "lon": 20.099515,
+    "tags": {
+      "name": "Mokra",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3455702508,
+    "lat": 50.543475,
+    "lon": 19.377314,
+    "tags": {
+      "name": "Myszków Mrzygłód",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3455683838,
+    "lat": 50.594833,
+    "lon": 19.291539,
+    "tags": {
+      "name": "Myszków Nowa Wieś",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3455698825,
+    "lat": 50.565583,
+    "lon": 19.359726,
+    "tags": {
+      "name": "Myszków Światowit",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2210300770,
+    "lat": 51.318044,
+    "lon": 22.213181,
+    "tags": {
+      "name": "Nałęczów",
+      "name:ru": "Наленчув",
+      "name:uk": "Наленчув",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2512803735,
+    "lat": 52.572193,
+    "lon": 20.767742,
+    "tags": {
+      "name": "Nasielsk",
+      "name:ru": "Насельск",
+      "name:uk": "Насельськ",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2506857447,
+    "lat": 52.140287,
+    "lon": 19.88429,
+    "tags": {
+      "name": "Niedźwiada Łowicka",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2183646401,
+    "lat": 51.708063,
+    "lon": 17.997912,
+    "tags": {
+      "name": "Nowe Skalmierzyce",
+      "name:ru": "Нове Скальмежице",
+      "name:uk": "Нове Скальмежице",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 592635067,
+    "lat": 52.425283,
+    "lon": 20.723992,
+    "tags": {
+      "name": "Nowy Dwór Mazowiecki",
+      "name:ru": "Новы Двур Мазовецки",
+      "name:uk": "Нови Двур Мазовецькі",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1773134919,
+    "lat": 49.472578,
+    "lon": 20.01586,
+    "tags": {
+      "name": "Nowy Targ",
+      "name:de": "Neumarkt",
+      "name:ru": "Новы-Тарг",
+      "name:uk": "Новий Тарг"
+    }
+  },
+  {
+    "id": 703660050,
+    "lat": 51.216507,
+    "lon": 17.364619,
+    "tags": {
+      "name": "Oleśnica Rataje",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2506544888,
+    "lat": 49.592844,
+    "lon": 17.278345,
+    "tags": {
+      "name": "Olomouc Hlavní Nádraží",
+      "name:de": "Olmütz Hauptbahnhof",
+      "name:pl": "Ołomuniec Główny",
+      "operator": "Správa železnic"
+    }
+  },
+  {
+    "id": 242360270,
+    "lat": 50.930583,
+    "lon": 17.29776,
+    "tags": {
+      "name": "Oława",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3459062082,
+    "lat": 51.743369,
+    "lon": 18.227469,
+    "tags": {
+      "name": "Opatówek",
+      "name:de": "Spatenfelde",
+      "name:ru": "Опатувек",
+      "name:uk": "Опатувек",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3374664234,
+    "lat": 50.661648,
+    "lon": 17.927207,
+    "tags": {
+      "name": "Opole Główne",
+      "name:de": "Oppeln Hauptbahnhof",
+      "name:ru": "Ополе Главный",
+      "name:uk": "Ополе Головний",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3036772660,
+    "lat": 49.85067,
+    "lon": 18.267072,
+    "tags": {
+      "name": "Ostrava Hlavní Nádraží",
+      "name:de": "Ostrau Hauptbahnhof",
+      "name:pl": "Ostrawa Główna",
+      "operator": "Správa železnic"
+    }
+  },
+  {
+    "id": 3268545280,
+    "lat": 49.821034,
+    "lon": 18.209889,
+    "tags": {
+      "name": "Ostrava-Svinov",
+      "name:de": "Ostrau-Schönbrunn",
+      "name:pl": "Ostrawa-Swinów",
+      "operator": "Správa železnic"
+    }
+  },
+  {
+    "id": 528526130,
+    "lat": 51.649229,
+    "lon": 17.805236,
+    "tags": {
+      "name": "Ostrów Wielkopolski",
+      "name:de": "Ostrowo",
+      "name:ru": "Острув Велькопольски",
+      "name:uk": "Острув Велькопольські",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3309263057,
+    "lat": 49.202509,
+    "lon": 17.531271,
+    "tags": {
+      "name": "Otrokovice",
+      "operator": "cz:SŽDC"
+    }
+  },
+  {
+    "id": 3434307866,
+    "lat": 51.958903,
+    "lon": 19.269602,
+    "tags": {
+      "name": "Ozorków Nowe Miasto",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1469878720,
+    "lat": 52.207447,
+    "lon": 20.795812,
+    "tags": {
+      "name": "Ożarów Mazowiecki",
+      "name:ru": "Ожарув-Мазовецкий",
+      "name:uk": "Ожарув Мазовецькі",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 11225082993,
+    "lat": 51.669846,
+    "lon": 19.3419,
+    "tags": {
+      "name": "Pabianice Północne",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3129312254,
+    "lat": 50.031708,
+    "lon": 15.756088,
+    "tags": {
+      "name": "Parubice Hlavní Nádraží",
+      "operator": "cz:SŽDC"
+    }
+  },
+  {
+    "id": 6113718270,
+    "lat": 52.156439,
+    "lon": 20.763124,
+    "tags": {
+      "name": "Parzniew",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3390879799,
+    "lat": 52.182575,
+    "lon": 20.842718,
+    "tags": {
+      "name": "Piastów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3444670301,
+    "lat": 51.471933,
+    "lon": 21.441257,
+    "tags": {
+      "name": "Pionki Zachodnie",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 12604303704,
+    "lat": 50.128526,
+    "lon": 19.683184,
+    "tags": {
+      "name": "Pisary"
+    }
+  },
+  {
+    "id": 2002363570,
+    "lat": 51.892587,
+    "lon": 17.732218,
+    "tags": {
+      "name": "Pleszew",
+      "name:de": "Pleschen",
+      "name:ru": "Плешев",
+      "name:uk": "Плешев",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1991734621,
+    "lat": 52.552711,
+    "lon": 19.712655,
+    "tags": {
+      "name": "Płock",
+      "name:de": "Plock",
+      "name:ru": "Плоцк",
+      "name:uk": "Плоцьк",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1898049987,
+    "lat": 51.360454,
+    "lon": 20.875709,
+    "tags": {
+      "name": "Podbór",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 12457483992,
+    "lat": 50.663915,
+    "lon": 20.320871,
+    "tags": {
+      "name": "Podchojny",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3598345461,
+    "lat": 49.343223,
+    "lon": 20.003524,
+    "tags": {
+      "name": "Poronin",
+      "name:ru": "Поронин",
+      "name:uk": "Поронін"
+    }
+  },
+  {
+    "id": 2210349206,
+    "lat": 50.617333,
+    "lon": 20.196402,
+    "tags": {
+      "name": "Potok"
+    }
+  },
+  {
+    "id": 311636846,
+    "lat": 52.373462,
+    "lon": 16.910614,
+    "tags": {
+      "name": "Poznań Dębina",
+      "name:de": "Posen Eichwald",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 646734838,
+    "lat": 52.401627,
+    "lon": 16.911579,
+    "tags": {
+      "name": "Poznań Główny",
+      "name:en": "Poznań Main Station",
+      "name:de": "Posen Hauptbahnhof",
+      "name:ru": "Познань Главный",
+      "name:uk": "Познань Головний",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 10217020351,
+    "lat": 52.341697,
+    "lon": 16.975535,
+    "tags": {
+      "name": "Poznań Krzesiny",
+      "name:de": "Posen Kreising",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 10217223540,
+    "lat": 52.366231,
+    "lon": 16.934276,
+    "tags": {
+      "name": "Poznań Starołęka",
+      "name:de": "Starolenka",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 6093920531,
+    "lat": 53.75731,
+    "lon": 19.210809,
+    "tags": {
+      "name": "Prabuty",
+      "name:ru": "Прабуты",
+      "name:uk": "Прабути",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3134751791,
+    "lat": 50.082963,
+    "lon": 14.436094,
+    "tags": {
+      "name": "Praha Hlavní Nádraží",
+      "name:en": "Prague Main Station",
+      "name:de": "Prag Hauptbahnhof",
+      "name:pl": "Praga Główna",
+      "name:ru": "Прага-Главный вокзал",
+      "operator": "Správa železnic"
+    }
+  },
+  {
+    "id": 9969044666,
+    "lat": 50.100758,
+    "lon": 14.501812,
+    "tags": {
+      "name": "Praha-Libeň",
+      "name:de": "Prag-Lieben",
+      "operator": "Správa železnic"
+    }
+  },
+  {
+    "id": 3266780396,
+    "lat": 49.447051,
+    "lon": 17.444805,
+    "tags": {
+      "name": "Přerov",
+      "name:de": "Prerau",
+      "name:pl": "Przerów",
+      "operator": "cz:SŽDC"
+    }
+  },
+  {
+    "id": 3878448046,
+    "lat": 54.257226,
+    "lon": 18.646971,
+    "tags": {
+      "name": "Pruszcz Gdański",
+      "name:de": "Praust",
+      "name:ru": "Прущ-Гданьский",
+      "name:uk": "Прущ- Ґданські",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 560182965,
+    "lat": 49.78361,
+    "lon": 22.780152,
+    "tags": {
+      "name": "Przemyśl Główny",
+      "name:ru": "Пшемысль-Главный",
+      "name:uk": "Перемишль Головний",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2510050405,
+    "lat": 51.840968,
+    "lon": 19.917358,
+    "tags": {
+      "name": "Przyłęk Duży",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1884939450,
+    "lat": 51.377755,
+    "lon": 20.659722,
+    "tags": {
+      "name": "Przysucha",
+      "name:ru": "Пшисуха",
+      "name:uk": "Пшисуха",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2473137378,
+    "lat": 49.97498,
+    "lon": 18.953469,
+    "tags": {
+      "name": "Pszczyna",
+      "name:de": "Pless",
+      "name:ru": "Пшичына",
+      "name:uk": "Пщина",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2210299228,
+    "lat": 51.410457,
+    "lon": 22.011422,
+    "tags": {
+      "name": "Puławy",
+      "name:ru": "Пулавы",
+      "name:uk": "Пулави",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3457368094,
+    "lat": 51.427785,
+    "lon": 21.984232,
+    "tags": {
+      "name": "Puławy Miasto",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 417908879,
+    "lat": 50.78022,
+    "lon": 20.528419,
+    "tags": {
+      "name": "Radkowice",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2183650834,
+    "lat": 51.723257,
+    "lon": 18.350029,
+    "tags": {
+      "name": "Radliczyce",
+      "name:de": "Radelschütz",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3444788281,
+    "lat": 51.390922,
+    "lon": 21.155382,
+    "tags": {
+      "name": "Radom",
+      "name:ru": "Радом Главный",
+      "name:uk": "Радом Головний",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3444788281,
+    "lat": 51.390922,
+    "lon": 21.155382,
+    "tags": {
+      "name": "Radom Główny",
+      "name:ru": "Радом Главный",
+      "name:uk": "Радом Головний",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3457864145,
+    "lat": 51.338841,
+    "lon": 21.054075,
+    "tags": {
+      "name": "Rożki",
+      "name:ru": "Рожки",
+      "name:uk": "Рожки",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3673281598,
+    "lat": 50.303811,
+    "lon": 18.878024,
+    "tags": {
+      "name": "Ruda Chebzie",
+      "name:ru": "Руда Хебжье",
+      "name:uk": "Руда Хебж'є",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3673327633,
+    "lat": 50.315917,
+    "lon": 18.850877,
+    "tags": {
+      "name": "Ruda Śląska",
+      "name:de": "Ruda O.S.",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 11362525273,
+    "lat": 51.292543,
+    "lon": 21.040229,
+    "tags": {
+      "name": "Ruda Wielka",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3293098653,
+    "lat": 50.118818,
+    "lon": 19.719334,
+    "tags": {
+      "name": "Rudawa",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2480151502,
+    "lat": 50.089104,
+    "lon": 18.547972,
+    "tags": {
+      "name": "Rybnik",
+      "name:de": "Rybnik Hauptbahnhof",
+      "name:ru": "Рыбник",
+      "name:uk": "Рибник",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3258261975,
+    "lat": 52.349917,
+    "lon": 14.815287,
+    "tags": {
+      "name": "Rzepin",
+      "name:de": "Reppen",
+      "name:ru": "Жепин",
+      "name:uk": "Жепін",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3233182105,
+    "lat": 50.897353,
+    "lon": 19.328414,
+    "tags": {
+      "name": "Rzerzęczyce",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3438299348,
+    "lat": 50.042991,
+    "lon": 22.006086,
+    "tags": {
+      "name": "Rzeszów Główny",
+      "name:ru": "Жешув Главный",
+      "name:uk": "Жешув Глувни",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1898936115,
+    "lat": 51.615172,
+    "lon": 18.776567,
+    "tags": {
+      "name": "Sieradz Męka",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 242095567,
+    "lat": 51.603013,
+    "lon": 18.730365,
+    "tags": {
+      "name": "Sieradz Warta",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3458286157,
+    "lat": 51.998672,
+    "lon": 20.061646,
+    "tags": {
+      "name": "Sierakowice Skierniewickie",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3434316809,
+    "lat": 52.018241,
+    "lon": 19.222743,
+    "tags": {
+      "name": "Sierpów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 417909427,
+    "lat": 50.818256,
+    "lon": 20.550413,
+    "tags": {
+      "name": "Sitkówka Nowiny",
+      "name:ru": "Ситкувка-Новины",
+      "name:uk": "Сіткувка-Новіни",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2145900158,
+    "lat": 51.697285,
+    "lon": 18.430259,
+    "tags": {
+      "name": "Skalmierz",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3457876492,
+    "lat": 51.116195,
+    "lon": 20.882006,
+    "tags": {
+      "name": "Skarżysko-Kamienna",
+      "name:ru": "Скаржиско-Каменна",
+      "name:uk": "Скаржисько-Каменна",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2180989766,
+    "lat": 51.977585,
+    "lon": 20.221304,
+    "tags": {
+      "name": "Skierniewice Rawka",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3393485020,
+    "lat": 52.225379,
+    "lon": 19.405438,
+    "tags": {
+      "name": "Sklęczki",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3440671925,
+    "lat": 51.602195,
+    "lon": 19.966966,
+    "tags": {
+      "name": "Skrzynki",
+      "name:ru": "Скшинки",
+      "name:uk": "Скшинкі",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 368073698,
+    "lat": 51.365215,
+    "lon": 20.721395,
+    "tags": {
+      "name": "Skrzynno",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 48526714,
+    "lat": 50.235873,
+    "lon": 20.076366,
+    "tags": {
+      "name": "Słomniki Miasto",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 29832014,
+    "lat": 52.287377,
+    "lon": 17.852076,
+    "tags": {
+      "name": "Słupca",
+      "name:de": "Slupca",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 7760719622,
+    "lat": 54.468221,
+    "lon": 17.016452,
+    "tags": {
+      "name": "Słupsk",
+      "name:ru": "Слупск",
+      "name:uk": "Слупськ",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2033143018,
+    "lat": 51.870978,
+    "lon": 19.467478,
+    "tags": {
+      "name": "Smardzew"
+    }
+  },
+  {
+    "id": 3658497802,
+    "lat": 53.747959,
+    "lon": 18.685893,
+    "tags": {
+      "name": "Smętowo",
+      "name:ru": "Сментово",
+      "name:uk": "Сментово",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2030626331,
+    "lat": 51.394913,
+    "lon": 20.605165,
+    "tags": {
+      "name": "Smogorzów Przysuski",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2363719925,
+    "lat": 50.274704,
+    "lon": 20.046679,
+    "tags": {
+      "name": "Smroków",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2210353167,
+    "lat": 50.731303,
+    "lon": 20.430628,
+    "tags": {
+      "name": "Sobków",
+      "name:ru": "Собкув",
+      "name:uk": "Собкув"
+    }
+  },
+  {
+    "id": 1437647361,
+    "lat": 52.215047,
+    "lon": 20.238664,
+    "tags": {
+      "name": "Sochaczew",
+      "name:ru": "Сохачев",
+      "name:uk": "Сохачев",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2154830748,
+    "lat": 53.078448,
+    "lon": 18.224642,
+    "tags": {
+      "name": "Solec Kujawski",
+      "name:ru": "Солец-Куявски",
+      "name:uk": "Солець-Куявський",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 266781738,
+    "lat": 54.440057,
+    "lon": 18.562314,
+    "tags": {
+      "name": "Sopot",
+      "name:de": "Zoppot",
+      "name:ru": "Сопот",
+      "name:uk": "Сопот",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 11908102978,
+    "lat": 50.228654,
+    "lon": 19.165418,
+    "tags": {
+      "name": "Sosnowiec Jęzor Południowy"
+    }
+  },
+  {
+    "id": 3496500140,
+    "lat": 50.272103,
+    "lon": 19.216248,
+    "tags": {
+      "name": "Sosnowiec Porąbka",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2517728018,
+    "lat": 52.046683,
+    "lon": 19.899975,
+    "tags": {
+      "name": "Stare Grudze"
+    }
+  },
+  {
+    "id": 5648139217,
+    "lat": 49.07623,
+    "lon": 17.422699,
+    "tags": {
+      "name": "Staré Město u Uher. Hradiště",
+      "name:de": "Altstadt bei Ungarisch Hradisch",
+      "operator": "Správa železnic"
+    }
+  },
+  {
+    "id": 260872674,
+    "lat": 53.339287,
+    "lon": 15.03117,
+    "tags": {
+      "name": "Stargard",
+      "name:ru": "Старгард",
+      "name:uk": "Старгард",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 4598373548,
+    "lat": 49.743378,
+    "lon": 19.603345,
+    "tags": {
+      "name": "Sucha Beskidzka Zamek",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2180982501,
+    "lat": 52.02288,
+    "lon": 20.359371,
+    "tags": {
+      "name": "Sucha Żyrardowska",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3416555277,
+    "lat": 51.046558,
+    "lon": 20.849697,
+    "tags": {
+      "name": "Suchedniów",
+      "name:ru": "Сухеднюв",
+      "name:uk": "Сухеднюв",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 826919358,
+    "lat": 52.138695,
+    "lon": 17.308815,
+    "tags": {
+      "name": "Sulęcinek",
+      "name:ru": "Суленчинек",
+      "name:uk": "Суленцінек",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 29832423,
+    "lat": 52.404268,
+    "lon": 17.074452,
+    "tags": {
+      "name": "Swarzędz",
+      "name:de": "Schwersenz",
+      "name:ru": "Сважендз",
+      "name:uk": "Сважендз",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2033072040,
+    "lat": 51.906104,
+    "lon": 19.540603,
+    "tags": {
+      "name": "Swędów"
+    }
+  },
+  {
+    "id": 12091115077,
+    "lat": 52.602055,
+    "lon": 16.588259,
+    "tags": {
+      "name": "Szamotuły",
+      "name:en": "Szamotuly",
+      "name:de": "Samter",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 4799803848,
+    "lat": 53.391347,
+    "lon": 14.670462,
+    "tags": {
+      "name": "Szczecin Dąbie",
+      "name:de": "Stettin-Altdamm",
+      "name:ru": "Щецин Домбье",
+      "name:uk": "Щечін Домб'є",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 4005504572,
+    "lat": 53.418241,
+    "lon": 14.549407,
+    "tags": {
+      "name": "Szczecin Główny",
+      "name:en": "Szczecin Main Railway Station",
+      "name:de": "Bahnhof Szczecin Główny",
+      "name:ru": "Щецин-Главный",
+      "name:uk": "Щечін Головний",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3419377765,
+    "lat": 50.293562,
+    "lon": 20.03264,
+    "tags": {
+      "name": "Szczepanowice",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3280154778,
+    "lat": 52.870256,
+    "lon": 22.541466,
+    "tags": {
+      "name": "Szepietowo",
+      "name:ru": "Щепетово",
+      "name:uk": "Шеп'єтово",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 560772324,
+    "lat": 50.832613,
+    "lon": 15.518678,
+    "tags": {
+      "name": "Szklarska Poręba Górna",
+      "name:de": "Bahnhof Schreiberhau (oben)",
+      "name:ru": "Шкларска Поремба Гурна",
+      "name:uk": "Шкларська Поремба Ґурна",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3457872995,
+    "lat": 51.207996,
+    "lon": 20.923445,
+    "tags": {
+      "name": "Szydłowiec",
+      "name:ru": "Шидловец",
+      "name:uk": "Шидловець",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 253705465,
+    "lat": 52.21833,
+    "lon": 17.274195,
+    "tags": {
+      "name": "Środa Wielkopolska",
+      "name:de": "Schroda",
+      "name:ru": "Сьрода-Велькопольска",
+      "name:uk": "Сьрода-Великопольська",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3254868376,
+    "lat": 52.245251,
+    "lon": 15.539962,
+    "tags": {
+      "name": "Świebodzin",
+      "name:de": "Schwiebus",
+      "name:ru": "Свебодзин",
+      "name:uk": "Св'єбодзін"
+    }
+  },
+  {
+    "id": 3045904738,
+    "lat": 50.288956,
+    "lon": 18.918389,
+    "tags": {
+      "name": "Świętochłowice",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3970953178,
+    "lat": 51.840961,
+    "lon": 17.756137,
+    "tags": {
+      "name": "Taczanów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 313433612,
+    "lat": 50.446033,
+    "lon": 18.864404,
+    "tags": {
+      "name": "Tarnowskie Góry",
+      "name:de": "Tarnowitz",
+      "name:ru": "Тарновске-Гуры",
+      "name:uk": "Тарновске-Ґури",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2007029030,
+    "lat": 50.005288,
+    "lon": 20.975117,
+    "tags": {
+      "name": "Tarnów",
+      "name:de": "Tarnau",
+      "name:ru": "Тарнув",
+      "name:uk": "Тарнув",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1354117153,
+    "lat": 54.097248,
+    "lon": 18.789781,
+    "tags": {
+      "name": "Tczew",
+      "name:de": "Dirschau",
+      "name:ru": "Тчев",
+      "name:uk": "Тчев",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 499875804,
+    "lat": 52.202207,
+    "lon": 20.416398,
+    "tags": {
+      "name": "Teresin Niepokalanów",
+      "name:ru": "Тересин Непокаланув",
+      "name:uk": "Тересін Непокаланув",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2479742065,
+    "lat": 52.431116,
+    "lon": 21.4354,
+    "tags": {
+      "name": "Tłuszcz",
+      "name:ru": "Тлущч",
+      "name:uk": "Тлущ",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 92794059,
+    "lat": 51.546937,
+    "lon": 20.033623,
+    "tags": {
+      "name": "Tomaszów Mazowiecki",
+      "name:ru": "Томашув Мазовецки",
+      "name:uk": "Томашув Мазовецькі",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2187738903,
+    "lat": 51.524535,
+    "lon": 20.066018,
+    "tags": {
+      "name": "Tomaszów Mazowiecki Białobrzegi",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1013299074,
+    "lat": 53.000117,
+    "lon": 18.614649,
+    "tags": {
+      "name": "Toruń Główny",
+      "name:de": "Thorn Hbf",
+      "name:ru": "Торунь Главный",
+      "name:uk": "Торунь Головний",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 6093920532,
+    "lat": 50.154123,
+    "lon": 19.452956,
+    "tags": {
+      "name": "Trzebinia",
+      "name:ru": "Тшебиня",
+      "name:uk": "Тшебіня",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3322950957,
+    "lat": 51.360263,
+    "lon": 17.467743,
+    "tags": {
+      "name": "Twardogóra",
+      "name:ru": "Твардогура",
+      "name:uk": "Твардогура",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3689310738,
+    "lat": 50.135768,
+    "lon": 18.964178,
+    "tags": {
+      "name": "Tychy",
+      "name:de": "Tichau",
+      "name:ru": "Тыхы",
+      "name:uk": "Тихи",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3745372920,
+    "lat": 50.117337,
+    "lon": 18.982378,
+    "tags": {
+      "name": "Tychy Aleja Bielska"
+    }
+  },
+  {
+    "id": 3745394914,
+    "lat": 50.114154,
+    "lon": 18.986043,
+    "tags": {
+      "name": "Tychy Grota Roweckiego"
+    }
+  },
+  {
+    "id": 3745411452,
+    "lat": 50.107738,
+    "lon": 19.000878,
+    "tags": {
+      "name": "Tychy Lodowisko"
+    }
+  },
+  {
+    "id": -291,
+    "lat": 50.1117,
+    "lon": 18.9914,
+    "tags": {
+      "name": "Tychy Miasto"
+    }
+  },
+  {
+    "id": 3745372921,
+    "lat": 50.121151,
+    "lon": 18.978785,
+    "tags": {
+      "name": "Tychy Zachodnie"
+    }
+  },
+  {
+    "id": 418127386,
+    "lat": 50.743394,
+    "lon": 16.28069,
+    "tags": {
+      "name": "Wałbrzych Główny",
+      "name:de": "Waldenburg Hauptbahnhof",
+      "name:ru": "Валбжих Глувны",
+      "name:uk": "Валбжих Головний"
+    }
+  },
+  {
+    "id": 842079165,
+    "lat": 50.786229,
+    "lon": 16.285234,
+    "tags": {
+      "name": "Wałbrzych Miasto",
+      "name:ru": "Валбжих Място",
+      "name:uk": "Валбжих Місто"
+    }
+  },
+  {
+    "id": 2499943349,
+    "lat": 51.793853,
+    "lon": 21.168666,
+    "tags": {
+      "name": "Warka",
+      "name:ru": "Варка",
+      "name:uk": "Варка",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3416823373,
+    "lat": 52.259096,
+    "lon": 20.992359,
+    "tags": {
+      "name": "Warszawa Gdańska",
+      "name:ru": "Варшава Гданьска",
+      "name:uk": "Варшава Ґданська",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 4337814886,
+    "lat": 52.277278,
+    "lon": 21.170461,
+    "tags": {
+      "name": "Warszawa Mokry Ług",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3390898176,
+    "lat": 52.225825,
+    "lon": 20.99084,
+    "tags": {
+      "name": "Warszawa Ochota",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 4358027098,
+    "lat": 52.233706,
+    "lon": 21.028129,
+    "tags": {
+      "name": "Warszawa Powiśle",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3401904483,
+    "lat": 52.257108,
+    "lon": 21.158478,
+    "tags": {
+      "name": "Warszawa Rembertów",
+      "name:de": "Warschau-Rembertau",
+      "name:ru": "Варшава Ребмертув",
+      "name:uk": "Варшава Рембертув",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3390793459,
+    "lat": 52.244799,
+    "lon": 21.043964,
+    "tags": {
+      "name": "Warszawa Stadion",
+      "name:de": "Warschau Stadion",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2351113017,
+    "lat": 52.229402,
+    "lon": 21.007588,
+    "tags": {
+      "name": "Warszawa Śródmieście",
+      "name:en": "Warsaw City Center",
+      "name:de": "Warschau Stadtmitte",
+      "operator": "Polskie Koleje Państwowe"
+    }
+  },
+  {
+    "id": 3390854024,
+    "lat": 52.196401,
+    "lon": 20.885251,
+    "tags": {
+      "name": "Warszawa Ursus",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2341850090,
+    "lat": 52.191464,
+    "lon": 20.870017,
+    "tags": {
+      "name": "Warszawa Ursus Niedźwiadek",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3392187634,
+    "lat": 52.20575,
+    "lon": 20.889622,
+    "tags": {
+      "name": "Warszawa Ursus Północny",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": -306,
+    "lat": 52.2207,
+    "lon": 20.9651,
+    "tags": {
+      "name": "Warszawa Zachodnia peron 8"
+    }
+  },
+  {
+    "id": 2510050406,
+    "lat": 51.791051,
+    "lon": 19.84927,
+    "tags": {
+      "name": "Wągry",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3124681423,
+    "lat": 48.185994,
+    "lon": 16.37512,
+    "tags": {
+      "name": "Wien Hauptbahnhoh",
+      "operator": "ÖBB-Infrastruktur AG"
+    }
+  },
+  {
+    "id": 66432827,
+    "lat": 48.17453,
+    "lon": 16.333965,
+    "tags": {
+      "name": "Wien Meidling",
+      "operator": "ÖBB-Infrastruktur AG"
+    }
+  },
+  {
+    "id": 60093107,
+    "lat": 48.196545,
+    "lon": 16.336282,
+    "tags": {
+      "name": "Wien Westbahnhof",
+      "operator": "ÖBB-Infrastruktur AG"
+    }
+  },
+  {
+    "id": 2030062259,
+    "lat": 51.363475,
+    "lon": 20.789606,
+    "tags": {
+      "name": "Wieniawa",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3455716094,
+    "lat": 50.41478,
+    "lon": 19.349688,
+    "tags": {
+      "name": "Wiesiółka",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 67248282,
+    "lat": 51.251589,
+    "lon": 19.630432,
+    "tags": {
+      "name": "Wilkoszewice",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 826538420,
+    "lat": 51.936028,
+    "lon": 17.562783,
+    "tags": {
+      "name": "Witaszyce",
+      "name:ru": "Виташице",
+      "name:uk": "Віташице",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3459316528,
+    "lat": 52.653031,
+    "lon": 19.058895,
+    "tags": {
+      "name": "Włocławek",
+      "name:de": "Leslau",
+      "name:ru": "Влоцлавек",
+      "name:uk": "Влоцлавек",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3484686486,
+    "lat": 50.83779,
+    "lon": 20.014548,
+    "tags": {
+      "name": "Włoszczowa",
+      "name:ru": "Влощова",
+      "name:uk": "Влощова",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 506544368,
+    "lat": 50.008234,
+    "lon": 18.476348,
+    "tags": {
+      "name": "Wodzisław Śląski",
+      "name:de": "Loslau",
+      "name:ru": "Водзислав-Слёнски",
+      "name:uk": "Водзіслав Шльонскі",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 271736515,
+    "lat": 50.130865,
+    "lon": 19.577079,
+    "tags": {
+      "name": "Wola Filipowska",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3416055272,
+    "lat": 51.277071,
+    "lon": 21.026551,
+    "tags": {
+      "name": "Wola Lipieniecka",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2179834592,
+    "lat": 51.353295,
+    "lon": 21.000174,
+    "tags": {
+      "name": "Wolanów",
+      "name:ru": "Воланув",
+      "name:uk": "Воланув",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2210355146,
+    "lat": 50.753349,
+    "lon": 20.470427,
+    "tags": {
+      "name": "Wolica",
+      "name:ru": "Волица",
+      "name:uk": "Воліца"
+    }
+  },
+  {
+    "id": 1892481875,
+    "lat": 52.346633,
+    "lon": 21.238072,
+    "tags": {
+      "name": "Wołomin",
+      "name:ru": "Воломин",
+      "name:uk": "Воломін",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 155479759,
+    "lat": 51.097916,
+    "lon": 17.037951,
+    "tags": {
+      "name": "Wrocław Główny",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 302223767,
+    "lat": 51.116296,
+    "lon": 16.998395,
+    "tags": {
+      "name": "Wrocław Mikołajów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 789996265,
+    "lat": 51.125658,
+    "lon": 17.032991,
+    "tags": {
+      "name": "Wrocław Nadodrze",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 363576641,
+    "lat": 52.705034,
+    "lon": 16.386189,
+    "tags": {
+      "name": "Wronki",
+      "name:de": "Wronke",
+      "name:ru": "Вронки",
+      "name:uk": "Вронкі"
+    }
+  },
+  {
+    "id": 364367833,
+    "lat": 52.326914,
+    "lon": 17.555245,
+    "tags": {
+      "name": "Września",
+      "name:de": "Wreschen",
+      "name:ru": "Вжесня",
+      "name:uk": "Вжесьня",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2489765976,
+    "lat": 51.660645,
+    "lon": 19.904637,
+    "tags": {
+      "name": "Wykno",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 482252685,
+    "lat": 50.118011,
+    "lon": 19.798357,
+    "tags": {
+      "name": "Zabierzów",
+      "name:ru": "Забежув",
+      "name:uk": "Заб'єжув",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 482829583,
+    "lat": 50.105608,
+    "lon": 19.823612,
+    "tags": {
+      "name": "Zabierzów Rząska",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 4274477550,
+    "lat": 49.872206,
+    "lon": 16.887082,
+    "tags": {
+      "name": "Zábřeh na Moravě",
+      "operator": "cz:SŽDC"
+    }
+  },
+  {
+    "id": 2987517885,
+    "lat": 50.305299,
+    "lon": 18.787128,
+    "tags": {
+      "name": "Zabrze",
+      "name:ru": "Забже",
+      "name:uk": "Забже",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 9841395652,
+    "lat": 49.300768,
+    "lon": 19.96304,
+    "tags": {
+      "name": "Zakopane",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2489774978,
+    "lat": 51.633545,
+    "lon": 19.933571,
+    "tags": {
+      "name": "Zaosie",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3455702509,
+    "lat": 50.511074,
+    "lon": 19.39864,
+    "tags": {
+      "name": "Zawiercie Borowe Pole",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2843454031,
+    "lat": 52.242613,
+    "lon": 15.818176,
+    "tags": {
+      "name": "Zbąszynek",
+      "name:ru": "Збоншинек",
+      "name:uk": "Збоншинек",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3525511368,
+    "lat": 49.87154,
+    "lon": 18.621635,
+    "tags": {
+      "name": "Zebrzydowice",
+      "name:ru": "Зебжидовице",
+      "name:uk": "Зебжидовіце",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2699871224,
+    "lat": 51.863942,
+    "lon": 19.422144,
+    "tags": {
+      "name": "Zgierz Jaracza",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 10777657496,
+    "lat": 51.86118,
+    "lon": 19.437458,
+    "tags": {
+      "name": "Zgierz Rudunki",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3266122070,
+    "lat": 52.311815,
+    "lon": 21.157664,
+    "tags": {
+      "name": "Zielonka",
+      "name:ru": "Зелонка",
+      "name:uk": "Зелонка",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 4337814887,
+    "lat": 52.291452,
+    "lon": 21.154021,
+    "tags": {
+      "name": "Zielonka Bankowa",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 2506857456,
+    "lat": 52.225031,
+    "lon": 19.492206,
+    "tags": {
+      "name": "Złotniki Kutnowskie"
+    }
+  },
+  {
+    "id": 2506857455,
+    "lat": 52.185734,
+    "lon": 19.716179,
+    "tags": {
+      "name": "Zosinów"
+    }
+  },
+  {
+    "id": 2030626334,
+    "lat": 51.408743,
+    "lon": 20.571827,
+    "tags": {
+      "name": "Zygmuntów",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 1275626180,
+    "lat": 51.732183,
+    "lon": 19.791005,
+    "tags": {
+      "name": "Żakowice",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  },
+  {
+    "id": 3455683808,
+    "lat": 50.623317,
+    "lon": 19.272884,
+    "tags": {
+      "name": "Żarki-Letnisko",
+      "operator": "PKP Polskie Linie Kolejowe"
+    }
+  }
+]

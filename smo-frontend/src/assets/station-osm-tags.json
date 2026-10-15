@@ -1,0 +1,608 @@
+{
+  "Baby": {
+    "name:ru": "Бабы",
+    "name:uk": "Баби",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Bednary": {
+    "name:ru": "Беднары",
+    "name:uk": "Беднари",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Bełchów": {
+    "name:ru": "Белхув",
+    "name:uk": "Белхув",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Będzin": {
+    "name:de": "Bendsburg",
+    "name:ru": "Бендзин",
+    "name:uk": "Бендзін",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Borowa Górka": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Brynów": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Bukowno": {
+    "name:ru": "Буковно",
+    "name:uk": "Буковно",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Charsznica": {
+    "name:ru": "Харшница",
+    "name:uk": "Харшниця",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Chociszew": {
+    "name:ru": "Хоцишев",
+    "name:uk": "Хоцішев",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Chorzów Batory": {
+    "name:de": "Bismarckhütte",
+    "name:ru": "Хожув Баторий",
+    "name:uk": "Хожув Баторий",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Czarnca": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Częstochowa": {
+    "name:ru": "Ченстохова",
+    "name:uk": "Ченстохова",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Częstochowa Towarowa": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Dąbrowa Górnicza": {
+    "name:ru": "Домбро́ва-Гурни́ча",
+    "name:uk": "Домброва-Гурнича",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Dąbrowa Górnicza Huta Katowice": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Dąbrowa Górnicza Południowa": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Dąbrowa Górnicza Strzemieszyce": {
+    "name:ru": "Домброва Гурнича Стржемешице",
+    "name:uk": "Домброва Гурнича Стржемешице",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Dąbrowa Górnicza Towarowa": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Dąbrowa Górnicza Towarowa DTA R5": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Dąbrowa Górnicza Wschodnia": {
+    "name:ru": "Восточная Домброва Гурнича",
+    "name:uk": "Східна Домброва Гурніча",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Dąbrowa Górnicza Ząbkowice": {
+    "name:ru": "Домброва Гурнича Зомбковице",
+    "name:uk": "Домброва Гурнича Зомбковіце",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Dionizów": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Dłubnia": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Dobroń": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Domaniewice": {
+    "name:ru": "Доманевице",
+    "name:uk": "Доманевіце"
+  },
+  "Dorota": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Gajewniki": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Gałkówek": {
+    "name:ru": "Галковек",
+    "name:uk": "Ґалковек",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Głowno": {
+    "name:ru": "Гловно",
+    "name:uk": "Гловно",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Gomunice": {
+    "name:ru": "Гомунице",
+    "name:uk": "Гомуніце",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Gorzkowice": {
+    "name:ru": "Гожковице",
+    "name:uk": "Гожковіце",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Góra Włodowska": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Grodzisk Mazowiecki": {
+    "name:ru": "Гродзиск-Мазовецкий",
+    "name:uk": "Гродзіск-Мазовецкий",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Idzikowice": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Jackowice": {
+    "name:ru": "Ясковице",
+    "name:uk": "Яцковіце",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Jaroszowiec Olkuski": {
+    "name:ru": "Ярошовец Олькуский",
+    "name:uk": "Ярошовець Олькускі",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Jaworzno Szczakowa": {
+    "name:ru": "Явожно Щакова",
+    "name:uk": "Явожно Щакова",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Józefinów": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Katowice": {
+    "name:de": "Kattowitz",
+    "name:ru": "Катовице",
+    "name:uk": "Катовіце",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Katowice Zawodzie": {
+    "name:ru": "Катовице Заводзе",
+    "name:uk": "Катовіце Заводзе",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Kłomnice": {
+    "name:ru": "Кломнице",
+    "name:uk": "Кломнице",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Knapówka": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Kolumna": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Koluszki": {
+    "name:ru": "Колушки",
+    "name:uk": "Колушкі",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Koniecpol": {
+    "name:ru": "Конесполь",
+    "name:uk": "Конесполь",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Korytów": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Kozioł": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Kozłów": {
+    "name:ru": "Козлув",
+    "name:uk": "Козлув",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Kraków Batowice": {
+    "name:ru": "Краков Батовице",
+    "name:uk": "Краків Батовіце",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Kraków Główny": {
+    "name:en": "Krakow Main Station",
+    "name:de": "Krakau Hauptbahnhof",
+    "name:ru": "Станция Краков-Главный",
+    "name:uk": "Краків Головний",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Kraków Główny Towarowy": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Kraków Olsza": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Kraków Przedmieście": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Krzewie": {
+    "name:ru": "Кшеве",
+    "name:uk": "Кшеве",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Kutno": {
+    "name:ru": "Кутно",
+    "name:uk": "Кутно",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Legionowo": {
+    "name:ru": "Легионово",
+    "name:uk": "Легіоново",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Łask": {
+    "name:de": "Lask",
+    "name:ru": "Ласк",
+    "name:uk": "Ласк",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Łazy": {
+    "name:ru": "Лазы",
+    "name:uk": "Лази",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Łęczyca": {
+    "name:de": "Lentschitza",
+    "name:ru": "Ленчица",
+    "name:uk": "Ленчиця",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Łowicz Główny": {
+    "name:ru": "Лович Глувны",
+    "name:uk": "Ловіч Головний",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Łowicz Przedmieście": {
+    "name:ru": "Лович Предместье",
+    "name:uk": "Ловіч Передмістя",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Łódź Andrzejów": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Łódź Chojny": {
+    "name:ru": "Лодзь Хойны",
+    "name:uk": "Лодзь Хойни",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Łódź Fabryczna": {
+    "name:ru": "Лодзь Фабрычна",
+    "name:uk": "Лодзь Фабрична",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Łódź Kaliska": {
+    "name:ru": "Лодзь Калиска",
+    "name:uk": "Лодзь Каліска",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Łódź Lublinek": {
+    "name:ru": "Лодзь Люблинек",
+    "name:uk": "Лодзь Люблінек",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Łódź Marysin": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Łódź Olechów": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Łódź Widzew": {
+    "name:ru": "Лодзь Видзев",
+    "name:uk": "Лодзь Відзев",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Łódź Żabieniec": {
+    "name:ru": "Лодзь Жабинец",
+    "name:uk": "Лодзь Жаб'єнець",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Marków": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Miechów": {
+    "name:ru": "Мехув",
+    "name:uk": "Мєхув",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Mikołajów": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Mysłowice": {
+    "name:de": "Myslowitz",
+    "name:ru": "Мысловице",
+    "name:uk": "Мисловиці",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Myszków": {
+    "name:ru": "Мышкув",
+    "name:uk": "Мишкув",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Niedźwiedź": {
+    "name:ru": "Недзьведзь",
+    "name:uk": "Нєджвєдзь"
+  },
+  "Olkusz": {
+    "name:ru": "Олькуш",
+    "name:uk": "Олькуш",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Olszamowice": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Opoczno Południe": {
+    "name:ru": "Опочно Юг",
+    "name:uk": "Опочно Полуднє",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Ozorków": {
+    "name:ru": "Озоркув",
+    "name:uk": "Озоркув",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Pabianice": {
+    "name:ru": "Пабьянице",
+    "name:uk": "Паб'яніце",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Piotrków Trybunalski": {
+    "name:ru": "Пётркув Трыбуналски",
+    "name:uk": "Пйотркув Трибунальські",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Płyćwia": {
+    "name:ru": "Плычвя",
+    "name:uk": "Плицьвя",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Poraj": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Pruszków": {
+    "name:ru": "Прушкув",
+    "name:uk": "Прушкув",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Psary": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Puszcza Mariańska": {
+    "name:ru": "Пушча Маряньска",
+    "name:uk": "Пуща Марянська",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Raciborowice": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Radomsko": {
+    "name:ru": "Радомско",
+    "name:uk": "Радомско",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Radzice": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Radziwiłłów Mazowiecki": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Rogów": {
+    "name:ru": "Рогув",
+    "name:uk": "Рогув",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Rokiciny": {
+    "name:ru": "Рокицины",
+    "name:uk": "Рокіцини",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Rozprza": {
+    "name:ru": "Розпша",
+    "name:uk": "Розпша",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Rudniki koło Częstochowy": {
+    "name:ru": "Рудники коло Ченстоховы",
+    "name:uk": "Руднікі коло Ченстохови",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Sędzice": {
+    "name:ru": "Сендзице",
+    "name:uk": "Сендзіце",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Sędziszów": {
+    "name:ru": "Сендзишув",
+    "name:uk": "Сендзішув",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Sieradz": {
+    "name:ru": "Серадз",
+    "name:uk": "Серадз",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Skierniewice": {
+    "name:ru": "Скерневице",
+    "name:uk": "Скерневиці",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Sławków": {
+    "name:ru": "Славкув",
+    "name:uk": "Славкув",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Słomniki": {
+    "name:ru": "Сломники",
+    "name:uk": "Сломники",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Słotwiny": {
+    "name:ru": "Слотвины",
+    "name:uk": "Слотвіни",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Sosnowiec Dańdówka": {
+    "name:ru": "Сосновец Даньдувка",
+    "name:uk": "Сосновець Даньдувка",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Sosnowiec Główny": {
+    "name:de": "Sosnowitz Hauptbahnhof",
+    "name:ru": "Сосновец Главный",
+    "name:uk": "Сосновець Глувни",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Sosnowiec Jęzor": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Sosnowiec Kazimierz": {
+    "name:ru": "Сосновец Казимеж",
+    "name:uk": "Сосновець Казимеж",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Sosnowiec Maczki": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Sosnowiec Południowy": {
+    "name:ru": "Сосновец Юг",
+    "name:uk": "Сосновець Південь",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Staszic": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Stawiska": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Stryków": {
+    "name:ru": "Стрыкув",
+    "name:uk": "Стрикув"
+  },
+  "Strzałki": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Suchedniów Północny": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Szabelnia": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Szeligi": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Tunel": {
+    "name:ru": "Тунель",
+    "name:uk": "Тунель",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Warszawa Centralna": {
+    "name:en": "Warsaw Central",
+    "name:de": "Warschau Hauptbahnhof",
+    "name:ru": "Варшава Центральная",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Warszawa Główna Towarowa": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Warszawa Gołąbki": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Warszawa Grochów": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Warszawa Podskarbińska": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Warszawa Włochy": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Warszawa Wschodnia": {
+    "name:en": "Warsaw East",
+    "name:de": "Warschau Ost",
+    "name:ru": "Варшава-Восточная",
+    "name:uk": "Варшава-Східня",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Warszawa Zachodnia": {
+    "name:de": "Warschau West",
+    "name:ru": "Варшава-Западная",
+    "name:uk": "Варшава-Заходня",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Widzów Teklinów": {
+    "name:ru": "Видзув-Теклинув",
+    "name:uk": "Відзув Теклінув",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Witonia": {
+    "name:ru": "Витония",
+    "name:uk": "Вітонія",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Włoszczowa Północ": {
+    "name:ru": "Влощова Север",
+    "name:uk": "Влощова Північ",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Wolbrom": {
+    "name:ru": "Вольбром",
+    "name:uk": "Волбром",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Wyczerpy": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Zastów": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Zawiercie": {
+    "name:ru": "Заверче",
+    "name:uk": "Заверце",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Zduńska Wola": {
+    "name:ru": "Здуньска Вола",
+    "name:uk": "Здунська Вола",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Zduńska Wola Karsznice": {
+    "name:ru": "Здуньска Вола Каршнице",
+    "name:uk": "Здунська Вола Каршніце",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Zgierz": {
+    "name:ru": "Згеж",
+    "name:uk": "Зґеж",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Zgierz Kontrewers": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Zgierz Północ": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Żakowice Południowe": {
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Żelisławice": {
+    "name:ru": "Желиславице",
+    "name:uk": "Желіславіце",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Żychlin": {
+    "name:ru": "Жихлин",
+    "name:uk": "Жихлін",
+    "operator": "PKP Polskie Linie Kolejowe"
+  },
+  "Żyrardów": {
+    "name:ru": "Жирардув",
+    "name:uk": "Жирардув",
+    "operator": "PKP Polskie Linie Kolejowe"
+  }
+}

@@ -33,7 +33,7 @@ import useStationTimetableEntries from "../../../hooks/useStationTimetableEntrie
 import { dataProvider } from "../../../utils/data-manager";
 import { getSignalsForStation, getStationGeometry, goToSignal } from "../../../utils/geom-utils";
 import SelectedStationTimetableContext from "../../../utils/selected-station-timetable-context";
-import { OsmNode, Station, UserProfileResponse } from "../../../utils/types";
+import { OsmTagged, Station, UserProfileResponse } from "../../../utils/types";
 import InfoIcon from "../../icons/InfoIcon";
 import Loading from "../../Loading";
 import SteamProfileDisplay from "../../profile/SteamProfileDisplay";
@@ -59,7 +59,7 @@ export interface StationMarkerPopupProps {
   station: Station;
   userData: UserProfileResponse | null;
   onClosePopup: () => void;
-  stationOsmData: OsmNode | null;
+  stationOsmData: OsmTagged | null;
 }
 
 const STATION_AREA_MAP = new Map<string, L.Polygon>();

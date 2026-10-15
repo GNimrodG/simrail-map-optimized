@@ -185,11 +185,14 @@ export interface SimplifiedTimtableEntry {
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type CommonOsmTags = "name" | "operator" | (string & {});
 
-export interface OsmNode {
+export interface OsmTagged {
+  tags: Record<CommonOsmTags, string>;
+}
+
+export interface OsmNode extends OsmTagged {
   id: number;
   lat: number;
   lon: number;
-  tags: Record<CommonOsmTags, string>;
 }
 
 export interface UserProfileResponse {
