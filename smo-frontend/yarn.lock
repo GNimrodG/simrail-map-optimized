@@ -3553,13 +3553,6 @@
   resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-19.3.0.tgz#90294a9266efd928a5266f2110d60d5dba5015d2"
   integrity sha512-ZI7bU42mZXXKHn/qNLEw2IrbiINU7X5+vfgdixBHkCNpYWXjKgfQ/P+uyGb5CjOLB9UcnTeg3rylQtV2hym44Q==
 
-"@types/react-window@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@types/react-window/-/react-window-2.0.0.tgz#9fe45015d6f98ec98a069362518c855fcc1fa8d0"
-  integrity sha512-E8hMDtImEpMk1SjswSvqoSmYvk7GEtyVaTa/GJV++FdDNuMVVEzpAClyJ0nqeKYBrMkGiyH6M1+rPLM0Nu1exQ==
-  dependencies:
-    react-window "*"
-
 "@types/react@^19.2.14":
   version "19.3.0"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-19.3.0.tgz#3b3ce8d8c1627fb5ccd4dadd57ef445c5a153b77"
@@ -5821,7 +5814,7 @@ react-leaflet@^5.0.0:
   dependencies:
     "@react-leaflet/core" "^3.0.0"
 
-react-window@*, react-window@^2.0.0:
+react-window@^2.0.0:
   version "2.3.4"
   resolved "https://registry.yarnpkg.com/react-window/-/react-window-2.3.4.tgz#466ad5ce5e1bd899c6c9340f308c6f526c9190e8"
   integrity sha512-CnRWoRg+ZnQkLcULSNdbgKJnfcexy9x+9ELOATmDlDv3ZoADyLJc22vN3JRvMV651A6gFwYBlxllU9X+H9dyhQ==
