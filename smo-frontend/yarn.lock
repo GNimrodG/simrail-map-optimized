@@ -1339,9 +1339,9 @@
   integrity sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==
 
 "@mantine/hooks@^9.0.0":
-  version "9.7.2"
-  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-9.7.2.tgz#d12c22f9e14aa33537a69ec5e71d1253f1ba7890"
-  integrity sha512-11emsRp/Mg+vfaKVyoMwiMdCHmO/15XOL6JG9fACkclVZnLPBVvRIaDdRBudsR3ALGZ5iTzrArPJDjjoeO6X4w==
+  version "9.7.3"
+  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-9.7.3.tgz#cdec77a3e912ba8949e8035e3e884911d8e9c426"
+  integrity sha512-GMHoMS1qul1dBLIHd/N9ef2Pr8UKYYHfuM+g2ej3gYqU0kH4sTiR9FNHksoTQi0PzATRoaNlUYjjMe9rbDRw5A==
 
 "@microsoft/signalr-protocol-msgpack@^10.0.0":
   version "10.0.11"
