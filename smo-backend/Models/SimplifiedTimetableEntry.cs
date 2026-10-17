@@ -79,12 +79,48 @@ public readonly struct SimplifiedTimetableEntry
     public string[]? LastConsist { get; }
 
     /// <summary>
+    /// If the train is quality tracked.
+    /// </summary>
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool IsQualityTracked { get; }
+
+    /// <summary>
+    /// If the train has over-gauged vehicles.
+    /// </summary>
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool IsOverGauge { get; }
+
+    /// <summary>
+    /// If the train is overweight.
+    /// </summary>
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool IsOverWeight { get; }
+
+    /// <summary>
+    /// If the train has other exceptional characteristics.
+    /// </summary>
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool IsOtherExceptional { get; }
+
+    /// <summary>
+    /// If the train has high risk cargo.
+    /// </summary>
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool IsHighRiskCargo { get; }
+
+    /// <summary>
+    /// If the train has dangerous cargo.
+    /// </summary>
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool IsDangerousCargo { get; }
+
+    /// <summary>
     ///     The entity supervising the train at this station, if any.
     /// </summary>
     [JsonIgnore]
     public string? SupervisedBy { get; }
 
-    internal SimplifiedTimetableEntry(Timetable timetable, int index, string[]? lastConsist = null)
+    internal SimplifiedTimetableEntry(Timetable timetable, int index, string[]? lastConsist, UnusualCargo unusualCargo)
     {
         var timetableEntry = timetable.TimetableEntries[index];
 
@@ -111,6 +147,13 @@ public readonly struct SimplifiedTimetableEntry
         LastConsist = lastConsist is { Length: > 0 }
             ? [.. lastConsist.Select(string.Intern)]
             : null;
+
+        IsQualityTracked = unusualCargo.IsQualityTracked;
+        IsOverGauge = unusualCargo.IsOverGauge;
+        IsOverWeight = unusualCargo.IsOverWeight;
+        IsOtherExceptional = unusualCargo.IsOtherExceptional;
+        IsHighRiskCargo = unusualCargo.IsHighRiskCargo;
+        IsDangerousCargo = unusualCargo.IsDangerousCargo;
 
         Index = (short)index;
         SupervisedBy = timetableEntry.SupervisedBy != null ? string.Intern(timetableEntry.SupervisedBy) : null;

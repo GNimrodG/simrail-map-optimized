@@ -15,7 +15,8 @@ public partial class TrainDataService(
     IServiceScopeFactory scopeFactory,
     ServerDataService serverDataService,
     SimrailApiClient apiClient,
-    TrainTypeService trainTypeService)
+    TrainTypeService trainTypeService,
+    TimetableDataService timetableDataService)
     : BaseServerDataService<Train[]>("TRAIN", logger, scopeFactory, serverDataService),
         IServerMetricsCleaner
 {
@@ -87,7 +88,7 @@ public partial class TrainDataService(
         var batchTrainTypeCache = new Dictionary<string, string?>(StringComparer.Ordinal);
 
         var enrichSw = Stopwatch.StartNew();
-        // Populate TrainType for each train
+        // Populate TrainType and UnusualCargo for each train
         foreach (var train in trains)
         {
             if (!batchTrainTypeCache.TryGetValue(train.TrainNoLocal, out var trainType))
@@ -97,6 +98,7 @@ public partial class TrainDataService(
             }
 
             train.TrainType = trainType;
+            train.SetUnusualCargo(timetableDataService.GetUnusualCargo(serverCode, train.TrainNoLocal));
         }
 
         enrichSw.Stop();

@@ -110,8 +110,10 @@ public class TimetableAnalyzerService(
                 .SelectMany(timetable =>
                 {
                     var lastConsist = trainDataService.GetLastConsist(timetableData.ServerCode, timetable.TrainNoLocal);
+                    var unusualCargo =
+                        timetableDataService.GetUnusualCargo(timetableData.ServerCode, timetable.TrainNoLocal);
                     return timetable.TimetableEntries.Select((_, i) =>
-                        new SimplifiedTimetableEntry(timetable, i, lastConsist));
+                        new SimplifiedTimetableEntry(timetable, i, lastConsist, unusualCargo));
                 })
                 .GroupBy(x => x.StationName)
                 .ToDictionary(g => g.Key, g => g.ToArray());

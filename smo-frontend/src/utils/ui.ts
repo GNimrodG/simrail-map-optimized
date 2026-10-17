@@ -1,5 +1,7 @@
 import { DefaultColorPalette } from "@mui/joy/styles/types";
 
+import { SimplifiedTimtableEntry, UnusualCargoFlags } from "./types";
+
 export function getColorTrainMarker(velocity: number): DefaultColorPalette {
   if (velocity < 10) {
     return "danger";
@@ -32,6 +34,22 @@ export function getSpeedColorForSignal(velocity: number): DefaultColorPalette {
   }
 
   return "success";
+}
+
+export function getEntryUnusualCargo(
+  entry: Pick<
+    SimplifiedTimtableEntry,
+    "isQualityTracked" | "isOverGauge" | "isOverWeight" | "isOtherExceptional" | "isHighRiskCargo" | "isDangerousCargo"
+  >,
+): UnusualCargoFlags {
+  return {
+    IsQualityTracked: entry.isQualityTracked,
+    IsOverGauge: entry.isOverGauge,
+    IsOverWeight: entry.isOverWeight,
+    IsOtherExceptional: entry.isOtherExceptional,
+    IsHighRiskCargo: entry.isHighRiskCargo,
+    IsDangerousCargo: entry.isDangerousCargo,
+  };
 }
 
 export function normalizeString(str: string): string {
