@@ -8,10 +8,11 @@ public class EdrTimetableTrainEntry
     [JsonProperty(nameof(TrainName))] public required string TrainName { get; set; }
     [JsonProperty(nameof(StartStation))] public required string StartStation { get; set; }
     [JsonProperty(nameof(EndStation))] public required string EndStation { get; set; }
-    [JsonProperty(nameof(UsageNotes))] public required string UsageNotes { get; set; }
-    [JsonProperty(nameof(OwnNotes))] public required string OwnNotes { get; set; }
+    [JsonProperty(nameof(UsageNotes))] public required string? UsageNotes { get; set; }
+    [JsonProperty(nameof(OwnNotes))] public required string? OwnNotes { get; set; }
     [JsonProperty(nameof(IsQualityTracked))] public required bool IsQualityTracked { get; set; }
     [JsonProperty(nameof(IsOverGauge))] public required bool IsOverGauge { get; set; }
+    [JsonProperty(nameof(IsOverWeight))] public bool? IsOverWeight { get; set; } // for some reason api returns null
 
     [JsonProperty(nameof(IsOtherExceptional))]
     public required bool IsOtherExceptional { get; set; }

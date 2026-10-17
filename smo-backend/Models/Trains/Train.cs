@@ -65,6 +65,55 @@ public class Train : IEntityWithTimestamp
     [JsonConverter(typeof(InterningStringConverter))]
     public string? TrainType { get; set; }
 
+    /// <summary>
+    /// If the train is quality tracked.
+    /// </summary>
+    [JsonProperty(nameof(IsQualityTracked), DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool IsQualityTracked { get; set; }
+
+    /// <summary>
+    /// If the train has over-gauged vehicles.
+    /// </summary>
+    [JsonProperty(nameof(IsOverGauge), DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool IsOverGauge { get; set; }
+
+    /// <summary>
+    /// If the train is overweight.
+    /// </summary>
+    [JsonProperty(nameof(IsOverWeight), DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool IsOverWeight { get; set; }
+
+    /// <summary>
+    /// If the train has other exceptional characteristics.
+    /// </summary>
+    [JsonProperty(nameof(IsOtherExceptional), DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool IsOtherExceptional { get; set; }
+
+    /// <summary>
+    /// If the train has high risk cargo.
+    /// </summary>
+    [JsonProperty(nameof(IsHighRiskCargo), DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool IsHighRiskCargo { get; set; }
+
+    /// <summary>
+    /// If the train has dangerous cargo.
+    /// </summary>
+    [JsonProperty(nameof(IsDangerousCargo), DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool IsDangerousCargo { get; set; }
+
+    /// <summary>
+    /// Sets the unusual cargo flags of the train.
+    /// </summary>
+    public void SetUnusualCargo(UnusualCargo cargo)
+    {
+        IsQualityTracked = cargo.IsQualityTracked;
+        IsOverGauge = cargo.IsOverGauge;
+        IsOverWeight = cargo.IsOverWeight;
+        IsOtherExceptional = cargo.IsOtherExceptional;
+        IsHighRiskCargo = cargo.IsHighRiskCargo;
+        IsDangerousCargo = cargo.IsDangerousCargo;
+    }
+
     /// <inheritdoc />
     [JsonIgnore]
     public DateTime Timestamp { get; set; }
