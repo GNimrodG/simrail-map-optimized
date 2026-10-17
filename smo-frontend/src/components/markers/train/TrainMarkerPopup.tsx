@@ -43,6 +43,7 @@ import WeightIcon from "../icons/WeightIcon";
 import StationDisplay from "../station/StationDisplay";
 import TrainConsistDisplay from "./TrainConsistDisplay";
 import TrainScheduleDisplay from "./TrainScheduleDisplay";
+import UnusualCargoDisplay from "../../utils/UnusualCargoDisplay";
 
 export interface TrainMarkerPopupProps {
   train: Train;
@@ -379,6 +380,8 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           </Stack>
         </Tooltip>
       </Stack>
+
+      <UnusualCargoDisplay cargo={train} />
 
       <Stack sx={{ width: "100%" }} direction="row" justifyContent="space-around" alignItems="center">
         <Box sx={{ minWidth: 0, flexShrink: 1 }}>{trainSpeed}</Box>

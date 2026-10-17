@@ -454,6 +454,7 @@
         "From": "From",
         "Arrival": "Arrival",
         "Departure": "Departure",
+        "UnusualCargo": "Unusual Cargo",
         "To": "To",
         "Line": "Line",
         "Stop": "Stop",
@@ -481,6 +482,32 @@
         "BidirectionalRoute": "Bidirectional route",
         "LineNumber": "LK {{line}}",
         "LineNumberTooltip": "Line number: #{{line}}"
+      },
+      "UnusualCargo": {
+        "QualityTracked": {
+          "label": "QC",
+          "description": "Quality check"
+        },
+        "OverGauge": {
+          "label": "OOG",
+          "description": "Over gauge"
+        },
+        "OverWeight": {
+          "label": "OW",
+          "description": "Overweight cargo"
+        },
+        "OtherExceptional": {
+          "label": "EXC",
+          "description": "Other exceptional"
+        },
+        "HighRiskCargo": {
+          "label": "HCDG",
+          "description": "High risk cargo"
+        },
+        "DangerousCargo": {
+          "label": "DG",
+          "description": "Dangerous cargo"
+        }
       },
       "PrivacyPolicy": {
         "Title": "Privacy Policy",
@@ -956,6 +983,7 @@
         "From": "Von",
         "Arrival": "Ankunft",
         "Departure": "Abfahrt",
+        "UnusualCargo": "Ungewöhnliche Fracht",
         "To": "Nach",
         "Line": "Linie",
         "Stop": "Halt",
@@ -983,6 +1011,32 @@
         "BidirectionalRoute": "Bidirektionale Route",
         "LineNumber": "LK {{line}}",
         "LineNumberTooltip": "Liniennummer: #{{line}}"
+      },
+      "UnusualCargo": {
+        "QualityTracked": {
+          "label": "QK",
+          "description": "Qualitätskontrolle"
+        },
+        "OverGauge": {
+          "label": "Lü",
+          "description": "Überbreite"
+        },
+        "OverWeight": {
+          "label": "ÜG",
+          "description": "Fracht mit Übergewicht"
+        },
+        "OtherExceptional": {
+          "label": "aS",
+          "description": "Sonstige außergewöhnliche Sendung"
+        },
+        "HighRiskCargo": {
+          "label": "GHR",
+          "description": "Fracht mit besonders hohem Risiko"
+        },
+        "DangerousCargo": {
+          "label": "GG",
+          "description": "Gefahrgut"
+        }
       },
       "PrivacyPolicy": {
         "Title": "Datenschutzrichtlinie",
@@ -1462,6 +1516,7 @@
         "From": "Honnan",
         "Arrival": "Érkezés",
         "Departure": "Indulás",
+        "UnusualCargo": "Rendkívüli rakomány",
         "To": "Hova",
         "Line": "Vonal",
         "Stop": "Várakozás",
@@ -1489,6 +1544,32 @@
         "BidirectionalRoute": "Kétirányú útvonal",
         "LineNumber": "LK {{line}}",
         "LineNumberTooltip": "Vonal száma: {{line}}"
+      },
+      "UnusualCargo": {
+        "QualityTracked": {
+          "label": "MK",
+          "description": "Minőségellenőrzés"
+        },
+        "OverGauge": {
+          "label": "TM",
+          "description": "Túlméretes tehervonat"
+        },
+        "OverWeight": {
+          "label": "TS",
+          "description": "Túlsúlyos rakomány"
+        },
+        "OtherExceptional": {
+          "label": "EK",
+          "description": "Egyéb kivételes"
+        },
+        "HighRiskCargo": {
+          "label": "MKR",
+          "description": "Magas kockázatú rakomány"
+        },
+        "DangerousCargo": {
+          "label": "VÁ",
+          "description": "Veszélyes tehervonat"
+        }
       },
       "PrivacyPolicy": {
         "Title": "Adatvédelmi irányelvek",
@@ -1966,6 +2047,7 @@
         "From": "Nereden",
         "Arrival": "Varış",
         "Departure": "Kalkış",
+        "UnusualCargo": "Olağandışı Kargo",
         "To": "Nereye",
         "Line": "Hat",
         "Stop": "Durur",
@@ -1993,6 +2075,32 @@
         "BidirectionalRoute": "Çift yönlü rota",
         "LineNumber": "LK {{line}}",
         "LineNumberTooltip": "Hat numarası: {{line}}"
+      },
+      "UnusualCargo": {
+        "QualityTracked": {
+          "label": "KK",
+          "description": "Kalite kontrolü"
+        },
+        "OverGauge": {
+          "label": "GD",
+          "description": "Gabari dışı yük"
+        },
+        "OverWeight": {
+          "label": "DA",
+          "description": "Dingil yükü aşımı"
+        },
+        "OtherExceptional": {
+          "label": "ÖY",
+          "description": "Diğer olağanüstü yük"
+        },
+        "HighRiskCargo": {
+          "label": "YSTM",
+          "description": "Yüksek sonuçlu tehlikeli madde"
+        },
+        "DangerousCargo": {
+          "label": "TM",
+          "description": "Tehlikeli madde"
+        }
       },
       "PrivacyPolicy": {
         "Title": "Gizlilik Politikası",
@@ -2467,6 +2575,7 @@
         "From": "Z",
         "Arrival": "Przyjazd",
         "Departure": "Odjazd",
+        "UnusualCargo": "Przesyłka nadzwyczajna",
         "To": "Do",
         "Line": "Linia",
         "Stop": "Postój",
@@ -2494,6 +2603,32 @@
         "BidirectionalRoute": "Trasa dwukierunkowa",
         "LineNumber": "LK {{line}}",
         "LineNumberTooltip": "Numer linii: {{line}}"
+      },
+      "UnusualCargo": {
+        "QualityTracked": {
+          "label": "KJ",
+          "description": "Kontrola jakości"
+        },
+        "OverGauge": {
+          "label": "Skrajnia",
+          "description": "Przekroczona skrajnia"
+        },
+        "OverWeight": {
+          "label": "Nacisk",
+          "description": "Przekroczony nacisk"
+        },
+        "OtherExceptional": {
+          "label": "PN",
+          "description": "Inne nadzwyczajne"
+        },
+        "HighRiskCargo": {
+          "label": "TWR",
+          "description": "Towar wysokiego ryzyka"
+        },
+        "DangerousCargo": {
+          "label": "TN",
+          "description": "Towar niebezpieczny"
+        }
       },
       "PrivacyPolicy": {
         "Title": "Polityka Prywatności",
@@ -2968,6 +3103,7 @@
         "From": "Откуда",
         "Arrival": "Прибытие",
         "Departure": "Отправление",
+        "UnusualCargo": "Нестандартный груз",
         "To": "Куда",
         "Line": "Линия",
         "Stop": "Остановка",
@@ -2995,6 +3131,32 @@
         "BidirectionalRoute": "Двунаправленный маршрут",
         "LineNumber": "ЛК {{line}}",
         "LineNumberTooltip": "Номер линии: {{line}}"
+      },
+      "UnusualCargo": {
+        "QualityTracked": {
+          "label": "КК",
+          "description": "Контроль качества"
+        },
+        "OverGauge": {
+          "label": "НГ",
+          "description": "Негабаритный груз"
+        },
+        "OverWeight": {
+          "label": "ТВ",
+          "description": "Тяжеловесный груз"
+        },
+        "OtherExceptional": {
+          "label": "ОУП",
+          "description": "Прочие особые условия пропуска"
+        },
+        "HighRiskCargo": {
+          "label": "ГПО",
+          "description": "Груз повышенной опасности"
+        },
+        "DangerousCargo": {
+          "label": "ОГ",
+          "description": "Опасный груз"
+        }
       },
       "PrivacyPolicy": {
         "Title": "Политика конфиденциальности",
@@ -3469,6 +3631,7 @@
         "From": "Звідки",
         "Arrival": "Прибуття",
         "Departure": "Відправлення",
+        "UnusualCargo": "Нестандартний вантаж",
         "To": "Куди",
         "Line": "Лінія",
         "Stop": "Зупинка",
@@ -3496,6 +3659,32 @@
         "BidirectionalRoute": "Двонапрямний маршрут",
         "LineNumber": "ЛК {{line}}",
         "LineNumberTooltip": "Номер лінії: {{line}}"
+      },
+      "UnusualCargo": {
+        "QualityTracked": {
+          "label": "КЯ",
+          "description": "Контроль якості"
+        },
+        "OverGauge": {
+          "label": "НГ",
+          "description": "Негабаритний вантаж"
+        },
+        "OverWeight": {
+          "label": "ВВ",
+          "description": "Важковаговий вантаж"
+        },
+        "OtherExceptional": {
+          "label": "ОУП",
+          "description": "Інші особливі умови пропуску"
+        },
+        "HighRiskCargo": {
+          "label": "ВВР",
+          "description": "Вантаж високого ризику"
+        },
+        "DangerousCargo": {
+          "label": "НБВ",
+          "description": "Небезпечний вантаж"
+        }
       },
       "PrivacyPolicy": {
         "Title": "Політика конфіденційності",

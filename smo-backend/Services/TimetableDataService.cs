@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using System.Collections.Concurrent;
+using MessagePack;
 using SMOBackend.Models;
 using SMOBackend.Services.ApiClients;
 using SMOBackend.Utils;
@@ -18,6 +19,8 @@ public class TimetableDataService(
 
     private readonly TtlCache<string, Timetable> _timetableCache =
         TtlCache<string, Timetable>.CreateWithEnvSettings("TimetableFileCache", TimeSpan.FromMinutes(20), 5000);
+
+    private readonly ConcurrentDictionary<string, Dictionary<string, UnusualCargo>> _unusualCargo = new();
 
     /// <inheritdoc cref="BaseServerDataService{Nullable{object}}.FetchInterval" />
     protected override TimeSpan FetchInterval => TimeSpan.FromHours(1);
@@ -111,6 +114,8 @@ public class TimetableDataService(
                 throw new("Failed to fetch timetable data");
             }
 
+            await FetchUnusualCargo(serverCode, stoppingToken);
+
             await WriteData(serverCode, timetables);
             PerServerDataReceived?.Invoke(new(serverCode, timetables));
         }
@@ -122,6 +127,39 @@ public class TimetableDataService(
 
         return null;
     }
+
+    private async Task FetchUnusualCargo(string serverCode, CancellationToken stoppingToken)
+    {
+        try
+        {
+            var edrTimetables = await apiClient.GetEdrTimetablesAsync(serverCode, stoppingToken);
+
+            var unusualCargo = new Dictionary<string, UnusualCargo>(StringComparer.Ordinal);
+            foreach (var edrTimetable in edrTimetables)
+            {
+                var cargo = UnusualCargo.FromEdr(edrTimetable);
+                if (cargo != UnusualCargo.None) unusualCargo[string.Intern(edrTimetable.TrainNoLocal)] = cargo;
+            }
+
+            _unusualCargo[serverCode] = unusualCargo;
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to fetch EDR timetables for {ServerCode}", serverCode);
+        }
+    }
+
+    /// <summary>
+    /// Gets the unusual cargo flags of a train from the last EDR timetable fetch.
+    /// </summary>
+    public UnusualCargo GetUnusualCargo(string serverCode, string trainNoLocal) =>
+        _unusualCargo.TryGetValue(serverCode, out var unusualCargo)
+            ? unusualCargo.GetValueOrDefault(trainNoLocal, UnusualCargo.None)
+            : UnusualCargo.None;
 
     /// <summary>
     /// Gets the timetable for a specific train, identified by its local number.

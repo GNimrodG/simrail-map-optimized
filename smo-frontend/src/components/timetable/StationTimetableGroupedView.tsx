@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import UnplayableStations from "../../assets/unplayable-stations.json";
 import { useSetting } from "../../hooks/useSetting";
 import { Train } from "../../utils/types";
-import { getColorTrainMarker } from "../../utils/ui";
+import { getColorTrainMarker, getEntryUnusualCargo } from "../../utils/ui";
 import ArrowRightIcon from "../icons/arrow-right-solid.svg?react";
 import InfoIcon from "../icons/InfoIcon";
 import MapMarkerIcon from "../icons/map-location-dot-solid.svg?react";
@@ -23,6 +23,7 @@ import TimeDisplay from "../utils/TimeDisplay";
 import TrainTypeDisplay from "../utils/TrainTypeDisplay";
 import type { EntryRenderState } from "./StationTimetableTableView";
 import TrainTimetableModal from "./TrainTimetableModal";
+import UnusualCargoDisplay from "../utils/UnusualCargoDisplay";
 
 export interface StationTimetableGroupedViewProps {
   entryStates: EntryRenderState[];
@@ -342,6 +343,7 @@ const StationTimetableGroupedView: FunctionComponent<StationTimetableGroupedView
                           </Chip>
                         </Tooltip>
                       )}
+                      <UnusualCargoDisplay cargo={getEntryUnusualCargo(entry)} displayMode="chip" />
                     </Stack>
                     <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap>
                       {passedEarly && (

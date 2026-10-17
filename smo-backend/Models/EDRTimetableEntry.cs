@@ -23,18 +23,18 @@ public class EDRTimetableEntry
 
     [JsonProperty(nameof(DisplayedTrainNumber))] public required string DisplayedTrainNumber { get; set; }
 
-    [JsonProperty(nameof(ArrivalTime))] public required DateTime ArrivalTime { get; set; }
+    [JsonProperty(nameof(ArrivalTime))] public required DateTime? ArrivalTime { get; set; }
 
     [JsonProperty(nameof(ActualArrivalTime))] public required DateTime? ActualArrivalTime { get; set; }
 
-    [JsonProperty(nameof(DepartureTime))] public required DateTime DepartureTime { get; set; }
+    [JsonProperty(nameof(DepartureTime))] public required DateTime? DepartureTime { get; set; }
 
     [JsonProperty(nameof(ActualDepartureTime))] public required DateTime? ActualDepartureTime { get; set; }
 
     /// <summary>
     /// If a stop is entered in the EDR
     /// </summary>
-    [JsonProperty(nameof(IsStopped))]
+    [JsonProperty("isStoped")] // typo in the API
     public required bool IsStopped { get; set; }
 
     /// <summary>
@@ -61,7 +61,7 @@ public class EDRTimetableEntry
     /// Layover if there is a stop
     /// </summary>
     [JsonProperty(nameof(PlannedStop))]
-    public required int PlannedStop { get; set; }
+    public required double PlannedStop { get; set; }
 
     [JsonProperty(nameof(TimetableType))] public required int TimetableType { get; set; }
     [JsonProperty(nameof(StopTypeNumber))] public required EDRStopType StopTypeNumber { get; set; }
@@ -82,7 +82,7 @@ public class EDRTimetableEntry
     /// Platform where the train should stop at (only for passenger stops)
     /// </summary>
     [JsonProperty(nameof(Platform))]
-    public required string Platform { get; set; }
+    public required string? Platform { get; set; }
 
     /// <summary>
     /// Track where the train should stop at (only for passenger stops)

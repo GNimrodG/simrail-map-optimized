@@ -47,7 +47,7 @@ export interface SpawnListEntry {
   consistFromLastRun: boolean;
 }
 
-export interface Train {
+export interface Train extends UnusualCargoFlags {
   TrainNoLocal: string;
   TrainName: string;
   TrainType: string;
@@ -225,6 +225,22 @@ export interface SimplifiedTimtableEntry {
 
   subStationEntries?: SimplifiedTimtableEntry[];
   note?: string | null;
+
+  isQualityTracked?: boolean;
+  isOverGauge?: boolean;
+  isOverWeight?: boolean;
+  isOtherExceptional?: boolean;
+  isHighRiskCargo?: boolean;
+  isDangerousCargo?: boolean;
+}
+
+export interface UnusualCargoFlags {
+  IsQualityTracked?: boolean;
+  IsOverGauge?: boolean;
+  IsOverWeight?: boolean;
+  IsOtherExceptional?: boolean;
+  IsHighRiskCargo?: boolean;
+  IsDangerousCargo?: boolean;
 }
 
 export type CommonOsmTags = "name" | "operator" | (string & {});
