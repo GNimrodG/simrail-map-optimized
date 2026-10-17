@@ -38,7 +38,8 @@ public class TrainDelayAnalyzerServiceTests
             scopeFactory,
             serverDataService,
             apiClient,
-            trainTypeService);
+            trainTypeService,
+            timetableDataService);
         var sut = new TrainDelayAnalyzerService(
             Mock.Of<ILogger<TrainDelayAnalyzerService>>(),
             scopeFactory,
