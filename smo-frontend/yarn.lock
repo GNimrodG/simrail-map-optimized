@@ -5808,9 +5808,9 @@ react-leaflet@^5.0.0:
     "@react-leaflet/core" "^3.0.0"
 
 react-window@^2.0.0:
-  version "2.3.4"
-  resolved "https://registry.yarnpkg.com/react-window/-/react-window-2.3.4.tgz#466ad5ce5e1bd899c6c9340f308c6f526c9190e8"
-  integrity sha512-CnRWoRg+ZnQkLcULSNdbgKJnfcexy9x+9ELOATmDlDv3ZoADyLJc22vN3JRvMV651A6gFwYBlxllU9X+H9dyhQ==
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/react-window/-/react-window-2.4.0.tgz#4191d2b9131da3a0d7682f007e85cb700927aa95"
+  integrity sha512-H+UHneG033qaZzeHlQgM30gz9GJI61IG+11qF8IkeGukWMawlv6fMnQIGRqW7aUH3lRLTimlJcDQMUZgovFXqQ==
 
 react@^19.2.4:
   version "19.3.1"
