@@ -21,6 +21,7 @@ const LAYERS = [
   "selected-route",
   "unplayable-stations",
   "stoppingpoints",
+  "playable-area",
   "stats",
 ];
 

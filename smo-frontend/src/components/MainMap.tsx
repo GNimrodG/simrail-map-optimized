@@ -45,6 +45,7 @@ const StationsLayer = lazy(() => import("./layers/StationsLayer"));
 const TrainsLayer = lazy(() => import("./layers/TrainsLayer"));
 const UnplayableStationsLayer = lazy(() => import("./layers/UnplayableStationsLayer"));
 const StoppingPointsLayer = lazy(() => import("./layers/StoppingPointsLayer"));
+const PlayableAreaLayer = lazy(() => import("./layers/PlayableAreaLayer"));
 
 function migrateMarkerLayers(layers: string[]) {
   const migratedLayers = layers.flatMap((layer) => {
@@ -87,6 +88,8 @@ const MainMap: FunctionComponent = () => {
 
     // Create custom panes with specific z-indices
     // Default Leaflet panes are between 200-700, so we'll use 400-500 range
+    // (except the playable area mask, which darkens the tiles but nothing on top of them)
+    map.createPane("playableAreaPane").style.zIndex = "350";
     map.createPane("passiveSignalsPane").style.zIndex = "401";
     map.createPane("unplayableStationsPane").style.zIndex = "402";
     map.createPane("stoppingPointsPane").style.zIndex = "403";
@@ -302,7 +305,12 @@ const MainMap: FunctionComponent = () => {
 
         {panesCreated && (
           <Suspense fallback={<Loading color="success" />}>
-            {/* Stopping points, Stations, Trains, Signals, Active route, Unplayable stations*/}
+            {/* Playable area, Stopping points, Stations, Trains, Signals, Active route, Unplayable stations*/}
+            {visibleLayers.includes("playable-area") && (
+              <ErrorBoundary location="MainMap - PlayableAreaLayer">
+                <PlayableAreaLayer />
+              </ErrorBoundary>
+            )}
             {visibleLayers.includes("unplayable-stations") && (
               <ErrorBoundary location="MainMap - UnplayableStationsLayer">
                 <UnplayableStationsLayer />

@@ -33,7 +33,9 @@ builder.Services.AddCors(options =>
     ); // Maximum value most browsers support
 });
 
-builder.Services.AddHttpCacheHeaders();
+// Only the actions with [HttpCacheExpiration]/[HttpCacheValidation] get cache headers: everything else is live data
+// (and SignalR responses must not be buffered for ETags)
+builder.Services.AddHttpCacheHeaders(middlewareOptionsAction: options => options.DisableGlobalHeaderGeneration = true);
 
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>
@@ -262,6 +264,8 @@ app.MapScalarApiReference(options =>
 app.UseHttpsRedirection();
 
 app.UseCors("AllowLocalAndProduction");
+
+app.UseHttpCacheHeaders();
 
 app.Map("/", () => Results.Redirect("/scalar/v1"));
 app.MapControllers();

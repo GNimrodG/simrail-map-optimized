@@ -369,6 +369,24 @@ public class StatusController(
         Ok(await routePointAnalyzerService.GetRoutesWithValidLines());
 
     /// <summary>
+    /// Gets the playable area of the map (within 1 km of the tracks trains run on outside the border station areas)
+    /// </summary>
+    /// <returns>A GeoJSON (Multi)Polygon</returns>
+    [HttpGet("playable-area")]
+    [HttpCacheExpiration(CacheLocation = CacheLocation.Public, MaxAge = 3600)]
+    [HttpCacheValidation(MustRevalidate = false, ProxyRevalidate = true)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(NotFoundError))]
+    public async Task<IActionResult> GetPlayableArea(CancellationToken cancellationToken)
+    {
+        var playableArea = await routePointAnalyzerService.GetPlayableArea(cancellationToken);
+
+        return playableArea == null
+            ? NotFound(new NotFoundError("Playable area not available yet", "playable_area_not_found"))
+            : Content(playableArea, "application/geo+json");
+    }
+
+    /// <summary>
     /// Gets the list of known stations.
     /// </summary>
     /// <returns>An array of known stations</returns>

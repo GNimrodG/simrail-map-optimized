@@ -13,7 +13,11 @@ export interface LayerOpacitySliderProps {
   legacyLayerId?: string;
 }
 
-const ValueLabelComponent: FunctionComponent<{ children: React.ReactNode }> = (props) => {
+// Joy passes its slot state as `ownerState`, it must not be spread onto the DOM element
+const ValueLabelComponent: FunctionComponent<{ children: React.ReactNode; ownerState?: unknown }> = ({
+  ownerState: _ownerState,
+  ...props
+}) => {
   return (
     <Box
       {...props}

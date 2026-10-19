@@ -818,6 +818,22 @@ export class SignalRDataProvider implements IDataProvider {
     return results.flat();
   }
 
+  async fetchPlayableArea(): Promise<GeoJSON.Polygon | GeoJSON.MultiPolygon | null> {
+    try {
+      const res = await fetch(`${this.serverApiUrl}/status/playable-area`);
+
+      if (!res.ok) {
+        console.warn("Failed to fetch the playable area", res.statusText);
+        return null;
+      }
+
+      return (await res.json()) as GeoJSON.Polygon | GeoJSON.MultiPolygon;
+    } catch (e) {
+      console.error("Failed to get the playable area", e);
+      return null;
+    }
+  }
+
   async getStationTimetables(stationNames: string[]): Promise<(SimplifiedTimtableEntry[] | null)[]> {
     if (stationNames.length === 0) return [];
 

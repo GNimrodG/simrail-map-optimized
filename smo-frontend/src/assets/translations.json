@@ -28,7 +28,8 @@
           "selected-route": "Selected Route",
           "unplayable-stations": "Unplayable Stations",
           "stats": "Stats",
-          "stoppingpoints": "Stopping Points"
+          "stoppingpoints": "Stopping Points",
+          "playable-area": "Playable Area"
         }
       },
       "Stats": {
@@ -415,7 +416,8 @@
           "selected-route": "Ausgewählte Route",
           "unplayable-stations": "Nicht spielbare Bahnhöfe",
           "stats": "Statistiken",
-          "stoppingpoints": "Haltepunkte"
+          "stoppingpoints": "Haltepunkte",
+          "playable-area": "Spielbarer Bereich"
         }
       },
       "Stats": {
@@ -803,7 +805,8 @@
           "selected-route": "Kiválasztott útvonal",
           "unplayable-stations": "Nem játszható állomások",
           "stats": "Statisztikák",
-          "stoppingpoints": "Megállóhelyek"
+          "stoppingpoints": "Megállóhelyek",
+          "playable-area": "Játszható terület"
         }
       },
       "Stats": {
@@ -1195,7 +1198,8 @@
           "selected-route": "Seçili Rota",
           "unplayable-stations": "Oynanamaz İstasyonlar",
           "stats": "İstatistikler",
-          "stoppingpoints": "Duraklar"
+          "stoppingpoints": "Duraklar",
+          "playable-area": "Oynanabilir Alan"
         }
       },
       "Stats": {
@@ -1585,7 +1589,8 @@
           "selected-route": "Wybrana Trasa",
           "unplayable-stations": "Niegrywalne Stacje",
           "stats": "Statystyki",
-          "stoppingpoints": "Punkty Postojowe"
+          "stoppingpoints": "Punkty Postojowe",
+          "playable-area": "Obszar Grywalny"
         }
       },
       "Stats": {
@@ -1972,7 +1977,8 @@
           "selected-route": "Выбранный маршрут",
           "unplayable-stations": "Неиграбельные станции",
           "stats": "Статистика",
-          "stoppingpoints": "Остановочные пункты"
+          "stoppingpoints": "Остановочные пункты",
+          "playable-area": "Игровая зона"
         }
       },
       "Stats": {
@@ -2359,7 +2365,8 @@
           "selected-route": "Обраний маршрут",
           "unplayable-stations": "Неігрові станції",
           "stats": "Статистика",
-          "stoppingpoints": "Зупинні пункти"
+          "stoppingpoints": "Зупинні пункти",
+          "playable-area": "Ігрова зона"
         }
       },
       "Stats": {

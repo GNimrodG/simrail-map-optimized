@@ -34,6 +34,9 @@ const Settings: FunctionComponent = () => {
         maxWidth: 500,
         maxHeight: "90vh",
         overflowY: "auto",
+        // overflowY alone makes overflowX auto too, then an opacity slider's value label at 100% (which reaches into
+        // the padding) adds a horizontal scrollbar
+        overflowX: "hidden",
         borderRadius: "md",
         p: 3,
         boxShadow: "lg",
@@ -148,6 +151,7 @@ const Settings: FunctionComponent = () => {
           <LayerOpacitySlider layerId="selected-route" layerType="Overlay" />
           <LayerOpacitySlider layerId="unplayable-stations" layerType="Overlay" />
           <LayerOpacitySlider layerId="stoppingpoints" layerType="Overlay" />
+          <LayerOpacitySlider layerId="playable-area" layerType="Overlay" />
         </Stack>
       </Stack>
 

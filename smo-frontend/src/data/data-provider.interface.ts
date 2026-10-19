@@ -67,6 +67,12 @@ export interface IDataProvider {
    */
   getLinesForSignalConnections(connections: [string, string][]): Promise<(string[] | null)[]>;
 
+  /**
+   * Get the playable area of the map (around the tracks trains run on outside the border stations).
+   * @return A promise that resolves to the area, or null if it's unavailable.
+   */
+  fetchPlayableArea(): Promise<GeoJSON.Polygon | GeoJSON.MultiPolygon | null>;
+
   getSteamProfileData(steamId: string): Promise<UserProfileResponse | null>;
   getSteamProfileStats(steamId: string): Promise<SteamProfileStats | null>;
   getXboxProfileData(xboxId: string): Promise<UserProfileResponse | null>;

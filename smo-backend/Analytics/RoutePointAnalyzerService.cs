@@ -907,6 +907,72 @@ public partial class RoutePointAnalyzerService : IHostedService
     }
 
     /// <summary>
+    ///     How long the computed playable area is reused before it's computed again.
+    /// </summary>
+    private static readonly TimeSpan PlayableAreaCacheDuration = TimeSpan.FromHours(6);
+
+    private readonly SemaphoreSlim _playableAreaLock = new(1, 1);
+    private (string GeoJson, DateTime ComputedAt)? _playableArea;
+
+    /// <summary>
+    ///     Gets the playable area of the map as GeoJSON: the area within 1 km of the route points recorded outside the
+    ///     border station areas. Computed from the route points (so it follows map extensions) and cached for hours.
+    /// </summary>
+    /// <returns>A GeoJSON (Multi)Polygon, or null if there are no route points yet.</returns>
+    public async Task<string?> GetPlayableArea(CancellationToken cancellationToken = default)
+    {
+        if (_playableArea is { } cached && DateTime.UtcNow - cached.ComputedAt < PlayableAreaCacheDuration)
+            return cached.GeoJson;
+
+        await _playableAreaLock.WaitAsync(cancellationToken);
+        try
+        {
+            // computed by another request while this one was waiting
+            if (_playableArea is { } fresh && DateTime.UtcNow - fresh.ComputedAt < PlayableAreaCacheDuration)
+                return fresh.GeoJson;
+
+            var stopwatch = Stopwatch.StartNew();
+            using var scope = _scopeFactory.CreateScope();
+            await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
+
+            // in EPSG:2180 (meters in Poland), the points snapped to a 250 m grid first so the union stays fast
+            const string sql = """
+                               WITH cells AS (
+                                   SELECT DISTINCT ST_SnapToGrid(ST_Transform(point, 2180), 250) AS p
+                                   FROM route_points
+                                   WHERE inside_play_area
+                               )
+                               SELECT ST_AsGeoJSON(
+                                   ST_SimplifyPreserveTopology(ST_Transform(ST_Union(ST_Buffer(p, 1000, 4)), 4326), 0.0005),
+                                   5) AS "Value"
+                               FROM cells
+                               """;
+
+            var geoJson = (await context.Database.SqlQueryRaw<string?>(sql).ToArrayAsync(cancellationToken))
+                .FirstOrDefault();
+
+            stopwatch.Stop();
+            _logger.LogInformation("Computed the playable area ({Length} bytes) in {ElapsedMilliseconds} ms",
+                geoJson?.Length ?? 0, stopwatch.ElapsedMilliseconds);
+
+            // no route points yet: don't cache, try again on the next request
+            if (geoJson == null) return _playableArea?.GeoJson;
+
+            _playableArea = (geoJson, DateTime.UtcNow);
+            return geoJson;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Error computing the playable area");
+            return _playableArea?.GeoJson;
+        }
+        finally
+        {
+            _playableAreaLock.Release();
+        }
+    }
+
+    /// <summary>
     /// Gets the routes with valid lines using optimized query.
     /// </summary>
     public async Task<string[]> GetRoutesWithValidLines()

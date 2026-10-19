@@ -37,6 +37,7 @@ const SETTINGS = {
     "selected-route": 1,
     "unplayable-stations": 1,
     "stoppingpoints": 1,
+    "playable-area": 1,
   } as Record<string, number>,
   disableLowSpeedWarning: false,
   autoZoom: false,
