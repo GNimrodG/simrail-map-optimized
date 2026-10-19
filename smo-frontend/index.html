@@ -3,6 +3,44 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // An outdated cached index.html (e.g. served by the service worker) can reference build files that a newer
+      // deploy removed, leaving a white page. If one of the app's own scripts fails to load, drop the service worker
+      // and the caches and reload once (not again within 30 s, so a real outage can't cause a reload loop).
+      window.addEventListener(
+        "error",
+        function (event) {
+          var script = event.target;
+          if (!script || script.tagName !== "SCRIPT" || script.src.indexOf(location.origin + "/assets/") !== 0) return;
+
+          try {
+            var key = "scriptLoadErrorReloadAt";
+            if (Date.now() - (Number(sessionStorage.getItem(key)) || 0) < 30000) return;
+            sessionStorage.setItem(key, String(Date.now()));
+          } catch (e) {
+            return; // without storage there is no loop guard, so don't risk reloading
+          }
+
+          var cleanups = [];
+          if (navigator.serviceWorker) {
+            cleanups.push(
+              navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                return Promise.all(registrations.map(function (registration) { return registration.unregister(); }));
+              }),
+            );
+          }
+          if (window.caches) {
+            cleanups.push(
+              caches.keys().then(function (names) {
+                return Promise.all(names.map(function (name) { return caches.delete(name); }));
+              }),
+            );
+          }
+          Promise.all(cleanups).catch(function () {}).then(function () { location.reload(); });
+        },
+        true,
+      );
+    </script>
     <meta name="keywords" content="Simrail, Map, Online, SMO, Simrail Map Online" />
     <meta name="author" content="GNimrodG<g.nimrod.g@data-unknown.com>" />
     <meta name="robots" content="index, nofollow" />
