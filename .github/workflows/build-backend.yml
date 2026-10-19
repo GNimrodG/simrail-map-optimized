@@ -66,7 +66,9 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           # list of Docker images to use as base name for tags
-          images: ${{ vars.DOCKER_REGISTRY_URL }}/smo-backend
+          # Dynamic image name: if DOCKER_REGISTRY_URL is set use <registry>/smo-backend, otherwise just 'smo-backend'
+          # (repository variables aren't passed to pull requests from forks)
+          images: ${{ vars.DOCKER_REGISTRY_URL && format('{0}/smo-backend', vars.DOCKER_REGISTRY_URL) || 'smo-backend' }}
           # generate Docker tags based on the following events/attributes
           tags: |
             type=ref,event=branch
