@@ -58,6 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SHOULD_PUSH: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' && secrets.DOCKER_REGISTRY_USERNAME != '' }}
+      DEPLOYMENT_WEBHOOK_URL: ${{ secrets.BACKEND_DEPLOYMENT_WEBHOOK_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -107,3 +108,30 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
+
+      # webhook to trigger deployment (Arcane redeploy of the smo project), only when an image was pushed and the
+      # secret is set
+      - name: Bypass Cloudflare for GitHub Action
+        continue-on-error: true
+        if: env.SHOULD_PUSH == 'true' && env.DEPLOYMENT_WEBHOOK_URL != ''
+        uses: xiaotianxt/bypass-cloudflare-for-github-action@v2.1.0
+        with:
+          cf_account_id: ${{ secrets.CF_ACCOUNT_ID }}
+          cf_zone_id: ${{ secrets.CF_ZONE_ID }}
+          cf_api_token: ${{ secrets.CF_API_TOKEN }}
+          disable_bot_fight_mode: "true"
+          bfm_propagation_delay: "30"
+      # Bot Fight Mode can keep challenging for a while after it's disabled, so retry
+      # until the webhook accepts the redeploy (202) instead of giving up on the first 403.
+      - name: Deploy
+        continue-on-error: true
+        if: env.SHOULD_PUSH == 'true' && env.DEPLOYMENT_WEBHOOK_URL != ''
+        run: |
+          for attempt in $(seq 1 8); do
+            status=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$DEPLOYMENT_WEBHOOK_URL")
+            if [ "$status" = 202 ] || [ "$status" = 200 ]; then echo "Deployment triggered (HTTP $status)"; exit 0; fi
+            echo "Attempt $attempt: HTTP $status, retrying in 15s"
+            sleep 15
+          done
+          echo "::error::Deployment webhook was not accepted"
+          exit 1
