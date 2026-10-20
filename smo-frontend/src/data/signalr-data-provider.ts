@@ -10,6 +10,7 @@ import UnplayableStations from "../assets/unplayable-stations.json";
 import {
   PartialStation,
   PartialTrainData,
+  ServerRestartPrediction,
   ServerStatus,
   SignalStatus,
   SignalStatusData,
@@ -96,6 +97,9 @@ export class SignalRDataProvider implements IDataProvider {
     });
 
     this.connection.on("ServersReceived", (servers: ServerStatus[]) => this.serverData$.next(servers));
+    this.connection.on("NextServerRestartsReceived", (predictions: ServerRestartPrediction[]) =>
+      this.nextServerRestarts$.next(predictions),
+    );
     this.connection.on("SimRailApiAvailabilityReceived", (isAvailable: boolean) =>
       this.simRailApiAvailable$.next(isAvailable),
     );
@@ -516,6 +520,7 @@ export class SignalRDataProvider implements IDataProvider {
 
   serverData$ = new BehaviorSubject<ServerStatus[]>([]);
   selectedServerData$ = new BehaviorSubject<ServerStatus | null>(null);
+  nextServerRestarts$ = new BehaviorSubject<ServerRestartPrediction[]>([]);
 
   stationsData$ = new BehaviorSubject<Station[]>([]);
   unplayableStations$ = new BehaviorSubject<Station[]>([]);

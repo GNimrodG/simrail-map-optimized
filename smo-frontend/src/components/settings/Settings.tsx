@@ -89,6 +89,7 @@ const Settings: FunctionComponent = () => {
           <SettingCheckbox settingKey="disableSlidingMarkers" />
           <SettingCheckbox settingKey="showTrainHeadings" />
           <SettingCheckbox settingKey="disableLowSpeedWarning" />
+          <SettingCheckbox settingKey="disableServerRestartWarning" />
           <SettingCheckbox settingKey="reduceBackgroundUpdates" />
           <SettingSlider settingKey="autoZoomLimits" min={100} max={300} step={1} minDistance={20} />
           <SettingCheckbox settingKey="translateStationNames" />

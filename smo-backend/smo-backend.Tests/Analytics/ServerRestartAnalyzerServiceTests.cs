@@ -4,16 +4,21 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Newtonsoft.Json;
 using SMOBackend.Analytics;
 using SMOBackend.Models;
 using SMOBackend.Services;
 using SMOBackend.Services.ApiClients;
 using SMOBackend.Utils;
+using Xunit.Abstractions;
+using RestartData = SMOBackend.Analytics.ServerRestartAnalyzerService.ServerRestartData;
 
 namespace SMOBackend.Tests.Analytics;
 
-public class ServerRestartAnalyzerServiceTests
+public class ServerRestartAnalyzerServiceTests(ITestOutputHelper output)
 {
+    private static readonly TimeZoneInfo Warsaw = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
+
     [Fact]
     public void OnServerDataReceived_TracksTransitionsAndRecordsRestart()
     {
@@ -33,29 +38,27 @@ public class ServerRestartAnalyzerServiceTests
     }
 
     [Fact]
-    public void PredictNextRestart_ReturnsFutureTime_WhenLastPredictionIsInThePast()
+    public void OnServerDataReceived_DropsRestartsOlderThan90Days()
     {
         var sut = CreateService();
         var now = DateTime.UtcNow;
+        GetRestartCache(sut)["en1"] =
+        [
+            new(now.AddDays(-100).AddMinutes(-2), now.AddDays(-100)),
+            new(now.AddDays(-10).AddMinutes(-2), now.AddDays(-10))
+        ];
 
-        var restartHistory = new[]
-        {
-            new ServerRestartAnalyzerService.ServerRestartData(now.AddHours(-8), now.AddHours(-6)),
-            new ServerRestartAnalyzerService.ServerRestartData(now.AddHours(-4), now.AddHours(-2))
-        };
+        InvokeOnServerDataReceived(sut, [new() { ServerCode = "en1", IsActive = true }]);
+        InvokeOnServerDataReceived(sut, [new() { ServerCode = "en1", IsActive = false }]);
+        InvokeOnServerDataReceived(sut, [new() { ServerCode = "en1", IsActive = true }]);
 
-        var restartCache = GetPrivateField<TtlCache<string, ServerRestartAnalyzerService.ServerRestartData[]>>(sut,
-            "_serverRestartTimes");
-        restartCache["en1"] = restartHistory;
-
-        var prediction = sut.PredictNextRestart("en1");
-
-        prediction.Should().NotBeNull();
-        prediction.Value.Should().BeAfter(now);
+        var restarts = sut.GetServerRestarts("en1");
+        restarts.Should().HaveCount(2);
+        restarts.Should().OnlyContain(r => r.RestartTime > now.AddDays(-90));
     }
 
     [Fact]
-    public void CsvReplay_TracksExpectedRestartCounts_AndPredictionAvailability()
+    public void CsvReplay_TracksExpectedRestartCounts()
     {
         var sut = CreateService();
 
@@ -97,11 +100,6 @@ public class ServerRestartAnalyzerServiceTests
             var recorded = sut.GetServerRestarts(serverCode);
             recorded.Length.Should().Be(expectedRestartCounts[serverCode], "CSV replay transitions should match");
 
-            if (expectedRestartCounts[serverCode] >= 2)
-                sut.PredictNextRestart(serverCode).Should().NotBeNull();
-            else
-                sut.PredictNextRestart(serverCode).Should().BeNull();
-
             var restartData = sut.GetRestartData(serverCode);
             restartData.PrevStatus.Should().Be(lastState[serverCode]);
             if (lastState[serverCode])
@@ -112,32 +110,161 @@ public class ServerRestartAnalyzerServiceTests
     }
 
     [Fact]
-    public void PredictNextRestart_PrefersStrongTimeOfDayPattern_WhenAvailable()
+    public void PredictFromHistory_DailySlot_PredictsNextOccurrenceWithFullConfidence()
     {
-        var sut = CreateService();
+        var history = Daily(new(2026, 9, 21), new(2026, 10, 19), 9, 30);
 
-        var restartCache = GetPrivateField<TtlCache<string, ServerRestartAnalyzerService.ServerRestartData[]>>(sut,
-            "_serverRestartTimes");
+        // 10:00 in Warsaw (CEST), today's restart is over
+        var prediction = Predict(history, new(2026, 10, 20, 8, 0, 0, DateTimeKind.Utc));
 
-        restartCache["en1"] =
-        [
-            new(null, new(2026, 4, 8, 1, 28, 0, DateTimeKind.Utc)),
-            new(null, new(2026, 4, 8, 9, 28, 0, DateTimeKind.Utc)),
-            new(null, new(2026, 4, 9, 1, 28, 0, DateTimeKind.Utc)),
-            new(null, new(2026, 4, 9, 9, 28, 0, DateTimeKind.Utc)),
-            new(null, new(2026, 4, 10, 1, 28, 0, DateTimeKind.Utc))
-        ];
-
-        var now = new DateTime(2026, 4, 10, 2, 0, 0, DateTimeKind.Utc);
-
-        var prediction = sut.PredictNextRestart("en1", now);
-
-        prediction.Should().Be(new(2026, 4, 10, 9, 30, 0, DateTimeKind.Utc));
-
-        var predictionWithConfidence = sut.GetNextRestartPrediction("en1");
-        predictionWithConfidence.Confidence.Should().NotBeNull();
-        predictionWithConfidence.Confidence!.Value.Should().BeInRange(0, 1);
+        prediction.Time.Should().Be(new DateTime(2026, 10, 21, 7, 30, 0, DateTimeKind.Utc));
+        prediction.Confidence.Should().Be(1);
     }
+
+    [Fact]
+    public void PredictFromHistory_FollowsTheLocalTimeOverTheDstChange()
+    {
+        var history = Daily(new(2026, 9, 26), new(2026, 10, 24), 9, 30);
+
+        // 25 October: the clocks go back, 09:30 in Warsaw is 08:30 UTC from now on instead of 07:30
+        var prediction = Predict(history, new(2026, 10, 25, 6, 0, 0, DateTimeKind.Utc));
+
+        prediction.Time.Should().Be(new DateTime(2026, 10, 25, 8, 30, 0, DateTimeKind.Utc));
+    }
+
+    [Fact]
+    public void PredictFromHistory_WeekdayOnlySlot_IsNotPredictedOnWeekends()
+    {
+        var weekdaysOnly = Daily(new(2026, 9, 21), new(2026, 10, 16), 2, 48)
+            .Where(r => TimeZoneInfo.ConvertTimeFromUtc(r.RestartTime, Warsaw).DayOfWeek is not
+                (DayOfWeek.Saturday or DayOfWeek.Sunday));
+        var history = weekdaysOnly.Concat(Daily(new(2026, 9, 21), new(2026, 10, 16), 9, 30)).ToArray();
+
+        // Friday 16 October 20:00 in Warsaw, the next restart is Saturday 09:30, not 02:48
+        var prediction = Predict(history, Local(2026, 10, 16, 20, 0));
+
+        prediction.Time.Should().Be(Local(2026, 10, 17, 9, 30));
+    }
+
+    [Fact]
+    public void PredictFromHistory_DoubleRestarts_CountAsOne()
+    {
+        var history = Daily(new(2026, 9, 21), new(2026, 10, 19), 9, 30)
+            .Concat(Daily(new(2026, 9, 21), new(2026, 10, 19), 9, 36))
+            .ToArray();
+
+        var prediction = Predict(history, Local(2026, 10, 20, 12, 0));
+
+        prediction.Time.Should().Be(Local(2026, 10, 21, 9, 30));
+        prediction.Confidence.Should().Be(1);
+    }
+
+    [Fact]
+    public void PredictFromHistory_SkipsTheSlotWhenTodaysRestartAlreadyHappened()
+    {
+        var history = Daily(new(2026, 9, 21), new(2026, 10, 19), 9, 30)
+            .Append(Restart(Local(2026, 10, 20, 9, 24)))
+            .ToArray();
+
+        // 09:29, a minute before the usual time, but the restart came early today
+        var prediction = Predict(history, Local(2026, 10, 20, 9, 29));
+
+        prediction.Time.Should().Be(Local(2026, 10, 21, 9, 30));
+    }
+
+    [Fact]
+    public void PredictFromHistory_IrregularRestarts_HaveNoPrediction()
+    {
+        var random = new Random(42);
+        var history = Enumerable.Range(0, 28)
+            .Select(day => Restart(Local(2026, 9, 21, 0, 0).AddDays(day).AddMinutes(random.Next(0, 24 * 60))))
+            .ToArray();
+
+        var prediction = Predict(history, Local(2026, 10, 20, 12, 0));
+
+        prediction.Time.Should().BeNull();
+        prediction.Confidence.Should().BeNull();
+    }
+
+    [Fact]
+    public void PredictFromHistory_TooShortHistory_HasNoPrediction()
+    {
+        var history = Daily(new(2026, 10, 15), new(2026, 10, 19), 9, 30);
+
+        Predict(history, Local(2026, 10, 20, 12, 0)).Time.Should().BeNull();
+    }
+
+    /// <summary>
+    ///     Replays 8 weeks of real restarts: every hour of the last 3 weeks, the shown prediction (confidence ≥ 0.9)
+    ///     must match the next real restart within 15 minutes at least 90% of the time.
+    /// </summary>
+    [Fact]
+    public void PredictFromHistory_RealHistory_HighConfidencePredictionsAreAccurate()
+    {
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..",
+            "smo-backend.Tests", "Analytics", "TestData", "server-restarts-56d.json"));
+        var servers = JsonConvert.DeserializeObject<Dictionary<string, DateTime?[][]>>(File.ReadAllText(path),
+            new JsonSerializerSettings { DateTimeZoneHandling = DateTimeZoneHandling.Utc })!;
+
+        int shown = 0, correct = 0, hours = 0, early = 0, late = 0;
+        foreach (var (server, rows) in servers)
+        {
+            var history = rows.Select(r => new RestartData(r[0], r[1]!.Value)).OrderBy(r => r.RestartTime).ToArray();
+            var end = history[^1].RestartTime;
+            int serverShown = 0, serverCorrect = 0, serverHours = 0;
+
+            for (var now = end.AddDays(-21); now < end.AddHours(-12); now = now.AddHours(1))
+            {
+                serverHours++;
+                var prediction = ServerRestartAnalyzerService.PredictFromHistory(history, now);
+                if (prediction.Confidence is not >= 0.9) continue;
+
+                serverShown++;
+                var actual = history.First(r => r.RestartTime > now).RestartTime;
+                var error = actual - prediction.Time!.Value;
+                if (error.Duration() <= TimeSpan.FromMinutes(15)) serverCorrect++;
+                else if (error < TimeSpan.Zero) early++; // an unexpected restart before the predicted one
+                else late++; // the predicted restart didn't happen
+            }
+
+            output.WriteLine(
+                $"{server}: shown {serverShown}/{serverHours} hours, correct {serverCorrect} ({(double)serverCorrect / Math.Max(1, serverShown):P1})");
+            shown += serverShown;
+            correct += serverCorrect;
+            hours += serverHours;
+        }
+
+        output.WriteLine(
+            $"all: shown {shown}/{hours} hours, correct {correct} ({(double)correct / shown:P1}), missed: {early} earlier restart, {late} predicted restart didn't happen");
+
+        // a prediction is confident enough when the next restart is a few hours away (random restarts make longer
+        // predictions uncertain), on the real data that's about a third of the time
+        shown.Should().BeGreaterThan(hours / 4, "the regular restarts should be predicted");
+        ((double)correct / shown).Should().BeGreaterThanOrEqualTo(0.9);
+    }
+
+    private static ServerRestartAnalyzerService.PredictionResult Predict(IEnumerable<RestartData> history,
+        DateTime nowUtc) =>
+        ServerRestartAnalyzerService.PredictFromHistory(history, nowUtc);
+
+    /// <summary>
+    ///     A restart every day from <paramref name="from" /> to <paramref name="to" /> at the given time in Warsaw.
+    /// </summary>
+    private static RestartData[] Daily(DateOnly from, DateOnly to, int hour, int minute)
+    {
+        var restarts = new List<RestartData>();
+        for (var day = from; day <= to; day = day.AddDays(1))
+            restarts.Add(Restart(Local(day.Year, day.Month, day.Day, hour, minute)));
+        return restarts.ToArray();
+    }
+
+    private static RestartData Restart(DateTime restartUtc) => new(restartUtc.AddMinutes(-2), restartUtc);
+
+    /// <summary>
+    ///     A time in Warsaw as UTC.
+    /// </summary>
+    private static DateTime Local(int year, int month, int day, int hour, int minute) =>
+        TimeZoneInfo.ConvertTimeToUtc(new(year, month, day, hour, minute, 0, DateTimeKind.Unspecified), Warsaw);
 
     private static ServerRestartAnalyzerService CreateService()
     {
@@ -160,6 +287,9 @@ public class ServerRestartAnalyzerServiceTests
 
         method.Invoke(sut, [data]);
     }
+
+    private static TtlCache<string, RestartData[]> GetRestartCache(ServerRestartAnalyzerService sut) =>
+        GetPrivateField<TtlCache<string, RestartData[]>>(sut, "_serverRestartTimes");
 
     private static T GetPrivateField<T>(object instance, string fieldName)
     {

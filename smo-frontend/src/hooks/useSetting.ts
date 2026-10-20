@@ -40,6 +40,7 @@ const SETTINGS = {
     "playable-area": 1,
   } as Record<string, number>,
   disableLowSpeedWarning: false,
+  disableServerRestartWarning: false,
   autoZoom: false,
   autoZoomLimits: [200, 250] as [number, number],
   translateStationNames: false,

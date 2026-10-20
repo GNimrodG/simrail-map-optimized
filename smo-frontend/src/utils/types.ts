@@ -6,6 +6,14 @@
   id: string;
 }
 
+export interface ServerRestartPrediction {
+  ServerCode: string;
+  /** The predicted next restart, null when the server has no regular restart schedule. */
+  NextProbableRestartTime: Date | null;
+  /** The chance (0..1) that the prediction is right (within 15 minutes). */
+  Confidence: number | null;
+}
+
 export interface Train {
   TrainNoLocal: string;
   TrainName: string;

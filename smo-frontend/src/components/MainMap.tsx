@@ -27,6 +27,7 @@ import MapTimeDisplay from "./MapTimeDisplay";
 import SearchBar from "./SearchBar";
 import SelectedRouteControl from "./SelectedRouteControl";
 import SelectedTrainInfo from "./SelectedTrainInfo";
+import ServerRestartWarning from "./ServerRestartWarning";
 import ServerSelector from "./ServerSelector";
 import SimRailApiWarning from "./SimRailApiWarning";
 import SettingsModal from "./settings/SettingsModal";
@@ -188,6 +189,8 @@ const MainMap: FunctionComponent = () => {
             zIndex: 1000,
             maxWidth: "calc(100vw - 4rem)",
             flexWrap: "wrap",
+            // the server selector can be taller (restart prediction under it), the others keep their height
+            alignItems: "flex-start",
           }}
           useFlexGap
           direction="row"
@@ -366,6 +369,7 @@ const MainMap: FunctionComponent = () => {
         <Stack sx={{ position: "fixed", top: 0, right: 0, pt: 1, mr: 8, zIndex: 1000 }} spacing={1} alignItems="end">
           <SimRailApiWarning />
           <LowSpeedWarning />
+          <ServerRestartWarning />
           <BackgroundUpdatesNotification />
         </Stack>
         <AutoZoomHandler />

@@ -1,6 +1,7 @@
 ﻿import { BehaviorSubject, Observable } from "rxjs";
 
 import {
+  ServerRestartPrediction,
   ServerStatus,
   SignalStatus,
   SimplifiedTimtableEntry,
@@ -21,6 +22,9 @@ export interface IDataProvider {
   serverData$: BehaviorSubject<ServerStatus[]>;
 
   selectedServerData$: BehaviorSubject<ServerStatus | null>;
+
+  /** The next restart prediction of every server. */
+  nextServerRestarts$: BehaviorSubject<ServerRestartPrediction[]>;
 
   stationsData$: BehaviorSubject<Station[]>;
   unplayableStations$: BehaviorSubject<Station[]>;

@@ -4,6 +4,11 @@
       "Loading": "Loading...",
       "SelectServer": "Select Server",
       "ServerInactive": "The selected server is offline!",
+      "ServerRestart": {
+        "Short": "restarts at {{time}}",
+        "Next": "Next restart around {{time}} ({{relative}})",
+        "Due": "Restart expected any minute (around {{time}})"
+      },
       "Search": "Search",
       "ToggleTheme": "Toggle Theme",
       "Layers": {
@@ -93,6 +98,9 @@
         "LayerOpacity": "Layer Opacity",
         "disableLowSpeedWarning": {
           "Label": "Disable low speed warning"
+        },
+        "disableServerRestartWarning": {
+          "Label": "Disable server restart warning"
         },
         "autoZoom": {
           "Label": "Auto-Zoom (Beta)"
@@ -283,6 +291,12 @@
         "Description": "The average speed of the trains on this server is {{speed}} km/h.",
         "Tooltip": "Tip: You can turn off this warning in the settings."
       },
+      "ServerRestartWarning": {
+        "Soon": "Server restart expected around {{time}} ({{relative}})",
+        "Due": "The server may restart any minute now",
+        "Tooltip": "Predicted from the server's past restarts. Tip: You can turn off this warning in the settings.",
+        "Dismiss": "Dismiss"
+      },
       "BackgroundUpdatesNotification": {
         "Title": "Performance Mode Active",
         "Description": "We noticed your tab was in the background. To improve performance and reduce lag, map updates are now throttled when the tab is hidden. This helps keep your browser responsive when you're focused on the game.",
@@ -392,6 +406,11 @@
       "Loading": "Laden...",
       "SelectServer": "Server auswählen",
       "ServerInactive": "Der ausgewählte Server ist offline!",
+      "ServerRestart": {
+        "Short": "startet um {{time}} neu",
+        "Next": "Nächster Neustart gegen {{time}} ({{relative}})",
+        "Due": "Neustart jeden Moment (gegen {{time}})"
+      },
       "Search": "Suche",
       "ToggleTheme": "Farbschema",
       "Layers": {
@@ -481,6 +500,9 @@
         "LayerOpacity": "Ebenen-Deckkraft",
         "disableLowSpeedWarning": {
           "Label": "Warnung bei niedriger Durchschnittsgeschwindigkeit deaktivieren"
+        },
+        "disableServerRestartWarning": {
+          "Label": "Warnung vor Server-Neustarts deaktivieren"
         },
         "autoZoom": {
           "Label": "Auto-Zoom (Beta)"
@@ -671,6 +693,12 @@
         "Description": "Die durchschnittliche Geschwindigkeit der Züge auf diesem Server beträgt {{speed}} km/h.",
         "Tooltip": "Tipp: Diese Warnung kann in den Einstellungen ausgeschaltet werden."
       },
+      "ServerRestartWarning": {
+        "Soon": "Server-Neustart gegen {{time}} erwartet ({{relative}})",
+        "Due": "Der Server startet jeden Moment neu",
+        "Tooltip": "Vorhersage anhand der bisherigen Neustarts des Servers. Tipp: Diese Warnung kann in den Einstellungen ausgeschaltet werden.",
+        "Dismiss": "Schließen"
+      },
       "BackgroundUpdatesNotification": {
         "Title": "Leistungsmodus aktiv",
         "Description": "Wir haben bemerkt, dass Ihr Tab im Hintergrund war. Um die Leistung zu verbessern und Verzögerungen zu reduzieren, werden Kartenaktualisierungen gedrosselt, wenn der Tab ausgeblendet ist. Dies hilft, Ihren Browser reaktionsfähig zu halten, wenn Sie sich auf das Spiel konzentrieren.",
@@ -781,6 +809,11 @@
       "Loading": "Betöltés...",
       "SelectServer": "Szerver kiválasztása",
       "ServerInactive": "A kiválasztott szerver offline!",
+      "ServerRestart": {
+        "Short": "{{time}}-kor újraindul",
+        "Next": "Következő újraindítás {{time}} körül ({{relative}})",
+        "Due": "Újraindítás bármelyik percben (kb. {{time}})"
+      },
       "Search": "Keresés",
       "ToggleTheme": "Téma váltása",
       "Layers": {
@@ -870,6 +903,9 @@
         "LayerOpacity": "Rétegek átlátszósága",
         "disableLowSpeedWarning": {
           "Label": "Alacsony sebesség figyelmeztetés letiltása"
+        },
+        "disableServerRestartWarning": {
+          "Label": "Szerver-újraindítási figyelmeztetés letiltása"
         },
         "autoZoom": {
           "Label": "Automatikus nagyítás (Beta)"
@@ -1060,6 +1096,12 @@
         "Description": "A vonatok átlagos sebessége ezen a szerveren {{speed}} km/h.",
         "Tooltip": "Tipp: Ezt a figyelmeztetést kikapcsolhatja az beállításokban."
       },
+      "ServerRestartWarning": {
+        "Soon": "A szerver {{time}} körül újraindul ({{relative}})",
+        "Due": "A szerver bármelyik percben újraindulhat",
+        "Tooltip": "Előrejelzés a szerver korábbi újraindításai alapján. Tipp: Ezt a figyelmeztetést kikapcsolhatja a beállításokban.",
+        "Dismiss": "Bezárás"
+      },
       "BackgroundUpdatesNotification": {
         "Title": "Teljesítmény mód aktív",
         "Description": "Észrevettük, hogy a lap a háttérben volt. A teljesítmény javítása és a késleltetés csökkentése érdekében a térkép frissítései lassulnak, amikor a lap rejtve van. Ez segít a böngésző reagálóképességében, amikor a játékra összpontosít.",
@@ -1174,6 +1216,11 @@
       "Loading": "Yükleniyor...",
       "SelectServer": "Sunucu Seç",
       "ServerInactive": "Seçilen sunucu çevrimdışı!",
+      "ServerRestart": {
+        "Short": "yeniden başlatma: {{time}}",
+        "Next": "Sonraki yeniden başlatma: {{time}} civarı ({{relative}})",
+        "Due": "Yeniden başlatma her an bekleniyor (yaklaşık {{time}})"
+      },
       "Search": "Ara",
       "ToggleTheme": "Temayı Değiştir",
       "Layers": {
@@ -1263,6 +1310,9 @@
         "LayerOpacity": "Katman Opaklığı",
         "disableLowSpeedWarning": {
           "Label": "Düşük hız uyarısını devre dışı bırak"
+        },
+        "disableServerRestartWarning": {
+          "Label": "Sunucu yeniden başlatma uyarısını devre dışı bırak"
         },
         "autoZoom": {
           "Label": "Otomatik Yakınlaştır (Beta)"
@@ -1453,6 +1503,12 @@
         "Description": "Bu sunucudaki trenlerin ortalama hızı {{speed}} km/s.",
         "Tooltip": "İpucu: Bu uyarıyı ayarlardan kapatabilirsiniz."
       },
+      "ServerRestartWarning": {
+        "Soon": "Sunucu {{time}} civarında yeniden başlatılacak ({{relative}})",
+        "Due": "Sunucu her an yeniden başlatılabilir",
+        "Tooltip": "Sunucunun geçmiş yeniden başlatmalarına göre tahmin edilmiştir. İpucu: Bu uyarıyı ayarlardan kapatabilirsiniz.",
+        "Dismiss": "Kapat"
+      },
       "BackgroundUpdatesNotification": {
         "Title": "Performans Modu Etkin",
         "Description": "Sekmenizin arka planda olduğunu fark ettik. Performansı artırmak ve gecikmeyi azaltmak için sekme gizlendiğinde harita güncellemeleri yavaşlatılır. Bu, oyuna odaklandığınızda tarayıcınızın yanıt vermeye devam etmesine yardımcı olur.",
@@ -1565,6 +1621,11 @@
       "Loading": "Ładowanie...",
       "SelectServer": "Wybierz Serwer",
       "ServerInactive": "Wybrany serwer jest offline!",
+      "ServerRestart": {
+        "Short": "restart o {{time}}",
+        "Next": "Następny restart ok. {{time}} ({{relative}})",
+        "Due": "Restart w każdej chwili (ok. {{time}})"
+      },
       "Search": "Szukaj",
       "ToggleTheme": "Zmień Motyw",
       "Layers": {
@@ -1654,6 +1715,9 @@
         "LayerOpacity": "Przezroczystość Warstw",
         "disableLowSpeedWarning": {
           "Label": "Wyłącz ostrzeżenie o niskiej prędkości"
+        },
+        "disableServerRestartWarning": {
+          "Label": "Wyłącz ostrzeżenie o restarcie serwera"
         },
         "autoZoom": {
           "Label": "Automatyczne przybliżanie (Beta)"
@@ -1844,6 +1908,12 @@
         "Description": "Średnia prędkość pociągów na tym serwerze wynosi {{speed}} km/h.",
         "Tooltip": "Wskazówka: Możesz wyłączyć to ostrzeżenie w ustawieniach."
       },
+      "ServerRestartWarning": {
+        "Soon": "Restart serwera ok. {{time}} ({{relative}})",
+        "Due": "Serwer może zrestartować się w każdej chwili",
+        "Tooltip": "Prognoza na podstawie wcześniejszych restartów serwera. Wskazówka: Możesz wyłączyć to ostrzeżenie w ustawieniach.",
+        "Dismiss": "Zamknij"
+      },
       "BackgroundUpdatesNotification": {
         "Title": "Tryb wydajności aktywny",
         "Description": "Zauważyliśmy, że Twoja karta była w tle. Aby poprawić wydajność i zmniejszyć opóźnienia, aktualizacje mapy są ograniczane, gdy karta jest ukryta. To pomaga utrzymać responsywność przeglądarki, gdy koncentrujesz się na grze.",
@@ -1953,6 +2023,11 @@
       "Loading": "Загрузка...",
       "SelectServer": "Выбрать сервер",
       "ServerInactive": "Выбранный сервер не в сети!",
+      "ServerRestart": {
+        "Short": "перезапустится в {{time}}",
+        "Next": "Следующий перезапуск около {{time}} ({{relative}})",
+        "Due": "Перезапуск в любую минуту (около {{time}})"
+      },
       "Search": "Поиск",
       "ToggleTheme": "Переключить тему",
       "Layers": {
@@ -2042,6 +2117,9 @@
         "LayerOpacity": "Непрозрачность слоя",
         "disableLowSpeedWarning": {
           "Label": "Отключить предупреждение о низкой скорости"
+        },
+        "disableServerRestartWarning": {
+          "Label": "Отключить предупреждение о перезапуске сервера"
         },
         "autoZoom": {
           "Label": "Авто-масштаб (Бета)"
@@ -2232,6 +2310,12 @@
         "Description": "Средняя скорость поездов на этом сервере составляет {{speed}} км/ч.",
         "Tooltip": "Совет: Вы можете отключить это предупреждение в настройках."
       },
+      "ServerRestartWarning": {
+        "Soon": "Перезапуск сервера около {{time}} ({{relative}})",
+        "Due": "Сервер может перезапуститься в любую минуту",
+        "Tooltip": "Прогноз на основе прошлых перезапусков сервера. Совет: Вы можете отключить это предупреждение в настройках.",
+        "Dismiss": "Закрыть"
+      },
       "BackgroundUpdatesNotification": {
         "Title": "Режим производительности активен",
         "Description": "Мы заметили, что ваша вкладка была в фоновом режиме. Для улучшения производительности и снижения задержек обновления карты замедляются, когда вкладка скрыта. Это помогает браузеру оставаться отзывчивым, когда вы сосредоточены на игре.",
@@ -2341,6 +2425,11 @@
       "Loading": "Завантаження...",
       "SelectServer": "Вибрати сервер",
       "ServerInactive": "Обраний сервер не в мережі!",
+      "ServerRestart": {
+        "Short": "перезапуститься о {{time}}",
+        "Next": "Наступний перезапуск близько {{time}} ({{relative}})",
+        "Due": "Перезапуск будь-якої хвилини (близько {{time}})"
+      },
       "Search": "Пошук",
       "ToggleTheme": "Перемкнути тему",
       "Layers": {
@@ -2430,6 +2519,9 @@
         "LayerOpacity": "Непрозорість шару",
         "disableLowSpeedWarning": {
           "Label": "Вимкнути попередження про низьку швидкість"
+        },
+        "disableServerRestartWarning": {
+          "Label": "Вимкнути попередження про перезапуск сервера"
         },
         "autoZoom": {
           "Label": "Авто-масштаб (Бета)"
@@ -2619,6 +2711,12 @@
         "Title": "Низька середня швидкість поїздів",
         "Description": "Середня швидкість поїздів на цьому сервері становить {{speed}} км/год.",
         "Tooltip": "Порада: Ви можете вимкнути це попередження в налаштуваннях."
+      },
+      "ServerRestartWarning": {
+        "Soon": "Перезапуск сервера близько {{time}} ({{relative}})",
+        "Due": "Сервер може перезапуститися будь-якої хвилини",
+        "Tooltip": "Прогноз на основі попередніх перезапусків сервера. Порада: Ви можете вимкнути це попередження в налаштуваннях.",
+        "Dismiss": "Закрити"
       },
       "BackgroundUpdatesNotification": {
         "Title": "Режим продуктивності активний",
