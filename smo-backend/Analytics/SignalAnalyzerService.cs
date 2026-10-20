@@ -932,7 +932,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         Dictionary<string, MinimalSignalData> signalLookup,
         Train train, MinimalSignalData signal, TrainPrevSignalData prevSignalData, DateTime currentTime)
     {
-        if (prevSignalData.SignalName == signal.Name || signal.PrevFinalized) return true;
+        if (prevSignalData.SignalName == signal.Name) return true;
 
         // Convert prevSpeed from km/h to m/s
         var prevSpeed = prevSignalData.Speed / 3.6;
@@ -951,7 +951,8 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 "Train {TrainId} ({TrainType}) moved too far from the previous signal ({PrevSignalName})! Distance: {Distance}m, Max distance: {MaxDistance}m",
                 train.GetTrainId(), train.Type, prevSignalData.SignalName, distance, maxDistance);
 
-            return false;
+            // the connections of a finalized signal are not learned, so the train is not counted as invalid
+            return signal.PrevFinalized;
         }
 
         var prevSignalId = prevSignalData.SignalName;
@@ -959,11 +960,18 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
         if (prevSignal == null)
         {
-            _logger.LogWarning(
-                "Train {TrainId} ({TrainType}) has reached signal {SignalId} from an unknown signal {PrevSignalName}!",
-                train.GetTrainId(), train.Type, signal.Name, prevSignalId);
+            if (!signal.PrevFinalized)
+                _logger.LogWarning(
+                    "Train {TrainId} ({TrainType}) has reached signal {SignalId} from an unknown signal {PrevSignalName}!",
+                    train.GetTrainId(), train.Type, signal.Name, prevSignalId);
         }
-        else if (!prevSignal.NextFinalized)
+        else if (signal.PrevFinalized || prevSignal.NextFinalized)
+        {
+            // Finalized (verified) signals get no new connections, but the VMAX of their known connections is still
+            // learned, many of them were verified before VMAX was recorded
+            await UpdateConnectionVmax(context, prevSignal, signal, prevSignalData.SignalSpeed);
+        }
+        else
         {
             var isValid = await ValidateSignalConnection(context, prevSignal, signal, train, prevSignalData,
                 prevSignalData.SignalSpeed);
@@ -1041,41 +1049,9 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     {
         // if signal is known and prevSignal is also known and not finalized
         // check if connection already exists
-        if (prevSignal.NextSignalConnections.Any(c => c.Signal == signal.Name) ||
-            signal.PrevSignalConnections.Any(c => c.Signal == prevSignal.Name))
+        if (TryGetConnection(prevSignal, signal) != null)
         {
-            var existingConnection =
-                prevSignal.NextSignalConnections.FirstOrDefault(c => c.Signal == signal.Name) ??
-                signal.PrevSignalConnections.FirstOrDefault(c => c.Signal == prevSignal.Name);
-
-            if (existingConnection == null)
-            {
-                _logger.LogCritical(
-                    "Signal connection {PrevSignalName}->{SignalName} is null!",
-                    prevSignal.Name, signal.Name);
-                return false;
-            }
-
-            if (existingConnection.Vmax != null && existingConnection.Vmax >= vmax) return false;
-
-            var dbConnection = await context.SignalConnections
-                .FirstOrDefaultAsync(c => c.Prev == prevSignal.Name && c.Next == signal.Name);
-
-            if (dbConnection == null)
-            {
-                _logger.LogError(
-                    "Signal connection {PrevSignalName}->{SignalName} not found in the database!",
-                    prevSignal.Name, signal.Name);
-                return false;
-            }
-
-            dbConnection.VMAX = vmax;
-            context.Entry(dbConnection).Property(c => c.VMAX).IsModified = true;
-
-            _logger.LogInformation(
-                "Updated signal connection {Connection} with VMAX of {Vmax} km/h",
-                dbConnection, vmax);
-
+            await UpdateConnectionVmax(context, prevSignal, signal, vmax);
             return false;
         }
 
@@ -1199,6 +1175,47 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Gets the known connection from <paramref name="prevSignal" /> to <paramref name="signal" />, if any.
+    /// </summary>
+    private static MinimalSignalData.SignalConnection? TryGetConnection(MinimalSignalData prevSignal,
+        MinimalSignalData signal) =>
+        prevSignal.NextSignalConnections.FirstOrDefault(c => c.Signal == signal.Name) ??
+        signal.PrevSignalConnections.FirstOrDefault(c => c.Signal == prevSignal.Name);
+
+    /// <summary>
+    /// Raises the VMAX of an existing connection when a train passed it with a higher signal speed (or it had none).
+    /// </summary>
+    private async Task UpdateConnectionVmax(SmoContext context, MinimalSignalData prevSignal,
+        MinimalSignalData signal, short vmax)
+    {
+        var existingConnection = TryGetConnection(prevSignal, signal);
+
+        if (existingConnection == null || existingConnection.Vmax >= vmax) return;
+
+        // tracked, so a second train on the same connection in this run gets the already updated entity
+        var dbConnection = await context.SignalConnections
+            .FirstOrDefaultAsync(c => c.Prev == prevSignal.Name && c.Next == signal.Name);
+
+        if (dbConnection == null)
+        {
+            _logger.LogError(
+                "Signal connection {PrevSignalName}->{SignalName} not found in the database!",
+                prevSignal.Name, signal.Name);
+            return;
+        }
+
+        // the in-memory connection is only refreshed on the next run, it can be stale
+        if (dbConnection.VMAX >= vmax) return;
+
+        dbConnection.VMAX = vmax;
+        context.Entry(dbConnection).Property(c => c.VMAX).IsModified = true;
+
+        _logger.LogInformation(
+            "Updated signal connection {Connection} with VMAX of {Vmax} km/h",
+            dbConnection, vmax);
     }
 
     private async void TryLogError(string prev, string next, string error, string trainId, short vmax)
