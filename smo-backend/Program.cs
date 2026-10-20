@@ -207,26 +207,26 @@ var xblIoApiKey = StdUtils.GetEnvVar("XBLIO_API_KEY", "");
 
 builder.Services.AddSingleton(new XblIoApiClient(xblIoApiKey));
 
-// Data services - High Priority (critical for application functionality)
-builder.Services.AddHighPriorityHostedService<ServerDataService>();
-builder.Services.AddHighPriorityHostedService<TrainDataService>();
-builder.Services.AddHighPriorityHostedService<TrainPositionDataService>();
-builder.Services.AddHighPriorityHostedService<StationDataService>();
-builder.Services.AddHighPriorityHostedService<TimeDataService>();
-builder.Services.AddHighPriorityHostedService<TimetableDataService>();
-builder.Services.AddHighPriorityHostedService<TrainTypeService>();
+// Data services (fetch the data from SimRail)
+builder.Services.AddSingletonHostedService<ServerDataService>();
+builder.Services.AddSingletonHostedService<TrainDataService>();
+builder.Services.AddSingletonHostedService<TrainPositionDataService>();
+builder.Services.AddSingletonHostedService<StationDataService>();
+builder.Services.AddSingletonHostedService<TimeDataService>();
+builder.Services.AddSingletonHostedService<TimetableDataService>();
+builder.Services.AddSingletonHostedService<TrainTypeService>();
 
-// Analytic services - Low Priority (background processing)
-builder.Services.AddLowPriorityHostedService<SignalAnalyzerService>();
-builder.Services.AddLowPriorityHostedService<TrainDelayAnalyzerService>();
-builder.Services.AddLowPriorityHostedService<TimetableAnalyzerService>();
-builder.Services.AddLowPriorityHostedService<RoutePointAnalyzerService>();
-builder.Services.AddLowPriorityHostedService<ServerRestartAnalyzerService>();
-builder.Services.AddLowPriorityHostedService<StationAnalyzerService>();
+// Analytic services (background processing)
+builder.Services.AddSingletonHostedService<SignalAnalyzerService>();
+builder.Services.AddSingletonHostedService<TrainDelayAnalyzerService>();
+builder.Services.AddSingletonHostedService<TimetableAnalyzerService>();
+builder.Services.AddSingletonHostedService<RoutePointAnalyzerService>();
+builder.Services.AddSingletonHostedService<ServerRestartAnalyzerService>();
+builder.Services.AddSingletonHostedService<StationAnalyzerService>();
 
-// Client services - Normal Priority
+// Client services
 builder.Services.AddSingleton<ClientManagerService>();
-builder.Services.AddNormalPriorityHostedService<ClientDataSenderService>();
+builder.Services.AddSingletonHostedService<ClientDataSenderService>();
 
 builder.Services.UseHttpClientMetrics();
 builder.Services.AddSystemMetrics(false);
