@@ -15,6 +15,16 @@ public class QueueProcessorTests
     private readonly Mock<ILogger> _loggerMock = new();
     private readonly Gauge _testGauge = Metrics.CreateGauge($"test_gauge_{Guid.NewGuid():N}", "Test gauge");
 
+    /// <summary>
+    ///     Waits until the condition holds: the queue processes on other threads, and a fixed delay was too short on a
+    ///     busy CI runner. Gives up after the timeout, the assertions after it report what's missing.
+    /// </summary>
+    private static async Task WaitUntil(Func<bool> condition, int timeoutMs = 5000)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        while (!condition() && stopwatch.ElapsedMilliseconds < timeoutMs) await Task.Delay(10);
+    }
+
     [Fact]
     public async Task Enqueue_ProcessesItem()
     {
@@ -30,8 +40,7 @@ public class QueueProcessorTests
 
         processor.Enqueue(42);
 
-        // Give it time to process
-        await Task.Delay(100);
+        await WaitUntil(() => processedItems.Contains(42));
 
         processedItems.Should().Contain(42);
     }
@@ -53,8 +62,7 @@ public class QueueProcessorTests
         processor.Enqueue(2);
         processor.Enqueue(3);
 
-        // Give it time to process all
-        await Task.Delay(200);
+        await WaitUntil(() => processedItems.Count >= 3);
 
         processedItems.Should().Equal(1, 2, 3);
     }
@@ -64,11 +72,13 @@ public class QueueProcessorTests
     {
         var processedItems = new List<int>();
         var startGate = new TaskCompletionSource<bool>();
+        var firstStarted = new TaskCompletionSource<bool>();
 
         var processor = new QueueProcessor<int>(
             _loggerMock.Object,
             async item =>
             {
+                firstStarted.TrySetResult(true);
                 // Wait for signal to start processing
                 await startGate.Task;
                 processedItems.Add(item);
@@ -80,7 +90,7 @@ public class QueueProcessorTests
 
         // Queue up items - first item starts processing but blocks on gate
         processor.Enqueue(1);
-        await Task.Delay(50); // Let it start processing
+        await firstStarted.Task.WaitAsync(TimeSpan.FromSeconds(5)); // Let it start processing
 
         // Now queue fills up
         processor.Enqueue(2);
@@ -88,7 +98,7 @@ public class QueueProcessorTests
 
         // Release the gate and wait for processing
         startGate.SetResult(true);
-        await Task.Delay(300);
+        await WaitUntil(() => processedItems.Contains(3)); // the queue is in order: 2 would have come before 3
 
         // Item 1 was already processing so it completes
         // Item 2 was evicted from queue
@@ -117,8 +127,7 @@ public class QueueProcessorTests
         processor.Enqueue(2); // This will throw
         processor.Enqueue(3);
 
-        // Give it time to process
-        await Task.Delay(200);
+        await WaitUntil(() => processedItems.Contains(3));
 
         // Items 1 and 3 should be processed, 2 should have failed
         processedItems.Should().Contain(1);
@@ -142,8 +151,7 @@ public class QueueProcessorTests
 
         for (var i = 0; i < 100; i++) processor.Enqueue(i);
 
-        // Give it time to process all
-        await Task.Delay(500);
+        await WaitUntil(() => processedItems.Count >= 100);
 
         processedItems.Should().HaveCount(100);
     }
@@ -153,18 +161,20 @@ public class QueueProcessorTests
     {
         var processedItems = new List<int>();
         var processingGate = new TaskCompletionSource<bool>();
+        var firstStarted = new TaskCompletionSource<bool>();
 
         var processor = new QueueProcessor<int>(
             _loggerMock.Object,
             async item =>
             {
+                firstStarted.TrySetResult(true);
                 await processingGate.Task;
                 processedItems.Add(item);
             },
             _testGauge);
 
         processor.Enqueue(1);
-        await Task.Delay(50); // Let item 1 start processing
+        await firstStarted.Task.WaitAsync(TimeSpan.FromSeconds(5)); // Let item 1 start processing
 
         processor.Enqueue(2);
         processor.Enqueue(3);
@@ -173,7 +183,8 @@ public class QueueProcessorTests
 
         // Release the gate
         processingGate.SetResult(true);
-        await Task.Delay(100);
+        await WaitUntil(() => processedItems.Contains(1));
+        await Task.Delay(100); // a queued item would come right after it
 
         // Only item 1 should be processed (was already processing)
         // Items 2 and 3 were cleared from queue
@@ -235,8 +246,11 @@ public class QueueProcessorTests
             await Task.Delay(10); // Small delay between enqueues
         }
 
-        // Give it time to process - with 3 parallel, 10 items at 100ms each = ~400ms minimum
-        await Task.Delay(800);
+        // with 3 parallel, 10 items at 100ms each = ~400ms minimum
+        await WaitUntil(() =>
+        {
+            lock (lockObj) return processedItems.Count >= 10;
+        });
 
         processedItems.Should().HaveCount(10);
         maxConcurrentProcessing.Should().BeGreaterThan(1, "multiple items should be processed in parallel");
