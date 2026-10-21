@@ -245,9 +245,11 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
     /// (accuracy 0, so trains don't overwrite it), the heading and the extra data. Connections are not touched.
     /// </summary>
     /// <remarks>
+    /// A signal the game has more than once comes with every copy, the one nearest the known location is used.
     /// Trains are the ground truth for the signals they passed: when a signal learned from trains (accuracy under
     /// <see cref="ImportConflictAccuracy"/> m) is more than <see cref="ImportConflictDistance"/> m from the game's
-    /// position, its location is kept and the signal is returned as a conflict.
+    /// position, its location is kept and the signal is returned as a conflict (without a heading: the game's object
+    /// isn't the signal there), unless it's in <see cref="SignalImportRequest.Overrule"/>.
     /// </remarks>
     /// <param name="body">The signals and the password.</param>
     /// <returns>How many signals were added and updated, and the conflicts.</returns>
@@ -267,36 +269,38 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
         if (invalid.Length > 0)
             return BadRequest($"Invalid signals: {string.Join(", ", invalid.Take(20))}");
 
-        var duplicates = body.Signals.GroupBy(s => s.Name).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
-        if (duplicates.Length > 0)
-            return BadRequest($"Duplicate signals: {string.Join(", ", duplicates.Take(20))}");
-
-        var names = body.Signals.Select(s => s.Name).ToArray();
+        var copiesByName = body.Signals.GroupBy(s => s.Name).ToDictionary(g => g.Key, g => g.ToList());
+        var names = copiesByName.Keys.ToArray();
         var existing = await context.Signals
             .Where(s => names.Contains(s.Name))
             .ToDictionaryAsync(s => s.Name);
+        var overrule = body.Overrule.ToHashSet();
 
         var now = DateTime.UtcNow;
         int added = 0, updated = 0;
         var conflicts = new List<object>();
-        foreach (var entry in body.Signals)
+        foreach (var (name, copies) in copiesByName)
         {
+            existing.TryGetValue(name, out var signal);
+            var entry = SignalImportEntry.PickCopy(copies, signal?.Location);
             var location = new Point(entry.Longitude, entry.Latitude) { SRID = 4326 };
-            if (existing.TryGetValue(entry.Name, out var signal))
+            if (signal != null)
             {
                 var distance = signal.Location.HaversineDistance(location);
-                if (signal.Accuracy is > 0 and < ImportConflictAccuracy && distance > ImportConflictDistance)
+                if (signal.Accuracy is > 0 and < ImportConflictAccuracy && distance > ImportConflictDistance &&
+                    !overrule.Contains(name))
                 {
                     conflicts.Add(new { signal.Name, Distance = Math.Round(distance), signal.Accuracy });
+                    signal.Heading = null;
                 }
                 else
                 {
                     signal.Location = location;
                     signal.Accuracy = 0;
                     signal.Extra = entry.Extra;
+                    signal.Heading = entry.Heading ?? signal.Heading;
                 }
 
-                signal.Heading = entry.Heading ?? signal.Heading;
                 signal.UpdatedAt = now;
                 updated++;
                 continue;

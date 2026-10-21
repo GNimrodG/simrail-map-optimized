@@ -1,4 +1,7 @@
-﻿namespace SMOBackend.Models;
+﻿using NetTopologySuite.Geometries;
+using SMOBackend.Analytics;
+
+namespace SMOBackend.Models;
 
 /// <summary>
 /// Signals extracted from the game files (.claude/skills/extract-game-map-data/scripts/extract_signals.py), to create
@@ -6,7 +9,17 @@
 /// </summary>
 public class SignalImportRequest : PasswordRequest
 {
+    /// <summary>
+    /// The signals. A name can come more than once: the game has a few signals twice (a copy of the station's objects),
+    /// the one nearest the signal's known location is used (see <see cref="SignalImportEntry.PickCopy"/>).
+    /// </summary>
     public SignalImportEntry[] Signals { get; set; } = [];
+
+    /// <summary>
+    /// Signals whose game position replaces their location even when it's far from the location learned from the
+    /// trains (the game moved them since).
+    /// </summary>
+    public string[] Overrule { get; set; } = [];
 }
 
 /// <summary>
@@ -33,4 +46,13 @@ public class SignalImportEntry
     /// is a placeholder (its position came from the extra).
     /// </summary>
     public double? Heading { get; set; }
+
+    /// <summary>
+    /// The copy of a signal to import: the one nearest its known location (the copy the trains report), or the first
+    /// one for a new signal (the extractor lists the copy it trusts most first).
+    /// </summary>
+    public static SignalImportEntry PickCopy(IReadOnlyList<SignalImportEntry> copies, Point? knownLocation) =>
+        knownLocation == null
+            ? copies[0]
+            : copies.MinBy(c => knownLocation.HaversineDistance(new Point(c.Longitude, c.Latitude) { SRID = 4326 }))!;
 }
