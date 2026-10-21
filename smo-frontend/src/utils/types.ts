@@ -14,6 +14,39 @@ export interface ServerRestartPrediction {
   Confidence: number | null;
 }
 
+/** Whether a train in the spawn list is still to spawn, is late to spawn or has spawned. */
+export type SpawnStatus = "Upcoming" | "Overdue" | "Spawned";
+
+/** A train that spawns (enters the map) at a border station, from the backend's spawn list. */
+export interface SpawnListEntry {
+  trainNoLocal: string;
+  trainName: string;
+  trainType: string;
+  startStation: string;
+  endStation: string;
+  /** The border station: the last timetable point before the train spawns, or its first point. */
+  border: string;
+  /** The first timetable point the train runs to after spawning. */
+  entry: string;
+  /** The scheduled time at the border station in the server's time ("yyyy-MM-dd HH:mm:ss"). */
+  scheduledTime: string;
+  /** When the train is expected to spawn (or spawned), in the server's time ("yyyy-MM-dd HH:mm:ss"). */
+  expectedTime: string;
+  /** When the train is expected to spawn (or spawned), ISO UTC. */
+  expectedAt: string;
+  status: SpawnStatus;
+  /** The locomotive type from the timetable. */
+  locoType: string;
+  /** The train length from the timetable, in meters. */
+  trainLength: number;
+  /** The train weight from the timetable, in tonnes. */
+  trainWeight: number;
+  /** The live consist of a spawned train, otherwise the one from the last time the train ran. Null when unknown. */
+  consist: string[] | null;
+  /** Whether the consist is from the last time the train ran (the next run may differ). */
+  consistFromLastRun: boolean;
+}
+
 export interface Train {
   TrainNoLocal: string;
   TrainName: string;

@@ -223,6 +223,7 @@ builder.Services.AddSingletonHostedService<TimetableAnalyzerService>();
 builder.Services.AddSingletonHostedService<RoutePointAnalyzerService>();
 builder.Services.AddSingletonHostedService<ServerRestartAnalyzerService>();
 builder.Services.AddSingletonHostedService<StationAnalyzerService>();
+builder.Services.AddSingletonHostedService<SpawnAnalyzerService>();
 
 // Client services
 builder.Services.AddSingleton<ClientManagerService>();

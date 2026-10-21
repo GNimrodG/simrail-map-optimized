@@ -1,9 +1,9 @@
 import Box from "@mui/joy/Box";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
-import { type FunctionComponent } from "react";
+import { type FunctionComponent, useMemo, useState } from "react";
 
-import { formatVehicleName, getThumbnailUrl } from "../../utils/general-utils";
+import { formatVehicleName, getThumbnailUrls } from "../../utils/general-utils";
 
 export interface TrainConsistPartDisplayProps {
   vehicles: string[];
@@ -16,7 +16,30 @@ function formatCargoName(cargo: string): string {
     .trim();
 }
 
-const TrainConsistPartDisplay: FunctionComponent<TrainConsistPartDisplayProps> = ({ vehicles }) => {
+/** The best picture there is of a vehicle (see getThumbnailUrls), nothing when there is none. */
+const VehicleThumbnail: FunctionComponent<{ vehicle: string }> = ({ vehicle }) => {
+  const urls = useMemo(() => getThumbnailUrls(vehicle), [vehicle]);
+  const [index, setIndex] = useState(0);
+
+  if (index >= urls.length) {
+    return null;
+  }
+
+  return (
+    <Box
+      component="img"
+      aria-hidden
+      sx={{
+        height: "3rem",
+      }}
+      src={urls[index]}
+      alt=""
+      onError={() => setIndex(index + 1)}
+    />
+  );
+};
+
+const TrainConsistPartDisplay:FunctionComponent<TrainConsistPartDisplayProps> = ({ vehicles }) => {
   if (vehicles.length === 0) {
     return null;
   }
@@ -43,15 +66,7 @@ const TrainConsistPartDisplay: FunctionComponent<TrainConsistPartDisplayProps> =
         ))}
       </Stack>
 
-      <Box
-        component="img"
-        aria-hidden
-        sx={{
-          height: "3rem",
-        }}
-        src={getThumbnailUrl(vehicles[0])}
-        alt=""
-      />
+      <VehicleThumbnail key={vehicles[0]} vehicle={vehicles[0]} />
     </Stack>
   );
 };

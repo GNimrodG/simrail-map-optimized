@@ -159,6 +159,31 @@
         "EmptyState": "No trains found",
         "ConsistLabel": "Consist: {{summary}}"
       },
+      "SpawnList": {
+        "ButtonTooltip": "Spawn list",
+        "Title": "Spawn list – {{server}}",
+        "Description": "Trains that enter the map at a border station in the next {{hours}} hours. The times are the expected spawn times in server time: the schedule, adjusted by how early or late trains usually spawn there.",
+        "AllBorders": "All border stations",
+        "SearchPlaceholder": "Search train, station or route",
+        "HideSpawned": "Hide spawned trains",
+        "Time": "Time",
+        "ScheduledAtBorder": "Expected spawn time (server time). Scheduled at {{border}}: {{time}}",
+        "Train": "Train",
+        "Border": "Border station",
+        "Route": "Route",
+        "Status": {
+          "Overdue": "Overdue",
+          "Spawned": "Spawned"
+        },
+        "Relative": {
+          "Upcoming": "{{relative}}",
+          "Overdue": "expected {{relative}}",
+          "Spawned": "{{relative}}"
+        },
+        "Empty": "No spawns known for the next hours yet. The border stations are learned from the live data, so the list fills up once trains have been seen spawning.",
+        "EmptyForBorder": "No trains spawn here in the next hours.",
+        "ConsistFromLastRun": "Consist from the last time this train ran (it may differ this time)"
+      },
       "TrainMakerPopup": {
         "NextSignal": "Next Signal:",
         "Consist": "Consist",
@@ -279,7 +304,8 @@
           "Unavailabe": "Timetable unavailable",
           "SearchPlaceholder": "Search for train"
         },
-        "WikiLink": "SimRail Wiki"
+        "WikiLink": "SimRail Wiki",
+        "SpawnList": "Spawning trains ({{count}})"
       },
       "BugReport": "Report a bug!",
       "SimRailApiWarning": {
@@ -561,6 +587,31 @@
         "EmptyState": "Keine Züge gefunden",
         "ConsistLabel": "Zuggarnitur: {{summary}}"
       },
+      "SpawnList": {
+        "ButtonTooltip": "Spawnliste",
+        "Title": "Spawnliste – {{server}}",
+        "Description": "Züge, die in den nächsten {{hours}} Stunden an einem Grenzbahnhof auf die Karte kommen. Die Zeiten sind die erwarteten Spawnzeiten in Serverzeit: der Fahrplan, angepasst daran, wie früh oder spät Züge dort üblicherweise erscheinen.",
+        "AllBorders": "Alle Grenzbahnhöfe",
+        "SearchPlaceholder": "Zug, Bahnhof oder Strecke suchen",
+        "HideSpawned": "Erschienene Züge ausblenden",
+        "Time": "Zeit",
+        "ScheduledAtBorder": "Erwartete Spawnzeit (Serverzeit). Planmäßig in {{border}}: {{time}}",
+        "Train": "Zug",
+        "Border": "Grenzbahnhof",
+        "Route": "Strecke",
+        "Status": {
+          "Overdue": "Überfällig",
+          "Spawned": "Erschienen"
+        },
+        "Relative": {
+          "Upcoming": "{{relative}}",
+          "Overdue": "erwartet {{relative}}",
+          "Spawned": "{{relative}}"
+        },
+        "Empty": "Für die nächsten Stunden sind noch keine Spawns bekannt. Die Grenzbahnhöfe werden aus den Live-Daten gelernt, die Liste füllt sich, sobald Züge beim Erscheinen beobachtet wurden.",
+        "EmptyForBorder": "Hier erscheinen in den nächsten Stunden keine Züge.",
+        "ConsistFromLastRun": "Zuggarnitur von der letzten Fahrt dieses Zuges (kann diesmal abweichen)"
+      },
       "TrainMakerPopup": {
         "NextSignal": "Nächstes Signal:",
         "Consist": "Zuggarnitur",
@@ -681,7 +732,8 @@
           "Unavailabe": "Fahrplan nicht verfügbar",
           "SearchPlaceholder": "Nach Zug suchen"
         },
-        "WikiLink": "SimRail Wiki"
+        "WikiLink": "SimRail Wiki",
+        "SpawnList": "Erscheinende Züge ({{count}})"
       },
       "BugReport": "Einen Fehler melden!",
       "SimRailApiWarning": {
@@ -964,6 +1016,31 @@
         "EmptyState": "Nem található vonat",
         "ConsistLabel": "Vonatösszeállítás: {{summary}}"
       },
+      "SpawnList": {
+        "ButtonTooltip": "Spawnlista",
+        "Title": "Spawnlista – {{server}}",
+        "Description": "A következő {{hours}} órában határállomáson a térképre érkező vonatok. Az idők a várható megjelenési idők szerveridőben: a menetrend, aszerint igazítva, hogy ott a vonatok általában mennyivel korábban vagy később jelennek meg.",
+        "AllBorders": "Minden határállomás",
+        "SearchPlaceholder": "Vonat, állomás vagy útvonal keresése",
+        "HideSpawned": "Megjelent vonatok elrejtése",
+        "Time": "Idő",
+        "ScheduledAtBorder": "Várható megjelenés (szerveridő). Menetrend szerint {{border}}: {{time}}",
+        "Train": "Vonat",
+        "Border": "Határállomás",
+        "Route": "Útvonal",
+        "Status": {
+          "Overdue": "Késik",
+          "Spawned": "Megjelent"
+        },
+        "Relative": {
+          "Upcoming": "{{relative}}",
+          "Overdue": "{{relative}} volt várható",
+          "Spawned": "{{relative}}"
+        },
+        "Empty": "A következő órákra még nincs ismert megjelenés. A határállomásokat az élő adatokból tanulja meg a rendszer, a lista akkor telik meg, amikor már látott megjelenő vonatokat.",
+        "EmptyForBorder": "Itt a következő órákban nem jelenik meg vonat.",
+        "ConsistFromLastRun": "A vonat legutóbbi menetének összeállítása (most eltérhet)"
+      },
       "TrainMakerPopup": {
         "NextSignal": "Következő jelző:",
         "Consist": "Vonatösszeállítás",
@@ -1084,7 +1161,8 @@
           "Unavailabe": "Menetrend nem elérhető",
           "SearchPlaceholder": "Vonat keresése"
         },
-        "WikiLink": "SimRail Wiki"
+        "WikiLink": "SimRail Wiki",
+        "SpawnList": "Megjelenő vonatok ({{count}})"
       },
       "BugReport": "Hiba jelentése!",
       "SimRailApiWarning": {
@@ -1371,6 +1449,31 @@
         "EmptyState": "Tren bulunamadı",
         "ConsistLabel": "Tren yapısı: {{summary}}"
       },
+      "SpawnList": {
+        "ButtonTooltip": "Spawn listesi",
+        "Title": "Spawn listesi – {{server}}",
+        "Description": "Önümüzdeki {{hours}} saat içinde bir sınır istasyonundan haritaya girecek trenler. Saatler sunucu saatine göre beklenen belirme saatleridir: tarife, trenlerin orada genellikle ne kadar erken veya geç belirdiğine göre ayarlanır.",
+        "AllBorders": "Tüm sınır istasyonları",
+        "SearchPlaceholder": "Tren, istasyon veya güzergâh ara",
+        "HideSpawned": "Beliren trenleri gizle",
+        "Time": "Saat",
+        "ScheduledAtBorder": "Beklenen belirme saati (sunucu saati). {{border}} planlanan: {{time}}",
+        "Train": "Tren",
+        "Border": "Sınır istasyonu",
+        "Route": "Güzergâh",
+        "Status": {
+          "Overdue": "Gecikti",
+          "Spawned": "Belirdi"
+        },
+        "Relative": {
+          "Upcoming": "{{relative}}",
+          "Overdue": "beklenen: {{relative}}",
+          "Spawned": "{{relative}}"
+        },
+        "Empty": "Önümüzdeki saatler için henüz bilinen bir spawn yok. Sınır istasyonları canlı verilerden öğrenilir; trenlerin belirdiği görüldükçe liste dolar.",
+        "EmptyForBorder": "Önümüzdeki saatlerde burada tren belirmiyor.",
+        "ConsistFromLastRun": "Bu trenin son seferindeki dizilim (bu sefer farklı olabilir)"
+      },
       "TrainMakerPopup": {
         "NextSignal": "Bir Sonraki Sinyal:",
         "Consist": "Tren Yapısı (Motor ve Vagonlar)",
@@ -1491,7 +1594,8 @@
           "Unavailabe": "Zaman çizelgesi mevcut değil",
           "SearchPlaceholder": "Tren ara"
         },
-        "WikiLink": "SimRail Wiki"
+        "WikiLink": "SimRail Wiki",
+        "SpawnList": "Belirecek trenler ({{count}})"
       },
       "BugReport": "Hata bildir!",
       "SimRailApiWarning": {
@@ -1776,6 +1880,31 @@
         "EmptyState": "Nie znaleziono pociągów",
         "ConsistLabel": "Skład: {{summary}}"
       },
+      "SpawnList": {
+        "ButtonTooltip": "Lista spawnów",
+        "Title": "Lista spawnów – {{server}}",
+        "Description": "Pociągi, które w ciągu najbliższych {{hours}} godzin wjadą na mapę na stacji granicznej. Godziny to oczekiwane godziny pojawienia się w czasie serwera: rozkład skorygowany o to, jak wcześnie lub późno pociągi zwykle się tam pojawiają.",
+        "AllBorders": "Wszystkie stacje graniczne",
+        "SearchPlaceholder": "Szukaj pociągu, stacji lub relacji",
+        "HideSpawned": "Ukryj pociągi, które się pojawiły",
+        "Time": "Godzina",
+        "ScheduledAtBorder": "Oczekiwana godzina pojawienia się (czas serwera). Według rozkładu {{border}}: {{time}}",
+        "Train": "Pociąg",
+        "Border": "Stacja graniczna",
+        "Route": "Relacja",
+        "Status": {
+          "Overdue": "Opóźniony",
+          "Spawned": "Pojawił się"
+        },
+        "Relative": {
+          "Upcoming": "{{relative}}",
+          "Overdue": "oczekiwany {{relative}}",
+          "Spawned": "{{relative}}"
+        },
+        "Empty": "Brak jeszcze znanych spawnów na najbliższe godziny. Stacje graniczne są ustalane na podstawie danych na żywo, lista zapełni się, gdy zostaną zaobserwowane pojawiające się pociągi.",
+        "EmptyForBorder": "W najbliższych godzinach nie pojawi się tu żaden pociąg.",
+        "ConsistFromLastRun": "Skład z ostatniego kursu tego pociągu (tym razem może się różnić)"
+      },
       "TrainMakerPopup": {
         "NextSignal": "Następny Sygnał:",
         "Consist": "Skład",
@@ -1896,7 +2025,8 @@
           "Unavailabe": "Rozkład jazdy niedostępny",
           "SearchPlaceholder": "Szukaj pociągu"
         },
-        "WikiLink": "SimRail Wiki"
+        "WikiLink": "SimRail Wiki",
+        "SpawnList": "Pojawiające się pociągi ({{count}})"
       },
       "BugReport": "Zgłoś błąd!",
       "SimRailApiWarning": {
@@ -2178,6 +2308,31 @@
         "EmptyState": "Поезда не найдены",
         "ConsistLabel": "Состав: {{summary}}"
       },
+      "SpawnList": {
+        "ButtonTooltip": "Появление поездов",
+        "Title": "Появление поездов – {{server}}",
+        "Description": "Поезда, которые в ближайшие {{hours}} ч появятся на карте на пограничной станции. Время — ожидаемое время появления по времени сервера: расписание с поправкой на то, насколько раньше или позже поезда обычно там появляются.",
+        "AllBorders": "Все пограничные станции",
+        "SearchPlaceholder": "Поиск поезда, станции или маршрута",
+        "HideSpawned": "Скрыть появившиеся поезда",
+        "Time": "Время",
+        "ScheduledAtBorder": "Ожидаемое время появления (время сервера). По расписанию {{border}}: {{time}}",
+        "Train": "Поезд",
+        "Border": "Пограничная станция",
+        "Route": "Маршрут",
+        "Status": {
+          "Overdue": "Опаздывает",
+          "Spawned": "Появился"
+        },
+        "Relative": {
+          "Upcoming": "{{relative}}",
+          "Overdue": "ожидался {{relative}}",
+          "Spawned": "{{relative}}"
+        },
+        "Empty": "Пока нет известных появлений на ближайшие часы. Пограничные станции определяются по живым данным, список заполнится, когда будут замечены появляющиеся поезда.",
+        "EmptyForBorder": "В ближайшие часы здесь поезда не появятся.",
+        "ConsistFromLastRun": "Состав с последнего рейса этого поезда (в этот раз может отличаться)"
+      },
       "TrainMakerPopup": {
         "NextSignal": "Следующий сигнал:",
         "Consist": "Состав",
@@ -2298,7 +2453,8 @@
           "Unavailabe": "Расписание недоступно",
           "SearchPlaceholder": "Поиск поезда"
         },
-        "WikiLink": "SimRail Вики"
+        "WikiLink": "SimRail Вики",
+        "SpawnList": "Появляющиеся поезда ({{count}})"
       },
       "BugReport": "Сообщить об ошибке!",
       "SimRailApiWarning": {
@@ -2580,6 +2736,31 @@
         "EmptyState": "Поїзди не знайдено",
         "ConsistLabel": "Склад: {{summary}}"
       },
+      "SpawnList": {
+        "ButtonTooltip": "Поява поїздів",
+        "Title": "Поява поїздів – {{server}}",
+        "Description": "Поїзди, які протягом найближчих {{hours}} год з'являться на мапі на прикордонній станції. Час — очікуваний час появи за часом сервера: розклад із поправкою на те, наскільки раніше чи пізніше поїзди зазвичай там з'являються.",
+        "AllBorders": "Усі прикордонні станції",
+        "SearchPlaceholder": "Пошук поїзда, станції або маршруту",
+        "HideSpawned": "Приховати поїзди, що з'явилися",
+        "Time": "Час",
+        "ScheduledAtBorder": "Очікуваний час появи (час сервера). За розкладом {{border}}: {{time}}",
+        "Train": "Поїзд",
+        "Border": "Прикордонна станція",
+        "Route": "Маршрут",
+        "Status": {
+          "Overdue": "Запізнюється",
+          "Spawned": "З'явився"
+        },
+        "Relative": {
+          "Upcoming": "{{relative}}",
+          "Overdue": "очікувався {{relative}}",
+          "Spawned": "{{relative}}"
+        },
+        "Empty": "Поки немає відомих появ на найближчі години. Прикордонні станції визначаються за живими даними, список заповниться, коли буде помічено поїзди, що з'являються.",
+        "EmptyForBorder": "Найближчими годинами тут поїзди не з'являться.",
+        "ConsistFromLastRun": "Склад з останнього рейсу цього поїзда (цього разу може відрізнятися)"
+      },
       "TrainMakerPopup": {
         "NextSignal": "Наступний сигнал:",
         "Consist": "Склад",
@@ -2700,7 +2881,8 @@
           "Unavailabe": "Розклад недоступний",
           "SearchPlaceholder": "Пошук поїзда"
         },
-        "WikiLink": "SimRail Вікі"
+        "WikiLink": "SimRail Вікі",
+        "SpawnList": "Поїзди, що з'являються ({{count}})"
       },
       "BugReport": "Повідомити про помилку!",
       "SimRailApiWarning": {

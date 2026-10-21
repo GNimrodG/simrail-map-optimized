@@ -46,6 +46,7 @@ import StationDisplay from "../markers/station/StationDisplay";
 import TrainConsistDisplay from "../markers/train/TrainConsistDisplay";
 import TrainMarkerPopup from "../markers/train/TrainMarkerPopup";
 import TrainTimetableModal from "../timetable/TrainTimetableModal";
+import { summarizeConsist } from "../utils/general-utils";
 import TrainTypeDisplay from "../utils/TrainTypeDisplay";
 
 interface TrainOverviewState {
@@ -373,24 +374,7 @@ const ServerTrainListModal: FunctionComponent = () => {
                     // Get delays for the timetable modal
                     const trainDelays = dataProvider.getDelaysForTrainSync(train.Id) ?? {};
 
-                    const consistSummary = (() => {
-                      if (!train.Vehicles?.length) return null;
-
-                      const counts = train.Vehicles.reduce((acc, vehicle) => {
-                        const [shortName] = vehicle.split("/");
-                        const key = (shortName ?? vehicle).trim();
-                        if (!key) return acc;
-                        const current = acc.get(key) ?? 0;
-                        acc.set(key, current + 1);
-                        return acc;
-                      }, new Map<string, number>());
-
-                      if (counts.size === 0) return null;
-
-                      return Array.from(counts.entries())
-                        .map(([name, count]) => (count > 1 ? `${count}x ${name}` : name))
-                        .join(" + ");
-                    })();
+                    const consistSummary = summarizeConsist(train.Vehicles);
 
                     const infoChips: ReactNode[] = [
                       ...(consistSummary

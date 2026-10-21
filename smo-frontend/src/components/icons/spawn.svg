@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1rem" height="1rem" fill="currentColor">
+    <!-- an arrow entering the map through a border -->
+    <path d="M320 64h96c35.3 0 64 28.7 64 64v256c0 35.3-28.7 64-64 64h-96v-64h96V128h-96z" />
+    <path d="M32 208h176v-80l160 128-160 128v-80H32z" />
+</svg>

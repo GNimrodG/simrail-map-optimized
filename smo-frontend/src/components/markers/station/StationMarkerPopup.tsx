@@ -29,10 +29,12 @@ import { useMap } from "react-leaflet";
 
 import _stationLayouts from "../../../assets/station-layouts.json";
 import _wikiLinks from "../../../assets/wiki-links.json";
+import useSpawnList from "../../../hooks/useSpawnList";
 import useStationTimetableEntries from "../../../hooks/useStationTimetableEntries";
 import { dataProvider } from "../../../utils/data-manager";
 import { getSignalsForStation, getStationGeometry, goToSignal } from "../../../utils/geom-utils";
 import SelectedStationTimetableContext from "../../../utils/selected-station-timetable-context";
+import { getStationPointNames, openSpawnList } from "../../../utils/spawn-list";
 import { OsmTagged, Station, UserProfileResponse } from "../../../utils/types";
 import InfoIcon from "../../icons/InfoIcon";
 import Loading from "../../Loading";
@@ -86,6 +88,15 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
   const { setSelectedStationTimetable } = useContext(SelectedStationTimetableContext);
 
   const { stationTimetable, loading: timetableLoading } = useStationTimetableEntries(station.Name);
+  const spawnList = useSpawnList();
+  // the trains that spawn at or into this station (or its sub-stations) soon
+  const upcomingSpawnCount = useMemo(() => {
+    const names = getStationPointNames(station.Name);
+    return (
+      spawnList?.filter((e) => e.status !== "Spawned" && (names.includes(e.border) || names.includes(e.entry)))
+        .length ?? 0
+    );
+  }, [spawnList, station.Name]);
 
   const showStationArea = useCallback(() => {
     const polygon = L.polygon(getStationGeometry(station), {
@@ -280,6 +291,19 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
           onClick={() => startTransition(() => setSelectedStationTimetable(station.Name))}>
           {t(stationTimetable && !stationTimetable.length ? "Timetable.Unavailabe" : "Timetable.Button")}
         </Button>
+
+        {upcomingSpawnCount > 0 && (
+          <Button
+            fullWidth
+            variant="solid"
+            color="neutral"
+            onClick={() => {
+              openSpawnList(station.Name);
+              onClosePopup();
+            }}>
+            {t("SpawnList", { count: upcomingSpawnCount })}
+          </Button>
+        )}
 
         {WikiLinks[station.Name] && (
           <Button

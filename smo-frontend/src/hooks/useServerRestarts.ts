@@ -1,5 +1,5 @@
 import moment, { type Moment } from "moment";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { dataProvider } from "../utils/data-manager";
 import useBehaviorSubj from "./useBehaviorSubj";
@@ -27,16 +27,3 @@ export function useServerRestarts(): Map<string, Moment> {
   );
 }
 
-/**
- * The current time, updated every `intervalMs`, so relative times ("in 5 minutes") stay current.
- */
-export function useNow(intervalMs = 30_000): number {
-  const [now, setNow] = useState(Date.now());
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), intervalMs);
-    return () => clearInterval(interval);
-  }, [intervalMs]);
-
-  return now;
-}

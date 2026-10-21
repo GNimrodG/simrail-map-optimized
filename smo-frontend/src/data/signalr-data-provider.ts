@@ -12,6 +12,7 @@ import {
   PartialTrainData,
   ServerRestartPrediction,
   ServerStatus,
+  SpawnListEntry,
   SignalStatus,
   SignalStatusData,
   SimplifiedTimtableEntry,
@@ -821,6 +822,22 @@ export class SignalRDataProvider implements IDataProvider {
     );
 
     return results.flat();
+  }
+
+  async fetchSpawnList(serverCode: string, hours: number): Promise<SpawnListEntry[] | null> {
+    try {
+      const res = await fetch(`${this.serverApiUrl}/status/${encodeURIComponent(serverCode)}/spawns?hours=${hours}`);
+
+      if (!res.ok) {
+        console.warn("Failed to fetch the spawn list", res.statusText);
+        return null;
+      }
+
+      return (await res.json()) as SpawnListEntry[];
+    } catch (e) {
+      console.error("Failed to get the spawn list", e);
+      return null;
+    }
   }
 
   async fetchPlayableArea(): Promise<GeoJSON.Polygon | GeoJSON.MultiPolygon | null> {

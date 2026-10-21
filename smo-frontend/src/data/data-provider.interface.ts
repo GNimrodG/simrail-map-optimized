@@ -3,6 +3,7 @@
 import {
   ServerRestartPrediction,
   ServerStatus,
+  SpawnListEntry,
   SignalStatus,
   SimplifiedTimtableEntry,
   Station,
@@ -76,6 +77,15 @@ export interface IDataProvider {
    * @return A promise that resolves to the area, or null if it's unavailable.
    */
   fetchPlayableArea(): Promise<GeoJSON.Polygon | GeoJSON.MultiPolygon | null>;
+
+  /**
+   * Get the trains that spawn at the border stations of a server in the next hours (and the overdue and just spawned
+   * ones), ordered by their expected spawn time.
+   * @param serverCode The server code.
+   * @param hours How many hours ahead (1-6).
+   * @return A promise that resolves to the list, or null if it's unavailable.
+   */
+  fetchSpawnList(serverCode: string, hours: number): Promise<SpawnListEntry[] | null>;
 
   getSteamProfileData(steamId: string): Promise<UserProfileResponse | null>;
   getSteamProfileStats(steamId: string): Promise<SteamProfileStats | null>;

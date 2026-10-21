@@ -33,6 +33,7 @@ import SimRailApiWarning from "./SimRailApiWarning";
 import SettingsModal from "./settings/SettingsModal";
 import StatsDisplay from "./StatsDisplay";
 import SelectedStationTimetableModal from "./timetable/SelectedStationTimetableModal";
+import SpawnListModal from "./spawns/SpawnListModal";
 import ServerTrainListModal from "./trains/ServerTrainListModal";
 import RefreshableTileLayer from "./utils/RefreshableTileLayer";
 import ThemeToggle from "./utils/ThemeToggle";
@@ -238,6 +239,8 @@ const MainMap: FunctionComponent = () => {
           <ThemeToggle />
 
           <ServerTrainListModal />
+
+          <SpawnListModal />
 
           <SettingsModal />
         </Stack>

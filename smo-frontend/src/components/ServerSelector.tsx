@@ -8,7 +8,8 @@ import { type FunctionComponent, useCallback, useContext } from "react";
 import { useTranslation } from "react-i18next";
 
 import useBehaviorSubj from "../hooks/useBehaviorSubj";
-import { useNow, useServerRestarts } from "../hooks/useServerRestarts";
+import useNow from "../hooks/useNow";
+import { useServerRestarts } from "../hooks/useServerRestarts";
 import { useSetting } from "../hooks/useSetting";
 import { dataProvider } from "../utils/data-manager";
 import SelectedRouteContext from "../utils/selected-route-context";

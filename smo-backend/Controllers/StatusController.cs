@@ -25,6 +25,7 @@ namespace SMOBackend.Controllers;
 /// <param name="routePointAnalyzerService">Analyzes route-line and signal-line geometry data.</param>
 /// <param name="serverRestartAnalyzerService">Analyzes and predicts server restart patterns.</param>
 /// <param name="stationAnalyzerService">Stores and serves known station metadata.</param>
+/// <param name="spawnAnalyzerService">Learns the border spawn points and lists the trains that spawn soon.</param>
 [ApiController]
 [Route("status")]
 [Produces("application/json")]
@@ -39,7 +40,8 @@ public class StatusController(
     TimetableAnalyzerService timetableAnalyzerService,
     RoutePointAnalyzerService routePointAnalyzerService,
     ServerRestartAnalyzerService serverRestartAnalyzerService,
-    StationAnalyzerService stationAnalyzerService
+    StationAnalyzerService stationAnalyzerService,
+    SpawnAnalyzerService spawnAnalyzerService
 ) : ControllerBase
 {
     private static bool ValidatePassword(string? password) =>
@@ -343,6 +345,27 @@ public class StatusController(
             return NotFound(new NotFoundError("Server not found", "server_not_found"));
 
         return Ok(serverRestartAnalyzerService.GetNextRestartPrediction(serverCode));
+    }
+
+    /// <summary>
+    ///     Gets the trains that spawn (enter the map at a border station) on a server in the next hours, the overdue ones
+    ///     and the ones that spawned in the last minutes, ordered by their (expected) spawn time.
+    /// </summary>
+    /// <param name="serverCode">The server code</param>
+    /// <param name="hours">How many hours ahead to list (1-6).</param>
+    [HttpGet("{serverCode}/spawns")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(NotFoundError))]
+    public ActionResult<SpawnListEntry[]> GetSpawnList(string serverCode, [FromQuery] int hours = 2)
+    {
+        if (!CheckServer(serverCode))
+            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+
+        if (hours is < 1 or > 6)
+            return BadRequest("hours must be between 1 and 6");
+
+        return Ok(spawnAnalyzerService.GetSpawnList(serverCode, hours));
     }
 
     /// <summary>
