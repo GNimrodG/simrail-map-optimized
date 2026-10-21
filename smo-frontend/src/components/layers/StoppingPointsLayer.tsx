@@ -42,9 +42,7 @@ function getVisibleStoppingPoints(map: L.Map): OsmNode[] {
 
 const StoppingPointsLayer: FunctionComponent = () => {
   const map = useMap();
-  const [visibleStoppingPoints, setVisibleStoppingPoints] = useState<OsmNode[]>(() =>
-    getVisibleStoppingPoints(map),
-  );
+  const [visibleStoppingPoints, setVisibleStoppingPoints] = useState<OsmNode[]>(() => getVisibleStoppingPoints(map));
 
   useEffect(() => {
     // the data is local, so the points in view are updated right when the map stops moving

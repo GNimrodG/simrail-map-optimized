@@ -229,6 +229,62 @@
   fill: var(--joy-palette-neutral-600);
 }
 
+/* Signal icons turned to the signal's real orientation (see getOrientedSignalIcon) */
+.signal-orientation {
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+}
+
+/* like without the wrapper: the SVG icons are as wide as the marker and taller than it (it's not square), the image
+   icons fill it */
+.signal-orientation > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.signal-orientation > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Level crossings: a St. Andrew's cross, coloured by how the crossing is protected */
+.icon.crossing svg {
+  width: 100%;
+  height: 100%;
+  stroke: var(--joy-palette-background-surface);
+  stroke-width: 1.5px;
+  paint-order: stroke;
+}
+
+/* the crossing's kilometre */
+.icon.crossing .tooltip {
+  white-space: nowrap;
+  font-size: var(--joy-fontSize-xs);
+  color: var(--joy-palette-text-secondary);
+}
+
+.icon.crossing.barriers svg {
+  fill: var(--joy-palette-danger-500);
+}
+
+.icon.crossing.lights svg {
+  fill: var(--joy-palette-warning-400);
+}
+
+.icon.crossing.passive svg {
+  fill: var(--joy-palette-neutral-400);
+}
+
+/* signs before the crossings, drawn in their own colours */
+.icon.crossing-sign svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .icon.selected-route svg {
   fill: var(--joy-palette-primary-600);
 }

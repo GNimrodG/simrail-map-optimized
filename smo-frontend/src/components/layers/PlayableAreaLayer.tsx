@@ -47,9 +47,7 @@ const PlayableAreaLayer: FunctionComponent = () => {
 
     return [
       WORLD_RING,
-      ...polygons.flatMap((polygon) =>
-        polygon.map((ring) => ring.map(([lng, lat]) => [lat, lng] as LatLngExpression)),
-      ),
+      ...polygons.flatMap((polygon) => polygon.map((ring) => ring.map(([lng, lat]) => [lat, lng] as LatLngExpression))),
     ];
   }, [area]);
 

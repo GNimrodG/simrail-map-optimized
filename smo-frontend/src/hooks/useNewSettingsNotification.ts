@@ -1,5 +1,5 @@
 import { useLocalStorage } from "@mantine/hooks";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getCookieConsentValue } from "react-cookie-consent";
 
 import { ALL_SETTINGS_KEYS } from "./useSetting";
@@ -12,16 +12,14 @@ export function useNewSettingsNotification() {
     defaultValue: [],
   });
 
-  const [hasNewSettings, setHasNewSettings] = useState(false);
+  // dismissed for this visit even when the seen settings can't be stored (cookies not accepted)
+  const [dismissed, setDismissed] = useState(false);
 
-  useEffect(() => {
-    // Check if there are any new settings the user hasn't seen
-    const unseenSettings = ALL_SETTINGS_KEYS.filter((key) => !seenKeys.includes(key));
-    setHasNewSettings(unseenSettings.length > 0);
-  }, [seenKeys]);
+  // Check if there are any new settings the user hasn't seen
+  const hasNewSettings = !dismissed && ALL_SETTINGS_KEYS.some((key) => !seenKeys.includes(key));
 
   const markAsSeen = () => {
-    setHasNewSettings(false);
+    setDismissed(true);
 
     // Only store in localStorage if cookies are accepted
     const cookiesAccepted = getCookieConsentValue("smo_data_unknown_gdpr_consent") === "true";

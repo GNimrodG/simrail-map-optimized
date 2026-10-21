@@ -7,10 +7,9 @@ import Stack from "@mui/joy/Stack";
 import { styled } from "@mui/joy/styles";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
-import { type FunctionComponent } from "react";
+import { type FunctionComponent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { usePrevious } from "../hooks/usePrevious";
 import { Train } from "../utils/types";
 import { getColorTrainMarker, getDistanceColorForSignal } from "../utils/ui";
 import CargoIcon from "./icons/boxes-stacked.svg?react";
@@ -87,7 +86,24 @@ const TrainDisplay = styled(Input, { shouldForwardProp: (p) => p !== "isPrev" })
 
 const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, defs, train }) => {
   const { t } = useTranslation("translation", { keyPrefix: "StationMarkerPopup.StationLayout" });
-  const [_prevTrain, prevTrainTime] = usePrevious(train, true);
+  // the train that left the block, shown for 30 seconds after it left
+  const [lastTrain, setLastTrain] = useState(train);
+  const [prevTrain, setPrevTrain] = useState<Train | null>(null);
+  if (train !== lastTrain) {
+    setLastTrain(train);
+    if (!train && lastTrain) {
+      setPrevTrain(lastTrain);
+    }
+  }
+
+  useEffect(() => {
+    if (!prevTrain) {
+      return;
+    }
+
+    const timeout = setTimeout(() => setPrevTrain(null), 30_000);
+    return () => clearTimeout(timeout);
+  }, [prevTrain]);
   const blockName = data[0];
   const colSpan = +data[1];
 
@@ -107,9 +123,6 @@ const StationLayoutBlock: FunctionComponent<StationLayoutBlockProps> = ({ data, 
   const lengthSignal2 = +defs[blockName][4] || null;
   const track = defs[blockName]?.[5] || null;
   const platform = defs[blockName]?.[6] || null;
-
-  // Show previous train if it was within 30 seconds
-  const prevTrain = Date.now() - prevTrainTime < 30000 ? _prevTrain : null;
 
   return (
     <Box component="td" colSpan={colSpan}>

@@ -39,9 +39,9 @@ import { OsmTagged, Station, UserProfileResponse } from "../../../utils/types";
 import InfoIcon from "../../icons/InfoIcon";
 import Loading from "../../Loading";
 import SteamProfileDisplay from "../../profile/SteamProfileDisplay";
+import XboxProfileDisplay from "../../profile/XboxProfileDisplay";
 import SignalSpeedDisplay from "../../utils/SignalSpeedDisplay";
 import RemoteControlStationDisplay from "./RemoteControlStationDisplay";
-import XboxProfileDisplay from "../../profile/XboxProfileDisplay";
 
 const StationLayout = lazy(() => import("../../StationLayout"));
 
@@ -229,9 +229,9 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
                               <Typography>
                                 {!!signal.Trains?.length && (
                                   <SignalSpeedDisplay
-                                    train={
-                                      dataProvider.trainsData$.value.find((t) => t.TrainNoLocal === signal.Trains![0])!
-                                    }
+                                    train={dataProvider.trainsData$.value.find(
+                                      (t) => t.TrainNoLocal === signal.Trains![0],
+                                    )!}
                                   />
                                 )}
                               </Typography>

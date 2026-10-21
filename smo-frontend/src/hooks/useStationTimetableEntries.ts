@@ -5,8 +5,10 @@ import { dataProvider } from "../utils/data-manager";
 import { SimplifiedTimtableEntry } from "../utils/types";
 
 const useStationTimetableEntries = (mainStation: string) => {
-  const [stationTimetable, setStationTimetable] = useState<SimplifiedTimtableEntry[] | null>(null);
-  const [loading, setLoading] = useState(false);
+  // the last fetched timetable and the station it's for: the previous station's stays while the next one loads
+  const [result, setResult] = useState<{ station: string; entries: SimplifiedTimtableEntry[] | null } | null>(null);
+  const stationTimetable = mainStation ? (result?.entries ?? null) : null;
+  const loading = !!mainStation && result?.station !== mainStation;
 
   const subStations = useMemo(() => {
     return UnplayableStations.find((station) => station.Name === mainStation)?.SubStations || [];
@@ -116,12 +118,10 @@ const useStationTimetableEntries = (mainStation: string) => {
 
   useEffect(() => {
     if (!mainStation) {
-      setStationTimetable(null);
       return;
     }
 
     const abortController = new AbortController();
-    setLoading(true);
 
     const fetchTimetableData = async () => {
       try {
@@ -134,20 +134,16 @@ const useStationTimetableEntries = (mainStation: string) => {
 
         if (!mainStationEntries) {
           console.warn(`Main station ${mainStation} not found in timetable entries.`);
-          setStationTimetable(null);
+          setResult({ station: mainStation, entries: null });
           return;
         }
 
         const processedEntries = processStationEntries(mainStationEntries, subStationEntriesArrays);
-        setStationTimetable(processedEntries);
+        setResult({ station: mainStation, entries: processedEntries });
       } catch (err) {
         if (!abortController.signal.aborted) {
           console.error("Failed to fetch station timetable data:", err);
-          setStationTimetable(null);
-        }
-      } finally {
-        if (!abortController.signal.aborted) {
-          setLoading(false);
+          setResult({ station: mainStation, entries: null });
         }
       }
     };

@@ -12,16 +12,16 @@ import {
   PartialTrainData,
   ServerRestartPrediction,
   ServerStatus,
-  SpawnListEntry,
   SignalStatus,
   SignalStatusData,
   SimplifiedTimtableEntry,
+  SpawnListEntry,
   Station,
-  UserProfileResponse,
   SteamProfileStats,
   TimeData,
   Timetable,
   Train,
+  UserProfileResponse,
 } from "../utils/types";
 import { IDataProvider } from "./data-provider.interface";
 

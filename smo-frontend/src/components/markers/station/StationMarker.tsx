@@ -1,10 +1,10 @@
 import L from "leaflet";
-import { type FunctionComponent, useEffect, useRef, useState } from "react";
+import { type FunctionComponent, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Marker, Popup } from "react-leaflet";
 
-import { useSetting } from "../../../hooks/useSetting";
 import { useProfileData } from "../../../hooks/useProfileData";
+import { useSetting } from "../../../hooks/useSetting";
 import { getOsmNodeName, getStationOsmData } from "../../../utils/osm-utils";
 import { OsmTagged, Station } from "../../../utils/types";
 import PersonIcon from "../../icons/person.svg?raw";
@@ -15,12 +15,6 @@ export interface StationMarkerProps {
   station: Station;
   layerId: string;
 }
-
-const DEFAULT_ICON = new L.DivIcon({
-  iconSize: [40, 40],
-  html: BotIcon,
-  className: "icon station bot",
-});
 
 function getIcon(stationName: string, lng: string, avatar?: string, osmData?: OsmTagged | null) {
   if (avatar) {
@@ -45,7 +39,6 @@ function getIcon(stationName: string, lng: string, avatar?: string, osmData?: Os
 const StationMarker: FunctionComponent<StationMarkerProps> = ({ station, layerId }) => {
   const { i18n } = useTranslation();
   const markerRef = useRef<L.Marker>(null);
-  const [icon, setIcon] = useState<L.Icon<Partial<L.IconOptions>>>(DEFAULT_ICON);
   const [layerOpacities] = useSetting("layerOpacities");
   const opacity = layerOpacities[layerId] ?? layerOpacities.stations ?? 1;
   const osmData = getStationOsmData(station.Name);
@@ -53,25 +46,11 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station, layerId
 
   const { userData } = useProfileData(station.DispatchedBy?.[0]?.SteamId, station.DispatchedBy?.[0]?.XboxId);
 
-  useEffect(() => {
-    setIcon(
-      getIcon(
-        station.Name,
-        i18n.language,
-        userData?.Avatar || userData?.PersonaName || station.DispatchedBy?.[0]?.XboxId || undefined,
-        translateStationNames ? osmData : undefined,
-      ),
-    );
-  }, [
-    i18n.language,
-    osmData,
-    station.DispatchedBy,
-    station.Name,
-    translateStationNames,
-    userData?.Avatar,
-    userData?.PersonaName,
-    station.DispatchedBy?.[0]?.XboxId,
-  ]);
+  const avatar = userData?.Avatar || userData?.PersonaName || station.DispatchedBy?.[0]?.XboxId || undefined;
+  const icon = useMemo(
+    () => getIcon(station.Name, i18n.language, avatar, translateStationNames ? osmData : undefined),
+    [station.Name, i18n.language, avatar, translateStationNames, osmData],
+  );
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 

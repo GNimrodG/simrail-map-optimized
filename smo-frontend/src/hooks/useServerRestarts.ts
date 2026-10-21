@@ -26,4 +26,3 @@ export function useServerRestarts(): Map<string, Moment> {
     [predictions],
   );
 }
-

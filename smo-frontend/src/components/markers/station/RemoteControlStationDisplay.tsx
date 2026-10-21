@@ -2,11 +2,12 @@
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import isEqual from "lodash/isEqual";
-import { type FunctionComponent, memo, useEffect, useState } from "react";
+import { type FunctionComponent, memo, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 import { withLatestFrom } from "rxjs";
 
+import useBehaviorSubj from "../../../hooks/useBehaviorSubj";
 import { dataProvider } from "../../../utils/data-manager";
 import { goToStation } from "../../../utils/geom-utils";
 import { Station } from "../../../utils/types";
@@ -23,8 +24,22 @@ const RemoteControlStationDisplay: FunctionComponent<RemoteControlStationDisplay
   const map = useMap();
   const { t } = useTranslation("translation", { keyPrefix: "StationMarkerPopup" });
   const [controlStation, setControlStation] = useState<Station | null>(null);
-  const [subStations, setSubStations] = useState<Station[]>([]);
+  const unplayableStations = useBehaviorSubj(dataProvider.unplayableStations$);
 
+  // the stations this one controls remotely
+  const subStations = useMemo(
+    () =>
+      station.RemoteControlled
+        ? []
+        : unplayableStations.filter(
+            (s) =>
+              s.RemoteControlled === station.Prefix &&
+              (!station.SubStations?.length || station.SubStations.includes(s.Name)),
+          ),
+    [station.Prefix, station.RemoteControlled, station.SubStations, unplayableStations],
+  );
+
+  // the station controlling this one
   useEffect(() => {
     if (station.RemoteControlled) {
       const subscription = dataProvider.stationsData$
@@ -45,16 +60,8 @@ const RemoteControlStationDisplay: FunctionComponent<RemoteControlStationDisplay
       return () => {
         subscription.unsubscribe();
       };
-    } else {
-      setSubStations(
-        dataProvider.unplayableStations$.value.filter(
-          (s) =>
-            s.RemoteControlled === station.Prefix &&
-            (!station.SubStations?.length || station.SubStations.includes(s.Name)),
-        ),
-      );
     }
-  }, [station.Prefix, station.RemoteControlled]);
+  }, [station.Name, station.RemoteControlled]);
 
   const handleGoToControlStation = () => {
     goToStation(controlStation!, map);

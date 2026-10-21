@@ -55,10 +55,19 @@ public partial class Signal : BaseEntity
     public double Accuracy { get; set; }
 
     /// <summary>
+    ///     Gets or sets the direction of travel the signal applies to, in degrees clockwise from north.
+    /// </summary>
+    /// <remarks>
+    ///     Only known for signals imported from the game files, null for the ones learned from trains.
+    /// </remarks>
+    [JsonProperty(nameof(Heading))]
+    public double? Heading { get; set; }
+
+    /// <summary>
     ///     Gets or sets the type classification of the signal.
     /// </summary>
     /// <remarks>
-    ///     Common values include "main", "block", or null for unknown types.
+    ///     Common values include "main", "block", "repeater", "distant", "shunting", or null for unknown types.
     ///     Maximum length is 10 characters.
     /// </remarks>
     [JsonProperty(nameof(Station)), MaxLength(10)]
@@ -149,6 +158,28 @@ public partial class Signal : BaseEntity
     /// <returns></returns>
     [GeneratedRegex(@"^L\d+_\d+[A-Z]$")]
     public static partial Regex BLOCK_SIGNAL_REVERSE_REGEX();
+
+    /// <summary>
+    /// A repeater signal (sygnalizator powtarzający, e.g. "DS_ISpW", "DS_IISpW", "1937_BT_SpO"): it repeats the main
+    /// signal named without the "ISp"/"IISp"/"IIISp"/"Sp" ("DS_W", "1937_BT_O") ahead of it. Trains never report them,
+    /// they come from the game files. Group 1 + group 2 is the main signal's name.
+    /// </summary>
+    [GeneratedRegex(@"^(.+_)(?:I{1,3}|Y)?Sp([A-Z][A-Za-z0-9]*)$")]
+    public static partial Regex REPEATER_SIGNAL_REGEX();
+
+    /// <summary>
+    /// A shunting signal (tarcza manewrowa, "Tl_Tm6", "DS_Tm15a"). They come from the game files.
+    /// </summary>
+    [GeneratedRegex(@"^.+_Tm\d+[a-z]?$")]
+    public static partial Regex SHUNTING_SIGNAL_REGEX();
+
+    /// <summary>
+    /// A distant signal (tarcza ostrzegawcza, "W1_ToA"): it warns about the main signal named without the "To" ("W1_A"),
+    /// about a kilometre ahead. Trains never report them, they come from the game files. Group 1 + group 2 is the main
+    /// signal's name.
+    /// </summary>
+    [GeneratedRegex(@"^(.+_)To([A-Z][A-Za-z0-9]*)$")]
+    public static partial Regex DISTANT_SIGNAL_REGEX();
 
     [GeneratedRegex(
         @"^(\d+_)?([A-KM-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ][A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ]*|[A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ]{2,})\d*_[A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ0-9]+",
@@ -281,6 +312,9 @@ public partial class Signal : BaseEntity
     /// </summary>
     /// <remarks>
     /// The signal type is determined by the following rules:
+    /// - "repeater": If the signal name matches REPEATER_SIGNAL_REGEX (these also look like main signal names)
+    /// - "shunting": If the signal name matches SHUNTING_SIGNAL_REGEX (these too)
+    /// - "distant": If the signal name matches DISTANT_SIGNAL_REGEX (these too)
     /// - "main": If the train's signal in front speed is 60 or 100 km/h, or the signal name matches MAIN_SIGNAL_REGEX
     /// - "block": If the signal name matches BLOCK_SIGNAL_REGEX 
     /// - null: If none of the above conditions are met
@@ -301,6 +335,27 @@ public partial class Signal : BaseEntity
 
         // Store previous type to check if it changed
         var prevType = Type;
+
+        // Rule 0: Signal is a "repeater" (of a main signal) if its name says so
+        if (REPEATER_SIGNAL_REGEX().IsMatch(Name))
+        {
+            Type = "repeater";
+            return prevType != Type;
+        }
+
+        // Rule 0b: Signal is a "shunting" signal if its name says so
+        if (SHUNTING_SIGNAL_REGEX().IsMatch(Name))
+        {
+            Type = "shunting";
+            return prevType != Type;
+        }
+
+        // Rule 0c: Signal is a "distant" signal (of a main signal) if its name says so
+        if (DISTANT_SIGNAL_REGEX().IsMatch(Name))
+        {
+            Type = "distant";
+            return prevType != Type;
+        }
 
         // Rule 1: Signal is a "main" type if:
         // - Train's signal in front has a speed of 60 or 100 km/h, or

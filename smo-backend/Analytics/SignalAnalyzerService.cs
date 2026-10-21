@@ -304,6 +304,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                                   ST_Y(s.location) as latitude,
                                   s.extra,
                                   s.accuracy,
+                                  s.heading,
                                   s.type,
                                   s.role,
                                   s.prev_finalized,
@@ -337,6 +338,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             Name = r.Name,
             Extra = r.Extra,
             Accuracy = r.Accuracy,
+            Heading = r.Heading,
             Type = r.Type,
             Role = r.Role,
             PrevFinalized = r.PrevFinalized,
@@ -368,6 +370,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 Name = signal.Name,
                 Extra = signal.Extra,
                 Accuracy = signal.Accuracy,
+                Heading = signal.Heading,
                 Type = signal.Type,
                 Role = signal.Role,
                 PrevFinalized = signal.PrevFinalized,
@@ -860,7 +863,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         if (signal != null)
         {
             // signal already exists
-            if (signal.Accuracy <= train.TrainData.DistanceToSignalInFront) return signal;
+            if (signal.Accuracy == 0 || signal.Accuracy <= train.TrainData.DistanceToSignalInFront) return signal;
 
             var dbSignal = await signal.GetDbSignal(context);
 
@@ -1370,6 +1373,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         public required double Latitude { get; init; }
         public required string Extra { get; init; }
         public required double Accuracy { get; init; }
+        public required double? Heading { get; init; }
         public required string? Type { get; init; }
         public required string? Role { get; init; }
         public required bool PrevFinalized { get; init; }

@@ -15,17 +15,16 @@ export function useProfileData(
   xboxId?: string | null | undefined,
   providedUserData?: UserProfileResponse | null,
 ) {
-  const [userData, setUserData] = useState<UserProfileResponse | null>(providedUserData || null);
-  const [loading, setLoading] = useState(false);
+  // the last fetched profile and the player it's for: the previous player's stays while the next one loads
+  const playerKey = steamId || xboxId ? `${steamId}|${xboxId}` : null;
+  const [result, setResult] = useState<{ key: string; userData: UserProfileResponse | null } | null>(null);
 
   useEffect(() => {
-    if ((!steamId && !xboxId) || providedUserData) {
-      setUserData(providedUserData || null);
+    if (!playerKey || providedUserData) {
       return;
     }
 
     const abortController = new AbortController();
-    setLoading(true);
 
     (!!steamId && steamId !== "null"
       ? dataProvider.getSteamProfileData(steamId)
@@ -35,25 +34,26 @@ export function useProfileData(
     )
       .then((data) => {
         if (!abortController.signal.aborted) {
-          setUserData(data ?? { PersonaName: steamId ?? xboxId ?? "", Avatar: "" });
+          setResult({ key: playerKey, userData: data ?? { PersonaName: steamId ?? xboxId ?? "", Avatar: "" } });
         }
       })
       .catch((e) => {
         if (!abortController.signal.aborted) {
           console.error("Failed to fetch Steam profile data: ", e);
-          setUserData(null);
-        }
-      })
-      .finally(() => {
-        if (!abortController.signal.aborted) {
-          setLoading(false);
+          setResult({ key: playerKey, userData: null });
         }
       });
 
     return () => {
       abortController.abort();
     };
-  }, [steamId, xboxId, providedUserData]);
+  }, [playerKey, steamId, xboxId, providedUserData]);
 
-  return { userData, loading };
+  if (providedUserData) {
+    return { userData: providedUserData, loading: false };
+  }
+  if (!playerKey) {
+    return { userData: null, loading: false };
+  }
+  return { userData: result?.userData ?? null, loading: result?.key !== playerKey };
 }

@@ -16,7 +16,7 @@ import Table from "@mui/joy/Table";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import moment from "moment";
-import { type FunctionComponent, useContext, useEffect, useMemo, useState } from "react";
+import { type FunctionComponent, useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import useBehaviorSubj from "../../hooks/useBehaviorSubj";
@@ -107,16 +107,19 @@ const SpawnListModal: FunctionComponent = () => {
   const entries = useSpawnList(isOpen);
   useNow(10_000); // keeps the countdowns current
 
-  const [border, setBorder] = useState(ALL_BORDERS);
+  const [border, setBorder] = useState(request?.station ?? ALL_BORDERS);
   const [search, setSearch] = useState("");
   // a preference, kept across openings and reloads
   const [hideSpawned, setHideSpawned] = useLocalStorage({ key: "spawnListHideSpawned", defaultValue: false });
   // every opening starts fresh, an old search could hide the trains of the station it was opened for
-  useEffect(() => {
-    if (!request) return;
-    setBorder(request.station ?? ALL_BORDERS);
-    setSearch("");
-  }, [request]);
+  const [lastRequest, setLastRequest] = useState(request);
+  if (request !== lastRequest) {
+    setLastRequest(request);
+    if (request) {
+      setBorder(request.station ?? ALL_BORDERS);
+      setSearch("");
+    }
+  }
 
   // the border stations with their number of upcoming trains, and the station the list was opened for
   const borderOptions = useMemo(() => {

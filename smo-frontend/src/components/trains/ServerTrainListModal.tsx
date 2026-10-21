@@ -89,15 +89,16 @@ const ServerTrainListModal: FunctionComponent = () => {
   const [debouncedSearch] = useDebouncedValue(search, 300);
 
   const [trainTimetables, setTrainTimetables] = useState<Record<string, Timetable | null>>({});
-  const [isLoadingTimetables, setIsLoadingTimetables] = useState(false);
   const fetchingTrainNosRef = useRef<Set<string>>(new Set());
 
   const currentTimeEpoch = useSubject(timeSubjEvery10s$, timeSubj$.value);
   const currentTime = useMemo(() => new Date(currentTimeEpoch), [currentTimeEpoch]);
 
+  // every fetch ends with an entry (null when it failed)
+  const isLoadingTimetables = isOpen && trains.some((train) => !(train.TrainNoLocal in trainTimetables));
+
   useEffect(() => {
     if (!isOpen || !trains.length) {
-      setIsLoadingTimetables(false);
       return;
     }
 
@@ -108,21 +109,16 @@ const ServerTrainListModal: FunctionComponent = () => {
       });
 
     if (!missingTrainNos.length) {
-      setIsLoadingTimetables(false);
       return;
     }
 
     let cancelled = false;
     const fetchingSet = fetchingTrainNosRef.current;
-    setIsLoadingTimetables(true);
 
     // Mark these trains as being fetched
     for (const trainNo of missingTrainNos) {
       fetchingSet.add(trainNo);
     }
-
-    // Track how many fetches are still pending
-    let pendingCount = missingTrainNos.length;
 
     // Fetch each timetable independently and update state progressively
     for (const trainNo of missingTrainNos) {
@@ -144,18 +140,12 @@ const ServerTrainListModal: FunctionComponent = () => {
         .finally(() => {
           if (!cancelled) {
             fetchingSet.delete(trainNo);
-            pendingCount--;
-            // Only turn off loading when all fetches complete
-            if (pendingCount === 0) {
-              setIsLoadingTimetables(false);
-            }
           }
         });
     }
 
     return () => {
       cancelled = true;
-      setIsLoadingTimetables(false);
       for (const trainNo of missingTrainNos) {
         fetchingSet.delete(trainNo);
       }

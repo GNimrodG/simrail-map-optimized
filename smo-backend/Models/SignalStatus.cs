@@ -18,6 +18,7 @@ public class SignalStatus : Signal
         Extra = signal.Extra;
         Location = signal.Location;
         Accuracy = signal.Accuracy;
+        Heading = signal.Heading;
         Type = signal.Type;
         Role = signal.Role;
         PrevRegex = signal.PrevRegex;

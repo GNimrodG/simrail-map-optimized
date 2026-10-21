@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Repeater signal (sygnalizator powtarzający) Sp4: 40 or 60 km/h at the main signal (flashing orange), like the SimRail wiki's drawing without the pole -->
+<svg viewBox="0 0 10 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="10" height="24" rx="5" style="fill:#000000" />
+  <circle cx="5" cy="5" r="2.3" fill="#ffc515"><animate attributeName="fill" values="#ffc515;#2b2b2b" dur="1s" calcMode="discrete" repeatCount="indefinite" /></circle>
+  <circle cx="5" cy="12" r="2.3" fill="#2b2b2b"></circle>
+  <circle cx="5" cy="19" r="2.3" fill="#ffffff" />
+</svg>

@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
 using SMOBackend.Analytics;
 using SMOBackend.Data;
 using SMOBackend.Models;
+using SMOBackend.Models.Entity;
 using SMOBackend.Utils;
 
 namespace SMOBackend.Controllers;
@@ -237,6 +239,96 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
 
         return Ok(new SignalStatus(signal));
     }
+
+    /// <summary>
+    /// Create or correct signals from the game files: new signals are added, existing ones get the exact location
+    /// (accuracy 0, so trains don't overwrite it), the heading and the extra data. Connections are not touched.
+    /// </summary>
+    /// <remarks>
+    /// Trains are the ground truth for the signals they passed: when a signal learned from trains (accuracy under
+    /// <see cref="ImportConflictAccuracy"/> m) is more than <see cref="ImportConflictDistance"/> m from the game's
+    /// position, its location is kept and the signal is returned as a conflict.
+    /// </remarks>
+    /// <param name="body">The signals and the password.</param>
+    /// <returns>How many signals were added and updated, and the conflicts.</returns>
+    [HttpPost("import")]
+    [RequestSizeLimit(16 * 1024 * 1024)]
+    public async Task<ActionResult> ImportSignals([FromBody] SignalImportRequest body)
+    {
+        if (!ValidatePassword(body.Password))
+            return Unauthorized("Invalid password.");
+
+        var invalid = body.Signals
+            .Where(s => string.IsNullOrWhiteSpace(s.Name) || s.Name.Length > StdUtils.SignalNameLength ||
+                        s.Extra.Length > 255 || s.Heading is < 0 or >= 360 ||
+                        s.Longitude is < -180 or > 180 || s.Latitude is < -90 or > 90)
+            .Select(s => s.Name)
+            .ToArray();
+        if (invalid.Length > 0)
+            return BadRequest($"Invalid signals: {string.Join(", ", invalid.Take(20))}");
+
+        var duplicates = body.Signals.GroupBy(s => s.Name).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
+        if (duplicates.Length > 0)
+            return BadRequest($"Duplicate signals: {string.Join(", ", duplicates.Take(20))}");
+
+        var names = body.Signals.Select(s => s.Name).ToArray();
+        var existing = await context.Signals
+            .Where(s => names.Contains(s.Name))
+            .ToDictionaryAsync(s => s.Name);
+
+        var now = DateTime.UtcNow;
+        int added = 0, updated = 0;
+        var conflicts = new List<object>();
+        foreach (var entry in body.Signals)
+        {
+            var location = new Point(entry.Longitude, entry.Latitude) { SRID = 4326 };
+            if (existing.TryGetValue(entry.Name, out var signal))
+            {
+                var distance = signal.Location.HaversineDistance(location);
+                if (signal.Accuracy is > 0 and < ImportConflictAccuracy && distance > ImportConflictDistance)
+                {
+                    conflicts.Add(new { signal.Name, Distance = Math.Round(distance), signal.Accuracy });
+                }
+                else
+                {
+                    signal.Location = location;
+                    signal.Accuracy = 0;
+                    signal.Extra = entry.Extra;
+                }
+
+                signal.Heading = entry.Heading ?? signal.Heading;
+                signal.UpdatedAt = now;
+                updated++;
+                continue;
+            }
+
+            signal = new Signal
+            {
+                Name = entry.Name,
+                Extra = entry.Extra,
+                Location = location,
+                Accuracy = 0,
+                Heading = entry.Heading,
+                PrevFinalized = false,
+                NextFinalized = false,
+                NextSignalConnections = [],
+                PrevSignalConnections = [],
+                CreatedBy = "game-files"
+            };
+            signal.UpdateType(null);
+            context.Signals.Add(signal);
+            added++;
+        }
+
+        await context.SaveChangesAsync();
+        // otherwise clients get the cached pre-import signals for a while
+        signalAnalyzerService.InvalidateSignalsSnapshot();
+
+        return Ok(new { added, updated, conflicts });
+    }
+
+    private const double ImportConflictAccuracy = 5;
+    private const double ImportConflictDistance = 50;
 
     /// <summary>
     /// Delete a signal.

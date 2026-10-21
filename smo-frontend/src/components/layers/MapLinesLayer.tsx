@@ -11,7 +11,7 @@ const MapLinesLayer: FunctionComponent = () => {
     [
       "Escape",
       () => {
-        mapLines && setMapLines(null);
+        if (mapLines) setMapLines(null);
       },
     ],
     [

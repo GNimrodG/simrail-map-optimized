@@ -1,6 +1,6 @@
-import {MapLineData} from "./map-lines-context";
-import {SignalStatus} from "./types";
-import {getCoordsFromLineString} from "./ui";
+import { MapLineData } from "./map-lines-context";
+import { SignalStatus } from "./types";
+import { getCoordsFromLineString } from "./ui";
 
 const SPEED_COLORS: Record<number, string> = {
   32767: "#00FF00",

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Shunting signal (tarcza manewrowa) Ms2: shunting allowed (white), like the SimRail wiki's drawing without the pole -->
+<svg viewBox="0 0 10 15.4" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="10" height="15.4" rx="5" style="fill:#000000" />
+  <circle cx="5" cy="4.2" r="1.9" style="fill:#2b2b2b" />
+  <circle cx="5" cy="10.3" r="1.9" style="fill:#ffffff" />
+</svg>

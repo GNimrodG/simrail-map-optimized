@@ -113,9 +113,7 @@ function getGroupTranslationKey(type: ListItem["type"]) {
 }
 
 type ListItem =
-  | { type: "Trains"; data: Train }
-  | { type: "Stations"; data: Station }
-  | { type: "Signals"; data: SignalStatus };
+  { type: "Trains"; data: Train } | { type: "Stations"; data: Station } | { type: "Signals"; data: SignalStatus };
 
 function getLabel(option: ListItem) {
   switch (option.type) {

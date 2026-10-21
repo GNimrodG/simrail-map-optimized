@@ -88,6 +88,8 @@ const Settings: FunctionComponent = () => {
           <SettingCheckbox settingKey="useAltTracking" />
           <SettingCheckbox settingKey="disableSlidingMarkers" />
           <SettingCheckbox settingKey="showTrainHeadings" />
+          <SettingCheckbox settingKey="rotateSignalIcons" />
+          <SettingCheckbox settingKey="whistleSignWarnings" />
           <SettingCheckbox settingKey="disableLowSpeedWarning" />
           <SettingCheckbox settingKey="disableServerRestartWarning" />
           <SettingCheckbox settingKey="reduceBackgroundUpdates" />
@@ -149,9 +151,13 @@ const Settings: FunctionComponent = () => {
           <LayerOpacitySlider layerId="user-trains" layerType="Overlay" legacyLayerId="trains" />
           <LayerOpacitySlider layerId="active-signals" layerType="Overlay" />
           <LayerOpacitySlider layerId="passive-signals" layerType="Overlay" />
+          <LayerOpacitySlider layerId="distant-signals" layerType="Overlay" />
+          <LayerOpacitySlider layerId="repeater-signals" layerType="Overlay" />
+          <LayerOpacitySlider layerId="shunting-signals" layerType="Overlay" />
           <LayerOpacitySlider layerId="selected-route" layerType="Overlay" />
           <LayerOpacitySlider layerId="unplayable-stations" layerType="Overlay" />
           <LayerOpacitySlider layerId="stoppingpoints" layerType="Overlay" />
+          <LayerOpacitySlider layerId="crossings" layerType="Overlay" />
           <LayerOpacitySlider layerId="playable-area" layerType="Overlay" />
         </Stack>
       </Stack>

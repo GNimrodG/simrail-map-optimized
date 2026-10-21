@@ -16,8 +16,8 @@ import moment from "moment";
 import { type FunctionComponent, useCallback, useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useSetting } from "../../../hooks/useSetting";
 import { useProfileData } from "../../../hooks/useProfileData";
+import { useSetting } from "../../../hooks/useSetting";
 import useSubject from "../../../hooks/useSubject";
 import { useTrainTimetable } from "../../../hooks/useTrainTimetable";
 import { dataProvider } from "../../../utils/data-manager";
@@ -25,13 +25,14 @@ import { calculateLastKnownDelay, calculatePredictedDelay } from "../../../utils
 import MapLinesContext from "../../../utils/map-lines-context";
 import SelectedRouteContext from "../../../utils/selected-route-context";
 import SelectedTrainContext from "../../../utils/selected-train-context";
-import { UserProfileResponse, Train } from "../../../utils/types";
+import { Train, UserProfileResponse } from "../../../utils/types";
 import { getColorTrainMarker, getDistanceColorForSignal } from "../../../utils/ui";
 import CollapseIcon from "../../icons/CollapseIcon";
 import ExpandIcon from "../../icons/ExpandIcon";
 import InfoIcon from "../../icons/InfoIcon";
-import SettingCheckbox from "../../settings/SettingCheckbox";
 import SteamProfileDisplay from "../../profile/SteamProfileDisplay";
+import XboxProfileDisplay from "../../profile/XboxProfileDisplay";
+import SettingCheckbox from "../../settings/SettingCheckbox";
 import { formatVehicleName, getThumbnailUrl } from "../../utils/general-utils";
 import SignalSpeedDisplay from "../../utils/SignalSpeedDisplay";
 import TrainTypeDisplay from "../../utils/TrainTypeDisplay";
@@ -42,7 +43,6 @@ import WeightIcon from "../icons/WeightIcon";
 import StationDisplay from "../station/StationDisplay";
 import TrainConsistDisplay from "./TrainConsistDisplay";
 import TrainScheduleDisplay from "./TrainScheduleDisplay";
-import XboxProfileDisplay from "../../profile/XboxProfileDisplay";
 
 export interface TrainMarkerPopupProps {
   train: Train;

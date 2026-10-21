@@ -15,15 +15,15 @@ const MARKER_LAYER_GROUPS = [
   { id: "trains", layers: ["bot-trains", "user-trains"] },
 ];
 
-const LAYERS = [
-  "active-signals",
-  "passive-signals",
-  "selected-route",
-  "unplayable-stations",
-  "stoppingpoints",
-  "playable-area",
-  "stats",
-];
+// showing only some of these is normal (unlike the bot/player marker groups above, see hasPartiallyVisibleMarkerGroup)
+const SIGNAL_LAYER_GROUP = {
+  id: "signals",
+  layers: ["active-signals", "passive-signals", "distant-signals", "repeater-signals", "shunting-signals"],
+};
+
+const LAYER_GROUPS = [...MARKER_LAYER_GROUPS, SIGNAL_LAYER_GROUP];
+
+const LAYERS = ["selected-route", "unplayable-stations", "stoppingpoints", "crossings", "playable-area", "stats"];
 
 export interface LayerMenuProps {
   visibleLayers: string[];
@@ -90,7 +90,7 @@ const LayerMenu: FunctionComponent<LayerMenuProps> = ({ visibleLayers, setVisibl
               }}
             />
           ))}
-          {MARKER_LAYER_GROUPS.map((group) => {
+          {LAYER_GROUPS.map((group) => {
             const allVisible = group.layers.every((layer) => visibleLayers.includes(layer));
             const someVisible = group.layers.some((layer) => visibleLayers.includes(layer));
 

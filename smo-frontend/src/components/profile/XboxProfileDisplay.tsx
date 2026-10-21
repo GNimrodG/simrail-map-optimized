@@ -1,9 +1,10 @@
+import Avatar from "@mui/joy/Avatar";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent } from "react";
+
 import { UserProfileResponse } from "../../utils/types";
-import Avatar from "@mui/joy/Avatar";
 
 export interface XboxProfileDisplayProps {
   profile: UserProfileResponse;

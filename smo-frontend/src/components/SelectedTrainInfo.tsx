@@ -5,8 +5,8 @@ import { debounceTime, fromEvent, throttleTime } from "rxjs";
 
 import useBehaviorSubj from "../hooks/useBehaviorSubj";
 import { useIsDocumentFocused } from "../hooks/useIsDocumentFocused";
-import { useSetting } from "../hooks/useSetting";
 import { useProfileData } from "../hooks/useProfileData";
+import { useSetting } from "../hooks/useSetting";
 import { dataProvider } from "../utils/data-manager";
 import MapLinesContext from "../utils/map-lines-context";
 import SelectedTrainContext from "../utils/selected-train-context";
@@ -146,7 +146,7 @@ const SelectedTrainInfo: FunctionComponent = () => {
         }
       }
     }
-  }, [map, selectedTrain, setMapLines, showLineToNextSignal, trains, useAltTracking]);
+  }, [map, selectedTrain, setMapLines, showLineToNextSignal, trains, useAltTracking, focused, reduceBackgroundUpdates]);
 
   return (
     selectedTrain &&

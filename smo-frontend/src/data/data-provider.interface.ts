@@ -3,15 +3,15 @@
 import {
   ServerRestartPrediction,
   ServerStatus,
-  SpawnListEntry,
   SignalStatus,
   SimplifiedTimtableEntry,
+  SpawnListEntry,
   Station,
-  UserProfileResponse,
   SteamProfileStats,
   TimeData,
   Timetable,
   Train,
+  UserProfileResponse,
 } from "../utils/types";
 
 export interface IDataProvider {

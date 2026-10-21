@@ -18,7 +18,7 @@ namespace SMOBackend.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "postgis");
@@ -136,6 +136,10 @@ namespace SMOBackend.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("extra");
+
+                    b.Property<double?>("Heading")
+                        .HasColumnType("double precision")
+                        .HasColumnName("heading");
 
                     b.Property<Point>("Location")
                         .IsRequired()

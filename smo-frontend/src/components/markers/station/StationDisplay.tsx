@@ -2,6 +2,7 @@ import { useMediaQuery } from "@mantine/hooks";
 import { useTheme } from "@mui/joy/styles";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
+import { TFunction } from "i18next";
 import equals from "lodash/isEqual";
 import moment from "moment";
 import { type FunctionComponent, memo, ReactNode, useMemo } from "react";
@@ -16,7 +17,6 @@ import StopTypeDisplay from "../../utils/StopTypeDisplay";
 import TimeDiffDisplay from "../../utils/TimeDiffDisplay";
 import TimeDisplay from "../../utils/TimeDisplay";
 import SpeedIcon from "../icons/SpeedIcon";
-import { TFunction } from "i18next";
 
 export interface StationDisplayProps {
   /**

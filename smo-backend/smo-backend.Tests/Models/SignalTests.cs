@@ -463,6 +463,145 @@ public class SignalTests
         changed.Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData("DS_ISpW", "DS_W")]
+    [InlineData("DS_IISpW", "DS_W")]
+    [InlineData("2324_LTB_IIISpW", "2324_LTB_W")]
+    [InlineData("1952_KG_IISpP104", "1952_KG_P104")]
+    [InlineData("KO_ISpM8", "KO_M8")]
+    [InlineData("1937_BT_SpO", "1937_BT_O")]
+    [InlineData("Kz_YSpX", "Kz_X")]
+    public void UpdateType_WithRepeaterSignalPattern_SetsRepeaterType(string signalName, string mainSignal)
+    {
+        var signal = new Signal
+        {
+            Name = signalName,
+            Extra = "extra",
+            Location = new(0, 0) { SRID = 4326 },
+            Accuracy = 10,
+            PrevSignalConnections = [],
+            NextSignalConnections = []
+        };
+
+        var changed = signal.UpdateType(null);
+
+        signal.Type.Should().Be("repeater");
+        changed.Should().BeTrue();
+        var match = Signal.REPEATER_SIGNAL_REGEX().Match(signalName);
+        (match.Groups[1].Value + match.Groups[2].Value).Should().Be(mainSignal);
+    }
+
+    [Theory]
+    [InlineData("Tl_Tm6")]
+    [InlineData("Rw_CR_Tm1")]
+    [InlineData("2439_LOC_Tm422")]
+    [InlineData("DS_Tm15a")]
+    public void UpdateType_WithShuntingSignalPattern_SetsShuntingType(string signalName)
+    {
+        var signal = new Signal
+        {
+            Name = signalName,
+            Extra = "extra",
+            Location = new(0, 0) { SRID = 4326 },
+            Accuracy = 10,
+            PrevSignalConnections = [],
+            NextSignalConnections = []
+        };
+
+        var changed = signal.UpdateType(null);
+
+        signal.Type.Should().Be("shunting");
+        changed.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("Tl_M")]
+    [InlineData("Tm_A")] // a station abbreviated Tm
+    public void UpdateType_WithTmInMainSignalName_SetsMainType(string signalName)
+    {
+        var signal = new Signal
+        {
+            Name = signalName,
+            Extra = "extra",
+            Location = new(0, 0) { SRID = 4326 },
+            Accuracy = 10,
+            PrevSignalConnections = [],
+            NextSignalConnections = []
+        };
+
+        signal.UpdateType(null);
+
+        signal.Type.Should().Be("main");
+    }
+
+    [Theory]
+    [InlineData("W1_ToA", "W1_A")]
+    [InlineData("Tl_ToM", "Tl_M")]
+    [InlineData("1937_Bt_ToB2", "1937_Bt_B2")]
+    [InlineData("5465_KGA_ToM", "5465_KGA_M")]
+    [InlineData("Sp_ToB", "Sp_B")] // the station Sp
+    public void UpdateType_WithDistantSignalPattern_SetsDistantType(string signalName, string mainSignal)
+    {
+        var signal = new Signal
+        {
+            Name = signalName,
+            Extra = "extra",
+            Location = new(0, 0) { SRID = 4326 },
+            Accuracy = 10,
+            PrevSignalConnections = [],
+            NextSignalConnections = []
+        };
+
+        var changed = signal.UpdateType(null);
+
+        signal.Type.Should().Be("distant");
+        changed.Should().BeTrue();
+        var match = Signal.DISTANT_SIGNAL_REGEX().Match(signalName);
+        (match.Groups[1].Value + match.Groups[2].Value).Should().Be(mainSignal);
+    }
+
+    [Theory]
+    [InlineData("To_A")] // a station abbreviated To
+    [InlineData("1234_ToM_A")] // a station abbreviated ToM
+    public void UpdateType_WithToInMainSignalName_SetsMainType(string signalName)
+    {
+        var signal = new Signal
+        {
+            Name = signalName,
+            Extra = "extra",
+            Location = new(0, 0) { SRID = 4326 },
+            Accuracy = 10,
+            PrevSignalConnections = [],
+            NextSignalConnections = []
+        };
+
+        signal.UpdateType(null);
+
+        signal.Type.Should().Be("main");
+    }
+
+    [Theory]
+    [InlineData("Sp_A")] // the station Sp
+    [InlineData("Sp_B")]
+    [InlineData("Spł1_J")]
+    [InlineData("KO_A")]
+    public void UpdateType_WithSpInMainSignalName_SetsMainType(string signalName)
+    {
+        var signal = new Signal
+        {
+            Name = signalName,
+            Extra = "extra",
+            Location = new(0, 0) { SRID = 4326 },
+            Accuracy = 10,
+            PrevSignalConnections = [],
+            NextSignalConnections = []
+        };
+
+        signal.UpdateType(null);
+
+        signal.Type.Should().Be("main");
+    }
+
     [Fact]
     public void UpdateType_WithNoMatchingPattern_SetsTypeToNull()
     {

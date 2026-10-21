@@ -5,7 +5,7 @@ import Button from "@mui/joy/Button";
 import IconButton from "@mui/joy/IconButton";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
-import { type FunctionComponent, useEffect, useState } from "react";
+import { type FunctionComponent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useIsDocumentFocused } from "../hooks/useIsDocumentFocused";
@@ -24,25 +24,18 @@ const BackgroundUpdatesNotification: FunctionComponent = () => {
     key: NOTIFICATION_SEEN_KEY,
     defaultValue: false,
   });
-  const [showNotification, setShowNotification] = useState(false);
   const [hasBeenUnfocused, setHasBeenUnfocused] = useState(false);
 
-  // Track when the tab becomes unfocused but still visible for the first time
-  useEffect(() => {
-    if (!focused && !hasBeenUnfocused && reduceBackgroundUpdates && visibility === "visible") {
-      setHasBeenUnfocused(true);
-    }
-  }, [focused, hasBeenUnfocused, reduceBackgroundUpdates, visibility]);
+  // Track when the tab becomes unfocused but still visible for the first time (remembered while rendering, it only
+  // changes once)
+  if (!focused && !hasBeenUnfocused && reduceBackgroundUpdates && visibility === "visible") {
+    setHasBeenUnfocused(true);
+  }
 
-  // Show notification when tab regains focus after being unfocused
-  useEffect(() => {
-    if (hasBeenUnfocused && !hasSeenNotification && reduceBackgroundUpdates && !showNotification) {
-      setShowNotification(true);
-    }
-  }, [focused, hasBeenUnfocused, hasSeenNotification, reduceBackgroundUpdates, showNotification]);
+  // Show the notification after the tab has been unfocused, until it's dismissed
+  const showNotification = hasBeenUnfocused && !hasSeenNotification && reduceBackgroundUpdates;
 
   const handleDismiss = () => {
-    setShowNotification(false);
     setHasSeenNotification(true);
   };
 

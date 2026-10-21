@@ -137,6 +137,10 @@ export interface Signal {
   Location: { X: number; Y: number };
   Extra: string;
   Accuracy: number;
+  /** The direction of travel the signal applies to, degrees from north (only known for signals from the game files) */
+  Heading?: number | null;
+  /** "main", "block", "repeater" / "distant" (show what the main signal ahead shows, see getMainSignalName),
+   * "shunting" or null */
   Type?: string | null;
   Role?: string | null;
   PrevFinalized: boolean;
@@ -223,7 +227,6 @@ export interface SimplifiedTimtableEntry {
   note?: string | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export type CommonOsmTags = "name" | "operator" | (string & {});
 
 export interface OsmTagged {
@@ -234,6 +237,33 @@ export interface OsmNode extends OsmTagged {
   id: number;
   lat: number;
   lon: number;
+}
+
+/**
+ * A level crossing of the game's map: "barriers" (categories A and B), "lights" (warning lights only, C) or
+ * "passive" (signs only, D).
+ */
+export interface Crossing {
+  id: string;
+  lat: number;
+  lon: number;
+  type: "barriers" | "lights" | "passive";
+  /** The railway line ("14", "LHS") and the kilometre ("2.409") the stations call the crossing by, when it's known */
+  line?: string;
+  km?: string;
+}
+
+/**
+ * A sign before a level crossing: W6a crossing ahead, W6b give signal Rp1 ("Attention") with a crossing ahead, W6
+ * give signal Rp1
+ */
+export interface CrossingSign {
+  id: string;
+  lat: number;
+  lon: number;
+  type: "W6" | "W6a" | "W6b";
+  /** The direction of travel the sign is for, degrees clockwise from north */
+  heading: number;
 }
 
 export interface UserProfileResponse {

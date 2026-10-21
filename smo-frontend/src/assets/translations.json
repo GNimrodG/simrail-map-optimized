@@ -14,7 +14,8 @@
       "Layers": {
         "Groups": {
           "stations": "Stations",
-          "trains": "Trains"
+          "trains": "Trains",
+          "signals": "Signals"
         },
         "Background": {
           "orm-infra": "OpenRailwayMap - Infrastructure",
@@ -29,11 +30,15 @@
           "user-trains": "Player-controlled Trains",
           "active-signals": "Active Signals",
           "passive-signals": "Passive Signals",
+          "distant-signals": "Distant Signals",
+          "repeater-signals": "Repeater Signals",
+          "shunting-signals": "Shunting Signals",
           "signals": "Signals",
           "selected-route": "Selected Route",
           "unplayable-stations": "Unplayable Stations",
           "stats": "Stats",
           "stoppingpoints": "Stopping Points",
+          "crossings": "Level Crossings",
           "playable-area": "Playable Area"
         }
       },
@@ -62,6 +67,10 @@
         "showTrainHeadings": {
           "Label": "Show train headings",
           "Description": "Show an arrow on train markers pointing in their direction of travel."
+        },
+        "rotateSignalIcons": {
+          "Label": "Rotate signal icons to their real orientation",
+          "Description": "The top of a signal icon points in the direction of travel the signal applies to. Turn it off for north-aligned icons."
         },
         "passiveSignalOpacity": {
           "Label": "Passive signal layer opacity"
@@ -146,6 +155,10 @@
         "timetableGroupedMaxEntriesLarge": {
           "Label": "Max entries (large screens)",
           "Description": "Maximum number of trains to show per group on larger screens with expanded view."
+        },
+        "whistleSignWarnings": {
+          "Label": "Warn about whistle signs ahead of the followed train",
+          "Description": "Like a navigation app's speed camera warning: shows the distance to the next W6 / W6b sign, where the driver sounds the horn (Rp1)."
         }
       },
       "ServerTrainList": {
@@ -246,6 +259,39 @@
           "UnFinalized": "(This data has not been checked and may be inaccurate)"
         }
       },
+      "RepeaterSignalMarker": {
+        "Description": "Repeater signal: repeats the main signal ahead",
+        "Aspect": {
+          "off": "Main signal not known",
+          "Sp1": "Sp1: main signal shows stop",
+          "Sp2": "Sp2: Vmax at the main signal",
+          "Sp3": "Sp3: 100 km/h at the main signal",
+          "Sp4": "Sp4: 40 or 60 km/h at the main signal"
+        },
+        "GoToMainSignal": "Go to the main signal ({{signal}})",
+        "Position": {
+          "1": "Last repeater before the main signal",
+          "2": "Second last repeater before the main signal",
+          "3": "Third last repeater before the main signal"
+        }
+      },
+      "DistantSignalMarker": {
+        "Description": "Distant signal: warns about the main signal ahead",
+        "Aspect": {
+          "off": "Main signal not known",
+          "Os1": "Os1: main signal shows stop",
+          "Os2": "Os2: Vmax at the main signal",
+          "Os3": "Os3: 100 km/h at the main signal",
+          "Os4": "Os4: 40 or 60 km/h at the main signal"
+        },
+        "GoToMainSignal": "Go to the main signal ({{signal}})"
+      },
+      "CrossingMarker": {
+        "barriers": "Level crossing with barriers",
+        "lights": "Level crossing with warning lights",
+        "passive": "Level crossing without lights or barriers",
+        "Position": "Line {{line}}, km {{km}}"
+      },
       "StationDisplay": {
         "MaxSpeed": "Max Speed",
         "StopType": {
@@ -328,6 +374,12 @@
         "Description": "We noticed your tab was in the background. To improve performance and reduce lag, map updates are now throttled when the tab is hidden. This helps keep your browser responsive when you're focused on the game.",
         "GotIt": "Got it!",
         "TurnOff": "Turn off"
+      },
+      "SignalOrientationNotification": {
+        "Title": "Signals show their real orientation",
+        "Description": "Signal icons are now turned to the direction of travel they apply to, so you can see which way a signal faces. If you prefer north-aligned signal icons, you can turn this off here or later in the settings.",
+        "GotIt": "Got it!",
+        "NorthAligned": "Use north-aligned icons"
       },
       "VersionCheck": {
         "UpdateAvailable": "Update Available",
@@ -424,6 +476,16 @@
         "Description": "This website uses cookies and third-party services to ensure the best user experience and for analytics. See our <0>privacy policy</0> for more information.",
         "AcceptButton": "Accept",
         "DeclineButton": "Decline"
+      },
+      "CrossingSignMarker": {
+        "W6": "W6: sound the horn (Rp1)",
+        "W6a": "W6a: level crossing ahead",
+        "W6b": "W6b: level crossing ahead, sound the horn (Rp1)"
+      },
+      "WhistleSignWarning": {
+        "W6": "Sound the horn (W6)",
+        "W6b": "Level crossing ahead: sound the horn (W6b)",
+        "Distance": "in {{distance}} m"
       }
     }
   },
@@ -442,7 +504,8 @@
       "Layers": {
         "Groups": {
           "stations": "Bahnhöfe",
-          "trains": "Züge"
+          "trains": "Züge",
+          "signals": "Signale"
         },
         "Background": {
           "orm-infra": "OpenRailwayMap - Infrastruktur",
@@ -457,11 +520,15 @@
           "user-trains": "Spielergesteuerte Züge",
           "active-signals": "Aktive Signale",
           "passive-signals": "Passive Signale",
+          "distant-signals": "Vorsignale",
+          "repeater-signals": "Wiederholungssignale",
+          "shunting-signals": "Rangiersignale",
           "signals": "Signale",
           "selected-route": "Ausgewählte Route",
           "unplayable-stations": "Nicht spielbare Bahnhöfe",
           "stats": "Statistiken",
           "stoppingpoints": "Haltepunkte",
+          "crossings": "Bahnübergänge",
           "playable-area": "Spielbarer Bereich"
         }
       },
@@ -490,6 +557,10 @@
         "showTrainHeadings": {
           "Label": "Fahrtrichtung der Züge anzeigen",
           "Description": "Zeigt einen Pfeil an den Zugmarkierungen, der in die Fahrtrichtung zeigt."
+        },
+        "rotateSignalIcons": {
+          "Label": "Signalsymbole nach ihrer echten Ausrichtung drehen",
+          "Description": "Die Oberseite eines Signalsymbols zeigt in die Fahrtrichtung, für die das Signal gilt. Ausschalten für nach Norden ausgerichtete Symbole."
         },
         "passiveSignalOpacity": {
           "Label": "Deckkraft der passiven Signal-Ebene"
@@ -574,6 +645,10 @@
         "timetableGroupedMaxEntriesLarge": {
           "Label": "Max. Einträge (große Bildschirme)",
           "Description": "Maximale Anzahl von Zügen pro Gruppe auf größeren Bildschirmen mit erweiterter Ansicht."
+        },
+        "whistleSignWarnings": {
+          "Label": "Vor Pfeiftafeln vor dem verfolgten Zug warnen",
+          "Description": "Wie die Blitzerwarnung einer Navi-App: zeigt die Entfernung zur nächsten W6- / W6b-Tafel, an der der Triebfahrzeugführer das Achtungssignal (Rp1) gibt."
         }
       },
       "ServerTrainList": {
@@ -674,6 +749,39 @@
           "UnFinalized": "(Diese Daten wurden nicht überprüft und können ungenau sein)"
         }
       },
+      "RepeaterSignalMarker": {
+        "Description": "Wiederholungssignal: wiederholt das Hauptsignal voraus",
+        "Aspect": {
+          "off": "Hauptsignal unbekannt",
+          "Sp1": "Sp1: Hauptsignal zeigt Halt",
+          "Sp2": "Sp2: Vmax am Hauptsignal",
+          "Sp3": "Sp3: 100 km/h am Hauptsignal",
+          "Sp4": "Sp4: 40 oder 60 km/h am Hauptsignal"
+        },
+        "GoToMainSignal": "Zum Hauptsignal ({{signal}})",
+        "Position": {
+          "1": "Letztes Wiederholungssignal vor dem Hauptsignal",
+          "2": "Vorletztes Wiederholungssignal vor dem Hauptsignal",
+          "3": "Drittletztes Wiederholungssignal vor dem Hauptsignal"
+        }
+      },
+      "DistantSignalMarker": {
+        "Description": "Vorsignal: kündigt das Hauptsignal voraus an",
+        "Aspect": {
+          "off": "Hauptsignal unbekannt",
+          "Os1": "Os1: Hauptsignal zeigt Halt",
+          "Os2": "Os2: Vmax am Hauptsignal",
+          "Os3": "Os3: 100 km/h am Hauptsignal",
+          "Os4": "Os4: 40 oder 60 km/h am Hauptsignal"
+        },
+        "GoToMainSignal": "Zum Hauptsignal ({{signal}})"
+      },
+      "CrossingMarker": {
+        "barriers": "Bahnübergang mit Schranken",
+        "lights": "Bahnübergang mit Lichtzeichen",
+        "passive": "Bahnübergang ohne Schranken und Lichtzeichen",
+        "Position": "Strecke {{line}}, km {{km}}"
+      },
       "StationDisplay": {
         "MaxSpeed": "Max. Geschwindigkeit",
         "StopType": {
@@ -756,6 +864,12 @@
         "Description": "Wir haben bemerkt, dass Ihr Tab im Hintergrund war. Um die Leistung zu verbessern und Verzögerungen zu reduzieren, werden Kartenaktualisierungen gedrosselt, wenn der Tab ausgeblendet ist. Dies hilft, Ihren Browser reaktionsfähig zu halten, wenn Sie sich auf das Spiel konzentrieren.",
         "GotIt": "Verstanden!",
         "TurnOff": "Ausschalten"
+      },
+      "SignalOrientationNotification": {
+        "Title": "Signale zeigen ihre echte Ausrichtung",
+        "Description": "Signalsymbole sind jetzt in die Fahrtrichtung gedreht, für die sie gelten, so sieht man, in welche Richtung ein Signal zeigt. Wenn du nach Norden ausgerichtete Symbole bevorzugst, kannst du das hier oder später in den Einstellungen ausschalten.",
+        "GotIt": "Verstanden!",
+        "NorthAligned": "Nach Norden ausrichten"
       },
       "VersionCheck": {
         "UpdateAvailable": "Update verfügbar",
@@ -853,6 +967,16 @@
         "Description": "Diese Website verwendet Cookies und Drittanbieterdienste, um die beste Benutzererfahrung zu gewährleisten und für Analysen. Weitere Informationen finden Sie in unserer <0>Datenschutzrichtlinie</0>.",
         "AcceptButton": "Akzeptieren",
         "DeclineButton": "Ablehnen"
+      },
+      "CrossingSignMarker": {
+        "W6": "W6: Achtungssignal (Rp1) geben",
+        "W6a": "W6a: Bahnübergang voraus",
+        "W6b": "W6b: Achtungssignal (Rp1) geben, Bahnübergang voraus"
+      },
+      "WhistleSignWarning": {
+        "W6": "Achtungssignal geben (W6)",
+        "W6b": "Bahnübergang: Achtungssignal geben (W6b)",
+        "Distance": "in {{distance}} m"
       }
     }
   },
@@ -871,7 +995,8 @@
       "Layers": {
         "Groups": {
           "stations": "Állomások",
-          "trains": "Vonatok"
+          "trains": "Vonatok",
+          "signals": "Jelzők"
         },
         "Background": {
           "orm-infra": "OpenRailwayMap - Infrastruktúra",
@@ -886,11 +1011,15 @@
           "user-trains": "Játékosok által irányított vonatok",
           "active-signals": "Aktív jelzők",
           "passive-signals": "Passzív jelzők",
+          "distant-signals": "Előjelzők",
+          "repeater-signals": "Ismétlő jelzők",
+          "shunting-signals": "Tolatásjelzők",
           "signals": "Jelzők",
           "selected-route": "Kiválasztott útvonal",
           "unplayable-stations": "Nem játszható állomások",
           "stats": "Statisztikák",
           "stoppingpoints": "Megállóhelyek",
+          "crossings": "Vasúti átjárók",
           "playable-area": "Játszható terület"
         }
       },
@@ -919,6 +1048,10 @@
         "showTrainHeadings": {
           "Label": "Vonatok haladási irányának mutatása",
           "Description": "Nyíl megjelenítése a vonatjelölőkön, amely a haladási irányba mutat."
+        },
+        "rotateSignalIcons": {
+          "Label": "Jelzőikonok forgatása a valós irányukba",
+          "Description": "A jelzőikon teteje abba a menetirányba mutat, amelyre a jelző vonatkozik. Kapcsold ki az északra igazított ikonokhoz."
         },
         "passiveSignalOpacity": {
           "Label": "Passzív jelző réteg átlátszósága"
@@ -1003,6 +1136,10 @@
         "timetableGroupedMaxEntriesLarge": {
           "Label": "Max. bejegyzések (nagy képernyők)",
           "Description": "Csoportonként megjelenített vonatok maximális száma nagyobb képernyőkön kibővített nézetben."
+        },
+        "whistleSignWarnings": {
+          "Label": "Figyelmeztetés a követett vonat előtti sípjelzőkre",
+          "Description": "Mint egy navigációs app traffipax-figyelmeztetése: mutatja a távolságot a következő W6 / W6b jelzőig, ahol a mozdonyvezető „Vigyázz” hangjelzést (Rp1) ad."
         }
       },
       "ServerTrainList": {
@@ -1103,6 +1240,39 @@
           "UnFinalized": "(Ez az adat nincs ellenőrizve és pontatlan lehet)"
         }
       },
+      "RepeaterSignalMarker": {
+        "Description": "Ismétlő jelző: az előtte álló főjelzőt ismétli",
+        "Aspect": {
+          "off": "A főjelző állása nem ismert",
+          "Sp1": "Sp1: a főjelző megállj jelzést mutat",
+          "Sp2": "Sp2: Vmax a főjelzőnél",
+          "Sp3": "Sp3: 100 km/h a főjelzőnél",
+          "Sp4": "Sp4: 40 vagy 60 km/h a főjelzőnél"
+        },
+        "GoToMainSignal": "Ugrás a főjelzőhöz ({{signal}})",
+        "Position": {
+          "1": "Utolsó ismétlő jelző a főjelző előtt",
+          "2": "Utolsó előtti ismétlő jelző a főjelző előtt",
+          "3": "Hátulról harmadik ismétlő jelző a főjelző előtt"
+        }
+      },
+      "DistantSignalMarker": {
+        "Description": "Előjelző: az előtte álló főjelző állását jelzi előre",
+        "Aspect": {
+          "off": "A főjelző állása nem ismert",
+          "Os1": "Os1: a főjelző megállj jelzést mutat",
+          "Os2": "Os2: Vmax a főjelzőnél",
+          "Os3": "Os3: 100 km/h a főjelzőnél",
+          "Os4": "Os4: 40 vagy 60 km/h a főjelzőnél"
+        },
+        "GoToMainSignal": "Ugrás a főjelzőhöz ({{signal}})"
+      },
+      "CrossingMarker": {
+        "barriers": "Sorompós vasúti átjáró",
+        "lights": "Fényjelzős vasúti átjáró",
+        "passive": "Sorompó és fényjelző nélküli vasúti átjáró",
+        "Position": "{{line}}. vonal, {{km}} km"
+      },
       "StationDisplay": {
         "MaxSpeed": "Max. sebesség",
         "StopType": {
@@ -1185,6 +1355,12 @@
         "Description": "Észrevettük, hogy a lap a háttérben volt. A teljesítmény javítása és a késleltetés csökkentése érdekében a térkép frissítései lassulnak, amikor a lap rejtve van. Ez segít a böngésző reagálóképességében, amikor a játékra összpontosít.",
         "GotIt": "Értem!",
         "TurnOff": "Kikapcsolás"
+      },
+      "SignalOrientationNotification": {
+        "Title": "A jelzők a valós irányukat mutatják",
+        "Description": "A jelzőikonok mostantól abba a menetirányba fordulnak, amelyre vonatkoznak, így látszik, merre néz egy jelző. Ha az északra igazított ikonokat szereted, itt vagy később a beállításokban kikapcsolhatod.",
+        "GotIt": "Értem!",
+        "NorthAligned": "Északra igazított ikonok használata"
       },
       "VersionCheck": {
         "UpdateAvailable": "Frissítés elérhető",
@@ -1286,6 +1462,16 @@
         "Description": "Ez a weboldal sütiket és harmadik fél szolgáltatásokat használ a legjobb felhasználói élmény biztosítása és elemzés céljából. További információkért olvassa el <0>adatvédelmi irányelveinket</0>.",
         "AcceptButton": "Elfogadom",
         "DeclineButton": "Elutasítom"
+      },
+      "CrossingSignMarker": {
+        "W6": "W6: adjon „Vigyázz” hangjelzést (Rp1)",
+        "W6a": "W6a: vasúti átjáró következik",
+        "W6b": "W6b: adjon „Vigyázz” hangjelzést (Rp1), vasúti átjáró következik"
+      },
+      "WhistleSignWarning": {
+        "W6": "„Vigyázz” hangjelzés (W6)",
+        "W6b": "Vasúti átjáró: „Vigyázz” hangjelzés (W6b)",
+        "Distance": "{{distance}} m múlva"
       }
     }
   },
@@ -1304,7 +1490,8 @@
       "Layers": {
         "Groups": {
           "stations": "İstasyonlar",
-          "trains": "Trenler"
+          "trains": "Trenler",
+          "signals": "Sinyaller"
         },
         "Background": {
           "orm-infra": "OpenRailwayMap - Altyapı",
@@ -1319,11 +1506,15 @@
           "user-trains": "Oyuncu kontrollü trenler",
           "active-signals": "Aktif Sinyaller",
           "passive-signals": "Pasif Sinyaller",
+          "distant-signals": "Ön Sinyaller",
+          "repeater-signals": "Tekrarlayıcı Sinyaller",
+          "shunting-signals": "Manevra Sinyalleri",
           "signals": "Sinyaller",
           "selected-route": "Seçili Rota",
           "unplayable-stations": "Oynanamaz İstasyonlar",
           "stats": "İstatistikler",
           "stoppingpoints": "Duraklar",
+          "crossings": "Hemzemin Geçitler",
           "playable-area": "Oynanabilir Alan"
         }
       },
@@ -1352,6 +1543,10 @@
         "showTrainHeadings": {
           "Label": "Tren yönlerini göster",
           "Description": "Tren işaretçilerinde hareket yönünü gösteren bir ok gösterin."
+        },
+        "rotateSignalIcons": {
+          "Label": "Sinyal simgelerini gerçek yönlerine döndür",
+          "Description": "Sinyal simgesinin üstü, sinyalin geçerli olduğu seyir yönünü gösterir. Kuzeye hizalı simgeler için kapatın."
         },
         "passiveSignalOpacity": {
           "Label": "Pasif sinyal katmanı opaklığı"
@@ -1436,6 +1631,10 @@
         "timetableGroupedMaxEntriesLarge": {
           "Label": "Maks. giriş (büyük ekranlar)",
           "Description": "Genişletilmiş görünümle daha büyük ekranlarda grup başına gösterilecek maksimum tren sayısı."
+        },
+        "whistleSignWarnings": {
+          "Label": "Takip edilen trenin önündeki düdük levhaları için uyar",
+          "Description": "Navigasyon uygulamasının radar uyarısı gibi: makinistin \"Dikkat\" sesli işaretini (Rp1) verdiği bir sonraki W6 / W6b levhasına olan mesafeyi gösterir."
         }
       },
       "ServerTrainList": {
@@ -1536,6 +1735,39 @@
           "UnFinalized": "(Bu veri kontrol edilmedi ve yanlış olabilir)"
         }
       },
+      "RepeaterSignalMarker": {
+        "Description": "Tekrarlayıcı sinyal: ilerideki ana sinyali tekrarlar",
+        "Aspect": {
+          "off": "Ana sinyal bilinmiyor",
+          "Sp1": "Sp1: ana sinyal dur gösteriyor",
+          "Sp2": "Sp2: ana sinyalde Vmax",
+          "Sp3": "Sp3: ana sinyalde 100 km/s",
+          "Sp4": "Sp4: ana sinyalde 40 veya 60 km/s"
+        },
+        "GoToMainSignal": "Ana sinyale git ({{signal}})",
+        "Position": {
+          "1": "Ana sinyalden önceki son tekrarlayıcı",
+          "2": "Ana sinyalden önceki sondan ikinci tekrarlayıcı",
+          "3": "Ana sinyalden önceki sondan üçüncü tekrarlayıcı"
+        }
+      },
+      "DistantSignalMarker": {
+        "Description": "Ön sinyal: ilerideki ana sinyali önceden bildirir",
+        "Aspect": {
+          "off": "Ana sinyal bilinmiyor",
+          "Os1": "Os1: ana sinyal dur gösteriyor",
+          "Os2": "Os2: ana sinyalde Vmax",
+          "Os3": "Os3: ana sinyalde 100 km/s",
+          "Os4": "Os4: ana sinyalde 40 veya 60 km/s"
+        },
+        "GoToMainSignal": "Ana sinyale git ({{signal}})"
+      },
+      "CrossingMarker": {
+        "barriers": "Bariyerli hemzemin geçit",
+        "lights": "Işıklı hemzemin geçit",
+        "passive": "Bariyersiz ve ışıksız hemzemin geçit",
+        "Position": "Hat {{line}}, km {{km}}"
+      },
       "StationDisplay": {
         "MaxSpeed": "Max. Hız",
         "StopType": {
@@ -1618,6 +1850,12 @@
         "Description": "Sekmenizin arka planda olduğunu fark ettik. Performansı artırmak ve gecikmeyi azaltmak için sekme gizlendiğinde harita güncellemeleri yavaşlatılır. Bu, oyuna odaklandığınızda tarayıcınızın yanıt vermeye devam etmesine yardımcı olur.",
         "GotIt": "Anladım!",
         "TurnOff": "Kapat"
+      },
+      "SignalOrientationNotification": {
+        "Title": "Sinyaller gerçek yönlerini gösteriyor",
+        "Description": "Sinyal simgeleri artık geçerli oldukları seyir yönüne döndürülüyor, böylece bir sinyalin hangi yöne baktığı görülebilir. Kuzeye hizalı simgeleri tercih ederseniz bunu burada veya daha sonra ayarlardan kapatabilirsiniz.",
+        "GotIt": "Anladım!",
+        "NorthAligned": "Kuzeye hizalı simgeler"
       },
       "VersionCheck": {
         "UpdateAvailable": "Güncelleme Mevcut",
@@ -1717,6 +1955,16 @@
         "Description": "Bu web sitesi, en iyi kullanıcı deneyimini sağlamak ve analiz yapmak için çerezler ve üçüncü taraf hizmetleri kullanır. Daha fazla bilgi için <0>gizlilik politikamızı</0> okuyun.",
         "AcceptButton": "Kabul Et",
         "DeclineButton": "Reddet"
+      },
+      "CrossingSignMarker": {
+        "W6": "W6: \"Dikkat\" sesli işaretini verin (Rp1)",
+        "W6a": "W6a: ileride hemzemin geçit",
+        "W6b": "W6b: \"Dikkat\" sesli işaretini verin (Rp1), ileride hemzemin geçit"
+      },
+      "WhistleSignWarning": {
+        "W6": "\"Dikkat\" sesli işaretini verin (W6)",
+        "W6b": "Hemzemin geçit: \"Dikkat\" sesli işaretini verin (W6b)",
+        "Distance": "{{distance}} m sonra"
       }
     }
   },
@@ -1735,7 +1983,8 @@
       "Layers": {
         "Groups": {
           "stations": "Stacje",
-          "trains": "Pociągi"
+          "trains": "Pociągi",
+          "signals": "Sygnały"
         },
         "Background": {
           "orm-infra": "OpenRailwayMap - Infrastruktura",
@@ -1750,11 +1999,15 @@
           "user-trains": "Pociągi prowadzone przez graczy",
           "active-signals": "Aktywne Sygnały",
           "passive-signals": "Pasywne Sygnały",
+          "distant-signals": "Tarcze ostrzegawcze",
+          "repeater-signals": "Sygnalizatory powtarzające",
+          "shunting-signals": "Tarcze manewrowe",
           "signals": "Sygnały",
           "selected-route": "Wybrana Trasa",
           "unplayable-stations": "Niegrywalne Stacje",
           "stats": "Statystyki",
           "stoppingpoints": "Punkty Postojowe",
+          "crossings": "Przejazdy kolejowe",
           "playable-area": "Obszar Grywalny"
         }
       },
@@ -1783,6 +2036,10 @@
         "showTrainHeadings": {
           "Label": "Pokaż kierunek jazdy pociągów",
           "Description": "Wyświetla strzałkę na markerach pociągów, wskazującą kierunek jazdy."
+        },
+        "rotateSignalIcons": {
+          "Label": "Obracaj ikony sygnalizatorów zgodnie z ich rzeczywistym ustawieniem",
+          "Description": "Góra ikony sygnalizatora wskazuje kierunek jazdy, którego dotyczy sygnalizator. Wyłącz, aby ikony były skierowane na północ."
         },
         "passiveSignalOpacity": {
           "Label": "Przezroczystość pasywnej warstwy sygnałów"
@@ -1867,6 +2124,10 @@
         "timetableGroupedMaxEntriesLarge": {
           "Label": "Maks. wpisów (duże ekrany)",
           "Description": "Maksymalna liczba pociągów wyświetlanych na grupę na większych ekranach z rozwiniętym widokiem."
+        },
+        "whistleSignWarnings": {
+          "Label": "Ostrzegaj o wskaźnikach W6 / W6b przed śledzonym pociągiem",
+          "Description": "Jak ostrzeżenie o fotoradarze w nawigacji: pokazuje odległość do najbliższego wskaźnika W6 / W6b, przy którym maszynista podaje sygnał „Baczność” (Rp1)."
         }
       },
       "ServerTrainList": {
@@ -1967,6 +2228,39 @@
           "UnFinalized": "(Te dane nie zostały sprawdzone i mogą być niedokładne)"
         }
       },
+      "RepeaterSignalMarker": {
+        "Description": "Sygnalizator powtarzający: powtarza wskazanie semafora",
+        "Aspect": {
+          "off": "Wskazanie semafora nieznane",
+          "Sp1": "Sp1: semafor wskazuje sygnał Stój",
+          "Sp2": "Sp2: Vmax przy semaforze",
+          "Sp3": "Sp3: 100 km/h przy semaforze",
+          "Sp4": "Sp4: 40 lub 60 km/h przy semaforze"
+        },
+        "GoToMainSignal": "Przejdź do semafora ({{signal}})",
+        "Position": {
+          "1": "Ostatni sygnalizator powtarzający przed semaforem",
+          "2": "Przedostatni sygnalizator powtarzający przed semaforem",
+          "3": "Trzeci od końca sygnalizator powtarzający przed semaforem"
+        }
+      },
+      "DistantSignalMarker": {
+        "Description": "Tarcza ostrzegawcza: uprzedza o wskazaniu semafora",
+        "Aspect": {
+          "off": "Wskazanie semafora nieznane",
+          "Os1": "Os1: semafor wskazuje sygnał Stój",
+          "Os2": "Os2: Vmax przy semaforze",
+          "Os3": "Os3: 100 km/h przy semaforze",
+          "Os4": "Os4: 40 lub 60 km/h przy semaforze"
+        },
+        "GoToMainSignal": "Przejdź do semafora ({{signal}})"
+      },
+      "CrossingMarker": {
+        "barriers": "Przejazd z rogatkami",
+        "lights": "Przejazd z sygnalizacją świetlną",
+        "passive": "Przejazd bez rogatek i sygnalizacji",
+        "Position": "Linia {{line}}, km {{km}}"
+      },
       "StationDisplay": {
         "MaxSpeed": "Prędkość max.",
         "StopType": {
@@ -2049,6 +2343,12 @@
         "Description": "Zauważyliśmy, że Twoja karta była w tle. Aby poprawić wydajność i zmniejszyć opóźnienia, aktualizacje mapy są ograniczane, gdy karta jest ukryta. To pomaga utrzymać responsywność przeglądarki, gdy koncentrujesz się na grze.",
         "GotIt": "Rozumiem!",
         "TurnOff": "Wyłącz"
+      },
+      "SignalOrientationNotification": {
+        "Title": "Sygnalizatory pokazują swoje rzeczywiste ustawienie",
+        "Description": "Ikony sygnalizatorów są teraz obrócone w kierunku jazdy, którego dotyczą, więc widać, w którą stronę zwrócony jest sygnalizator. Jeśli wolisz ikony skierowane na północ, możesz to wyłączyć tutaj lub później w ustawieniach.",
+        "GotIt": "Rozumiem!",
+        "NorthAligned": "Ikony skierowane na północ"
       },
       "VersionCheck": {
         "UpdateAvailable": "Dostępna aktualizacja",
@@ -2145,6 +2445,16 @@
         "Description": "Ta strona internetowa używa plików cookie i usług stron trzecich, aby zapewnić najlepsze wrażenia użytkownika i analizować ruch. Przeczytaj naszą <0>politykę prywatności</0>, aby uzyskać więcej informacji.",
         "AcceptButton": "Akceptuję",
         "DeclineButton": "Odrzucam"
+      },
+      "CrossingSignMarker": {
+        "W6": "W6: podać sygnał „Baczność” (Rp1)",
+        "W6a": "W6a: przejazd kolejowy",
+        "W6b": "W6b: podać sygnał „Baczność” (Rp1), przejazd kolejowy"
+      },
+      "WhistleSignWarning": {
+        "W6": "Podać sygnał „Baczność” (W6)",
+        "W6b": "Przejazd: podać sygnał „Baczność” (W6b)",
+        "Distance": "za {{distance}} m"
       }
     }
   },
@@ -2163,7 +2473,8 @@
       "Layers": {
         "Groups": {
           "stations": "Станции",
-          "trains": "Поезда"
+          "trains": "Поезда",
+          "signals": "Сигналы"
         },
         "Background": {
           "orm-infra": "OpenRailwayMap - Инфраструктура",
@@ -2178,11 +2489,15 @@
           "user-trains": "Поезда под управлением игроков",
           "active-signals": "Активные сигналы",
           "passive-signals": "Пассивные сигналы",
+          "distant-signals": "Предупредительные светофоры",
+          "repeater-signals": "Повторительные светофоры",
+          "shunting-signals": "Маневровые светофоры",
           "signals": "Сигналы",
           "selected-route": "Выбранный маршрут",
           "unplayable-stations": "Неиграбельные станции",
           "stats": "Статистика",
           "stoppingpoints": "Остановочные пункты",
+          "crossings": "Железнодорожные переезды",
           "playable-area": "Игровая зона"
         }
       },
@@ -2211,6 +2526,10 @@
         "showTrainHeadings": {
           "Label": "Показывать направление движения поездов",
           "Description": "Показывать стрелку на маркерах поездов, указывающую направление движения."
+        },
+        "rotateSignalIcons": {
+          "Label": "Поворачивать значки светофоров по их реальной ориентации",
+          "Description": "Верх значка светофора указывает направление движения, к которому относится светофор. Отключите для значков, ориентированных на север."
         },
         "passiveSignalOpacity": {
           "Label": "Непрозрачность слоя пассивных сигналов"
@@ -2295,6 +2614,10 @@
         "timetableGroupedMaxEntriesLarge": {
           "Label": "Макс. записей (большие экраны)",
           "Description": "Максимальное количество поездов, отображаемых на группу на больших экранах с развёрнутым видом."
+        },
+        "whistleSignWarnings": {
+          "Label": "Предупреждать о свистковых знаках перед отслеживаемым поездом",
+          "Description": "Как предупреждение о камере в навигаторе: показывает расстояние до следующего знака W6 / W6b, где машинист подаёт сигнал «Внимание» (Rp1)."
         }
       },
       "ServerTrainList": {
@@ -2395,6 +2718,39 @@
           "UnFinalized": "(Эти данные не проверены и могут быть неточными)"
         }
       },
+      "RepeaterSignalMarker": {
+        "Description": "Повторительный светофор: повторяет показание основного светофора впереди",
+        "Aspect": {
+          "off": "Показание основного светофора неизвестно",
+          "Sp1": "Sp1: основной светофор запрещает движение",
+          "Sp2": "Sp2: Vmax у основного светофора",
+          "Sp3": "Sp3: 100 км/ч у основного светофора",
+          "Sp4": "Sp4: 40 или 60 км/ч у основного светофора"
+        },
+        "GoToMainSignal": "К основному светофору ({{signal}})",
+        "Position": {
+          "1": "Последний повторительный светофор перед основным",
+          "2": "Предпоследний повторительный светофор перед основным",
+          "3": "Третий с конца повторительный светофор перед основным"
+        }
+      },
+      "DistantSignalMarker": {
+        "Description": "Предупредительный светофор: предупреждает о показании основного светофора впереди",
+        "Aspect": {
+          "off": "Показание основного светофора неизвестно",
+          "Os1": "Os1: основной светофор запрещает движение",
+          "Os2": "Os2: Vmax у основного светофора",
+          "Os3": "Os3: 100 км/ч у основного светофора",
+          "Os4": "Os4: 40 или 60 км/ч у основного светофора"
+        },
+        "GoToMainSignal": "К основному светофору ({{signal}})"
+      },
+      "CrossingMarker": {
+        "barriers": "Переезд со шлагбаумами",
+        "lights": "Переезд со световой сигнализацией",
+        "passive": "Переезд без шлагбаумов и сигнализации",
+        "Position": "Линия {{line}}, км {{km}}"
+      },
       "StationDisplay": {
         "MaxSpeed": "Макс. скорость",
         "StopType": {
@@ -2477,6 +2833,12 @@
         "Description": "Мы заметили, что ваша вкладка была в фоновом режиме. Для улучшения производительности и снижения задержек обновления карты замедляются, когда вкладка скрыта. Это помогает браузеру оставаться отзывчивым, когда вы сосредоточены на игре.",
         "GotIt": "Понятно!",
         "TurnOff": "Отключить"
+      },
+      "SignalOrientationNotification": {
+        "Title": "Светофоры показывают свою реальную ориентацию",
+        "Description": "Значки светофоров теперь повёрнуты в направлении движения, к которому они относятся, так видно, куда смотрит светофор. Если вы предпочитаете значки, ориентированные на север, можно отключить это здесь или позже в настройках.",
+        "GotIt": "Понятно!",
+        "NorthAligned": "Значки на север"
       },
       "VersionCheck": {
         "UpdateAvailable": "Доступно обновление",
@@ -2573,6 +2935,16 @@
         "Description": "Этот веб-сайт использует файлы cookie и сторонние сервисы для обеспечения наилучшего пользовательского опыта и аналитики. См. нашу <0>политику конфиденциальности</0> для получения дополнительной информации.",
         "AcceptButton": "Принять",
         "DeclineButton": "Отклонить"
+      },
+      "CrossingSignMarker": {
+        "W6": "W6: подать сигнал «Внимание» (Rp1)",
+        "W6a": "W6a: впереди переезд",
+        "W6b": "W6b: подать сигнал «Внимание» (Rp1), впереди переезд"
+      },
+      "WhistleSignWarning": {
+        "W6": "Подать сигнал «Внимание» (W6)",
+        "W6b": "Переезд: подать сигнал «Внимание» (W6b)",
+        "Distance": "через {{distance}} м"
       }
     }
   },
@@ -2591,7 +2963,8 @@
       "Layers": {
         "Groups": {
           "stations": "Станції",
-          "trains": "Поїзди"
+          "trains": "Поїзди",
+          "signals": "Сигнали"
         },
         "Background": {
           "orm-infra": "OpenRailwayMap - Інфраструктура",
@@ -2606,11 +2979,15 @@
           "user-trains": "Поїзди під керуванням гравців",
           "active-signals": "Активні сигнали",
           "passive-signals": "Пасивні сигнали",
+          "distant-signals": "Попереджувальні світлофори",
+          "repeater-signals": "Повторювальні світлофори",
+          "shunting-signals": "Маневрові світлофори",
           "signals": "Сигнали",
           "selected-route": "Обраний маршрут",
           "unplayable-stations": "Неігрові станції",
           "stats": "Статистика",
           "stoppingpoints": "Зупинні пункти",
+          "crossings": "Залізничні переїзди",
           "playable-area": "Ігрова зона"
         }
       },
@@ -2639,6 +3016,10 @@
         "showTrainHeadings": {
           "Label": "Показувати напрямок руху поїздів",
           "Description": "Показувати стрілку на маркерах поїздів, що вказує напрямок руху."
+        },
+        "rotateSignalIcons": {
+          "Label": "Повертати значки світлофорів за їхньою реальною орієнтацією",
+          "Description": "Верх значка світлофора вказує напрямок руху, до якого належить світлофор. Вимкніть для значків, орієнтованих на північ."
         },
         "passiveSignalOpacity": {
           "Label": "Непрозорість шару пасивних сигналів"
@@ -2723,6 +3104,10 @@
         "timetableGroupedMaxEntriesLarge": {
           "Label": "Макс. записів (великі екрани)",
           "Description": "Максимальна кількість поїздів, що відображаються на групу на великих екранах з розгорнутим виглядом."
+        },
+        "whistleSignWarnings": {
+          "Label": "Попереджати про свисткові знаки перед поїздом, за яким стежите",
+          "Description": "Як попередження про камеру в навігаторі: показує відстань до наступного знака W6 / W6b, де машиніст подає сигнал «Увага» (Rp1)."
         }
       },
       "ServerTrainList": {
@@ -2823,6 +3208,39 @@
           "UnFinalized": "(Ці дані не перевірені і можуть бути неточними)"
         }
       },
+      "RepeaterSignalMarker": {
+        "Description": "Повторювальний світлофор: повторює показання основного світлофора попереду",
+        "Aspect": {
+          "off": "Показання основного світлофора невідоме",
+          "Sp1": "Sp1: основний світлофор забороняє рух",
+          "Sp2": "Sp2: Vmax біля основного світлофора",
+          "Sp3": "Sp3: 100 км/год біля основного світлофора",
+          "Sp4": "Sp4: 40 або 60 км/год біля основного світлофора"
+        },
+        "GoToMainSignal": "До основного світлофора ({{signal}})",
+        "Position": {
+          "1": "Останній повторювальний світлофор перед основним",
+          "2": "Передостанній повторювальний світлофор перед основним",
+          "3": "Третій з кінця повторювальний світлофор перед основним"
+        }
+      },
+      "DistantSignalMarker": {
+        "Description": "Попереджувальний світлофор: попереджає про показання основного світлофора попереду",
+        "Aspect": {
+          "off": "Показання основного світлофора невідоме",
+          "Os1": "Os1: основний світлофор забороняє рух",
+          "Os2": "Os2: Vmax біля основного світлофора",
+          "Os3": "Os3: 100 км/год біля основного світлофора",
+          "Os4": "Os4: 40 або 60 км/год біля основного світлофора"
+        },
+        "GoToMainSignal": "До основного світлофора ({{signal}})"
+      },
+      "CrossingMarker": {
+        "barriers": "Переїзд зі шлагбаумами",
+        "lights": "Переїзд зі світловою сигналізацією",
+        "passive": "Переїзд без шлагбаумів і сигналізації",
+        "Position": "Лінія {{line}}, км {{km}}"
+      },
       "StationDisplay": {
         "MaxSpeed": "Макс. швидкість",
         "StopType": {
@@ -2905,6 +3323,12 @@
         "Description": "Ми помітили, що ваша вкладка була у фоновому режимі. Для покращення продуктивності та зниження затримок оновлення карти сповільнюються, коли вкладка прихована. Це допомагає браузеру залишатися чуйним, коли ви зосереджені на грі.",
         "GotIt": "Зрозуміло!",
         "TurnOff": "Вимкнути"
+      },
+      "SignalOrientationNotification": {
+        "Title": "Світлофори показують свою реальну орієнтацію",
+        "Description": "Значки світлофорів тепер повернуті в напрямку руху, до якого вони належать, тож видно, куди дивиться світлофор. Якщо ви віддаєте перевагу значкам, орієнтованим на північ, це можна вимкнути тут або пізніше в налаштуваннях.",
+        "GotIt": "Зрозуміло!",
+        "NorthAligned": "Значки на північ"
       },
       "VersionCheck": {
         "UpdateAvailable": "Доступне оновлення",
@@ -3001,6 +3425,16 @@
         "Description": "Цей веб-сайт використовує файли cookie та сторонні сервіси для забезпечення найкращого користувацького досвіду та аналітики. Дивіться нашу <0>політику конфіденційності</0> для отримання додаткової інформації.",
         "AcceptButton": "Прийняти",
         "DeclineButton": "Відхилити"
+      },
+      "CrossingSignMarker": {
+        "W6": "W6: подати сигнал «Увага» (Rp1)",
+        "W6a": "W6a: попереду переїзд",
+        "W6b": "W6b: подати сигнал «Увага» (Rp1), попереду переїзд"
+      },
+      "WhistleSignWarning": {
+        "W6": "Подати сигнал «Увага» (W6)",
+        "W6b": "Переїзд: подати сигнал «Увага» (W6b)",
+        "Distance": "через {{distance}} м"
       }
     }
   }

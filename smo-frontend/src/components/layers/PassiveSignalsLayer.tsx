@@ -10,6 +10,7 @@ import useBehaviorSubj from "../../hooks/useBehaviorSubj";
 import { useSetting } from "../../hooks/useSetting";
 import { dataProvider } from "../../utils/data-manager";
 import { getVisibleSignals, goToSignal } from "../../utils/geom-utils";
+import { blockSignalBoards$ } from "../../utils/signal-boards";
 import { SignalStatus, Train } from "../../utils/types";
 import SignalMarker from "../markers/signal/SignalMarker";
 
@@ -21,7 +22,13 @@ dataProvider.signalsData$
   .pipe(
     map((signals) =>
       signals.filter(
-        (signal) => !signal.Trains?.length && !signal.TrainsAhead?.length && !signal.NextSignalWithTrainAhead,
+        (signal) =>
+          signal.Type !== "repeater" && // they have their own layers
+          signal.Type !== "distant" &&
+          signal.Type !== "shunting" &&
+          !signal.Trains?.length &&
+          !signal.TrainsAhead?.length &&
+          !signal.NextSignalWithTrainAhead,
       ),
     ),
     distinctUntilChanged(isEqual),
@@ -35,6 +42,7 @@ const PassiveSignalsLayer: FunctionComponent = () => {
 
   const passiveSignals = useBehaviorSubj(passiveSignals$);
   const trains = useBehaviorSubj(dataProvider.trainsData$);
+  const blockSignalBoards = useBehaviorSubj(blockSignalBoards$);
 
   const trainLookup = useMemo(() => {
     const lookup = new Map<string, Train>();
@@ -109,6 +117,7 @@ const PassiveSignalsLayer: FunctionComponent = () => {
           opacity={layerOpacities["passive-signals"]}
           signal={signal}
           trains={signalTrainsByName.get(signal.Name) || null}
+          board={blockSignalBoards.get(signal.Name)}
           onSignalSelect={handleSignalSelect}
           pane="passiveSignalsPane"
         />

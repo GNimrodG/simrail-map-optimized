@@ -1,10 +1,10 @@
-import { DivIcon, Icon, IconOptions, type Marker as LeafletMarker } from "leaflet";
+import { DivIcon, type Marker as LeafletMarker } from "leaflet";
 import { type FunctionComponent, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Marker, Popup, useMap } from "react-leaflet";
 
 import { useIsDocumentFocused } from "../../../hooks/useIsDocumentFocused";
-import { useSetting } from "../../../hooks/useSetting";
 import { useProfileData } from "../../../hooks/useProfileData";
+import { useSetting } from "../../../hooks/useSetting";
 import SelectedTrainContext from "../../../utils/selected-train-context";
 import { Train } from "../../../utils/types";
 import { getColorTrainMarker } from "../../../utils/ui";
@@ -21,12 +21,6 @@ export interface TrainMarkerProps {
 // Rotated with the --heading CSS variable on the marker element (see useEffect below),
 // so a heading change never rebuilds the icon
 const HEADING_ARROW = `<span class="heading"></span>`;
-
-const DEFAULT_ICON = new DivIcon({
-  iconSize: [40, 40],
-  html: BotIcon + HEADING_ARROW,
-  className: "icon train bot",
-});
 
 function getIcon(
   trainNo: string,
@@ -61,7 +55,6 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train, layerId }) =>
   const focused = useIsDocumentFocused();
   const { selectedTrain } = useContext(SelectedTrainContext);
   const { userData } = useProfileData(train.TrainData.ControlledBySteamID, train.TrainData.ControlledByXboxID);
-  const [icon, setIcon] = useState<Icon<Partial<IconOptions>>>(DEFAULT_ICON);
   const [useAltTracking] = useSetting("useAltTracking");
   const [disableSlidingMarkers] = useSetting("disableSlidingMarkers");
   const [showTrainHeadings] = useSetting("showTrainHeadings");
@@ -81,25 +74,11 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train, layerId }) =>
     [isSelected, selectedTrain?.follow, selectedTrain?.paused, useAltTracking],
   );
 
-  useEffect(() => {
-    setIcon(
-      getIcon(
-        train.TrainNoLocal,
-        trainMarkerColor,
-        train.TrainData.InBorderStationArea,
-        isSelected,
-        userData?.Avatar || userData?.PersonaName || train.TrainData.ControlledByXboxID || undefined,
-      ),
-    );
-  }, [
-    isSelected,
-    train.TrainData.InBorderStationArea,
-    train.TrainNoLocal,
-    trainMarkerColor,
-    userData?.Avatar,
-    userData?.PersonaName,
-    train.TrainData.ControlledByXboxID,
-  ]);
+  const avatar = userData?.Avatar || userData?.PersonaName || train.TrainData.ControlledByXboxID || undefined;
+  const icon = useMemo(
+    () => getIcon(train.TrainNoLocal, trainMarkerColor, train.TrainData.InBorderStationArea, isSelected, avatar),
+    [train.TrainNoLocal, trainMarkerColor, train.TrainData.InBorderStationArea, isSelected, avatar],
+  );
 
   useEffect(() => {
     if (!map || !shouldFollow || (!disableSlidingMarkers && (!reduceBackgroundUpdates || focused))) {

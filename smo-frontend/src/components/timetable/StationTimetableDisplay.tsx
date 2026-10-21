@@ -89,14 +89,14 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
     key: "stationTimetable:lastViewMode",
     defaultValue: "table",
   });
-  const [activeViewMode, setActiveViewMode] = useState<ViewMode>(() =>
-    resolveViewModeFromSetting(defaultViewModeSetting, storedViewMode),
-  );
-
-  useEffect(() => {
-    const resolvedMode = resolveViewModeFromSetting(defaultViewModeSetting, storedViewMode);
-    setActiveViewMode((current) => (current === resolvedMode ? current : resolvedMode));
-  }, [defaultViewModeSetting, storedViewMode]);
+  // the view from the setting ("lastUsed": the stored one), switched to when it changes (not when the user picks one)
+  const defaultViewMode = resolveViewModeFromSetting(defaultViewModeSetting, storedViewMode);
+  const [activeViewMode, setActiveViewMode] = useState<ViewMode>(defaultViewMode);
+  const [lastDefaultViewMode, setLastDefaultViewMode] = useState(defaultViewMode);
+  if (defaultViewMode !== lastDefaultViewMode) {
+    setLastDefaultViewMode(defaultViewMode);
+    setActiveViewMode(defaultViewMode);
+  }
 
   const setViewMode = useCallback(
     (mode: ViewMode) => {

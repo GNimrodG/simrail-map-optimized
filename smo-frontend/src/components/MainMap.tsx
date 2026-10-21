@@ -29,11 +29,12 @@ import SelectedRouteControl from "./SelectedRouteControl";
 import SelectedTrainInfo from "./SelectedTrainInfo";
 import ServerRestartWarning from "./ServerRestartWarning";
 import ServerSelector from "./ServerSelector";
-import SimRailApiWarning from "./SimRailApiWarning";
 import SettingsModal from "./settings/SettingsModal";
+import SignalOrientationNotification from "./SignalOrientationNotification";
+import SimRailApiWarning from "./SimRailApiWarning";
+import SpawnListModal from "./spawns/SpawnListModal";
 import StatsDisplay from "./StatsDisplay";
 import SelectedStationTimetableModal from "./timetable/SelectedStationTimetableModal";
-import SpawnListModal from "./spawns/SpawnListModal";
 import ServerTrainListModal from "./trains/ServerTrainListModal";
 import RefreshableTileLayer from "./utils/RefreshableTileLayer";
 import ThemeToggle from "./utils/ThemeToggle";
@@ -48,6 +49,10 @@ const TrainsLayer = lazy(() => import("./layers/TrainsLayer"));
 const UnplayableStationsLayer = lazy(() => import("./layers/UnplayableStationsLayer"));
 const StoppingPointsLayer = lazy(() => import("./layers/StoppingPointsLayer"));
 const PlayableAreaLayer = lazy(() => import("./layers/PlayableAreaLayer"));
+const CrossingsLayer = lazy(() => import("./layers/CrossingsLayer"));
+const DependentSignalsLayer = lazy(() => import("./layers/DependentSignalsLayer"));
+const ShuntingSignalsLayer = lazy(() => import("./layers/ShuntingSignalsLayer"));
+const WhistleSignWarning = lazy(() => import("./WhistleSignWarning"));
 
 function migrateMarkerLayers(layers: string[]) {
   const migratedLayers = layers.flatMap((layer) => {
@@ -70,6 +75,7 @@ const MainMap: FunctionComponent = () => {
 
   const [visibleLayers, setVisibleLayers] = useSetting("visibleLayers");
   const [layerOpacities] = useSetting("layerOpacities");
+  const [whistleSignWarnings] = useSetting("whistleSignWarnings");
 
   const [renderer] = useState(() => new L.Canvas());
   const [map, setMap] = useState<L.Map | null>(null);
@@ -92,7 +98,11 @@ const MainMap: FunctionComponent = () => {
     // Default Leaflet panes are between 200-700, so we'll use 400-500 range
     // (except the playable area mask, which darkens the tiles but nothing on top of them)
     map.createPane("playableAreaPane").style.zIndex = "350";
+    map.createPane("crossingsPane").style.zIndex = "400";
     map.createPane("passiveSignalsPane").style.zIndex = "401";
+    map.createPane("repeaterSignalsPane").style.zIndex = "401";
+    map.createPane("distantSignalsPane").style.zIndex = "401";
+    map.createPane("shuntingSignalsPane").style.zIndex = "401";
     map.createPane("unplayableStationsPane").style.zIndex = "402";
     map.createPane("stoppingPointsPane").style.zIndex = "403";
     map.createPane("stationsPane").style.zIndex = "404";
@@ -101,6 +111,8 @@ const MainMap: FunctionComponent = () => {
     map.createPane("selectedRoutePane").style.zIndex = "407";
     map.createPane("mapLinesPane").style.zIndex = "408";
 
+    // the layers render once the panes exist in Leaflet (an external system, so this is set from the effect)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPanesCreated(true);
 
     return () => {
@@ -311,10 +323,15 @@ const MainMap: FunctionComponent = () => {
 
         {panesCreated && (
           <Suspense fallback={<Loading color="success" />}>
-            {/* Playable area, Stopping points, Stations, Trains, Signals, Active route, Unplayable stations*/}
+            {/* Playable area, Crossings, Stopping points, Stations, Trains, Signals, Active route, Unplayable stations*/}
             {visibleLayers.includes("playable-area") && (
               <ErrorBoundary location="MainMap - PlayableAreaLayer">
                 <PlayableAreaLayer />
+              </ErrorBoundary>
+            )}
+            {visibleLayers.includes("crossings") && (
+              <ErrorBoundary location="MainMap - CrossingsLayer">
+                <CrossingsLayer />
               </ErrorBoundary>
             )}
             {visibleLayers.includes("unplayable-stations") && (
@@ -330,6 +347,21 @@ const MainMap: FunctionComponent = () => {
             {visibleLayers.includes("passive-signals") && (
               <ErrorBoundary location="MainMap - PassiveSignalsLayer">
                 <PassiveSignalsLayer />
+              </ErrorBoundary>
+            )}
+            {visibleLayers.includes("repeater-signals") && (
+              <ErrorBoundary location="MainMap - RepeaterSignalsLayer">
+                <DependentSignalsLayer type="repeater" />
+              </ErrorBoundary>
+            )}
+            {visibleLayers.includes("distant-signals") && (
+              <ErrorBoundary location="MainMap - DistantSignalsLayer">
+                <DependentSignalsLayer type="distant" />
+              </ErrorBoundary>
+            )}
+            {visibleLayers.includes("shunting-signals") && (
+              <ErrorBoundary location="MainMap - ShuntingSignalsLayer">
+                <ShuntingSignalsLayer />
               </ErrorBoundary>
             )}
             {visibleLayers.includes("bot-stations") && (
@@ -374,7 +406,17 @@ const MainMap: FunctionComponent = () => {
           <LowSpeedWarning />
           <ServerRestartWarning />
           <BackgroundUpdatesNotification />
+          <SignalOrientationNotification />
         </Stack>
+        {whistleSignWarnings && selectedTrain?.follow && (
+          <Box sx={{ position: "fixed", bottom: "2.5rem", left: "50%", transform: "translateX(-50%)", zIndex: 1000 }}>
+            <ErrorBoundary location="MainMap - WhistleSignWarning">
+              <Suspense fallback={null}>
+                <WhistleSignWarning />
+              </Suspense>
+            </ErrorBoundary>
+          </Box>
+        )}
         <AutoZoomHandler />
       </MapContainer>
     </>

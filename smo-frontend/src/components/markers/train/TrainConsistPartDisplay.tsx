@@ -39,7 +39,7 @@ const VehicleThumbnail: FunctionComponent<{ vehicle: string }> = ({ vehicle }) =
   );
 };
 
-const TrainConsistPartDisplay:FunctionComponent<TrainConsistPartDisplayProps> = ({ vehicles }) => {
+const TrainConsistPartDisplay: FunctionComponent<TrainConsistPartDisplayProps> = ({ vehicles }) => {
   if (vehicles.length === 0) {
     return null;
   }

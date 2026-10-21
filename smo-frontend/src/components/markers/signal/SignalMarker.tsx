@@ -1,8 +1,11 @@
 import { DivIcon, DivIconOptions, Icon, IconOptions } from "leaflet";
 import equals from "lodash/isEqual";
-import { type FunctionComponent, memo, useEffect, useState } from "react";
+import { type FunctionComponent, memo, useMemo, useState } from "react";
 import { Marker, Popup } from "react-leaflet";
 
+import { useSetting } from "../../../hooks/useSetting.ts";
+import { BlockSignalBoard } from "../../../utils/signal-boards.ts";
+import { getOrientedSignalIcon } from "../../../utils/signal-icons.ts";
 import { SignalStatus, Train } from "../../../utils/types.ts";
 import { getSpeedColorForSignal } from "../../../utils/ui.ts";
 import SignalIcon from "../icons/signal.svg?raw";
@@ -14,6 +17,8 @@ export interface SignalMarkerProps {
   opacity?: number;
   pane?: string;
   trains?: Train[] | null;
+  /** The board of one of the last block signals before a station (see getBlockSignalBoards) */
+  board?: BlockSignalBoard;
 }
 
 const className = "icon signal";
@@ -29,23 +34,56 @@ const SECONDARY_ICON = new DivIcon({
   className: `${DEFAULT_ICON_OPTIONS.className} secondary`,
 });
 
-const BLOCK_SIGNAL_RED_ICON = new Icon({
-  className,
-  iconUrl: "/assets/signals/signal-block-red.svg",
-  iconSize: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
+// grey like the passive signals, smaller so the many shunting signals stand back
+const SHUNTING_SIGNAL_INACTIVE_ICON = new DivIcon({
+  ...DEFAULT_ICON_OPTIONS,
+  iconSize: [10, 10],
+  className: `${DEFAULT_ICON_OPTIONS.className} secondary`,
 });
 
-const BLOCK_SIGNAL_YELLOW_ICON = new Icon({
+// Ms1: shunting prohibited (blue)
+const SHUNTING_SIGNAL_MS1_ICON = new Icon({
   className,
-  iconUrl: "/assets/signals/signal-block-yellow.svg",
-  iconSize: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
+  iconUrl: "/assets/signals/signal-shunting-ms1.svg",
+  iconSize: [12, 18.48], // base size 10x15.4 x1.2
 });
 
-const BLOCK_SIGNAL_GREEN_ICON = new Icon({
+// Ms2: shunting allowed (white)
+const SHUNTING_SIGNAL_MS2_ICON = new Icon({
   className,
-  iconUrl: "/assets/signals/signal-block-green.svg",
-  iconSize: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
+  iconUrl: "/assets/signals/signal-shunting-ms2.svg",
+  iconSize: [12, 18.48], // base size 10x15.4 x1.2
 });
+
+type BlockSignalAspect = "red" | "yellow" | "green";
+
+function createBlockSignalIcons(aspect: BlockSignalAspect): Record<BlockSignalBoard | "none", Icon> {
+  // the boards hang under the head (drawn 5.5 wide, 11.1125 high), which stays on the signal's position
+  const scale = 15.9 / 5.5;
+  const withBoard = (board: string, height: number) =>
+    new Icon({
+      className,
+      iconUrl: `/assets/signals/signal-block-${aspect}-${board}.svg`,
+      iconSize: [15.9, height * scale],
+      iconAnchor: [2.648 * scale, (11.1125 / 2) * scale],
+    });
+
+  return {
+    none: new Icon({
+      className,
+      iconUrl: `/assets/signals/signal-block-${aspect}.svg`,
+      iconSize: [15.9, 33.3375], // base site 5.3x11.1125 ~x3
+    }),
+    W1: withBoard("w1", 17.257),
+    W18: withBoard("w18", 15.512),
+  };
+}
+
+const BLOCK_SIGNAL_ICONS: Record<BlockSignalAspect, Record<BlockSignalBoard | "none", Icon>> = {
+  red: createBlockSignalIcons("red"),
+  yellow: createBlockSignalIcons("yellow"),
+  green: createBlockSignalIcons("green"),
+};
 
 const MAIN_SIGNAL_RED_ICON = new Icon({
   className,
@@ -137,158 +175,149 @@ const SMALL_SIGNAL_WHITE_ICON = new Icon({
   iconSize: [15, 21.99], // base size 5x7.33 x3
 });
 
-const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSelect, opacity = 1, pane, trains }) => {
-  const [icon, setIcon] = useState<Icon<DivIconOptions | IconOptions>>(new DivIcon(DEFAULT_ICON_OPTIONS));
-  const signalTrains = trains || null;
+/** The icon showing the signal's aspect, from the first train approaching it or the trains ahead of it */
+function getSignalIcon(
+  signal: SignalStatus,
+  signalTrains: Train[] | null,
+  board: BlockSignalBoard | undefined,
+): Icon<DivIconOptions | IconOptions> {
+  if (signalTrains?.length) {
+    const train = signalTrains[0];
 
-  useEffect(() => {
-    if (signalTrains?.length) {
-      const train = signalTrains[0];
+    if (signal.Type === "block") {
+      if (train.TrainData.SignalInFrontSpeed === 0) {
+        return BLOCK_SIGNAL_ICONS.red[board ?? "none"];
+      }
 
-      if (signal.Type === "block") {
-        if (train.TrainData.SignalInFrontSpeed === 0) {
-          setIcon(BLOCK_SIGNAL_RED_ICON);
-          return;
-        }
+      if (signal.NextSignalWithTrainAhead) {
+        return BLOCK_SIGNAL_ICONS.yellow[board ?? "none"];
+      }
 
+      if (train.TrainData.SignalInFrontSpeed > 200) {
+        return BLOCK_SIGNAL_ICONS.green[board ?? "none"];
+      }
+    }
+
+    if (signal.Type === "main") {
+      if (train.TrainData.SignalInFrontSpeed > 200) {
         if (signal.NextSignalWithTrainAhead) {
-          setIcon(BLOCK_SIGNAL_YELLOW_ICON);
-          return;
+          return MAIN_SIGNAL_VMAX_ORANGE_ICON;
         }
 
-        if (train.TrainData.SignalInFrontSpeed > 200) {
-          setIcon(BLOCK_SIGNAL_GREEN_ICON);
-          return;
-        }
+        return MAIN_SIGNAL_VMAX_GREEN_ICON;
       }
 
-      if (signal.Type === "main") {
-        if (train.TrainData.SignalInFrontSpeed > 200) {
-          if (signal.NextSignalWithTrainAhead) {
-            setIcon(MAIN_SIGNAL_VMAX_ORANGE_ICON);
-            return;
-          }
-
-          setIcon(MAIN_SIGNAL_VMAX_GREEN_ICON);
-          return;
-        }
-
-        if (train.TrainData.SignalInFrontSpeed === 0) {
-          setIcon(MAIN_SIGNAL_RED_ICON);
-          return;
-        }
-
-        if (train.TrainData.SignalInFrontSpeed === 40) {
-          if (signal.NextSignalWithTrainAhead) {
-            setIcon(MAIN_SIGNAL_40_ORANGE_ICON);
-            return;
-          }
-
-          setIcon(MAIN_SIGNAL_40_ICON);
-          return;
-        }
-
-        if (train.TrainData.SignalInFrontSpeed === 60) {
-          if (signal.NextSignalWithTrainAhead) {
-            setIcon(MAIN_SIGNAL_60_ORANGE_ICON);
-            return;
-          }
-
-          setIcon(MAIN_SIGNAL_60_ICON);
-          return;
-        }
-
-        if (train.TrainData.SignalInFrontSpeed === 80) {
-          if (signal.NextSignalWithTrainAhead) {
-            setIcon(MAIN_SIGNAL_80_ORANGE_ICON);
-            return;
-          }
-
-          setIcon(MAIN_SIGNAL_80_ICON);
-          return;
-        }
-
-        if (train.TrainData.SignalInFrontSpeed === 100) {
-          if (signal.NextSignalWithTrainAhead) {
-            setIcon(MAIN_SIGNAL_100_ORANGE_ICON);
-            return;
-          }
-
-          setIcon(MAIN_SIGNAL_100_ICON);
-          return;
-        }
-
-        if (train.TrainData.SignalInFrontSpeed === 130) {
-          if (signal.NextSignalWithTrainAhead) {
-            setIcon(MAIN_SIGNAL_130_ORANGE_ICON);
-            return;
-          }
-
-          setIcon(MAIN_SIGNAL_130_ICON);
-          return;
-        }
+      if (train.TrainData.SignalInFrontSpeed === 0) {
+        return MAIN_SIGNAL_RED_ICON;
       }
 
-      if (signal.Type === "small") {
-        if (train.TrainData.SignalInFrontSpeed === 0) {
-          setIcon(SMALL_SIGNAL_RED_ICON);
-          return;
+      if (train.TrainData.SignalInFrontSpeed === 40) {
+        if (signal.NextSignalWithTrainAhead) {
+          return MAIN_SIGNAL_40_ORANGE_ICON;
         }
 
-        setIcon(SMALL_SIGNAL_WHITE_ICON);
-        return;
+        return MAIN_SIGNAL_40_ICON;
       }
 
-      setIcon(
-        new DivIcon({
+      if (train.TrainData.SignalInFrontSpeed === 60) {
+        if (signal.NextSignalWithTrainAhead) {
+          return MAIN_SIGNAL_60_ORANGE_ICON;
+        }
+
+        return MAIN_SIGNAL_60_ICON;
+      }
+
+      if (train.TrainData.SignalInFrontSpeed === 80) {
+        if (signal.NextSignalWithTrainAhead) {
+          return MAIN_SIGNAL_80_ORANGE_ICON;
+        }
+
+        return MAIN_SIGNAL_80_ICON;
+      }
+
+      if (train.TrainData.SignalInFrontSpeed === 100) {
+        if (signal.NextSignalWithTrainAhead) {
+          return MAIN_SIGNAL_100_ORANGE_ICON;
+        }
+
+        return MAIN_SIGNAL_100_ICON;
+      }
+
+      if (train.TrainData.SignalInFrontSpeed === 130) {
+        if (signal.NextSignalWithTrainAhead) {
+          return MAIN_SIGNAL_130_ORANGE_ICON;
+        }
+
+        return MAIN_SIGNAL_130_ICON;
+      }
+    }
+
+    if (signal.Type === "shunting") {
+      return train.TrainData.SignalInFrontSpeed === 0 ? SHUNTING_SIGNAL_MS1_ICON : SHUNTING_SIGNAL_MS2_ICON;
+    }
+
+    if (signal.Type === "small") {
+      if (train.TrainData.SignalInFrontSpeed === 0) {
+        return SMALL_SIGNAL_RED_ICON;
+      }
+
+      return SMALL_SIGNAL_WHITE_ICON;
+    }
+
+    return new DivIcon({
+      ...DEFAULT_ICON_OPTIONS,
+      className: `${DEFAULT_ICON_OPTIONS.className} ${getSpeedColorForSignal(train.TrainData.SignalInFrontSpeed)}`,
+    });
+  }
+
+  if (signal.TrainsAhead?.length) {
+    switch (signal.Type) {
+      case "block":
+        return BLOCK_SIGNAL_ICONS.red[board ?? "none"];
+      case "main":
+        return MAIN_SIGNAL_RED_ICON;
+      case "small":
+        return SMALL_SIGNAL_RED_ICON;
+      case "shunting":
+        return SHUNTING_SIGNAL_MS1_ICON;
+      default:
+        return new DivIcon({
           ...DEFAULT_ICON_OPTIONS,
-          className: `${DEFAULT_ICON_OPTIONS.className} ${getSpeedColorForSignal(train.TrainData.SignalInFrontSpeed)}`,
-        }),
-      );
-
-      return;
+          className: `${DEFAULT_ICON_OPTIONS.className} danger`,
+        });
     }
+  }
 
-    if (signal.TrainsAhead?.length) {
-      switch (signal.Type) {
-        case "block":
-          setIcon(BLOCK_SIGNAL_RED_ICON);
-          return;
-        case "main":
-          setIcon(MAIN_SIGNAL_RED_ICON);
-          return;
-        case "small":
-          setIcon(SMALL_SIGNAL_RED_ICON);
-          return;
-        default:
-          setIcon(
-            new DivIcon({
-              ...DEFAULT_ICON_OPTIONS,
-              className: `${DEFAULT_ICON_OPTIONS.className} danger`,
-            }),
-          );
-          return;
-      }
+  if (signal.NextSignalWithTrainAhead) {
+    switch (signal.Type) {
+      case "block":
+        return BLOCK_SIGNAL_ICONS.yellow[board ?? "none"];
+      default:
+        return new DivIcon({
+          ...DEFAULT_ICON_OPTIONS,
+          className: `${DEFAULT_ICON_OPTIONS.className} warning`,
+        });
     }
+  }
 
-    if (signal.NextSignalWithTrainAhead) {
-      switch (signal.Type) {
-        case "block":
-          setIcon(BLOCK_SIGNAL_YELLOW_ICON);
-          return;
-        default:
-          setIcon(
-            new DivIcon({
-              ...DEFAULT_ICON_OPTIONS,
-              className: `${DEFAULT_ICON_OPTIONS.className} warning`,
-            }),
-          );
-          return;
-      }
-    }
+  return signal.Type === "shunting" ? SHUNTING_SIGNAL_INACTIVE_ICON : SECONDARY_ICON;
+}
 
-    setIcon(SECONDARY_ICON);
-  }, [signal.Name, signal.Type, signal.NextSignalWithTrainAhead, signalTrains, signal.TrainsAhead]);
+const SignalMarker: FunctionComponent<SignalMarkerProps> = ({
+  signal,
+  onSignalSelect,
+  opacity = 1,
+  pane,
+  trains,
+  board,
+}) => {
+  const signalTrains = trains || null;
+  const icon = useMemo(() => getSignalIcon(signal, signalTrains, board), [signal, signalTrains, board]);
+  const [rotateSignalIcons] = useSetting("rotateSignalIcons");
+  const orientedIcon = useMemo(
+    () => getOrientedSignalIcon(icon, signal.Heading, rotateSignalIcons),
+    [icon, signal.Heading, rotateSignalIcons],
+  );
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
@@ -297,7 +326,7 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({ signal, onSignalSe
       opacity={opacity}
       key={signal.Name}
       position={[signal.Location.Y, signal.Location.X]}
-      icon={icon}
+      icon={orientedIcon}
       eventHandlers={{
         popupopen: () => setIsPopupOpen(true),
         popupclose: () => setIsPopupOpen(false),

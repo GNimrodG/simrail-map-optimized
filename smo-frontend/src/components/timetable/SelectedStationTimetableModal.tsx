@@ -1,5 +1,5 @@
 import L from "leaflet";
-import { FunctionComponent, useContext, useEffect, useRef } from "react";
+import { FunctionComponent, useContext, useEffect, useRef, useState } from "react";
 import { useMap } from "react-leaflet";
 
 import useBehaviorSubj from "../../hooks/useBehaviorSubj";
@@ -17,7 +17,15 @@ const SelectedStationTimetableModal: FunctionComponent = () => {
   const { selectedStationTimetable, setSelectedStationTimetable } = useContext(SelectedStationTimetableContext);
   const { stationTimetable } = useStationTimetableEntries(selectedStationTimetable || "");
   const isStationHash = globalThis.location.hash.slice(1).startsWith(STATION_HASH_PREFIX);
-  const shouldCollapsedRef = useRef(isStationHash);
+  // opened from a link to the station: the first opening starts collapsed, so the map shows the station
+  const [startCollapsed, setStartCollapsed] = useState(isStationHash);
+  const [wasOpen, setWasOpen] = useState(!!selectedStationTimetable);
+  if (wasOpen !== !!selectedStationTimetable) {
+    setWasOpen(!!selectedStationTimetable);
+    if (!selectedStationTimetable) {
+      setStartCollapsed(false);
+    }
+  }
   const shouldFocusRef = useRef(isStationHash);
 
   useEffect(() => {
@@ -47,21 +55,13 @@ const SelectedStationTimetableModal: FunctionComponent = () => {
     shouldFocusRef.current = false;
   }, [map, selectedStationTimetable, stations]);
 
-  useEffect(() => {
-    if (!selectedStationTimetable || !shouldCollapsedRef.current) {
-      return;
-    }
-
-    shouldCollapsedRef.current = false;
-  }, [selectedStationTimetable]);
-
   return (
     <StationTimetableModal
       open={!!selectedStationTimetable}
       onClose={() => setSelectedStationTimetable(null)}
       stationName={selectedStationTimetable || ""}
       stationTimetable={stationTimetable}
-      startCollapsed={shouldCollapsedRef.current}
+      startCollapsed={startCollapsed}
     />
   );
 };
