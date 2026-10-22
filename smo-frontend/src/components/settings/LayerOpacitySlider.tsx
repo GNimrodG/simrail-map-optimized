@@ -6,6 +6,7 @@ import { type FunctionComponent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useSetting } from "../../hooks/useSetting";
+import { railwayLayerLabelKey } from "../../utils/railway-layers";
 
 export interface LayerOpacitySliderProps {
   layerId: string;
@@ -72,6 +73,7 @@ const LayerOpacitySlider: FunctionComponent<LayerOpacitySliderProps> = ({
 }) => {
   const { t } = useTranslation("translation");
   const [value, setValue] = useSetting("layerOpacities");
+  const [railwayLayerProvider] = useSetting("railwayLayerProvider");
   const opacity = value[layerId] ?? (legacyLayerId ? value[legacyLayerId] : undefined) ?? 1;
 
   const marks: { value: number; label: string }[] = [
@@ -81,7 +83,13 @@ const LayerOpacitySlider: FunctionComponent<LayerOpacitySliderProps> = ({
 
   return (
     <FormControl>
-      <FormLabel>{t(`Layers.${layerType}.${layerId}`)}</FormLabel>
+      <FormLabel>
+        {t(
+          layerType === "Background"
+            ? railwayLayerLabelKey(layerId, railwayLayerProvider)
+            : `Layers.Overlay.${layerId}`,
+        )}
+      </FormLabel>
       <Slider
         name={layerId}
         min={0}

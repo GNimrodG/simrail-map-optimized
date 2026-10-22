@@ -14,6 +14,7 @@ import { useSetting } from "../hooks/useSetting";
 import { dataProvider } from "../utils/data-manager";
 import { goToSignal } from "../utils/geom-utils";
 import MapLinesContext from "../utils/map-lines-context";
+import { RAILWAY_LAYERS, railwayLayerSource } from "../utils/railway-layers";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { VERSION } from "../version";
@@ -70,6 +71,7 @@ const MainMap: FunctionComponent = () => {
   const { selectedRoute, setSelectedRoute } = useContext(SelectedRouteContext);
   const { mapLines, setMapLines } = useContext(MapLinesContext);
   const [alternativeTheme] = useSetting("alternativeTheme");
+  const [railwayLayerProvider] = useSetting("railwayLayerProvider");
 
   const isConnected = useBehaviorSubj(dataProvider.isConnected$);
 
@@ -284,42 +286,19 @@ const MainMap: FunctionComponent = () => {
           )}
         </Control>
         {/* Layers */}
-        {/* orm-infra */}
-        {visibleLayers.includes("orm-infra") && (
-          <RefreshableTileLayer
-            className={alternativeTheme ? "alternativelayers" : "defaultmap"}
-            attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
-            url="https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png"
-            opacity={layerOpacities["orm-infra"]}
-          />
-        )}
-        {/* orm-maxspeed */}
-        {visibleLayers.includes("orm-maxspeed") && (
-          <RefreshableTileLayer
-            className={alternativeTheme ? "alternativelayers" : "defaultmap"}
-            attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
-            url="https://{s}.tiles.openrailwaymap.org/maxspeed/{z}/{x}/{y}.png"
-            opacity={layerOpacities["orm-maxspeed"]}
-          />
-        )}
-        {/* orm-signals */}
-        {visibleLayers.includes("orm-signals") && (
-          <RefreshableTileLayer
-            className={alternativeTheme ? "alternativelayers" : "defaultmap"}
-            attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
-            url="https://{s}.tiles.openrailwaymap.org/signals/{z}/{x}/{y}.png"
-            opacity={layerOpacities["orm-signals"]}
-          />
-        )}
-        {/* orm-electrification */}
-        {visibleLayers.includes("orm-electrification") && (
-          <RefreshableTileLayer
-            className={alternativeTheme ? "alternativelayers" : "defaultmap"}
-            attribution='Style: <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA 2.0</a> <a href="http://www.openrailwaymap.org/">OpenRailwayMap</a>'
-            url="https://{s}.tiles.openrailwaymap.org/electrification/{z}/{x}/{y}.png"
-            opacity={layerOpacities["orm-electrification"]}
-          />
-        )}
+        {/* the railway layers (orm-infra, orm-maxspeed, orm-signals, orm-electrification): SimRail Railmap or OpenRailwayMap */}
+        {RAILWAY_LAYERS.filter((layer) => visibleLayers.includes(layer)).map((layer) => {
+          const { url, attribution } = railwayLayerSource(layer, railwayLayerProvider);
+          return (
+            <RefreshableTileLayer
+              key={layer}
+              className={alternativeTheme ? "alternativelayers" : "defaultmap"}
+              attribution={attribution}
+              url={url}
+              opacity={layerOpacities[layer]}
+            />
+          );
+        })}
 
         {panesCreated && (
           <Suspense fallback={<Loading color="success" />}>

@@ -248,8 +248,9 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
     /// A signal the game has more than once comes with every copy, the one nearest the known location is used.
     /// Trains are the ground truth for the signals they passed: when a signal learned from trains (accuracy under
     /// <see cref="ImportConflictAccuracy"/> m) is more than <see cref="ImportConflictDistance"/> m from the game's
-    /// position, its location is kept and the signal is returned as a conflict (without a heading: the game's object
-    /// isn't the signal there), unless it's in <see cref="SignalImportRequest.Overrule"/>.
+    /// position, its location and heading are kept (the game's object isn't the signal there, the heading may have
+    /// been set from the tracks) and the signal is returned as a conflict, unless it's in
+    /// <see cref="SignalImportRequest.Overrule"/>.
     /// </remarks>
     /// <param name="body">The signals and the password.</param>
     /// <returns>How many signals were added and updated, and the conflicts.</returns>
@@ -291,7 +292,6 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
                     !overrule.Contains(name))
                 {
                     conflicts.Add(new { signal.Name, Distance = Math.Round(distance), signal.Accuracy });
-                    signal.Heading = null;
                 }
                 else
                 {

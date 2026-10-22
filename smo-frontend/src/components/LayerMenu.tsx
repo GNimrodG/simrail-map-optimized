@@ -6,9 +6,11 @@ import Tooltip from "@mui/joy/Tooltip";
 import { type FunctionComponent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useSetting } from "../hooks/useSetting";
+import { RAILWAY_LAYERS, railwayLayerLabelKey } from "../utils/railway-layers";
 import LayersIcon from "./icons/LayersIcon";
 
-const BACKGROUND_LAYERS = ["orm-infra", "orm-maxspeed", "orm-signals", "orm-electrification"];
+const BACKGROUND_LAYERS: readonly string[] = RAILWAY_LAYERS;
 
 const MARKER_LAYER_GROUPS = [
   { id: "stations", layers: ["bot-stations", "user-stations"] },
@@ -33,6 +35,7 @@ export interface LayerMenuProps {
 const LayerMenu: FunctionComponent<LayerMenuProps> = ({ visibleLayers, setVisibleLayers }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const [railwayLayerProvider] = useSetting("railwayLayerProvider");
   const hasPartiallyVisibleMarkerGroup = MARKER_LAYER_GROUPS.some((group) => {
     const visibleLayerCount = group.layers.filter((layer) => visibleLayers.includes(layer)).length;
     return visibleLayerCount === 1;
@@ -78,7 +81,7 @@ const LayerMenu: FunctionComponent<LayerMenuProps> = ({ visibleLayers, setVisibl
               }}
               key={layer}
               value={layer}
-              label={t(`Layers.Background.${layer}`)}
+              label={t(railwayLayerLabelKey(layer, railwayLayerProvider))}
               size="sm"
               name="background-layers"
               checked={visibleLayers.includes(layer)}

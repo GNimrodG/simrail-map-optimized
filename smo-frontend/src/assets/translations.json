@@ -21,6 +21,8 @@
           "orm-infra": "OpenRailwayMap - Infrastructure",
           "orm-maxspeed": "OpenRailwayMap - Maxspeed",
           "orm-signals": "OpenRailwayMap - Signals",
+          "railmap-infra": "SimRail Railmap - Infrastructure",
+          "railmap-maxspeed": "SimRail Railmap - Maxspeed",
           "orm-electrification": "OpenRailwayMap - Electrification"
         },
         "Overlay": {
@@ -103,6 +105,15 @@
         "MapTheme": "Map Theme (For Dark Mode)",
         "alternativeTheme": {
           "Label": "Monochrome map"
+        },
+        "RailwayLayers": "Railway Layers",
+        "railwayLayerProvider": {
+          "Label": "Railway layers from",
+          "Description": "SimRail Railmap is made from the game's own tracks: their speed limits, ETCS levels and signals. OpenRailwayMap shows the real railway. Electrification is always from OpenRailwayMap.",
+          "Options": {
+            "railmap": "SimRail Railmap (the game's tracks)",
+            "openrailwaymap": "OpenRailwayMap (the real railway)"
+          }
         },
         "LayerOpacity": "Layer Opacity",
         "disableLowSpeedWarning": {
@@ -511,6 +522,8 @@
           "orm-infra": "OpenRailwayMap - Infrastruktur",
           "orm-maxspeed": "OpenRailwayMap - Höchstgeschwindigkeit",
           "orm-signals": "OpenRailwayMap - Signale",
+          "railmap-infra": "SimRail Railmap - Infrastruktur",
+          "railmap-maxspeed": "SimRail Railmap - Höchstgeschwindigkeit",
           "orm-electrification": "OpenRailwayMap - Elektrifizierung"
         },
         "Overlay": {
@@ -593,6 +606,15 @@
         "MapTheme": "Kartenthema (für den Dunkelmodus)",
         "alternativeTheme": {
           "Label": "Monochromatische Karte"
+        },
+        "RailwayLayers": "Bahnebenen",
+        "railwayLayerProvider": {
+          "Label": "Bahnebenen von",
+          "Description": "Die SimRail Railmap entsteht aus den Gleisen des Spiels: ihren Geschwindigkeiten, ETCS-Leveln und Signalen. OpenRailwayMap zeigt die echte Bahn. Die Elektrifizierung kommt immer von OpenRailwayMap.",
+          "Options": {
+            "railmap": "SimRail Railmap (die Gleise des Spiels)",
+            "openrailwaymap": "OpenRailwayMap (die echte Bahn)"
+          }
         },
         "LayerOpacity": "Ebenen-Deckkraft",
         "disableLowSpeedWarning": {
@@ -1002,6 +1024,8 @@
           "orm-infra": "OpenRailwayMap - Infrastruktúra",
           "orm-maxspeed": "OpenRailwayMap - Maximális sebesség",
           "orm-signals": "OpenRailwayMap - Jelzők",
+          "railmap-infra": "SimRail Railmap - Infrastruktúra",
+          "railmap-maxspeed": "SimRail Railmap - Maximális sebesség",
           "orm-electrification": "OpenRailwayMap - Villamosítás"
         },
         "Overlay": {
@@ -1084,6 +1108,15 @@
         "MapTheme": "Térkép téma (sötét módhoz)",
         "alternativeTheme": {
           "Label": "Monokróm térkép"
+        },
+        "RailwayLayers": "Vasúti rétegek",
+        "railwayLayerProvider": {
+          "Label": "Vasúti rétegek forrása",
+          "Description": "A SimRail Railmap a játék saját vágányaiból készül: a sebességkorlátozásokból, az ETCS-szintekből és a jelzőkből. Az OpenRailwayMap a valódi vasutat mutatja. A villamosítás mindig az OpenRailwayMapből jön.",
+          "Options": {
+            "railmap": "SimRail Railmap (a játék vágányai)",
+            "openrailwaymap": "OpenRailwayMap (a valódi vasút)"
+          }
         },
         "LayerOpacity": "Rétegek átlátszósága",
         "disableLowSpeedWarning": {
@@ -1497,6 +1530,8 @@
           "orm-infra": "OpenRailwayMap - Altyapı",
           "orm-maxspeed": "OpenRailwayMap - Maksimum Hız",
           "orm-signals": "OpenRailwayMap - Sinyalizasyon",
+          "railmap-infra": "SimRail Railmap - Altyapı",
+          "railmap-maxspeed": "SimRail Railmap - Maksimum Hız",
           "orm-electrification": "OpenRailwayMap - Elektrik Altyapısı"
         },
         "Overlay": {
@@ -1579,6 +1614,15 @@
         "MapTheme": "Harita Teması (Karanlık Mod İçin)",
         "alternativeTheme": {
           "Label": "Monokrom harita"
+        },
+        "RailwayLayers": "Demiryolu Katmanları",
+        "railwayLayerProvider": {
+          "Label": "Demiryolu katmanlarının kaynağı",
+          "Description": "SimRail Railmap, oyunun kendi raylarından yapılır: hız sınırları, ETCS seviyeleri ve sinyaller. OpenRailwayMap gerçek demiryolunu gösterir. Elektrik altyapısı her zaman OpenRailwayMap'ten gelir.",
+          "Options": {
+            "railmap": "SimRail Railmap (oyunun rayları)",
+            "openrailwaymap": "OpenRailwayMap (gerçek demiryolu)"
+          }
         },
         "LayerOpacity": "Katman Opaklığı",
         "disableLowSpeedWarning": {
@@ -1990,6 +2034,8 @@
           "orm-infra": "OpenRailwayMap - Infrastruktura",
           "orm-maxspeed": "OpenRailwayMap - Maksymalna Prędkość",
           "orm-signals": "OpenRailwayMap - Sygnalizacja",
+          "railmap-infra": "SimRail Railmap - Infrastruktura",
+          "railmap-maxspeed": "SimRail Railmap - Maksymalna Prędkość",
           "orm-electrification": "OpenRailwayMap - Elektryfikacja"
         },
         "Overlay": {
@@ -2072,6 +2118,15 @@
         "MapTheme": "Motyw Mapy (dla trybu ciemnego)",
         "alternativeTheme": {
           "Label": "Monochromatyczna mapa"
+        },
+        "RailwayLayers": "Warstwy kolejowe",
+        "railwayLayerProvider": {
+          "Label": "Warstwy kolejowe z",
+          "Description": "SimRail Railmap powstaje z torów samej gry: ich prędkości, poziomów ETCS i sygnałów. OpenRailwayMap pokazuje prawdziwą kolej. Elektryfikacja zawsze pochodzi z OpenRailwayMap.",
+          "Options": {
+            "railmap": "SimRail Railmap (tory z gry)",
+            "openrailwaymap": "OpenRailwayMap (prawdziwa kolej)"
+          }
         },
         "LayerOpacity": "Przezroczystość Warstw",
         "disableLowSpeedWarning": {
@@ -2480,6 +2535,8 @@
           "orm-infra": "OpenRailwayMap - Инфраструктура",
           "orm-maxspeed": "OpenRailwayMap - Макс. скорость",
           "orm-signals": "OpenRailwayMap - Сигналы",
+          "railmap-infra": "SimRail Railmap - Инфраструктура",
+          "railmap-maxspeed": "SimRail Railmap - Макс. скорость",
           "orm-electrification": "OpenRailwayMap - Электрификация"
         },
         "Overlay": {
@@ -2562,6 +2619,15 @@
         "MapTheme": "Тема карты (для тёмного режима)",
         "alternativeTheme": {
           "Label": "Монохромная карта"
+        },
+        "RailwayLayers": "Железнодорожные слои",
+        "railwayLayerProvider": {
+          "Label": "Источник железнодорожных слоёв",
+          "Description": "SimRail Railmap построена по путям самой игры: их ограничениям скорости, уровням ETCS и сигналам. OpenRailwayMap показывает настоящую железную дорогу. Электрификация всегда из OpenRailwayMap.",
+          "Options": {
+            "railmap": "SimRail Railmap (пути игры)",
+            "openrailwaymap": "OpenRailwayMap (настоящая железная дорога)"
+          }
         },
         "LayerOpacity": "Непрозрачность слоя",
         "disableLowSpeedWarning": {
@@ -2970,6 +3036,8 @@
           "orm-infra": "OpenRailwayMap - Інфраструктура",
           "orm-maxspeed": "OpenRailwayMap - Макс. швидкість",
           "orm-signals": "OpenRailwayMap - Сигнали",
+          "railmap-infra": "SimRail Railmap - Інфраструктура",
+          "railmap-maxspeed": "SimRail Railmap - Макс. швидкість",
           "orm-electrification": "OpenRailwayMap - Електрифікація"
         },
         "Overlay": {
@@ -3052,6 +3120,15 @@
         "MapTheme": "Тема карти (для темного режиму)",
         "alternativeTheme": {
           "Label": "Монохромна карта"
+        },
+        "RailwayLayers": "Залізничні шари",
+        "railwayLayerProvider": {
+          "Label": "Джерело залізничних шарів",
+          "Description": "SimRail Railmap побудована з колій самої гри: їхніх обмежень швидкості, рівнів ETCS і сигналів. OpenRailwayMap показує справжню залізницю. Електрифікація завжди з OpenRailwayMap.",
+          "Options": {
+            "railmap": "SimRail Railmap (колії гри)",
+            "openrailwaymap": "OpenRailwayMap (справжня залізниця)"
+          }
         },
         "LayerOpacity": "Непрозорість шару",
         "disableLowSpeedWarning": {

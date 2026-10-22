@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 
 import { useSetting } from "../../hooks/useSetting";
 import { setLanguage, SUPPORTED_LANGUAGES } from "../../i18n";
+import { isRailwayLayerProvider, RAILWAY_LAYER_PROVIDERS } from "../../utils/railway-layers";
 import LayerOpacitySlider from "./LayerOpacitySlider";
 import SettingCheckbox from "./SettingCheckbox";
 import SettingSlider from "./SettingSlider";
@@ -26,6 +27,7 @@ const Settings: FunctionComponent = () => {
   const timetableViewSelectValue = isTimetableViewModeOption(defaultTimetableViewMode)
     ? defaultTimetableViewMode
     : "table";
+  const [railwayLayerProvider, setRailwayLayerProvider] = useSetting("railwayLayerProvider");
 
   return (
     <Sheet
@@ -131,6 +133,30 @@ const Settings: FunctionComponent = () => {
           <SettingSlider settingKey="timetableGroupedMaxEntriesDefault" min={5} max={50} step={5} />
           <SettingSlider settingKey="timetableGroupedMaxEntriesSmall" min={1} max={20} step={1} />
           <SettingSlider settingKey="timetableGroupedMaxEntriesLarge" min={5} max={50} step={5} />
+        </Stack>
+      </Stack>
+
+      <Divider sx={{ mt: 2 }} />
+
+      <Stack direction="column" spacing={0.5}>
+        <Typography sx={{ pt: 2 }} level="h4">
+          {t("RailwayLayers")}
+        </Typography>
+        <Stack spacing={0.5}>
+          <Typography level="title-sm">{t("railwayLayerProvider.Label")}</Typography>
+          <Select
+            size="sm"
+            value={isRailwayLayerProvider(railwayLayerProvider) ? railwayLayerProvider : "railmap"}
+            onChange={(_event, value) => value && setRailwayLayerProvider(value)}>
+            {RAILWAY_LAYER_PROVIDERS.map((provider) => (
+              <Option key={provider} value={provider}>
+                {t(`railwayLayerProvider.Options.${provider}`)}
+              </Option>
+            ))}
+          </Select>
+          <Typography level="body-xs" sx={{ color: "neutral.500" }}>
+            {t("railwayLayerProvider.Description")}
+          </Typography>
         </Stack>
       </Stack>
 

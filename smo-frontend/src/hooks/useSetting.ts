@@ -1,6 +1,8 @@
 import { useLocalStorage } from "@mantine/hooks";
 import { useMemo } from "react";
 
+import type { RailwayLayerProvider } from "../utils/railway-layers";
+
 const SETTINGS = {
   selectedServer: "int1",
   visibleLayers: [
@@ -21,6 +23,7 @@ const SETTINGS = {
   showNextStationInfoCollapsed: false,
   showDelayInfoCollapsed: true,
   alternativeTheme: false,
+  railwayLayerProvider: "railmap" as RailwayLayerProvider,
   disableSlidingMarkers: false,
   showTrainHeadings: true,
   layerOpacities: {
