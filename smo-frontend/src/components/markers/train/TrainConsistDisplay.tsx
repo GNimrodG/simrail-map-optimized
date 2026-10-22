@@ -8,6 +8,7 @@ import { Fragment, type FunctionComponent, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import TrainConsistPartDisplay from "./TrainConsistPartDisplay";
+import TrainSideView from "./TrainSideView";
 
 export interface TrainConsistDisplayProps {
   consist: string[];
@@ -56,6 +57,10 @@ const TrainConsistDisplay: FunctionComponent<TrainConsistDisplayProps> = ({ cons
         }}>
         {t("Consist")}
       </Typography>
+      {/* a tooltip grows with its content: the strip gets its width, a longer train scrolls */}
+      <Box sx={{ width: "min(900px, 90vw)", px: 1, pt: 1 }}>
+        <TrainSideView consist={consist} />
+      </Box>
       <List sx={{ p: 1 }} size="sm">
         {consistData.map(({ count, vehicles, shortName }, index) => (
           <Fragment key={index + shortName}>

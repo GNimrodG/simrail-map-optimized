@@ -45,6 +45,7 @@ import WeightIcon from "../markers/icons/WeightIcon";
 import StationDisplay from "../markers/station/StationDisplay";
 import TrainConsistDisplay from "../markers/train/TrainConsistDisplay";
 import TrainMarkerPopup from "../markers/train/TrainMarkerPopup";
+import TrainSideView from "../markers/train/TrainSideView";
 import TrainTimetableModal from "../timetable/TrainTimetableModal";
 import { summarizeConsist } from "../utils/general-utils";
 import TrainTypeDisplay from "../utils/TrainTypeDisplay";
@@ -578,6 +579,8 @@ const ServerTrainListModal: FunctionComponent = () => {
                             {maxSpeedChip}
                           </Stack>
                         </Stack>
+
+                        <TrainSideView consist={train.Vehicles} />
 
                         {!timetable && !isLoadingTimetables && (
                           <Typography level="body-sm" sx={{ color: "neutral.500" }}>
