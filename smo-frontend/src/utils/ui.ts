@@ -1,6 +1,6 @@
 import { DefaultColorPalette } from "@mui/joy/styles/types";
 
-import { SimplifiedTimtableEntry, UnusualCargoFlags } from "./types";
+import { SimplifiedTimtableEntry, UnusualCargoBits, UnusualCargoFlags } from "./types";
 
 export function getColorTrainMarker(velocity: number): DefaultColorPalette {
   if (velocity < 10) {
@@ -50,6 +50,12 @@ export function getEntryUnusualCargo(
     IsHighRiskCargo: entry.isHighRiskCargo,
     IsDangerousCargo: entry.isDangerousCargo,
   };
+}
+
+export function getTrainUnusualCargo(unusualCargo: number): UnusualCargoFlags {
+  return Object.fromEntries(
+    Object.entries(UnusualCargoBits).map(([flag, bit]) => [flag, (unusualCargo & bit) !== 0]),
+  ) as UnusualCargoFlags;
 }
 
 export function normalizeString(str: string): string {

@@ -26,7 +26,7 @@ import MapLinesContext from "../../../utils/map-lines-context";
 import SelectedRouteContext from "../../../utils/selected-route-context";
 import SelectedTrainContext from "../../../utils/selected-train-context";
 import { Train, UserProfileResponse } from "../../../utils/types";
-import { getColorTrainMarker, getDistanceColorForSignal } from "../../../utils/ui";
+import { getColorTrainMarker, getDistanceColorForSignal, getTrainUnusualCargo } from "../../../utils/ui";
 import CollapseIcon from "../../icons/CollapseIcon";
 import ExpandIcon from "../../icons/ExpandIcon";
 import InfoIcon from "../../icons/InfoIcon";
@@ -381,7 +381,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
         </Tooltip>
       </Stack>
 
-      <UnusualCargoDisplay cargo={train} />
+      <UnusualCargoDisplay cargo={getTrainUnusualCargo(train.UnusualCargo)} />
 
       <Stack sx={{ width: "100%" }} direction="row" justifyContent="space-around" alignItems="center">
         <Box sx={{ minWidth: 0, flexShrink: 1 }}>{trainSpeed}</Box>

@@ -82,37 +82,37 @@ public readonly struct SimplifiedTimetableEntry
     /// If the train is quality tracked.
     /// </summary>
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public bool IsQualityTracked { get; }
+    public bool IsQualityTracked { get; init; }
 
     /// <summary>
     /// If the train has over-gauged vehicles.
     /// </summary>
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public bool IsOverGauge { get; }
+    public bool IsOverGauge { get; init; }
 
     /// <summary>
     /// If the train is overweight.
     /// </summary>
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public bool IsOverWeight { get; }
+    public bool IsOverWeight { get; init; }
 
     /// <summary>
     /// If the train has other exceptional characteristics.
     /// </summary>
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public bool IsOtherExceptional { get; }
+    public bool IsOtherExceptional { get; init; }
 
     /// <summary>
     /// If the train has high risk cargo.
     /// </summary>
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public bool IsHighRiskCargo { get; }
+    public bool IsHighRiskCargo { get; init; }
 
     /// <summary>
     /// If the train has dangerous cargo.
     /// </summary>
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public bool IsDangerousCargo { get; }
+    public bool IsDangerousCargo { get; init; }
 
     /// <summary>
     ///     The entity supervising the train at this station, if any.
@@ -120,7 +120,7 @@ public readonly struct SimplifiedTimetableEntry
     [JsonIgnore]
     public string? SupervisedBy { get; }
 
-    internal SimplifiedTimetableEntry(Timetable timetable, int index, string[]? lastConsist, UnusualCargo unusualCargo)
+    internal SimplifiedTimetableEntry(Timetable timetable, int index, string[]? lastConsist = null)
     {
         var timetableEntry = timetable.TimetableEntries[index];
 
@@ -148,16 +148,22 @@ public readonly struct SimplifiedTimetableEntry
             ? [.. lastConsist.Select(string.Intern)]
             : null;
 
-        IsQualityTracked = unusualCargo.IsQualityTracked;
-        IsOverGauge = unusualCargo.IsOverGauge;
-        IsOverWeight = unusualCargo.IsOverWeight;
-        IsOtherExceptional = unusualCargo.IsOtherExceptional;
-        IsHighRiskCargo = unusualCargo.IsHighRiskCargo;
-        IsDangerousCargo = unusualCargo.IsDangerousCargo;
-
         Index = (short)index;
         SupervisedBy = timetableEntry.SupervisedBy != null ? string.Intern(timetableEntry.SupervisedBy) : null;
     }
+
+    /// <summary>
+    ///     Returns a copy of this entry with the given unusual cargo flags.
+    /// </summary>
+    internal SimplifiedTimetableEntry WithUnusualCargo(UnusualCargo cargo) => this with
+    {
+        IsQualityTracked = cargo.HasFlag(UnusualCargo.QualityTracked),
+        IsOverGauge = cargo.HasFlag(UnusualCargo.OverGauge),
+        IsOverWeight = cargo.HasFlag(UnusualCargo.OverWeight),
+        IsOtherExceptional = cargo.HasFlag(UnusualCargo.OtherExceptional),
+        IsHighRiskCargo = cargo.HasFlag(UnusualCargo.HighRiskCargo),
+        IsDangerousCargo = cargo.HasFlag(UnusualCargo.DangerousCargo),
+    };
 
     /// <inheritdoc />
     public override string ToString()

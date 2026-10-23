@@ -16,7 +16,7 @@ public partial class TrainDataService(
     ServerDataService serverDataService,
     SimrailApiClient apiClient,
     TrainTypeService trainTypeService,
-    TimetableDataService timetableDataService)
+    EdrDataService edrDataService)
     : BaseServerDataService<Train[]>("TRAIN", logger, scopeFactory, serverDataService),
         IServerMetricsCleaner
 {
@@ -98,7 +98,7 @@ public partial class TrainDataService(
             }
 
             train.TrainType = trainType;
-            train.SetUnusualCargo(timetableDataService.GetUnusualCargo(serverCode, train.TrainNoLocal));
+            train.UnusualCargo = edrDataService.GetUnusualCargo(serverCode, train.TrainNoLocal);
         }
 
         enrichSw.Stop();

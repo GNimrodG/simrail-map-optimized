@@ -1,35 +1,45 @@
 namespace SMOBackend.Models;
 
 /// <summary>
-/// Unusual cargo flags of a train from the EDR timetable.
+/// Unusual cargo flags of a train from the EDR timetable, as a bit mask:
+/// 1 = QualityTracked, 2 = OverGauge, 4 = OverWeight, 8 = OtherExceptional, 16 = HighRiskCargo, 32 = DangerousCargo.
+/// Combined by adding the values, e.g. 48 = HighRiskCargo + DangerousCargo. 0 = none.
 /// </summary>
-/// <param name="IsQualityTracked">If the train is quality tracked</param>
-/// <param name="IsOverGauge">If the train has over-gauged vehicles</param>
-/// <param name="IsOverWeight">If the train is overweight</param>
-/// <param name="IsOtherExceptional">If the train has other exceptional characteristics</param>
-/// <param name="IsHighRiskCargo">If the train has high risk cargo</param>
-/// <param name="IsDangerousCargo">If the train has dangerous cargo</param>
-public sealed record UnusualCargo(
-    bool IsQualityTracked,
-    bool IsOverGauge,
-    bool IsOverWeight,
-    bool IsOtherExceptional,
-    bool IsHighRiskCargo,
-    bool IsDangerousCargo)
+[Flags]
+public enum UnusualCargo : byte
 {
     /// <summary>
-    /// No unusual cargo.
+    /// No unusual cargo
     /// </summary>
-    public static readonly UnusualCargo None = new(false, false, false, false, false, false);
+    None = 0,
 
     /// <summary>
-    /// Gets the unusual cargo flags of an EDR timetable entry.
+    /// The train is quality tracked
     /// </summary>
-    public static UnusualCargo FromEdr(EdrTimetableTrainEntry entry) => new(
-        entry.IsQualityTracked,
-        entry.IsOverGauge,
-        entry.IsOverWeight ?? false,
-        entry.IsOtherExceptional,
-        entry.IsHighRiskCargo,
-        entry.IsDangerousCargo);
+    QualityTracked = 1 << 0,
+
+    /// <summary>
+    /// The train has over-gauged vehicles
+    /// </summary>
+    OverGauge = 1 << 1,
+
+    /// <summary>
+    /// The train is overweight
+    /// </summary>
+    OverWeight = 1 << 2,
+
+    /// <summary>
+    /// The train has other exceptional characteristics
+    /// </summary>
+    OtherExceptional = 1 << 3,
+
+    /// <summary>
+    /// The train has high risk cargo
+    /// </summary>
+    HighRiskCargo = 1 << 4,
+
+    /// <summary>
+    /// The train has dangerous cargo
+    /// </summary>
+    DangerousCargo = 1 << 5,
 }

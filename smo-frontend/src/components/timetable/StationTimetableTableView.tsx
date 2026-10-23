@@ -106,11 +106,10 @@ const StationTimetableTableView: FunctionComponent<StationTimetableTableViewProp
         "& th:nth-of-type(2), & td:nth-of-type(2)": { width: 60 },
         "& th:nth-of-type(3), & td:nth-of-type(3)": { width: 140 },
         "& th:nth-of-type(4), & td:nth-of-type(4)": { width: 70 },
-        "& th:nth-of-type(5), & td:nth-of-type(5)": { width: 180 },
-        "& th:nth-of-type(6), & td:nth-of-type(6)": { width: 190 },
-        "& th:nth-of-type(7), & td:nth-of-type(7)": { width: 120 },
-        "& th:nth-of-type(8), & td:nth-of-type(8)": { width: 40 },
-        "& th:nth-of-type(9), & td:nth-of-type(9)": { width: 125 },
+        "& th:nth-of-type(5), & td:nth-of-type(5)": { width: 190 },
+        "& th:nth-of-type(6), & td:nth-of-type(6)": { width: 120 },
+        "& th:nth-of-type(7), & td:nth-of-type(7)": { width: 40 },
+        "& th:nth-of-type(8), & td:nth-of-type(8)": { width: 125 },
         "& thead th": {
           bgcolor: "background.surface",
         },
@@ -122,7 +121,6 @@ const StationTimetableTableView: FunctionComponent<StationTimetableTableViewProp
           <th style={{ textAlign: "center" }}>{t("From")}</th>
           <th>{t("Arrival")}</th>
           <th>{t("Departure")}</th>
-          <th style={{ textAlign: "center" }}>{t("UnusualCargo")}</th>
           <th style={{ textAlign: "center" }}>{t("To")}</th>
           <th>{t("Line")}</th>
           <th>{t("Stop")}</th>
@@ -178,7 +176,7 @@ const StationTimetableTableView: FunctionComponent<StationTimetableTableViewProp
               sx={{ color: rowColor }}>
               {/* Train No */}
               <td>
-                <Stack direction="row" spacing={0.5} alignItems="center">
+                <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap>
                   <Typography
                     fontFamily="monospace"
                     level="body-md"
@@ -223,6 +221,7 @@ const StationTimetableTableView: FunctionComponent<StationTimetableTableViewProp
                   )}
                   {!!passedEarly && <Chip color="success">{t("PassedEarly")}</Chip>}
                   {!!delayed && <Chip color="warning">{t("Delayed")}</Chip>}
+                  <UnusualCargoDisplay cargo={getEntryUnusualCargo(entry)} displayMode="chip" maxChips={2} />
                 </Stack>
               </td>
               {/* Type */}
@@ -332,10 +331,6 @@ const StationTimetableTableView: FunctionComponent<StationTimetableTableViewProp
                     </Tooltip>
                   )}
                 </Stack>
-              </td>
-              {/* Unusual Cargo */}
-              <td>
-                <UnusualCargoDisplay cargo={getEntryUnusualCargo(entry)} displayMode="chip" />
               </td>
               {/* To */}
               <td>

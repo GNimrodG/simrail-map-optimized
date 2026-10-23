@@ -1,5 +1,6 @@
 import Box from "@mui/joy/Box";
 import Chip from "@mui/joy/Chip";
+import { ColorPaletteProp } from "@mui/joy/styles";
 import Typography from "@mui/joy/Typography";
 import Tooltip from "@mui/joy/Tooltip";
 import { type FunctionComponent, memo } from "react";
@@ -9,57 +10,54 @@ import { useTranslation } from "react-i18next";
 export interface UnusualCargoDisplayProps {
   cargo: UnusualCargoFlags | undefined;
   displayMode?: "text" | "chip";
+  /** With more flags than this, the optional ones are collapsed into a "+N" label */
+  maxChips?: number;
 }
-
-const FLAG_COLORS = {
-  purple: "#9333EA",
-  yellow: "#CA8A04",
-  orange: "#EA580C",
-  darkRed: "#991B1B",
-};
-
-type FlagColor = keyof typeof FLAG_COLORS;
 
 const DEBUG_SHOW_ALL_FLAGS = false;
 
-const FLAGS: { flag: keyof UnusualCargoFlags; translationKey: string; color: FlagColor }[] = [
-  { flag: "IsQualityTracked", translationKey: "QualityTracked", color: "purple" },
-  { flag: "IsOverGauge", translationKey: "OverGauge", color: "yellow" },
-  { flag: "IsOverWeight", translationKey: "OverWeight", color: "yellow" },
-  { flag: "IsOtherExceptional", translationKey: "OtherExceptional", color: "yellow" },
-  { flag: "IsHighRiskCargo", translationKey: "HighRiskCargo", color: "orange" },
-  { flag: "IsDangerousCargo", translationKey: "DangerousCargo", color: "darkRed" },
+interface Flag {
+  flag: keyof UnusualCargoFlags;
+  translationKey: string;
+  color: ColorPaletteProp;
+  solid?: boolean;
+  optional?: boolean;
+}
+
+const FLAGS: Flag[] = [
+  { flag: "IsQualityTracked", translationKey: "QualityTracked", color: "neutral", optional: true },
+  { flag: "IsOverGauge", translationKey: "OverGauge", color: "warning" },
+  { flag: "IsOverWeight", translationKey: "OverWeight", color: "warning" },
+  { flag: "IsOtherExceptional", translationKey: "OtherExceptional", color: "warning", optional: true },
+  { flag: "IsHighRiskCargo", translationKey: "HighRiskCargo", color: "danger", solid: true },
+  { flag: "IsDangerousCargo", translationKey: "DangerousCargo", color: "danger" },
 ];
 
-const flagSx = (color: FlagColor) => ({
-  color: `color-mix(in srgb, ${FLAG_COLORS[color]} 70%, var(--joy-palette-text-primary))`,
-  backgroundColor: `color-mix(in srgb, ${FLAG_COLORS[color]} 15%, transparent)`,
-  borderColor: FLAG_COLORS[color],
-});
-
-const TrainFlag: FunctionComponent<{
-  flag: string;
-  color: FlagColor;
-  displayMode: "text" | "chip";
-}> = ({ flag, color, displayMode }) => {
+const TrainFlag: FunctionComponent<Omit<Flag, "flag"> & { displayMode: "text" | "chip" }> = ({
+  translationKey,
+  color,
+  solid,
+  displayMode,
+}) => {
   const { t } = useTranslation("translation", { keyPrefix: "UnusualCargo" });
 
-  const label = t(`${flag}.label`);
-  const description = t(`${flag}.description`);
+  const label = t(`${translationKey}.label`);
+  const description = t(`${translationKey}.description`);
 
   return (
     <Tooltip arrow variant="outlined" placement="top" describeChild title={description}>
       {displayMode === "chip" ? (
-        <Chip size="sm" variant="outlined" sx={flagSx(color)}>
+        <Chip size="sm" variant={solid ? "solid" : "soft"} color={color}>
           {label}
         </Chip>
       ) : (
         <Typography
           component="span"
-          variant="outlined"
+          variant={solid ? "solid" : "outlined"}
+          color={color}
           level="body-sm"
           textAlign="center"
-          sx={[flagSx(color), { whiteSpace: "nowrap" }]}>
+          sx={{ whiteSpace: "nowrap" }}>
           {label}
         </Typography>
       )}
@@ -67,9 +65,19 @@ const TrainFlag: FunctionComponent<{
   );
 };
 
-const UnusualCargoDisplay: FunctionComponent<UnusualCargoDisplayProps> = ({ cargo, displayMode = "text" }) => {
+const UnusualCargoDisplay: FunctionComponent<UnusualCargoDisplayProps> = ({
+  cargo,
+  displayMode = "text",
+  maxChips = FLAGS.length,
+}) => {
+  const { t } = useTranslation("translation", { keyPrefix: "UnusualCargo" });
+
   const flags = DEBUG_SHOW_ALL_FLAGS ? FLAGS : FLAGS.filter(({ flag }) => cargo?.[flag]);
   if (flags.length === 0) return null;
+
+  const collapse = flags.length > maxChips;
+  const visible = collapse ? flags.filter(({ optional }) => !optional) : flags;
+  const hidden = collapse ? flags.filter(({ optional }) => optional) : [];
 
   return (
     <Box
@@ -78,9 +86,27 @@ const UnusualCargoDisplay: FunctionComponent<UnusualCargoDisplayProps> = ({ carg
         alignItems: "center",
         gap: 1,
       }}>
-      {flags.map(({ flag, translationKey, color }) => (
-        <TrainFlag key={flag} flag={translationKey} color={color} displayMode={displayMode} />
+      {visible.map(({ flag, ...rest }) => (
+        <TrainFlag key={flag} {...rest} displayMode={displayMode} />
       ))}
+      {hidden.length > 0 && (
+        <Tooltip
+          arrow
+          variant="outlined"
+          placement="top"
+          describeChild
+          title={hidden.map(({ translationKey }) => t(`${translationKey}.description`)).join(", ")}>
+          {displayMode === "chip" ? (
+            <Chip size="sm" variant="soft" color="neutral">
+              +{hidden.length}
+            </Chip>
+          ) : (
+            <Typography component="span" variant="outlined" color="neutral" level="body-sm">
+              +{hidden.length}
+            </Typography>
+          )}
+        </Tooltip>
+      )}
     </Box>
   );
 };
