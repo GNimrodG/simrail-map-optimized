@@ -103,6 +103,18 @@ const MAIN_SIGNAL_40_ORANGE_ICON = new Icon({
   iconSize: [15, 60], // base size 5x20 x3
 });
 
+const MAIN_SIGNAL_50_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-50.svg",
+  iconSize: [15, 66], // base size 5x22 x3
+});
+
+const MAIN_SIGNAL_50_ORANGE_ICON = new Icon({
+  className,
+  iconUrl: "/assets/signals/signal-main-50-orange.svg",
+  iconSize: [15, 66], // base size 5x22 x3
+});
+
 const MAIN_SIGNAL_60_ICON = new Icon({
   className,
   iconUrl: "/assets/signals/signal-main-60.svg",
@@ -217,6 +229,14 @@ function getSignalIcon(
         }
 
         return MAIN_SIGNAL_40_ICON;
+      }
+
+      if (train.TrainData.SignalInFrontSpeed === 50) {
+        if (signal.NextSignalWithTrainAhead) {
+          return MAIN_SIGNAL_50_ORANGE_ICON;
+        }
+
+        return MAIN_SIGNAL_50_ICON;
       }
 
       if (train.TrainData.SignalInFrontSpeed === 60) {

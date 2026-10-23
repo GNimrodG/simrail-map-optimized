@@ -1,0 +1,12 @@
+<svg viewBox="0 0 5.3 22" xmlns="http://www.w3.org/2000/svg" role="img"
+  aria-label="Polish main signal allowing 50 kilometres per hour">
+  <path fill="#000" d="M2.5 0C1.12 0 0 1.08 0 2.4v14.6h5V2.4C5 1.08 3.88 0 2.5 0Z" />
+  <circle cx="2.5" cy="2.4" r=".96" fill="#333" />
+  <circle cx="2.5" cy="5.6" r=".96" fill="#00ff00" />
+  <circle cx="2.5" cy="8.8" r=".96" fill="#333" />
+  <circle cx="2.5" cy="12" r=".96" fill="#ffd715" />
+  <circle cx="2.5" cy="15.2" r=".96" fill="#333" />
+  <rect x=".2" y="17.4" width="4.6" height="4.4" rx=".2" fill="#000" />
+  <text x="2.5" y="21" fill="#fff" font-family="Arial, sans-serif" font-size="4" font-weight="700"
+    text-anchor="middle">5</text>
+</svg>
