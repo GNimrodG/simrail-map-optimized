@@ -10,20 +10,20 @@ export function getThumbnailUrl(vehicle: string): string {
     .replace(/^ED250.+$/, "ED250-018");
   // the coaches in their 1980s livery are separate models ("11xa/80s/111A_… Variant", sometimes "… Variant 80s")
   const livery80s = vehicle.includes("/80s/") && !name.endsWith(" 80s") ? " 80s" : "";
-  return `/assets/thumbnails/vehicles/${name}${livery80s}.png`;
+  return `/assets/thumbnails/vehicles/${name}${livery80s}.webp`;
 }
 
 /**
- * The pictures to try for a vehicle, best first: with its cargo ("412W_v4_364-9@Coal.png"), the vehicle itself, then
- * the generic one of its type ("412W.png").
+ * The pictures to try for a vehicle, best first: with its cargo ("412W_v4_364-9@Coal.webp"), the vehicle itself, then
+ * the generic one of its type ("412W.webp").
  */
 export function getThumbnailUrls(vehicle: string): string[] {
   const url = getThumbnailUrl(vehicle);
   const cargo = /@(.+)$/.exec(vehicle)?.[1];
   const type = vehicle.replace(/.+\/(.+)$/, "$1").split(/[_ :]/)[0];
-  const urls = [url, `/assets/thumbnails/vehicles/${type}.png`];
+  const urls = [url, `/assets/thumbnails/vehicles/${type}.webp`];
   if (cargo) {
-    urls.unshift(url.replace(/\.png$/, `@${cargo}.png`));
+    urls.unshift(url.replace(/\.webp$/, `@${cargo}.webp`));
   }
   return [...new Set(urls)];
 }

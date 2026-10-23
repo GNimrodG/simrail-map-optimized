@@ -24,7 +24,7 @@ const TrainConsistDisplay: FunctionComponent<TrainConsistDisplayProps> = ({ cons
           const [shortName] = vehicle.split("/");
           const lastItem = acc.at(-1);
 
-          if (!lastItem || lastItem.shortName !== shortName) {
+          if (lastItem?.shortName !== shortName) {
             acc.push({ count: 1, shortName, vehicles: [vehicle] });
           } else {
             lastItem.count++;
@@ -57,8 +57,9 @@ const TrainConsistDisplay: FunctionComponent<TrainConsistDisplayProps> = ({ cons
         }}>
         {t("Consist")}
       </Typography>
-      {/* a tooltip grows with its content: the strip gets its width, a longer train scrolls */}
-      <Box sx={{ width: "min(900px, 90vw)", px: 1, pt: 1 }}>
+      {/* as wide as the rest of the content, never wider (inline-size containment: the train's length doesn't
+          widen the tooltip), a longer train scrolls */}
+      <Box sx={{ contain: "inline-size", px: 1, pt: 1 }}>
         <TrainSideView consist={consist} />
       </Box>
       <List sx={{ p: 1 }} size="sm">

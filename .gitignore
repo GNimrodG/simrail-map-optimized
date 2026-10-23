@@ -1,0 +1,2 @@
+# what was read from the SimRail game files (vehicle exports, CAB maps): kept so it is never extracted twice
+.cache/

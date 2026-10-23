@@ -20,7 +20,8 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+        // everything, the vehicle thumbnails and side views (assets/sideviews/index.json) too
+        globPatterns: ["**/*.{js,css,html,ico,png,jpg,svg,webp,json}"],
       },
       manifest: {
         name: "SMO",
