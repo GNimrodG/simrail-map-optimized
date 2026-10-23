@@ -65,6 +65,12 @@ public class Train : IEntityWithTimestamp
     [JsonConverter(typeof(InterningStringConverter))]
     public string? TrainType { get; set; }
 
+    /// <summary>
+    /// Unusual cargo flags of the train as a bit mask, see <see cref="Models.UnusualCargo"/>.
+    /// </summary>
+    [JsonProperty(nameof(UnusualCargo))]
+    public UnusualCargo UnusualCargo { get; set; }
+
     /// <inheritdoc />
     [JsonIgnore]
     public DateTime Timestamp { get; set; }

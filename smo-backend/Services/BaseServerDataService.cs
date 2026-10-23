@@ -152,18 +152,7 @@ public abstract class BaseServerDataService<T>(
                 // reading Exception marks it as observed (it was reported as an unobserved task exception before)
                 var error = task.Exception?.GetBaseException();
 
-                // one failing server must not stop the update of the others: keep its last data
-                logger.LogWarning("Failed to fetch {ServiceId} data for server {ServerCode}, keeping its last data: {Message}",
-                    _serviceId, serverCode, error?.Message ?? "canceled");
-
-                if (previousData == null) continue;
-
-                T? previous;
-                lock (previousData)
-                    previous = previousData.GetValueOrDefault(serverCode);
-
-                if (previous != null)
-                    result.Add(serverCode, previous);
+                KeepLastData(result, previousData, serverCode, error?.Message ?? "canceled");
             }
 
             // nothing new at all (e.g. the SimRail API is down): skip this run like before (null = failed fetch)
@@ -181,16 +170,52 @@ public abstract class BaseServerDataService<T>(
         else
         {
             // Process sequentially with delay
-            foreach (var server in serverDataService.Data!)
+            var previousData = Data;
+            var servers = serverDataService.Data!;
+            var failedCount = 0;
+
+            foreach (var server in servers)
             {
-                var data = await FetchServerData(server.ServerCode, stoppingToken);
-                result.Add(server.ServerCode, data);
-                OnPerServerDataReceived(new(server.ServerCode, data));
+                try
+                {
+                    var data = await FetchServerData(server.ServerCode, stoppingToken);
+                    result.Add(server.ServerCode, data);
+                    OnPerServerDataReceived(new(server.ServerCode, data));
+                }
+                catch (Exception e) when (!stoppingToken.IsCancellationRequested)
+                {
+                    failedCount++;
+                    KeepLastData(result, previousData, server.ServerCode, e.Message);
+                }
+
                 await Task.Delay(DelayBetweenServers, stoppingToken);
             }
+
+            // nothing new at all (e.g. the SimRail API is down): skip this run (null = failed fetch)
+            if (servers.Length > 0 && failedCount == servers.Length)
+                return null!;
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// One failing server must not stop the update of the others: keeps its last data, if there is any.
+    /// </summary>
+    private void KeepLastData(Dictionary<string, T> result, Dictionary<string, T>? previousData, string serverCode,
+        string error)
+    {
+        logger.LogWarning("Failed to fetch {ServiceId} data for server {ServerCode}, keeping its last data: {Message}",
+            _serviceId, serverCode, error);
+
+        if (previousData == null) return;
+
+        T? previous;
+        lock (previousData)
+            previous = previousData.GetValueOrDefault(serverCode);
+
+        if (previous != null)
+            result.Add(serverCode, previous);
     }
 
     /// <summary>

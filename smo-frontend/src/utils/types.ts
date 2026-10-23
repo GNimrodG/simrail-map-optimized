@@ -51,6 +51,8 @@ export interface Train {
   TrainNoLocal: string;
   TrainName: string;
   TrainType: string;
+  /** Bit mask, see {@link UnusualCargoBits} */
+  UnusualCargo: number;
   StartStation: string;
   EndStation: string;
   Vehicles: string[];
@@ -225,6 +227,31 @@ export interface SimplifiedTimtableEntry {
 
   subStationEntries?: SimplifiedTimtableEntry[];
   note?: string | null;
+
+  isQualityTracked?: boolean;
+  isOverGauge?: boolean;
+  isOverWeight?: boolean;
+  isOtherExceptional?: boolean;
+  isHighRiskCargo?: boolean;
+  isDangerousCargo?: boolean;
+}
+
+export const UnusualCargoBits = {
+  IsQualityTracked: 1 << 0,
+  IsOverGauge: 1 << 1,
+  IsOverWeight: 1 << 2,
+  IsOtherExceptional: 1 << 3,
+  IsHighRiskCargo: 1 << 4,
+  IsDangerousCargo: 1 << 5,
+} as const;
+
+export interface UnusualCargoFlags {
+  IsQualityTracked?: boolean;
+  IsOverGauge?: boolean;
+  IsOverWeight?: boolean;
+  IsOtherExceptional?: boolean;
+  IsHighRiskCargo?: boolean;
+  IsDangerousCargo?: boolean;
 }
 
 export type CommonOsmTags = "name" | "operator" | (string & {});

@@ -489,13 +489,16 @@ public class SimrailApiClient : IDisposable
     /// <summary>
     /// Get the list of all EDR timetables on a server.
     /// </summary>
+    /// <typeparam name="T">
+    /// The type to deserialize each train into, e.g. <see cref="EdrTimetableTrainEntry"/>. Fields missing from it are
+    /// skipped, so a smaller type avoids building the large per-stop timetables.
+    /// </typeparam>
     /// <param name="serverCode">The server code to query for EDR timetable information.</param>
     /// <param name="stoppingToken">The cancellation token to observe.</param>
     /// <returns>An array of EDR timetable entries for the specified server.</returns>
     /// <exception cref="SimrailApiErrorException">Thrown when the API returns an error status code.</exception>
     /// <exception cref="SimrailApiParseException">Thrown when the response cannot be parsed.</exception>
-    public async Task<EdrTimetableTrainEntry[]> GetEdrTimetablesAsync(string serverCode,
-        CancellationToken stoppingToken)
+    public async Task<T[]> GetEdrTimetablesAsync<T>(string serverCode, CancellationToken stoppingToken)
     {
         using var response = await ExecuteWithRetryAsync(
             ct => _httpClient.GetAsync(EdrTimetableUrlPrefix + serverCode, ct),
@@ -517,7 +520,7 @@ public class SimrailApiClient : IDisposable
             await using var jsonReader = new JsonTextReader(reader);
 
             var serializer = new JsonSerializer();
-            var result = serializer.Deserialize<EdrTimetableTrainEntry[]>(jsonReader);
+            var result = serializer.Deserialize<T[]>(jsonReader);
 
             if (result == null) throw new SimrailApiParseException("GetEdrTimetables response deserialized to null");
 

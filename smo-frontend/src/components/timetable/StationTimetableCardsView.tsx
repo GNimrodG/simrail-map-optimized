@@ -9,7 +9,7 @@ import { type FunctionComponent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Train } from "../../utils/types";
-import { getColorTrainMarker, getDistanceColorForSignal } from "../../utils/ui";
+import { getColorTrainMarker, getDistanceColorForSignal, getEntryUnusualCargo } from "../../utils/ui";
 import InfoIcon from "../icons/InfoIcon";
 import MapMarkerIcon from "../icons/map-location-dot-solid.svg?react";
 import LengthIcon from "../markers/icons/LengthIcon";
@@ -24,6 +24,7 @@ import TimeDisplay from "../utils/TimeDisplay";
 import TrainTypeDisplay from "../utils/TrainTypeDisplay";
 import type { EntryRenderState } from "./StationTimetableTableView";
 import TrainTimetableModal from "./TrainTimetableModal";
+import UnusualCargoDisplay from "../utils/UnusualCargoDisplay";
 
 export interface StationTimetableCardsViewProps {
   entryStates: EntryRenderState[];
@@ -173,7 +174,11 @@ const StationTimetableCardsView: FunctionComponent<StationTimetableCardsViewProp
             .join(" + ");
         })();
 
+        const unusualCargo = getEntryUnusualCargo(entry);
         const infoChips: ReactNode[] = [
+          ...(Object.values(unusualCargo).some(Boolean)
+            ? [<UnusualCargoDisplay key="info-unusual-cargo" cargo={unusualCargo} displayMode="chip" />]
+            : []),
           ...(trainTimetable
             ? [
                 <Chip key="info-route" size="sm" variant="outlined">

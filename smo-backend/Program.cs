@@ -214,6 +214,7 @@ builder.Services.AddSingletonHostedService<TrainPositionDataService>();
 builder.Services.AddSingletonHostedService<StationDataService>();
 builder.Services.AddSingletonHostedService<TimeDataService>();
 builder.Services.AddSingletonHostedService<TimetableDataService>();
+builder.Services.AddSingletonHostedService<EdrDataService>();
 builder.Services.AddSingletonHostedService<TrainTypeService>();
 
 // Analytic services (background processing)

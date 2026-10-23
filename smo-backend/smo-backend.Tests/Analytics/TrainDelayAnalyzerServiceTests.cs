@@ -30,6 +30,11 @@ public class TrainDelayAnalyzerServiceTests
             scopeFactory,
             serverDataService,
             apiClient);
+        var edrDataService = new EdrDataService(
+            Mock.Of<ILogger<EdrDataService>>(),
+            scopeFactory,
+            serverDataService,
+            apiClient);
         var trainTypeService = new TrainTypeService(
             Mock.Of<ILogger<TrainTypeService>>(),
             timetableDataService);
@@ -38,7 +43,8 @@ public class TrainDelayAnalyzerServiceTests
             scopeFactory,
             serverDataService,
             apiClient,
-            trainTypeService);
+            trainTypeService,
+            edrDataService);
         var sut = new TrainDelayAnalyzerService(
             Mock.Of<ILogger<TrainDelayAnalyzerService>>(),
             scopeFactory,

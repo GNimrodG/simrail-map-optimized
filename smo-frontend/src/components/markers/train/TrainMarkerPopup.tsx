@@ -26,7 +26,7 @@ import MapLinesContext from "../../../utils/map-lines-context";
 import SelectedRouteContext from "../../../utils/selected-route-context";
 import SelectedTrainContext from "../../../utils/selected-train-context";
 import { Train, UserProfileResponse } from "../../../utils/types";
-import { getColorTrainMarker, getDistanceColorForSignal } from "../../../utils/ui";
+import { getColorTrainMarker, getDistanceColorForSignal, getTrainUnusualCargo } from "../../../utils/ui";
 import CollapseIcon from "../../icons/CollapseIcon";
 import ExpandIcon from "../../icons/ExpandIcon";
 import InfoIcon from "../../icons/InfoIcon";
@@ -43,6 +43,7 @@ import WeightIcon from "../icons/WeightIcon";
 import StationDisplay from "../station/StationDisplay";
 import TrainConsistDisplay from "./TrainConsistDisplay";
 import TrainScheduleDisplay from "./TrainScheduleDisplay";
+import UnusualCargoDisplay from "../../utils/UnusualCargoDisplay";
 
 export interface TrainMarkerPopupProps {
   train: Train;
@@ -379,6 +380,8 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
           </Stack>
         </Tooltip>
       </Stack>
+
+      <UnusualCargoDisplay cargo={getTrainUnusualCargo(train.UnusualCargo)} />
 
       <Stack sx={{ width: "100%" }} direction="row" justifyContent="space-around" alignItems="center">
         <Box sx={{ minWidth: 0, flexShrink: 1 }}>{trainSpeed}</Box>

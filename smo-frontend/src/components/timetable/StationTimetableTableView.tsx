@@ -10,7 +10,7 @@ import { Fragment, type FunctionComponent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Timetable, Train } from "../../utils/types";
-import { getColorTrainMarker } from "../../utils/ui";
+import { getColorTrainMarker, getEntryUnusualCargo } from "../../utils/ui";
 import ArrowDownIcon from "../icons/arrow-down-solid.svg?react";
 import InfoIcon from "../icons/InfoIcon";
 import MapMarkerIcon from "../icons/map-location-dot-solid.svg?react";
@@ -21,6 +21,7 @@ import TimeDiffDisplay from "../utils/TimeDiffDisplay";
 import TimeDisplay from "../utils/TimeDisplay";
 import TrainTypeDisplay from "../utils/TrainTypeDisplay";
 import TrainTimetableModal from "./TrainTimetableModal";
+import UnusualCargoDisplay from "../utils/UnusualCargoDisplay";
 
 export interface EntryRenderState {
   entry: {
@@ -37,6 +38,12 @@ export interface EntryRenderState {
     track: number | null;
     stopType: string | null;
     note?: string | null;
+    isQualityTracked?: boolean;
+    isOverGauge?: boolean;
+    isOverWeight?: boolean;
+    isOtherExceptional?: boolean;
+    isHighRiskCargo?: boolean;
+    isDangerousCargo?: boolean;
     subStationEntries?: Array<{
       index: number;
       stationName: string;
@@ -169,7 +176,7 @@ const StationTimetableTableView: FunctionComponent<StationTimetableTableViewProp
               sx={{ color: rowColor }}>
               {/* Train No */}
               <td>
-                <Stack direction="row" spacing={0.5} alignItems="center">
+                <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap>
                   <Typography
                     fontFamily="monospace"
                     level="body-md"
@@ -214,6 +221,7 @@ const StationTimetableTableView: FunctionComponent<StationTimetableTableViewProp
                   )}
                   {!!passedEarly && <Chip color="success">{t("PassedEarly")}</Chip>}
                   {!!delayed && <Chip color="warning">{t("Delayed")}</Chip>}
+                  <UnusualCargoDisplay cargo={getEntryUnusualCargo(entry)} displayMode="chip" maxChips={2} />
                 </Stack>
               </td>
               {/* Type */}

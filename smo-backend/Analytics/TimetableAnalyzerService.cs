@@ -12,7 +12,8 @@ public class TimetableAnalyzerService(
     ILogger<TimetableAnalyzerService> logger,
     IServiceScopeFactory scopeFactory,
     TimetableDataService timetableDataService,
-    TrainDataService trainDataService) : IHostedService
+    TrainDataService trainDataService,
+    EdrDataService edrDataService) : IHostedService
 {
     private static readonly string DataDirectory = Path.Combine(AppContext.BaseDirectory, "data", "timetables");
     private static readonly string StationTimetableDataFile = Path.Combine(DataDirectory, "station-timetable-data.bin");
@@ -93,8 +94,18 @@ public class TimetableAnalyzerService(
     public SimplifiedTimetableEntry[] GetTimetableEntries(string serverCode, string stationName)
     {
         if (!_timetableDataCache.TryGetValue(serverCode, out var timetableEntriesPerStation)) return [];
+        if (!timetableEntriesPerStation.TryGetValue(stationName, out var timetableEntries)) return [];
 
-        return timetableEntriesPerStation.TryGetValue(stationName, out var timetableEntries) ? timetableEntries : [];
+        // The EDR timetables are fetched separately from the timetables, so the flags are added when read
+        var unusualCargo = edrDataService[serverCode];
+        if (unusualCargo is not { Count: > 0 }) return timetableEntries;
+
+        return
+        [
+            .. timetableEntries.Select(entry => unusualCargo.TryGetValue(entry.TrainNoLocal, out var cargo)
+                ? entry.WithUnusualCargo(cargo)
+                : entry)
+        ];
     }
 
     private async void ProcessTimetableData(PerServerData<Timetable[]> timetableData)
