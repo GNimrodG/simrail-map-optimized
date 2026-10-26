@@ -266,10 +266,10 @@ public class ServerRestartAnalyzerService(
     ///     weekday the restarts of the last <see cref="ScheduleWindow" /> are grouped into slots (times of day), and a slot
     ///     is part of the schedule when it had a restart on most of those weekdays (the official times are 01:30 and
     ///     09:30, but most servers also restart at ~02:48 on weekdays, and some servers have their own times).
-    ///     The prediction is the next slot of the schedule. Its confidence is the chance that it's right: the share of
-    ///     the past weekdays the slot had a restart on, times the chance that no restart outside the schedule (updates,
-    ///     crashes) comes first. On the real history, predictions with a confidence of at least 0.9 were right (within
-    ///     15 minutes) 91% of the time.
+    ///     The prediction is the next slot of the schedule. Schedule confidence is the share of past weekdays the slot
+    ///     had a restart on. Overall confidence additionally accounts for the chance that no restart outside the
+    ///     schedule (updates, crashes) comes first. On the real history, predictions with an overall confidence of at
+    ///     least 0.9 were right (within 15 minutes) 91% of the time.
     /// </summary>
     internal static PredictionResult PredictFromHistory(IEnumerable<ServerRestartData> history, DateTime nowUtc)
     {
@@ -376,7 +376,7 @@ public class ServerRestartAnalyzerService(
                 var confidence = slotConfidence * NoUnscheduledRestartChance(unscheduledRate, nowUtc,
                     predicted - TimeSpan.FromMinutes(SlotToleranceMinutes));
 
-                return new(predicted, Math.Round(confidence, 2));
+                return new(predicted, Math.Round(confidence, 2), Math.Round(slotConfidence, 2));
             }
         }
 
@@ -428,7 +428,7 @@ public class ServerRestartAnalyzerService(
     public ServerRestartPrediction GetNextRestartPrediction(string serverName)
     {
         var prediction = PredictNextRestartWithConfidence(serverName);
-        return new(serverName, prediction.Time, prediction.Confidence);
+        return new(serverName, prediction.Time, prediction.Confidence, prediction.ScheduleConfidence);
     }
 
     /// <summary>
@@ -457,7 +457,8 @@ public class ServerRestartAnalyzerService(
         return new(restarts, prevStatus, lastShutdown);
     }
 
-    internal readonly record struct PredictionResult(DateTime? Time, double? Confidence);
+    internal readonly record struct PredictionResult(DateTime? Time, double? Confidence,
+        double? ScheduleConfidence = null);
 
     /// <summary>
     ///     Represents data about a server restart, including the shutdown time and restart time.

@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import useBehaviorSubj from "../hooks/useBehaviorSubj";
 import useNow from "../hooks/useNow";
-import { useServerRestarts } from "../hooks/useServerRestarts";
+import { useServerRestartWarnings } from "../hooks/useServerRestarts";
 import { useSetting } from "../hooks/useSetting";
 import { dataProvider } from "../utils/data-manager";
 import XMarkIcon from "./icons/xmark-solid.svg?react";
@@ -22,7 +22,7 @@ const ServerRestartWarning: FunctionComponent = () => {
   const { t } = useTranslation();
   const [disableServerRestartWarning] = useSetting("disableServerRestartWarning");
   const selectedServer = useBehaviorSubj(dataProvider.selectedServerData$);
-  const nextRestarts = useServerRestarts();
+  const nextRestarts = useServerRestartWarnings();
   const now = useNow(15_000);
   // the restart (its predicted time) the user closed the warning for, the next restart warns again
   const [dismissedRestart, setDismissedRestart] = useState<number | null>(null);

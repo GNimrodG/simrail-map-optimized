@@ -27,6 +27,7 @@ builder.Services.AddCors(options =>
                 .WithOrigins(
                     "http://localhost:5173",
                     "http://localhost:4173",
+                    "http://localhost:8095", // the railway map's signal paths view (simrail-railmap tools/signal-paths)
                     StdUtils.GetEnvVar("FRONTEND_URL", "https://smo.data-unknown.com")
                 )
                 .SetPreflightMaxAge(TimeSpan.FromHours(2))

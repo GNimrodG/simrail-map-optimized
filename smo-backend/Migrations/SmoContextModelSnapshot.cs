@@ -299,6 +299,10 @@ namespace SMOBackend.Migrations
                         .HasColumnType("character varying(15)")
                         .HasColumnName("next_signal");
 
+                    b.Property<bool>("Finalized")
+                        .HasColumnType("boolean")
+                        .HasColumnName("finalized");
+
                     b.Property<LineString>("Line")
                         .IsRequired()
                         .HasColumnType("Geometry(LineString, 4326)")

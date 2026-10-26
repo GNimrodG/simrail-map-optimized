@@ -3,7 +3,8 @@
 /// <summary>
 ///     Represents the next probable restart time for a server.
 /// </summary>
-public class ServerRestartPrediction(string serverCode, DateTime? nextProbableRestartTime, double? confidence = null)
+public class ServerRestartPrediction(string serverCode, DateTime? nextProbableRestartTime, double? confidence = null,
+    double? scheduleConfidence = null)
 {
     /// <summary>
     ///     Server code identifier.
@@ -16,7 +17,14 @@ public class ServerRestartPrediction(string serverCode, DateTime? nextProbableRe
     public DateTime? NextProbableRestartTime { get; set; } = nextProbableRestartTime;
 
     /// <summary>
-    ///     Confidence score in range [0..1], or null when there is insufficient history.
+    ///     The chance in range [0..1] that this is the next restart, including the chance that no unscheduled restart
+    ///     occurs first. Null when there is insufficient history.
     /// </summary>
     public double? Confidence { get; set; } = confidence;
+
+    /// <summary>
+    ///     The chance in range [0..1] that the scheduled restart slot occurs, without accounting for an earlier
+    ///     unscheduled restart. Null when there is insufficient history.
+    /// </summary>
+    public double? ScheduleConfidence { get; set; } = scheduleConfidence;
 }

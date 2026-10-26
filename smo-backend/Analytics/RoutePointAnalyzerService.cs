@@ -237,6 +237,11 @@ public partial class RoutePointAnalyzerService : IHostedService
 
             foreach (var signalLine in uniqueSignalLines)
             {
+                // a finalized line is the track itself: the trains' route points don't change it
+                if (storedSignalLines.Any(s => s.Finalized && s.PrevSignal == signalLine.PrevSignal &&
+                                               s.NextSignal == signalLine.NextSignal))
+                    continue;
+
                 var routeLines = await GetFilteredRouteLines(
                     "WHERE prev_signal = @prevSignalId AND next_signal = @nextSignalId",
                     [new("@prevSignalId", signalLine.PrevSignal), new("@nextSignalId", signalLine.NextSignal)],

@@ -141,6 +141,73 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
     }
 
     /// <summary>
+    /// Add a connection from a signal to the next one by hand (the railway map's signal paths view), or update the
+    /// speed of an existing one, and store the track between them as the connection's line, finalized: it replaces the
+    /// one made from the trains' route points, and their new route points are never merged into it (another push
+    /// replaces it). Finalized signals take it too.
+    /// </summary>
+    /// <param name="signalName">The name of the signal.</param>
+    /// <param name="nextSignalName">The name of the next signal.</param>
+    /// <param name="body">The password, the speed (null: unknown, or keep it) and the line (null: keep it).</param>
+    /// <returns>The updated signal.</returns>
+    [HttpPost("{signalName}/next/{nextSignalName}")]
+    [RequestSizeLimit(4 * 1024 * 1024)]
+    public async Task<ActionResult> AddNextSignal(string signalName, string nextSignalName,
+        [FromBody] SignalConnectionRequest body)
+    {
+        if (!ValidatePassword(body.Password))
+            return Unauthorized("Invalid password.");
+
+        if (signalName == nextSignalName)
+            return BadRequest("A signal can't lead to itself.");
+        if (body.Validate() is { } error)
+            return BadRequest(error);
+
+        var signal = await context.Signals
+            .Include(s => s.PrevSignalConnections)
+            .Include(s => s.NextSignalConnections)
+            .FirstOrDefaultAsync(s => s.Name == signalName);
+        if (signal == null)
+            return NotFound($"Signal {signalName} not found.");
+        if (!await context.Signals.AnyAsync(s => s.Name == nextSignalName))
+            return NotFound($"Signal {nextSignalName} not found.");
+
+        var line = body.ToLineString();
+        var connection = signal.NextSignalConnections.FirstOrDefault(c => c.Next == nextSignalName);
+        if (connection == null)
+        {
+            connection = new(signalName, nextSignalName, body.Vmax, "signal-paths");
+            context.SignalConnections.Add(connection);
+        }
+        else if (body.Vmax != null)
+        {
+            connection.VMAX = body.Vmax;
+            connection.UpdatedAt = DateTime.UtcNow;
+        }
+
+        if (line != null)
+        {
+            connection.Distance = (float)SignalConnectionRequest.LengthOf(line);
+            // finalized: the track itself, the trains' route points never change it (GenerateSignalLines)
+            var stored = await context.SignalLines.FindAsync(signalName, nextSignalName);
+            if (stored == null)
+                context.SignalLines.Add(new()
+                    { PrevSignal = signalName, NextSignal = nextSignalName, Line = line, Finalized = true });
+            else
+            {
+                stored.Line = line;
+                stored.Finalized = true;
+            }
+        }
+
+        await context.SaveChangesAsync();
+        // otherwise clients get the cached pre-edit signals for a while and the edit seems to be missing
+        signalAnalyzerService.InvalidateSignalsSnapshot();
+
+        return Ok(new SignalStatus(signal));
+    }
+
+    /// <summary>
     /// Set the signal's prev finalized state to true.
     /// </summary>
     /// <param name="signalName">The name of the signal.</param>

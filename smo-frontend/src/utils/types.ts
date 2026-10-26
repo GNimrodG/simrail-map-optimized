@@ -10,8 +10,10 @@ export interface ServerRestartPrediction {
   ServerCode: string;
   /** The predicted next restart, null when the server has no regular restart schedule. */
   NextProbableRestartTime: Date | null;
-  /** The chance (0..1) that the prediction is right (within 15 minutes). */
+  /** The chance (0..1) that this is the next restart, including unscheduled-restart risk. */
   Confidence: number | null;
+  /** The chance (0..1) that the scheduled restart slot occurs. */
+  ScheduleConfidence: number | null;
 }
 
 /** Whether a train in the spawn list is still to spawn, is late to spawn or has spawned. */

@@ -119,6 +119,20 @@ public class ServerRestartAnalyzerServiceTests(ITestOutputHelper output)
 
         prediction.Time.Should().Be(new DateTime(2026, 10, 21, 7, 30, 0, DateTimeKind.Utc));
         prediction.Confidence.Should().Be(1);
+        prediction.ScheduleConfidence.Should().Be(1);
+    }
+
+    [Fact]
+    public void PredictFromHistory_ReportsScheduleConfidenceWithoutEarlierRestartRisk()
+    {
+        var history = Daily(new(2026, 9, 21), new(2026, 10, 19), 9, 30)
+            .Append(Restart(Local(2026, 10, 18, 16, 0)));
+
+        var prediction = Predict(history, Local(2026, 10, 20, 12, 0));
+
+        prediction.Time.Should().Be(Local(2026, 10, 21, 9, 30));
+        prediction.ScheduleConfidence.Should().Be(1);
+        prediction.Confidence.Should().BeLessThan(prediction.ScheduleConfidence!.Value);
     }
 
     [Fact]
