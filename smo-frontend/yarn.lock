@@ -4869,9 +4869,9 @@ html-parse-stringify@^4.0.1:
   integrity sha512-0zHsZJrK7S3K2aucXWL6ycoYJ/iNtIcFHC/nYQgFklPtrv5LpJctIiSCroWZWeuoXvuyFdzp6KzjJQ+OT5MfFw==
 
 i18next-browser-languagedetector@^8.0.0:
-  version "8.2.2"
-  resolved "https://registry.yarnpkg.com/i18next-browser-languagedetector/-/i18next-browser-languagedetector-8.2.2.tgz#6fecb34f297e834107d9ac79062979856a95d45b"
-  integrity sha512-99PKPDVeLj7s4nDJAz+z664/6IWEb2EyssTsknyzc1MY+mmtAXpx3BP862MrKLGRtmSJnlUioPuOE22F+RR+ng==
+  version "8.2.3"
+  resolved "https://registry.yarnpkg.com/i18next-browser-languagedetector/-/i18next-browser-languagedetector-8.2.3.tgz#5e4c4f4903b2320f8079982bff9ca9ce19480487"
+  integrity sha512-0jSTK3ncpXj9MFdxRz+TVTKDkSvYH8ifB/OCmUdEMprvXC3vy7kEvdKpj0yYB72B0UKEHJLPMEeRVC/UXroWnw==
   dependencies:
     "@babel/runtime" "^7.29.2"
 
