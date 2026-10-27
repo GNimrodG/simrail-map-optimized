@@ -67,7 +67,13 @@ public class SimrailApiErrorException : Exception
     public SimrailApiErrorException(string message, int statusCode)
         : base(message)
     {
+        StatusCode = statusCode;
     }
+
+    /// <summary>
+    ///     The HTTP status code returned by the API (200 when the response said Result=false).
+    /// </summary>
+    public int StatusCode { get; }
 }
 
 /// <summary>

@@ -98,6 +98,11 @@ public abstract class BaseTimeAlignedDataService<T>(
         {
             logger.LogWarning("Failed to fetch data due to HTTP error: {Message}", e.Message);
         }
+        catch (SimrailApiErrorException e) when (e.StatusCode >= 500)
+        {
+            // SimRail's own outage (their cache's "503 Backend fetch failed"), like an HTTP error: not ours to report
+            logger.LogWarning("SimRail API returned {StatusCode}: {Message}", e.StatusCode, e.Message);
+        }
         catch (TaskCanceledException e) when (e.InnerException is TimeoutException)
         {
             logger.LogWarning("Data fetch timed out: {Message}", e.Message);

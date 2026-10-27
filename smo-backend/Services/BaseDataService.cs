@@ -1,4 +1,5 @@
-﻿using SMOBackend.Utils;
+﻿using SMOBackend.Services.ApiClients;
+using SMOBackend.Utils;
 
 namespace SMOBackend.Services;
 
@@ -137,6 +138,11 @@ public abstract class BaseDataService<T>(
                 catch (HttpRequestException e)
                 {
                     logger.LogWarning("Failed to fetch data due to HTTP error: {Message}", e.Message);
+                }
+                catch (SimrailApiErrorException e) when (e.StatusCode >= 500)
+                {
+                    // SimRail's own outage (their cache's "503 Backend fetch failed"), like an HTTP error: not ours to report
+                    logger.LogWarning("SimRail API returned {StatusCode}: {Message}", e.StatusCode, e.Message);
                 }
                 catch (TaskCanceledException e) when (e.InnerException is TimeoutException)
                 {
