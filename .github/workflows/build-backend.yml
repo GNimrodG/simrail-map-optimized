@@ -1,6 +1,8 @@
 name: Backend
 
 on:
+  # a manual run (Actions > Run workflow, on master) deploys right away; a push only pushes the image
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -59,6 +61,9 @@ jobs:
     env:
       SHOULD_PUSH: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' && secrets.DOCKER_REGISTRY_USERNAME != '' }}
       DEPLOYMENT_WEBHOOK_URL: ${{ secrets.BACKEND_DEPLOYMENT_WEBHOOK_URL }}
+      # at most one deploy a day: the image pushed on master is deployed by the nightly Arcane updater (it checks
+      # the Nexus images hourly), the webhook only on a manual run
+      SHOULD_DEPLOY: ${{ github.event_name == 'workflow_dispatch' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -109,11 +114,11 @@ jobs:
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
 
-      # webhook to trigger deployment (Arcane redeploy of the smo project), only when an image was pushed and the
-      # secret is set
+      # webhook to trigger deployment right away (Arcane redeploy), only on a manual run, when an image was pushed and
+      # the secret is set
       - name: Bypass Cloudflare for GitHub Action
         continue-on-error: true
-        if: env.SHOULD_PUSH == 'true' && env.DEPLOYMENT_WEBHOOK_URL != ''
+        if: env.SHOULD_PUSH == 'true' && env.SHOULD_DEPLOY == 'true' && env.DEPLOYMENT_WEBHOOK_URL != ''
         uses: xiaotianxt/bypass-cloudflare-for-github-action@v2.1.0
         with:
           cf_account_id: ${{ secrets.CF_ACCOUNT_ID }}
@@ -125,7 +130,7 @@ jobs:
       # until the webhook accepts the redeploy (202) instead of giving up on the first 403.
       - name: Deploy
         continue-on-error: true
-        if: env.SHOULD_PUSH == 'true' && env.DEPLOYMENT_WEBHOOK_URL != ''
+        if: env.SHOULD_PUSH == 'true' && env.SHOULD_DEPLOY == 'true' && env.DEPLOYMENT_WEBHOOK_URL != ''
         run: |
           for attempt in $(seq 1 8); do
             status=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$DEPLOYMENT_WEBHOOK_URL")
