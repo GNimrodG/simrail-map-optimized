@@ -226,6 +226,7 @@
       "SelectedRoute": "Selected Route",
       "Hide": "Hide",
       "SignalMarker": {
+        "OtherSignalsHere": "Signals here:",
         "SignalSpeed": "Signal speed: ",
         "TrainApproaching": "Train <0>{{TrainNoLocal}} ({{TrainName}})</0> is approaching this signal at <1>{{Velocity}} km/h</1> and is <2>{{DistanceToSignalInFront}} m</2> away.",
         "TrainAhead": "Train <0>{{TrainNoLocal}} ({{TrainName}})</0> is in the <1>block ahead</1> going <2>{{Velocity}} km/h</2> and is <3>{{DistanceToSignalInFront}} m</3> away from signal <4>{{SignalName}}</4>.",
@@ -753,6 +754,7 @@
       "SelectedRoute": "Ausgewählte Route",
       "Hide": "Ausblenden",
       "SignalMarker": {
+        "OtherSignalsHere": "Signale hier:",
         "SignalSpeed": "Signalgeschwindigkeit: ",
         "TrainApproaching": "Der Zug <0>{{TrainNoLocal}} ({{TrainName}})</0> nähert sich diesem Signal mit <1>{{Velocity}} km/h</1> und ist noch <2>{{DistanceToSignalInFront}} m</2> entfernt.",
         "TrainAhead": "Zug <0>{{TrainNoLocal}} ({{TrainName}})</0> befindet sich im <1>Block voraus</1> mit <2>{{Velocity}} km/h</2> und ist <3>{{DistanceToSignalInFront}} m</3> entfernt vom Signal <4>{{SignalName}}</4>.",
@@ -1281,6 +1283,7 @@
       "SelectedRoute": "Kiválasztott útvonal",
       "Hide": "Elrejtés",
       "SignalMarker": {
+        "OtherSignalsHere": "Itt lévő jelzők:",
         "SignalSpeed": "Jelző állás: ",
         "TrainApproaching": "A(z) <0>{{TrainNoLocal}} ({{TrainName}})</0> vonat közeledik ehhez a jelzőhöz <1>{{Velocity}} km/h</1> sebességgel és <2>{{DistanceToSignalInFront}} m</2> távolságra van.",
         "TrainAhead": "A(z) <0>{{TrainNoLocal}} ({{TrainName}})</0> vonat a <1>következő blokkban</1> van <2>{{Velocity}} km/h</2> sebességgel és <3>{{DistanceToSignalInFront}} m</3> távolságra van a(z) <4>{{SignalName}}</4> jelzőtől.",
@@ -1813,6 +1816,7 @@
       "SelectedRoute": "Seçili Rota",
       "Hide": "Gizle",
       "SignalMarker": {
+        "OtherSignalsHere": "Buradaki sinyaller:",
         "SignalSpeed": "Sinyal hızı: ",
         "TrainApproaching": "Tren <0>{{TrainNoLocal}} ({{TrainName}})</0> bu sinyale <1>{{Velocity}} km/s</1> hızla yaklaşıyor ve <2>{{DistanceToSignalInFront}} m</2> uzaklıkta.",
         "TrainAhead": "Tren <0>{{TrainNoLocal}} ({{TrainName}})</0> <1>bir sonraki blokta</1> bulunuyor ve <2>{{Velocity}} km/s</2> hızla ilerliyor. <3>{{DistanceToSignalInFront}} m</3> uzaklıkta ve <4>{{SignalName}}</4> sinyaline yaklaşıyor.",
@@ -2343,6 +2347,7 @@
       "SelectedRoute": "Wybrana Trasa",
       "Hide": "Ukryj",
       "SignalMarker": {
+        "OtherSignalsHere": "Sygnalizatory w tym miejscu:",
         "SignalSpeed": "Prędkość sygnału: ",
         "TrainApproaching": "Pociąg <0>{{TrainNoLocal}} ({{TrainName}})</0> zbliża się do tego sygnału z prędkością <1>{{Velocity}} km/h</1> i znajduje się w odległości <2>{{DistanceToSignalInFront}} m</2>.",
         "TrainAhead": "Pociąg <0>{{TrainNoLocal}} ({{TrainName}})</0> znajduje się w <1>bloku przed nim</1> i porusza się z prędkością <2>{{Velocity}} km/h</2>, będąc <3>{{DistanceToSignalInFront}} m</3> od sygnału <4>{{SignalName}}</4>.",
@@ -2870,6 +2875,7 @@
       "SelectedRoute": "Выбранный маршрут",
       "Hide": "Скрыть",
       "SignalMarker": {
+        "OtherSignalsHere": "Сигналы здесь:",
         "SignalSpeed": "Скорость сигнала: ",
         "TrainApproaching": "Поезд <0>{{TrainNoLocal}} ({{TrainName}})</0> приближается к этому сигналу на скорости <1>{{Velocity}} км/ч</1> и находится в <2>{{DistanceToSignalInFront}} м</2>.",
         "TrainAhead": "Поезд <0>{{TrainNoLocal}} ({{TrainName}})</0> находится в <1>блоке впереди</1> со скоростью <2>{{Velocity}} км/ч</2> и находится в <3>{{DistanceToSignalInFront}} м</3> от сигнала <4>{{SignalName}}</4>.",
@@ -3397,6 +3403,7 @@
       "SelectedRoute": "Обраний маршрут",
       "Hide": "Приховати",
       "SignalMarker": {
+        "OtherSignalsHere": "Сигнали тут:",
         "SignalSpeed": "Швидкість сигналу: ",
         "TrainApproaching": "Поїзд <0>{{TrainNoLocal}} ({{TrainName}})</0> наближається до цього сигналу зі швидкістю <1>{{Velocity}} км/год</1> і знаходиться в <2>{{DistanceToSignalInFront}} м</2>.",
         "TrainAhead": "Поїзд <0>{{TrainNoLocal}} ({{TrainName}})</0> знаходиться в <1>блоці попереду</1> зі швидкістю <2>{{Velocity}} км/год</2> і знаходиться в <3>{{DistanceToSignalInFront}} м</3> від сигналу <4>{{SignalName}}</4>.",

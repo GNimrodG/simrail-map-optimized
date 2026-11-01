@@ -1,9 +1,14 @@
-import { DivIcon, DivIconOptions, Icon, IconOptions } from "leaflet";
+import Chip from "@mui/joy/Chip";
+import Stack from "@mui/joy/Stack";
+import Typography from "@mui/joy/Typography";
+import { DivIcon, DivIconOptions, Icon, IconOptions, type Map as LeafletMap } from "leaflet";
 import equals from "lodash/isEqual";
 import { type FunctionComponent, memo, useMemo, useState } from "react";
-import { Marker, Popup } from "react-leaflet";
+import { useTranslation } from "react-i18next";
+import { Marker, Popup, useMap } from "react-leaflet";
 
 import { useSetting } from "../../../hooks/useSetting.ts";
+import { dataProvider } from "../../../utils/data-manager.ts";
 import { BlockSignalBoard } from "../../../utils/signal-boards.ts";
 import { getOrientedSignalIcon } from "../../../utils/signal-icons.ts";
 import { SignalStatus, Train } from "../../../utils/types.ts";
@@ -22,6 +27,27 @@ export interface SignalMarkerProps {
 }
 
 const className = "icon signal";
+
+/** px: the other signals this close on screen are offered in the popup, their markers overlap (DZ_E2 and DZ_A) */
+const OVERLAP_PX = 12;
+
+/** The signals whose markers overlap this one at the map's zoom (it among them), by name */
+function overlappingSignals(signal: SignalStatus, map: LeafletMap): SignalStatus[] {
+  const here = map.latLngToContainerPoint([signal.Location.Y, signal.Location.X]);
+  return dataProvider.signalsData$.value
+    .filter(
+      (s) =>
+        s.Name === signal.Name ||
+        here.distanceTo(map.latLngToContainerPoint([s.Location.Y, s.Location.X])) <= OVERLAP_PX,
+    )
+    .sort((a, b) => a.Name.localeCompare(b.Name));
+}
+
+function trainsAt(signal: SignalStatus): Train[] | null {
+  const names = new Set(signal.Trains ?? []);
+  const trains = dataProvider.trainsData$.value.filter((train) => names.has(train.TrainNoLocal));
+  return trains.length ? trains : null;
+}
 
 const DEFAULT_ICON_OPTIONS: DivIconOptions = {
   html: SignalIcon,
@@ -340,6 +366,15 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({
   );
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const map = useMap();
+  const { t } = useTranslation("translation", { keyPrefix: "SignalMarker" });
+  // the signals under this marker (only the top one can be clicked): the popup switches between them
+  const [signalsHere, setSignalsHere] = useState<SignalStatus[]>([]);
+  const [shownName, setShownName] = useState<string | null>(null);
+  const shown =
+    (shownName && shownName !== signal.Name && dataProvider.signalsData$.value.find((s) => s.Name === shownName)) ||
+    signal;
+  const shownTrains = useMemo(() => (shown === signal ? signalTrains : trainsAt(shown)), [shown, signal, signalTrains]);
 
   return (
     <Marker
@@ -348,12 +383,37 @@ const SignalMarker: FunctionComponent<SignalMarkerProps> = ({
       position={[signal.Location.Y, signal.Location.X]}
       icon={orientedIcon}
       eventHandlers={{
-        popupopen: () => setIsPopupOpen(true),
-        popupclose: () => setIsPopupOpen(false),
+        popupopen: () => {
+          setSignalsHere(overlappingSignals(signal, map));
+          setIsPopupOpen(true);
+        },
+        popupclose: () => {
+          setIsPopupOpen(false);
+          setShownName(null);
+        },
       }}
       pane={pane}>
       <Popup autoPan={false}>
-        {isPopupOpen && <SignalMarkerPopup signal={signal} onSignalSelect={onSignalSelect} trains={signalTrains} />}
+        {isPopupOpen && (
+          <>
+            {signalsHere.length > 1 && (
+              <Stack direction="row" gap={0.5} alignItems="center" flexWrap="wrap" sx={{ mb: 1 }}>
+                <Typography level="body-sm">{t("OtherSignalsHere")}</Typography>
+                {signalsHere.map((s) => (
+                  <Chip
+                    key={s.Name}
+                    size="sm"
+                    color="primary"
+                    variant={s.Name === shown.Name ? "solid" : "outlined"}
+                    onClick={() => setShownName(s.Name)}>
+                    {s.Name}
+                  </Chip>
+                ))}
+              </Stack>
+            )}
+            <SignalMarkerPopup key={shown.Name} signal={shown} onSignalSelect={onSignalSelect} trains={shownTrains} />
+          </>
+        )}
       </Popup>
     </Marker>
   );
