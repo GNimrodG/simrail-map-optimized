@@ -942,11 +942,6 @@
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.29.10.tgz#fe9920782f7ee34029165ac6f272984917a1641b"
   integrity sha512-NpugTzbKgGrNe45Ui32cN8vCFFMxVtP/9rtfwv0nP5FRDAjvYBxJcLVpYA9mr1jxP6cnIT7x9LUzuDTbWYYNRA==
 
-"@babel/runtime@^7.29.7":
-  version "7.29.13"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.29.13.tgz#6b33e456181ff15b5585d932f3aebfc0669b32dd"
-  integrity sha512-v+oN26xP4YIlQsbQ/CbTH1WG5m/l/DjKKZNy/Kp3f/AFvbgt7Em/D0FeMM3O2hX0YzeN2M16W8lOpyhIkfCBcQ==
-
 "@babel/template@^7.26.9":
   version "7.26.9"
   resolved "https://registry.yarnpkg.com/@babel/template/-/template-7.26.9.tgz#4577ad3ddf43d194528cff4e1fa6b232fa609bb2"
@@ -5803,14 +5798,12 @@ react-error-boundary@^6.1.1:
   resolved "https://registry.yarnpkg.com/react-error-boundary/-/react-error-boundary-6.1.6.tgz#1bdecd011681682db9112c204f8f5c5aad813318"
   integrity sha512-CDXPnXDGyFIbkwaaJ6u+xgsRmJhSi6YdgUDW1vnyKHfXp1a9pfAlM+ZET2CDu80/A+8iRcmXN0NSY9BCCoWP5A==
 
-react-i18next@^17.0.0:
-  version "17.1.13"
-  resolved "https://registry.yarnpkg.com/react-i18next/-/react-i18next-17.1.13.tgz#00cb81fe874fd0b272c229c4c7ff93087fb705d6"
-  integrity sha512-ZxhOSlyKSKPtbUNPLwYMmE3w3bhoc0jaZJZ6bc7wGOT6cLbrbs//6m01HxCLtFdSjHvFpwFwoPhxxzIlHSs9cw==
+react-i18next@^18.0.0:
+  version "18.0.0"
+  resolved "https://registry.yarnpkg.com/react-i18next/-/react-i18next-18.0.0.tgz#b507497edbb7996849b337bb838569529bd40b7e"
+  integrity sha512-xXq/pcuMRwrW4iH0If/RjbPH3zuEqWVtaw4PjDsG54vx0FTook7aS3kop7DXy3g66wHkYUji8l7ZBrA8kfj67Q==
   dependencies:
-    "@babel/runtime" "^7.29.7"
     html-parse-stringify "^4.0.1"
-    use-sync-external-store "^1.6.0"
 
 react-is@^16.13.1, react-is@^16.7.0:
   version "16.13.1"
@@ -6600,11 +6593,6 @@ url-parse@^1.5.3:
   dependencies:
     querystringify "^2.1.1"
     requires-port "^1.0.0"
-
-use-sync-external-store@^1.6.0:
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/use-sync-external-store/-/use-sync-external-store-1.7.0.tgz#6dcb66ef569e02f186af6b3d575f414ce746e18f"
-  integrity sha512-6L+EeigHMQhdaIPNIFUKwfWJSwWFQ8gJbJ2DLOs5sDIegTwR9fRxvnM3uciHKjIZhFz+KAv2emhWMRvDmMcY8A==
 
 util-deprecate@~1.0.1:
   version "1.0.2"
