@@ -15,6 +15,13 @@ on:
     paths:
       - "smo-frontend/**"
 
+# One run per workflow and branch/PR. A new push to a PR cancels its running build (only the latest commit matters);
+# master runs (pushes and manual deploys) queue instead, so an older build can't finish last and overwrite the newer
+# image, and a deploy never stops halfway. A waiting run is replaced by a newer one, which builds the latest master.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build-frontend:
     name: Build and Push
