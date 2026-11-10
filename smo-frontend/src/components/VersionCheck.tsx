@@ -5,7 +5,7 @@ import Typography from "@mui/joy/Typography";
 import { type FunctionComponent } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useVersionCheck } from "../hooks/useVersionCheck";
+import { forceUpdate, useVersionCheck } from "../hooks/useVersionCheck";
 
 const VersionCheck: FunctionComponent = () => {
   const { t } = useTranslation();
@@ -14,28 +14,6 @@ const VersionCheck: FunctionComponent = () => {
   if (!isOutdated) {
     return null;
   }
-
-  const handleRefresh = () => {
-    // Unregister service workers to avoid caching issues
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.getRegistrations().then((registrations) => {
-        for (const registration of registrations) {
-          registration.unregister();
-        }
-      });
-    }
-
-    // Clear caches
-    if (globalThis.caches) {
-      globalThis.caches.keys().then((names) => {
-        for (const name of names) {
-          globalThis.caches.delete(name);
-        }
-      });
-    }
-
-    globalThis.location.reload();
-  };
 
   return (
     <Sheet
@@ -62,7 +40,7 @@ const VersionCheck: FunctionComponent = () => {
             latest: latestVersion,
           })}
         </Typography>
-        <Button onClick={handleRefresh} color="warning">
+        <Button onClick={forceUpdate} color="warning">
           {t("VersionCheck.RefreshNow")}
         </Button>
         <Typography level="body-xs">{t("VersionCheck.RefreshDescription")}</Typography>
