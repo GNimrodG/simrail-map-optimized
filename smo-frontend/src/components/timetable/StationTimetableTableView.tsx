@@ -20,8 +20,8 @@ import StopTypeDisplay from "../utils/StopTypeDisplay";
 import TimeDiffDisplay from "../utils/TimeDiffDisplay";
 import TimeDisplay from "../utils/TimeDisplay";
 import TrainTypeDisplay from "../utils/TrainTypeDisplay";
-import TrainTimetableModal from "./TrainTimetableModal";
 import UnusualCargoDisplay from "../utils/UnusualCargoDisplay";
+import TrainTimetableModal from "./TrainTimetableModal";
 
 export interface EntryRenderState {
   entry: {

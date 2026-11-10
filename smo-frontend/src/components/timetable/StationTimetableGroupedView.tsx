@@ -21,9 +21,9 @@ import StopTypeDisplay from "../utils/StopTypeDisplay";
 import TimeDiffDisplay from "../utils/TimeDiffDisplay";
 import TimeDisplay from "../utils/TimeDisplay";
 import TrainTypeDisplay from "../utils/TrainTypeDisplay";
+import UnusualCargoDisplay from "../utils/UnusualCargoDisplay";
 import type { EntryRenderState } from "./StationTimetableTableView";
 import TrainTimetableModal from "./TrainTimetableModal";
-import UnusualCargoDisplay from "../utils/UnusualCargoDisplay";
 
 export interface StationTimetableGroupedViewProps {
   entryStates: EntryRenderState[];

@@ -36,6 +36,7 @@ import SettingCheckbox from "../../settings/SettingCheckbox";
 import { formatVehicleName, getThumbnailUrl } from "../../utils/general-utils";
 import SignalSpeedDisplay from "../../utils/SignalSpeedDisplay";
 import TrainTypeDisplay from "../../utils/TrainTypeDisplay";
+import UnusualCargoDisplay from "../../utils/UnusualCargoDisplay";
 import CalendarIcon from "../icons/calendar.svg?react";
 import LengthIcon from "../icons/LengthIcon";
 import SpeedIcon from "../icons/SpeedIcon";
@@ -43,7 +44,6 @@ import WeightIcon from "../icons/WeightIcon";
 import StationDisplay from "../station/StationDisplay";
 import TrainConsistDisplay from "./TrainConsistDisplay";
 import TrainScheduleDisplay from "./TrainScheduleDisplay";
-import UnusualCargoDisplay from "../../utils/UnusualCargoDisplay";
 
 export interface TrainMarkerPopupProps {
   train: Train;

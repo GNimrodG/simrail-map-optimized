@@ -1,11 +1,12 @@
 import Box from "@mui/joy/Box";
 import Chip from "@mui/joy/Chip";
 import { ColorPaletteProp } from "@mui/joy/styles";
-import Typography from "@mui/joy/Typography";
 import Tooltip from "@mui/joy/Tooltip";
+import Typography from "@mui/joy/Typography";
 import { type FunctionComponent, memo } from "react";
-import { UnusualCargoFlags } from "../../utils/types";
 import { useTranslation } from "react-i18next";
+
+import { UnusualCargoFlags } from "../../utils/types";
 
 export interface UnusualCargoDisplayProps {
   cargo: UnusualCargoFlags | undefined;
