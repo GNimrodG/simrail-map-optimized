@@ -16,6 +16,9 @@ COPY --exclude="nginx.conf" . .
 
 # Set the NODE_ENV to production for the build process
 ENV NODE_ENV=production
+# Sentry DSN baked into the bundle (CI passes the repo variable SENTRY_DSN); without it the app doesn't load Sentry
+ARG VITE_SENTRY_DSN=""
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 # Build the application
 RUN yarn build
 

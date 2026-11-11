@@ -66,6 +66,9 @@ jobs:
           push: ${{ env.SHOULD_PUSH == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # the repo variable SENTRY_DSN; forks don't have it, so their builds never report into SMO's Sentry project
+          build-args: |
+            VITE_SENTRY_DSN=${{ vars.SENTRY_DSN }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
 

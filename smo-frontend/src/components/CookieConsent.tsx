@@ -8,12 +8,20 @@ import i18n from "../i18n";
 import { isSentryLoaded$ } from "../utils/data-manager";
 import { VERSION } from "../version";
 
+/** Set at build time from the repo variable SENTRY_DSN (CI passes it to the Docker build); builds without it (local
+ * builds, forks) don't load Sentry at all, so they never report into SMO's project. */
+const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
+
+if (!SENTRY_DSN) {
+  console.warn("Sentry DSN is not set (VITE_SENTRY_DSN at build time), error reporting is disabled.");
+}
+
 function initializeSentry() {
-  if (isSentryLoaded$.getValue()) return;
+  if (!SENTRY_DSN || isSentryLoaded$.getValue()) return;
 
   isSentryLoaded$.next(true);
 
-  import("@sentry/react").then((Sentry) => {
+  void import("@sentry/react").then((Sentry) => {
     const feedbackIntegration = Sentry.feedbackSyncIntegration(
       {
         colorScheme: "system",
@@ -24,7 +32,7 @@ function initializeSentry() {
       },
     );
 
-    feedbackIntegration.createForm().then((form) => {
+    void feedbackIntegration.createForm().then((form) => {
       form.appendToDom();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,7 +40,7 @@ function initializeSentry() {
     });
 
     Sentry.init({
-      dsn: "https://8c28aa804663f38f3314af8312673ed5@o260759.ingest.us.sentry.io/4507205489262592",
+      dsn: SENTRY_DSN,
       integrations: [
         Sentry.browserTracingIntegration(),
         Sentry.replayIntegration({

@@ -118,6 +118,9 @@ jobs:
           push: ${{ env.SHOULD_PUSH == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # the repo variable SENTRY_BACKEND_DSN; forks don't have it, so their images never report into SMO's Sentry
+          build-args: |
+            SENTRY_DSN=${{ vars.SENTRY_BACKEND_DSN }}
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
 

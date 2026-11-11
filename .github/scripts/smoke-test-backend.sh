@@ -81,6 +81,15 @@ expect GET  /openapi/v1.json                        "200"     application/json "
 expect POST "/signalr/negotiate?negotiateVersion=1" "200"     application/json "(SignalR hub mapped)"
 expect GET  /does-not-exist                         "404"     ""               "(unknown route)"
 
+# the build-time version (smo-backend.csproj SmoVersion), YYYY.MM.DD.HHMM like the frontend's
+version=$(docker exec "$NAME-app" curl -s http://localhost:3000/version)
+if [[ "$version" =~ ^[0-9]{4}\.[0-9]{2}\.[0-9]{2}\.[0-9]{4}$ ]]; then
+  printf "  ok    %-5s %-38s %s\n" GET /version "$version"
+else
+  printf "  FAIL  %-5s %-38s got '%s', want YYYY.MM.DD.HHMM\n" GET /version "$version"
+  failures=$((failures + 1))
+fi
+
 [ "$(docker inspect -f '{{.State.Running}}' "$NAME-app")" = true ] || fail "container crashed while handling requests"
 crit=$(docker logs "$NAME-app" 2>&1 | grep -cE "\] crit:|Unhandled exception" || true)
 [ "$crit" -eq 0 ] || { failures=$((failures + 1)); echo "  FAIL  $crit critical/unhandled log line(s)"; }

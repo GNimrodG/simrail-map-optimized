@@ -10,6 +10,16 @@
     <UserSecretsId>1227ac2c-1deb-424f-80be-09d853c84ece</UserSecretsId>
   </PropertyGroup>
 
+  <!-- Version = build time (UTC), YYYY.MM.DD.HHMM like the frontend (scripts/generate-version.js); read by AppVersion,
+       the Sentry release and GET /version. Release builds only (Docker/CI), so Debug builds don't recompile every
+       minute; can be overridden with -p:SmoVersion=... -->
+  <PropertyGroup>
+    <SmoVersion Condition="'$(SmoVersion)' == '' And '$(Configuration)' == 'Release'">$([System.DateTime]::UtcNow.ToString("yyyy.MM.dd.HHmm"))</SmoVersion>
+    <SmoVersion Condition="'$(SmoVersion)' == ''">dev</SmoVersion>
+    <InformationalVersion>$(SmoVersion)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="smo-backend.Tests"/>
   </ItemGroup>

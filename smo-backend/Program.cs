@@ -240,9 +240,19 @@ builder
     .AddCheck<DataServiceHealthCheck>("Data Services")
     .ForwardToPrometheus();
 
-builder.WebHost.UseSentry();
+// The DSN comes from the image (CI bakes the repo variable SENTRY_BACKEND_DSN in as Sentry__Dsn) or the environment;
+// builds without it (local, forks) run with Sentry disabled. The release is the build-time version (AppVersion).
+builder.WebHost.UseSentry(options => options.Release = AppVersion.SentryRelease);
 
 var app = builder.Build();
+
+app.Logger.LogInformation("SMO backend version {Version}", AppVersion.Current);
+
+if (string.IsNullOrWhiteSpace(app.Configuration["Sentry:Dsn"]) &&
+    string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SENTRY_DSN")))
+{
+    app.Logger.LogWarning("Sentry DSN is not set (Sentry:Dsn / Sentry__Dsn), error reporting is disabled.");
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -271,6 +281,8 @@ app.UseCors("AllowLocalAndProduction");
 app.UseHttpCacheHeaders();
 
 app.Map("/", () => Results.Redirect("/scalar/v1"));
+// the build-time version as plain text, like the frontend's /version.txt
+app.MapGet("/version", () => Results.Text(AppVersion.Current));
 app.MapControllers();
 app.MapHub<MainHub>("/signalr");
 app.MapHealthChecks("/health");
