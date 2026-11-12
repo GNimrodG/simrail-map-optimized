@@ -58,6 +58,21 @@ public class ServerRestartAnalyzerService(
     private const int MinObservedWeekdays = 2;
 
     /// <summary>
+    ///     A slot missed on this many of its last days in a row is no longer part of the schedule.
+    /// </summary>
+    private const int DiscontinuedAfterMisses = 2;
+
+    /// <summary>
+    ///     A new time of day joins the schedule when it had a restart on this many of the last days in a row.
+    /// </summary>
+    private const int NewSlotAfterDays = 2;
+
+    /// <summary>
+    ///     The schedule confidence of a time that just joined the schedule.
+    /// </summary>
+    private const double NewSlotConfidence = 0.5;
+
+    /// <summary>
     ///     Restarts older than this are dropped from the history.
     /// </summary>
     private static readonly TimeSpan MaxHistoryAge = TimeSpan.FromDays(90);
@@ -355,6 +370,8 @@ public class ServerRestartAnalyzerService(
                 unscheduledRate[weekday, hour] = Math.Max(unscheduledRate[weekday, hour], backgroundRate);
         }
 
+        AdaptToScheduleChanges(schedule, localRestarts, observedDays, today, nowUtc);
+
         for (var day = today; day <= today.AddDays(7); day = day.AddDays(1))
         {
             if (!schedule.TryGetValue(day.DayOfWeek, out var slots)) continue;
@@ -381,6 +398,70 @@ public class ServerRestartAnalyzerService(
         }
 
         return new(null, null);
+    }
+
+    /// <summary>
+    ///     Follows a change of the restart schedule within days instead of weeks. The schedule is learned from
+    ///     <see cref="ScheduleWindow" />, so on its own a slot that is no longer used stays in it until it was missed on
+    ///     most of its weekdays, and a new time needs weeks to get in. Here a slot that was missed on its last
+    ///     <see cref="DiscontinuedAfterMisses" /> days in a row (on any weekday it's scheduled for) is dropped, and a time
+    ///     that had a restart on the last <see cref="NewSlotAfterDays" /> days in a row joins every weekday's schedule
+    ///     with <see cref="NewSlotConfidence" /> (too uncertain to be shown, but predicted as the next restart). Today
+    ///     counts for the times that are already over. Only for a server that already has a schedule.
+    /// </summary>
+    private static void AdaptToScheduleChanges(Dictionary<DayOfWeek, List<(int Minute, double Confidence)>> schedule,
+        DateTime[] localRestarts, List<DateTime> observedDays, DateTime today, DateTime nowUtc)
+    {
+        if (schedule.Count == 0) return;
+
+        var recentDays = observedDays.Append(today).OrderDescending().ToArray();
+
+        bool IsOver(DateTime day, int minute)
+        {
+            var local = day.AddMinutes(minute);
+            return !ScheduleTimeZone.IsInvalidTime(local) &&
+                   TimeZoneInfo.ConvertTimeToUtc(local, ScheduleTimeZone) +
+                   TimeSpan.FromMinutes(SlotToleranceMinutes) <= nowUtc;
+        }
+
+        bool HadRestart(DateTime day, int minute) =>
+            localRestarts.Any(t => t.Date == day && Math.Abs(t.TimeOfDay.TotalMinutes - minute) <= SlotToleranceMinutes);
+
+        bool IsScheduled(DateTime day, int minute) =>
+            schedule.TryGetValue(day.DayOfWeek, out var slots) &&
+            slots.Any(s => Math.Abs(s.Minute - minute) <= SlotToleranceMinutes);
+
+        // the slots missed on their last days, decided before removing any (a slot is looked up on other weekdays)
+        var discontinued = schedule
+            .SelectMany(weekday => weekday.Value
+                .Where(slot =>
+                {
+                    var lastDays = recentDays.Where(d => IsScheduled(d, slot.Minute) && IsOver(d, slot.Minute))
+                        .Take(DiscontinuedAfterMisses)
+                        .ToArray();
+                    return lastDays.Length == DiscontinuedAfterMisses && !lastDays.Any(d => HadRestart(d, slot.Minute));
+                })
+                .Select(slot => (Weekday: weekday.Key, Slot: slot)))
+            .ToArray();
+        foreach (var (weekday, slot) in discontinued) schedule[weekday].Remove(slot);
+
+        // a new time: restarts at about the same time on the last days, none of which had a slot then
+        foreach (var minute in localRestarts
+                     .Where(t => t.Date >= recentDays[Math.Min(1, recentDays.Length - 1)])
+                     .Select(t => (int)t.TimeOfDay.TotalMinutes))
+        {
+            var lastDays = recentDays.Where(d => IsOver(d, minute)).Take(NewSlotAfterDays).ToArray();
+            if (lastDays.Length < NewSlotAfterDays ||
+                !lastDays.All(d => HadRestart(d, minute) && !IsScheduled(d, minute)))
+                continue;
+
+            for (var weekday = DayOfWeek.Sunday; weekday <= DayOfWeek.Saturday; weekday++)
+            {
+                if (!schedule.TryGetValue(weekday, out var slots)) schedule[weekday] = slots = [];
+                if (!slots.Any(s => Math.Abs(s.Minute - minute) <= SlotToleranceMinutes))
+                    slots.Add((minute, NewSlotConfidence));
+            }
+        }
     }
 
     /// <summary>

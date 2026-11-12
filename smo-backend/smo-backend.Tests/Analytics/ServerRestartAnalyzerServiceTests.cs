@@ -187,6 +187,59 @@ public class ServerRestartAnalyzerServiceTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void PredictFromHistory_SlotMissedOnItsLastTwoDays_IsDropped()
+    {
+        // 02:48 on weekdays until Monday 19 October, then not on Tuesday and Wednesday
+        var history = WeekdaysAt0248(new(2026, 9, 21), new(2026, 10, 19))
+            .Concat(Daily(new(2026, 9, 21), new(2026, 10, 21), 9, 30))
+            .ToArray();
+
+        // Thursday 00:00, the 02:48 slot still had a restart on most Thursdays, but it's discontinued
+        var prediction = Predict(history, Local(2026, 10, 22, 0, 0));
+
+        prediction.Time.Should().Be(Local(2026, 10, 22, 9, 30));
+    }
+
+    [Fact]
+    public void PredictFromHistory_SlotMissedOnce_IsKept()
+    {
+        // 02:48 on weekdays until Tuesday 20 October, only Wednesday missed it
+        var history = WeekdaysAt0248(new(2026, 9, 21), new(2026, 10, 20))
+            .Concat(Daily(new(2026, 9, 21), new(2026, 10, 21), 9, 30))
+            .ToArray();
+
+        var prediction = Predict(history, Local(2026, 10, 22, 0, 0));
+
+        prediction.Time.Should().Be(Local(2026, 10, 22, 2, 48));
+    }
+
+    [Fact]
+    public void PredictFromHistory_NewTimeOnTheLastTwoDays_IsPredictedWithLowConfidence()
+    {
+        var history = Daily(new(2026, 9, 21), new(2026, 10, 21), 9, 30)
+            .Append(Restart(Local(2026, 10, 20, 4, 27)))
+            .Append(Restart(Local(2026, 10, 21, 4, 24)))
+            .ToArray();
+
+        var prediction = Predict(history, Local(2026, 10, 22, 0, 0));
+
+        prediction.Time.Should().Be(Local(2026, 10, 22, 4, 24));
+        prediction.ScheduleConfidence.Should().Be(0.5);
+    }
+
+    [Fact]
+    public void PredictFromHistory_NewTimeOnlyOnce_IsNotPredicted()
+    {
+        var history = Daily(new(2026, 9, 21), new(2026, 10, 21), 9, 30)
+            .Append(Restart(Local(2026, 10, 21, 4, 24)))
+            .ToArray();
+
+        var prediction = Predict(history, Local(2026, 10, 22, 0, 0));
+
+        prediction.Time.Should().Be(Local(2026, 10, 22, 9, 30));
+    }
+
+    [Fact]
     public void PredictFromHistory_IrregularRestarts_HaveNoPrediction()
     {
         var random = new Random(42);
@@ -271,6 +324,15 @@ public class ServerRestartAnalyzerServiceTests(ITestOutputHelper output)
             restarts.Add(Restart(Local(day.Year, day.Month, day.Day, hour, minute)));
         return restarts.ToArray();
     }
+
+    /// <summary>
+    ///     A restart at 02:48 in Warsaw on every weekday (Monday to Friday) from <paramref name="from" /> to
+    ///     <paramref name="to" />.
+    /// </summary>
+    private static IEnumerable<RestartData> WeekdaysAt0248(DateOnly from, DateOnly to) =>
+        Daily(from, to, 2, 48).Where(r =>
+            TimeZoneInfo.ConvertTimeFromUtc(r.RestartTime, Warsaw).DayOfWeek is not
+                (DayOfWeek.Saturday or DayOfWeek.Sunday));
 
     private static RestartData Restart(DateTime restartUtc) => new(restartUtc.AddMinutes(-2), restartUtc);
 
