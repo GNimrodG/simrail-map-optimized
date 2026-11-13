@@ -254,6 +254,21 @@ if (string.IsNullOrWhiteSpace(app.Configuration["Sentry:Dsn"]) &&
     app.Logger.LogWarning("Sentry DSN is not set (Sentry:Dsn / Sentry__Dsn), error reporting is disabled.");
 }
 
+// A client that leaves (closed tab, reload) cancels its request and the work done for it. That isn't an error of the
+// backend, so it's answered with 499 (nginx's "client closed request") instead of reaching Sentry as an unhandled
+// exception. This runs inside Sentry's middleware, which UseSentry puts first in the pipeline.
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next(context);
+    }
+    catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+    {
+        if (!context.Response.HasStarted) context.Response.StatusCode = 499;
+    }
+});
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

@@ -155,6 +155,7 @@ public partial class RoutePointAnalyzerService : IHostedService
         _queueProcessor = new(logger,
             ProcessTrainData,
             RoutePointQueueGauge);
+        _playableArea = new(ComputePlayableArea, PlayableAreaCacheDuration);
     }
 
     /// <inheritdoc />
@@ -190,6 +191,8 @@ public partial class RoutePointAnalyzerService : IHostedService
 
         // Run on startup
         GenerateSignalLines();
+        // in the background, so even the first visitor after a restart doesn't wait for the playable area
+        _ = _playableArea.StartRefresh();
 
         _logger.LogInformation("Started route point analyzer service");
 
@@ -916,26 +919,27 @@ public partial class RoutePointAnalyzerService : IHostedService
     /// </summary>
     private static readonly TimeSpan PlayableAreaCacheDuration = TimeSpan.FromHours(6);
 
-    private readonly SemaphoreSlim _playableAreaLock = new(1, 1);
-    private (string GeoJson, DateTime ComputedAt)? _playableArea;
+    // computed once for everyone, not as part of a request (a client leaving must not cancel it), see GetPlayableArea
+    private readonly SharedRefreshCache<string> _playableArea;
 
     /// <summary>
     ///     Gets the playable area of the map as GeoJSON: the area within 1 km of the route points recorded outside the
-    ///     border station areas. Computed from the route points (so it follows map extensions) and cached for hours.
+    ///     border station areas. Computed from the route points (so it follows map extensions) at startup and every few
+    ///     hours in the background; only a request before the first computation finished waits for it.
     /// </summary>
+    /// <param name="cancellationToken">Stops waiting for the first computation, the computation itself goes on.</param>
     /// <returns>A GeoJSON (Multi)Polygon, or null if there are no route points yet.</returns>
-    public async Task<string?> GetPlayableArea(CancellationToken cancellationToken = default)
-    {
-        if (_playableArea is { } cached && DateTime.UtcNow - cached.ComputedAt < PlayableAreaCacheDuration)
-            return cached.GeoJson;
+    public Task<string?> GetPlayableArea(CancellationToken cancellationToken = default) =>
+        _playableArea.GetAsync(cancellationToken);
 
-        await _playableAreaLock.WaitAsync(cancellationToken);
+    /// <summary>
+    ///     Computes the playable area, or returns null when there are no route points yet or it failed (the previous
+    ///     area is kept then). Only the service stopping cancels it.
+    /// </summary>
+    private async Task<string?> ComputePlayableArea()
+    {
         try
         {
-            // computed by another request while this one was waiting
-            if (_playableArea is { } fresh && DateTime.UtcNow - fresh.ComputedAt < PlayableAreaCacheDuration)
-                return fresh.GeoJson;
-
             var stopwatch = Stopwatch.StartNew();
             using var scope = _scopeFactory.CreateScope();
             await using var context = scope.ServiceProvider.GetRequiredService<SmoContext>();
@@ -953,27 +957,25 @@ public partial class RoutePointAnalyzerService : IHostedService
                                FROM cells
                                """;
 
-            var geoJson = (await context.Database.SqlQueryRaw<string?>(sql).ToArrayAsync(cancellationToken))
+            var geoJson = (await context.Database.SqlQueryRaw<string?>(sql)
+                    .ToArrayAsync(_cancellationTokenSource.Token))
                 .FirstOrDefault();
 
             stopwatch.Stop();
             _logger.LogInformation("Computed the playable area ({Length} bytes) in {ElapsedMilliseconds} ms",
                 geoJson?.Length ?? 0, stopwatch.ElapsedMilliseconds);
 
-            // no route points yet: don't cache, try again on the next request
-            if (geoJson == null) return _playableArea?.GeoJson;
-
-            _playableArea = (geoJson, DateTime.UtcNow);
+            // null (no route points yet) isn't cached, the next request tries again
             return geoJson;
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (OperationCanceledException) when (_cancellationTokenSource.IsCancellationRequested)
+        {
+            return null; // the service is stopping
+        }
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Error computing the playable area");
-            return _playableArea?.GeoJson;
-        }
-        finally
-        {
-            _playableAreaLock.Release();
+            return null;
         }
     }
 
