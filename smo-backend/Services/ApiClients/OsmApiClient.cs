@@ -40,6 +40,41 @@ public class OsmApiClient : IDisposable
     }
 
     /// <summary>
+    ///     Gets every named railway station and halt (nodes with railway=station / halt) within a bounding box, in one
+    ///     request: where the trains stop, for the timetable points without signals of their own.
+    /// </summary>
+    /// <returns>The stops, or null when the request failed.</returns>
+    public async Task<OSMNode[]?> GetRailwayStopsAsync(double south, double west, double north, double east,
+        CancellationToken cancellationToken = default)
+    {
+        var bbox = string.Join(",",
+            new[] { south, west, north, east }.Select(v => v.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        var query = $"[out:json][timeout:180];node[\"railway\"~\"^(station|halt)$\"][\"name\"]({bbox});out;";
+
+        try
+        {
+            using var content = new FormUrlEncodedContent([new("data", query)]);
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeout.CancelAfter(TimeSpan.FromMinutes(5));
+            using var response = await _httpClient.PostAsync(BaseUrl, content, timeout.Token);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Overpass returned {StatusCode} for the railway stops", response.StatusCode);
+                return null;
+            }
+
+            var osmResponse = await response.Content.ReadFromJsonAsync<OSMResponse>(timeout.Token);
+            return osmResponse?.Elements.OfType<OSMNode>().ToArray() ?? [];
+        }
+        catch (Exception e) when (!cancellationToken.IsCancellationRequested &&
+                                  e is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _logger.LogWarning(e, "Failed to get the railway stops from Overpass");
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Gets a signal box by name, with automatic request batching and caching
     /// </summary>
     /// <param name="name">The name of the signal box to search for</param>

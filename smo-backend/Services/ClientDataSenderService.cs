@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.SignalR;
 using SMOBackend.Analytics;
+using SMOBackend.Analytics.Schedule;
 using SMOBackend.Hubs;
 using SMOBackend.Models;
 using SMOBackend.Models.Trains;
@@ -19,6 +20,7 @@ internal class ClientDataSenderService(
     TimeDataService timeDataService,
     SignalAnalyzerService signalAnalyzerService,
     TrainDelayAnalyzerService trainDelayAnalyzerService,
+    ScheduleTrackingService scheduleTrackingService,
     ServerRestartAnalyzerService serverRestartAnalyzerService
 ) : IHostedService
 {
@@ -234,6 +236,9 @@ internal class ClientDataSenderService(
                 var sendDelaysSw = Stopwatch.StartNew();
                 await hub.Clients.Group(data.ServerCode).SendAsync("DelaysReceived",
                     trainDelayAnalyzerService.GetDelaysForTrains(data.Data));
+                // a message of its own: older clients only know DelaysReceived (the departures)
+                await hub.Clients.Group(data.ServerCode).SendAsync("ArrivalDelaysReceived",
+                    scheduleTrackingService.GetArrivalDelaysForTrains(data.Data));
                 sendDelaysSw.Stop();
                 sendDelaysMs = sendDelaysSw.ElapsedMilliseconds;
             }

@@ -6,6 +6,7 @@ using Prometheus;
 using Prometheus.SystemMetrics;
 using Scalar.AspNetCore;
 using SMOBackend.Analytics;
+using SMOBackend.Analytics.Schedule;
 using SMOBackend.Data;
 using SMOBackend.HealthChecks;
 using SMOBackend.Hubs;
@@ -220,6 +221,7 @@ builder.Services.AddSingletonHostedService<TrainTypeService>();
 
 // Analytic services (background processing)
 builder.Services.AddSingletonHostedService<SignalAnalyzerService>();
+builder.Services.AddSingletonHostedService<ScheduleTrackingService>();
 builder.Services.AddSingletonHostedService<TrainDelayAnalyzerService>();
 builder.Services.AddSingletonHostedService<TimetableAnalyzerService>();
 builder.Services.AddSingletonHostedService<RoutePointAnalyzerService>();

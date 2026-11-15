@@ -303,6 +303,12 @@ export class SignalRDataProvider implements IDataProvider {
       this.trainDelays$.next(trainDelays);
     });
 
+    // when the trains arrived at (or passed) their points, from the backend's schedule tracking; a message of its own
+    // as older backends don't send it
+    this.connection.on("ArrivalDelaysReceived", (data: Record<string, Record<number, number>>) => {
+      this.trainArrivalDelays$.next(new Map(Object.entries(data)));
+    });
+
     this.connection.on("TimeReceived", (timeData: TimeData) => this.timeData$.next(timeData));
 
     this.connection.on("SteamProfileDataUnavailable", () => {
@@ -511,6 +517,7 @@ export class SignalRDataProvider implements IDataProvider {
     this.trainsData$.next([]);
     this.signalsData$.next([]);
     this.trainDelays$.next(new Map());
+    this.trainArrivalDelays$.next(new Map());
     this.timeData$.next(null);
     this.connection.send("SwitchServer", serverCode).catch((e) => {
       console.error("Failed to switch server", e);
@@ -536,6 +543,13 @@ export class SignalRDataProvider implements IDataProvider {
 
   getDelaysForTrainSync(trainId: string): Record<number, number> | null {
     return this.trainDelays$.value.get(trainId) || null;
+  }
+
+  /** The trains' arrival delays (seconds) by timetable index, where the backend tracked them. */
+  trainArrivalDelays$ = new BehaviorSubject<Map<string, Record<number, number>>>(new Map());
+
+  getArrivalDelaysForTrainId$(trainId: string): Observable<Record<number, number>> {
+    return this.trainArrivalDelays$.pipe(map((delays) => delays.get(trainId) || {}));
   }
 
   timeData$ = new BehaviorSubject<TimeData | null>(null);

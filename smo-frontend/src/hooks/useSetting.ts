@@ -1,68 +1,12 @@
 import { useLocalStorage } from "@mantine/hooks";
-import { useMemo } from "react";
+import { type SetStateAction, useCallback, useEffect, useMemo, useRef } from "react";
 
-import type { RailwayLayerProvider } from "../utils/railway-layers";
-
-const SETTINGS = {
-  selectedServer: "int1",
-  visibleLayers: [
-    "bot-stations",
-    "user-stations",
-    "bot-trains",
-    "user-trains",
-    "active-signals",
-    "selected-route",
-    "unplayable-stations",
-  ] as string[],
-  useAltTracking: false,
-  expandScheduleDefault: false,
-  hideTrainPictures: false,
-  showLineToNextSignal: false,
-  showSpeedInfoCollapsed: true,
-  showSignalInfoCollapsed: true,
-  showNextStationInfoCollapsed: false,
-  showDelayInfoCollapsed: true,
-  alternativeTheme: false,
-  railwayLayerProvider: "railmap" as RailwayLayerProvider,
-  disableSlidingMarkers: false,
-  showTrainHeadings: true,
-  layerOpacities: {
-    "orm-infra": 1,
-    "orm-maxspeed": 1,
-    "orm-signals": 1,
-    "orm-electrification": 1,
-    "bot-stations": 1,
-    "user-stations": 1,
-    "bot-trains": 1,
-    "user-trains": 1,
-    "passive-signals": 1,
-    "distant-signals": 1,
-    "repeater-signals": 1,
-    "shunting-signals": 1,
-    "active-signals": 1,
-    "selected-route": 1,
-    "unplayable-stations": 1,
-    "stoppingpoints": 1,
-    "crossings": 1,
-    "playable-area": 1,
-  } as Record<string, number>,
-  rotateSignalIcons: true,
-  whistleSignWarnings: false,
-  disableLowSpeedWarning: false,
-  disableServerRestartWarning: false,
-  autoZoom: false,
-  autoZoomLimits: [200, 250] as [number, number],
-  translateStationNames: false,
-  reduceBackgroundUpdates: true,
-  stationTimetableDefaultViewMode: "table" as "table" | "cards" | "grouped" | "lastUsed",
-  groupTimetableByLineNumber: false,
-  timetableGroupedMaxEntriesDefault: 50,
-  timetableGroupedMaxEntriesSmall: 5,
-  timetableGroupedMaxEntriesLarge: 10,
-  timetableGroupedHidePassed: false,
-} as const;
+import { reportSettingChange } from "../utils/usage-stats";
+import { SETTINGS } from "./settings-defaults";
 
 export type TSettings = typeof SETTINGS;
+
+export { SETTINGS as DEFAULT_SETTINGS } from "./settings-defaults";
 
 // Export all settings keys for use in other hooks
 export const ALL_SETTINGS_KEYS = Object.keys(SETTINGS) as Array<keyof typeof SETTINGS>;
@@ -81,13 +25,31 @@ type CleanType<Base> = Base extends true
           : Base;
 
 export function useSetting<T extends keyof typeof SETTINGS>(key: T) {
-  return useLocalStorage(
+  type Value = CleanType<(typeof SETTINGS)[T]>;
+  const [value, setValue, removeValue] = useLocalStorage(
     useMemo(
       () => ({
         key,
-        defaultValue: SETTINGS[key] as CleanType<(typeof SETTINGS)[T]>,
+        defaultValue: SETTINGS[key] as Value,
       }),
       [key],
     ),
   );
+
+  // the latest value, to tell what a change changed (for the usage stats)
+  const latest = useRef(value);
+  useEffect(() => {
+    latest.current = value;
+  }, [value]);
+
+  const set = useCallback(
+    (next: SetStateAction<Value>) => {
+      const resolved = typeof next === "function" ? (next as (previous: Value) => Value)(latest.current) : next;
+      reportSettingChange(key, latest.current, resolved);
+      setValue(next);
+    },
+    [key, setValue],
+  );
+
+  return [value, set, removeValue] as const;
 }

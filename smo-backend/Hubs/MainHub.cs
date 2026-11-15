@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Prometheus;
 using SMOBackend.Analytics;
+using SMOBackend.Analytics.Schedule;
 using SMOBackend.Models;
 using SMOBackend.Models.Steam;
 using SMOBackend.Services;
@@ -21,6 +22,7 @@ public class MainHub(
     TimetableDataService timetableDataService,
     SignalAnalyzerService signalAnalyzerService,
     TrainDelayAnalyzerService trainDelayAnalyzerService,
+    ScheduleTrackingService scheduleTrackingService,
     RoutePointAnalyzerService routePointAnalyzerService,
     ServerRestartAnalyzerService serverRestartAnalyzerService,
     ClientManagerService clientManagerService,
@@ -118,6 +120,9 @@ public class MainHub(
 
             var delays = trainDelayAnalyzerService.GetDelaysForTrains(trains);
             await Clients.Caller.SendAsync("DelaysReceived", delays);
+            // a message of its own: older clients only know DelaysReceived (the departures)
+            await Clients.Caller.SendAsync("ArrivalDelaysReceived",
+                scheduleTrackingService.GetArrivalDelaysForTrains(trains));
         }
 
         var signals = await signalAnalyzerService.GetSignalsForTrains(trains ?? []);

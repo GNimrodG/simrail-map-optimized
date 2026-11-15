@@ -6,6 +6,7 @@ import { Trans, useTranslation } from "react-i18next";
 
 import i18n from "../i18n";
 import { isSentryLoaded$ } from "../utils/data-manager";
+import { reportUsageSnapshot } from "../utils/usage-stats";
 import { VERSION } from "../version";
 
 /** Set at build time from the repo variable SENTRY_DSN (CI passes it to the Docker build); builds without it (local
@@ -63,6 +64,9 @@ function initializeSentry() {
     // the UI language, to tell apart users of the built-in translations from browser translation
     Sentry.setTag("app.language", i18n.resolvedLanguage ?? i18n.language);
     i18n.on("languageChanged", () => Sentry.setTag("app.language", i18n.resolvedLanguage ?? i18n.language));
+
+    // which layers and settings are used (see usage-stats)
+    reportUsageSnapshot();
   });
 }
 

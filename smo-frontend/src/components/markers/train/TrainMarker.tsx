@@ -5,6 +5,7 @@ import { Marker, Popup, useMap } from "react-leaflet";
 import { useIsDocumentFocused } from "../../../hooks/useIsDocumentFocused";
 import { useProfileData } from "../../../hooks/useProfileData";
 import { useSetting } from "../../../hooks/useSetting";
+import { getTargetZoom } from "../../../utils/leaflet-zoom";
 import SelectedTrainContext from "../../../utils/selected-train-context";
 import { Train } from "../../../utils/types";
 import { getColorTrainMarker } from "../../../utils/ui";
@@ -86,11 +87,15 @@ const TrainMarker: FunctionComponent<TrainMarkerProps> = ({ train, layerId }) =>
     }
 
     if (reduceBackgroundUpdates && !focused) {
-      map.setView([train.TrainData.Latitude, train.TrainData.Longitude], map.getZoom(), { animate: false });
+      map.setView([train.TrainData.Latitude, train.TrainData.Longitude], getTargetZoom(map), { animate: false });
       return;
     }
 
-    map.flyTo([train.TrainData.Latitude, train.TrainData.Longitude], map.getZoom(), { animate: true, duration: 0.5 });
+    // the zoom it's zooming to: getZoom() is still the old one during a zoom animation, which would undo that zoom
+    map.flyTo([train.TrainData.Latitude, train.TrainData.Longitude], getTargetZoom(map), {
+      animate: true,
+      duration: 0.5,
+    });
   }, [
     disableSlidingMarkers,
     reduceBackgroundUpdates,

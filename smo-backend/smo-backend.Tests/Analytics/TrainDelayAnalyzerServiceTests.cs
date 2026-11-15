@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SMOBackend.Analytics;
+using SMOBackend.Analytics.Schedule;
 using SMOBackend.Services;
 using SMOBackend.Services.ApiClients;
 
@@ -45,12 +46,30 @@ public class TrainDelayAnalyzerServiceTests
             apiClient,
             trainTypeService,
             edrDataService);
+        using var osmApiClient = new OsmApiClient(Mock.Of<ILogger<OsmApiClient>>());
+        var stationDataService = new StationDataService(
+            Mock.Of<ILogger<StationDataService>>(),
+            scopeFactory,
+            serverDataService,
+            apiClient);
+        var scheduleTrackingService = new ScheduleTrackingService(
+            Mock.Of<ILogger<ScheduleTrackingService>>(),
+            scopeFactory,
+            trainDataService,
+            new TrainPositionDataService(Mock.Of<ILogger<TrainPositionDataService>>(), scopeFactory, serverDataService,
+                apiClient),
+            timetableDataService,
+            timeDataService,
+            new StationAnalyzerService(Mock.Of<ILogger<StationAnalyzerService>>(), stationDataService,
+                timetableDataService, osmApiClient),
+            osmApiClient);
         var sut = new TrainDelayAnalyzerService(
             Mock.Of<ILogger<TrainDelayAnalyzerService>>(),
             scopeFactory,
             timeDataService,
             trainDataService,
-            timetableDataService);
+            timetableDataService,
+            scheduleTrackingService);
 
         try
         {

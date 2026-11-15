@@ -257,29 +257,7 @@ public class StationAnalyzerService : IHostedService
 
                         if (osmData == null)
                         {
-                            var altName = station.NameOfPoint
-                                .Replace("Much.", "Muchowiec ")
-                                .Replace("M.", "Muchowiec ")
-                                .Replace("M ", "Muchowiec ")
-                                .Replace("P.", "Południowa ")
-                                .Replace("P ", "Południowa ")
-                                .Replace("Tow ", "Towarowa ")
-                                .Replace("Tow.", "Towarowa ")
-                                .Replace("Gł.", "Główny ")
-                                .Replace("Dąbr.", "Dąbrowa ")
-                                .Replace("Górn.", "Górnicza ")
-                                .Replace("Maz.", "Mazowiecki ")
-                                .Replace("Zach.", "Zachodnia ")
-                                .Replace("Wsch.", "Wschodnia ")
-                                .Replace("Kr.", "Kraków ")
-                                .Replace("Żakow.", "Żakowice ")
-                                .Replace("Zakow.", "Zakowice ")
-                                .Replace("Kam.", "Kamienna ")
-                                .Replace("Roz.", "Rozdroże ")
-                                .Replace(".", "")
-                                .Replace("APO", "")
-                                .Replace("  ", " ") // Normalize spaces
-                                .Trim();
+                            var altName = StationNames.ExpandAbbreviations(station.NameOfPoint);
 
                             if (altName != station.NameOfPoint)
                             {

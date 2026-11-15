@@ -68,12 +68,17 @@ function useTrainDelays(trainId: string) {
     {},
   );
 
+  const arrivalDelays = useSubject(
+    useMemo(() => dataProvider.getArrivalDelaysForTrainId$(trainId), [trainId]),
+    {},
+  );
+
   const lastDelay = useMemo(() => {
     const sortedDelays = Object.entries(delays).sort(([a], [b]) => Number(a) - Number(b));
     return sortedDelays.length ? Math.round(sortedDelays.at(-1)![1] / 60) : null;
   }, [delays]);
 
-  return { delays, lastDelay };
+  return { delays, arrivalDelays, lastDelay };
 }
 
 const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
@@ -109,7 +114,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
     [train.TrainData.VDDelayedTimetableIndex],
   );
 
-  const { delays, lastDelay } = useTrainDelays(train.Id);
+  const { delays, arrivalDelays, lastDelay } = useTrainDelays(train.Id);
 
   // Calculate the last known delay for prediction at upcoming stations
   const lastKnownDelay = useMemo(
@@ -426,6 +431,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                   <TrainScheduleDisplay
                     timetable={timetable}
                     delays={delays}
+                    arrivalDelays={arrivalDelays}
                     trainTimetableIndex={trainTimetableIndex}
                   />
                 </Box>

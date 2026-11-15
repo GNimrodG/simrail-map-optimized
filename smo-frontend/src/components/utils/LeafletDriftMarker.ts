@@ -2,6 +2,8 @@
 
 import L from "leaflet";
 
+import { isZooming } from "../../utils/leaflet-zoom";
+
 type slideOptions = {
   duration: number;
   keepAtCenter?: boolean;
@@ -86,7 +88,9 @@ class DriftMarker extends L.Marker {
     const currLatLng = L.latLng(currPoint.x, currPoint.y);
     this.setLatLng(currLatLng);
 
-    if (this._slideKeepAtCenter) {
+    // not during a zoom animation: a pan without animation would stop it at the old zoom level (and the zoom would
+    // jump back on every frame); the map catches up with the marker on the next frame after the zoom
+    if (this._slideKeepAtCenter && !isZooming(this._map)) {
       this._map.panTo(currLatLng, { animate: false });
     }
 

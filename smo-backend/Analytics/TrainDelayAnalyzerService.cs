@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Prometheus;
+using SMOBackend.Analytics.Schedule;
 using SMOBackend.Models;
 using SMOBackend.Models.Trains;
 using SMOBackend.Services;
@@ -8,14 +9,17 @@ using SMOBackend.Utils;
 namespace SMOBackend.Analytics;
 
 /// <summary>
-/// Service to analyze train delays.
+/// Service to analyze train delays: the delay leaving each timetable point. Where the schedule tracking placed the
+/// point (<see cref="ScheduleTrackingService" />), from when the train actually left it; elsewhere from when the
+/// game's timetable index moved on (when the train passed the exit signal, about 30 seconds after setting off).
 /// </summary>
 public class TrainDelayAnalyzerService(
     ILogger<TrainDelayAnalyzerService> logger,
     IServiceScopeFactory scopeFactory,
     TimeDataService timeDataService,
     TrainDataService trainDataService,
-    TimetableDataService timetableDataService) : IHostedService, IServerMetricsCleaner
+    TimetableDataService timetableDataService,
+    ScheduleTrackingService scheduleTrackingService) : IHostedService, IServerMetricsCleaner
 {
     private static readonly string DataDirectory = Path.Combine(AppContext.BaseDirectory, "data", "delays");
     private static readonly string LastTimetableIndexFile = Path.Combine(DataDirectory, "lastTimetableIndex.bin");
@@ -187,20 +191,26 @@ public class TrainDelayAnalyzerService(
 
         foreach (var train in trains)
         {
-            if (_trainDelays.TryGetValue(train.GetTrainId(), out var trainDelays))
-            {
-                delays[train.Id] = trainDelays;
-            }
+            var trainDelays = GetDelaysForTrain(train);
+            if (trainDelays.Count > 0) delays[train.Id] = trainDelays;
         }
 
         return delays;
     }
 
     /// <summary>
-    /// Get the delays for the specified train.
+    /// Get the delays for the specified train: the tracked departures (see the class), else the timetable index's.
     /// </summary>
-    public Dictionary<short, int> GetDelaysForTrain(Train train) =>
-        _trainDelays.TryGetValue(train.GetTrainId(), out var trainDelays) ? trainDelays : new();
+    public Dictionary<short, int> GetDelaysForTrain(Train train)
+    {
+        var (tracked, _) = scheduleTrackingService.GetDelays(train);
+        if (!_trainDelays.TryGetValue(train.GetTrainId(), out var fromIndex)) return tracked;
+        if (tracked.Count == 0) return fromIndex;
+
+        var merged = new Dictionary<short, int>(fromIndex);
+        foreach (var (index, delay) in tracked) merged[index] = delay;
+        return merged;
+    }
 
     private async void AnalyzeTrains(Dictionary<string, Train[]> trains)
     {
@@ -250,7 +260,7 @@ public class TrainDelayAnalyzerService(
     private Dictionary<string, long>? GetServerTimes() =>
         timeDataService.Data?.ToDictionary(x => x.Key, x => CalculateServerTime(x.Value));
 
-    private static long CalculateServerTime(TimeData timeData)
+    internal static long CalculateServerTime(TimeData timeData)
     {
         // Convert server time to current UTC time by:
         // 1. Taking the server's reported time
@@ -364,7 +374,7 @@ public class TrainDelayAnalyzerService(
         _trainDelays.Set(train.GetTrainId(), delays);
     }
 
-    private static long ParseScheduledTime(string timeStr, int timezoneHours)
+    internal static long ParseScheduledTime(string timeStr, int timezoneHours)
     {
         // Parse "yyyy-mm-dd hh:mm:ss" format
         var parts = timeStr.Split(' ');

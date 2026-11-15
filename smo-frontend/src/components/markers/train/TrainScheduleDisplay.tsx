@@ -9,6 +9,11 @@ import StationDisplay from "../station/StationDisplay";
 export interface TrainScheduleDisplayProps {
   timetable: Timetable;
   delays: Record<number, number>;
+  /**
+   * The arrival delays (seconds) by timetable index, where the backend tracked them: the current station's is the
+   * delay the train has right now (it has arrived there, or is standing there).
+   */
+  arrivalDelays?: Record<number, number>;
   trainTimetableIndex: number;
 
   highlightedStationIndex?: number;
@@ -21,16 +26,21 @@ export interface TrainScheduleDisplayProps {
 const TrainScheduleDisplay: FunctionComponent<TrainScheduleDisplayProps> = ({
   timetable,
   delays,
+  arrivalDelays,
   trainTimetableIndex,
   highlightedStationIndex = trainTimetableIndex,
   hideTimeUntil,
 }) => {
   const stepperRef = useRef<HTMLLIElement>(null);
 
-  // Calculate the last known delay for prediction at upcoming stations
+  // the arrival at the current station, where it was tracked (the train is there now)
+  const currentArrivalDelay = arrivalDelays?.[trainTimetableIndex];
+
+  // Calculate the last known delay for prediction at upcoming stations: the arrival at the current station, else the
+  // last station left
   const lastKnownDelay = useMemo(
-    () => calculateLastKnownDelay(delays, trainTimetableIndex),
-    [delays, trainTimetableIndex],
+    () => currentArrivalDelay ?? calculateLastKnownDelay(delays, trainTimetableIndex),
+    [currentArrivalDelay, delays, trainTimetableIndex],
   );
 
   // Calculate predicted delay for a station accounting for layover times
@@ -81,7 +91,10 @@ const TrainScheduleDisplay: FunctionComponent<TrainScheduleDisplayProps> = ({
         let stationDelay = delays[i];
         let isPredicted = false;
 
-        if (stationDelay === undefined) {
+        if (stationDelay === undefined && isCurrentStation && currentArrivalDelay !== undefined) {
+          // arrived here (or standing here): its actual delay
+          stationDelay = currentArrivalDelay;
+        } else if (stationDelay === undefined) {
           if (isCurrentStation || isUpcomingStation) {
             // Calculate predicted delay accounting for layover times (including current station)
             const predictedDelay = getPredictedDelay(i);
