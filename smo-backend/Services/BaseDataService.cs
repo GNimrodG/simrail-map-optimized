@@ -16,7 +16,7 @@ public abstract class BaseDataService<T>(
     string serviceId,
     ILogger<BaseDataService<T>> logger,
     IServiceScopeFactory scopeFactory)
-    : IHostedService, IDataService where T : class?
+    : IHostedLifecycleService, IDataService where T : class?
 {
     private protected readonly TaskCompletionSource FirstDataReceivedSource = new();
 
@@ -62,6 +62,17 @@ public abstract class BaseDataService<T>(
 
         _cancellationTokenSource = new();
 
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    ///     Starts fetching once every hosted service has started: the services that subscribe to the data do it in
+    ///     their StartAsync, so a fetch started earlier could be done (and its event missed) before they subscribe.
+    /// </summary>
+    public virtual Task StartedAsync(CancellationToken cancellationToken)
+    {
+        if (_cancellationTokenSource == null) return Task.CompletedTask; // not started
+
         _dataServiceTask = Task.Run(() => ExecuteService(_cancellationTokenSource.Token), cancellationToken)
             .ContinueWith(t =>
             {
@@ -80,6 +91,15 @@ public abstract class BaseDataService<T>(
 
         return Task.CompletedTask;
     }
+
+    /// <inheritdoc />
+    public Task StartingAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    /// <inheritdoc />
+    public Task StoppingAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    /// <inheritdoc />
+    public Task StoppedAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     /// <inheritdoc />
     public virtual async Task StopAsync(CancellationToken cancellationToken)

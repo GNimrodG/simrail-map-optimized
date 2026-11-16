@@ -11,72 +11,72 @@ public readonly struct SimplifiedTimetableEntry
     /// <summary>
     /// The name of the station.
     /// </summary>
-    public string StationName { get; }
+    public string StationName { get; init; }
 
     /// <summary>
     /// The category of the station.
     /// </summary>
-    public EStationCategory? StationCategory { get; }
+    public EStationCategory? StationCategory { get; init; }
 
     /// <summary>
     /// The local train number.
     /// </summary>
-    public string TrainNoLocal { get; }
+    public string TrainNoLocal { get; init; }
 
     /// <summary>
     /// The type of the train. E.g. "MOJ", "MPE", etc.
     /// </summary>
-    public TrainTypeCode TrainType { get; }
+    public TrainTypeCode TrainType { get; init; }
 
     /// <summary>
     /// The time of arrival at the station.
     /// </summary>
-    public string? ArrivalTime { get; }
+    public string? ArrivalTime { get; init; }
 
     /// <summary>
     /// The time of departure from the station.
     /// </summary>
-    public string? DepartureTime { get; }
+    public string? DepartureTime { get; init; }
 
     /// <summary>
     /// The type of stop at the station.
     /// </summary>
-    public EStopType StopType { get; }
+    public EStopType StopType { get; init; }
 
     /// <summary>
     /// The line number of the train.
     /// </summary>
-    public ushort Line { get; }
+    public ushort Line { get; init; }
 
     /// <summary>
     /// The platform number at the station.
     /// </summary>
-    public string? Platform { get; }
+    public string? Platform { get; init; }
 
     /// <summary>
     /// The track number at the station.
     /// </summary>
-    public byte? Track { get; }
+    public byte? Track { get; init; }
 
     /// <summary>
     /// The index of the timetable entry in the list.
     /// </summary>
-    public short Index { get; }
+    public short Index { get; init; }
 
     /// <summary>
     /// The previous station in the timetable.
     /// </summary>
-    public string? PreviousStation { get; }
+    public string? PreviousStation { get; init; }
 
     /// <summary>
     /// The next station in the timetable.
     /// </summary>
-    public string? NextStation { get; }
+    public string? NextStation { get; init; }
 
     /// <summary>
     ///     The last known consist for this train.
     /// </summary>
-    public string[]? LastConsist { get; }
+    public string[]? LastConsist { get; init; }
 
     /// <summary>
     /// If the train is quality tracked.
@@ -118,7 +118,7 @@ public readonly struct SimplifiedTimetableEntry
     ///     The entity supervising the train at this station, if any.
     /// </summary>
     [JsonIgnore]
-    public string? SupervisedBy { get; }
+    public string? SupervisedBy { get; init; }
 
     internal SimplifiedTimetableEntry(Timetable timetable, int index, string[]? lastConsist = null)
     {
@@ -199,6 +199,12 @@ public readonly struct SimplifiedTimetableEntry
             _c2 = code[1];
             _c3 = code[2];
         }
+
+        /// <summary>
+        /// The 3-character code. (It's what MessagePack saves: the station timetable cache file keeps these, and its
+        /// contractless resolver only sees public members, rebuilding the value with the constructor's "code".)
+        /// </summary>
+        public string Code => ToString();
 
         /// <inheritdoc />
         public override string ToString() => $"{_c1}{_c2}{_c3}";
