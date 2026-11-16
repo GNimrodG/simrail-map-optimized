@@ -12,7 +12,11 @@ public class OsmApiClient : IDisposable
 {
     private const string BaseUrl = "https://overpass-api.de/api/interpreter";
     private readonly Timer _batchTimer;
-    private readonly HttpClient _httpClient = new();
+    // Overpass refuses requests without a User-Agent (406 Not Acceptable)
+    private readonly HttpClient _httpClient = new()
+    {
+        DefaultRequestHeaders = { { "User-Agent", "SMO-Backend (+https://smo.data-unknown.com)" } },
+    };
     private readonly ILogger<OsmApiClient> _logger;
 
     // Cache for pending requests
