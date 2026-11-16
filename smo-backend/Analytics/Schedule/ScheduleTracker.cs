@@ -79,6 +79,14 @@ public sealed class ScheduleTracker
         Func<int, PointGeometry?> geometryOf)
     {
         var state = _trains.GetOrAdd(trainId, _ => new());
+
+        // the positions and the delays (GetTimes) come on different threads
+        lock (state.Sync) Update(state, time, position, speed, timetableIndex, geometryOf);
+    }
+
+    private static void Update(TrainState state, long time, GeoPoint position, double speed, int timetableIndex,
+        Func<int, PointGeometry?> geometryOf)
+    {
         var previous = state.Last;
         state.Last = (time, position);
         var standing = speed < StopSpeed;
@@ -149,9 +157,13 @@ public sealed class ScheduleTracker
         if (!_trains.TryGetValue(trainId, out var state)) return new Dictionary<int, PointTimes>();
 
         var times = new Dictionary<int, PointTimes>();
-        foreach (var (index, visit) in state.Visits)
-            if (visit.Times() is { } t)
-                times[index] = t;
+        lock (state.Sync)
+        {
+            foreach (var (index, visit) in state.Visits)
+                if (visit.Times() is { } t)
+                    times[index] = t;
+        }
+
         return times;
     }
 
@@ -213,6 +225,7 @@ public sealed class ScheduleTracker
 
     private sealed class TrainState
     {
+        public readonly Lock Sync = new();
         public (long Time, GeoPoint Position)? Last;
         public readonly Dictionary<int, PointVisit> Visits = [];
 
