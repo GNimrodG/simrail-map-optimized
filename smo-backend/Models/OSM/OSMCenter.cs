@@ -7,5 +7,5 @@ public class OSMCenter
     public double Lat { get; set; }
     public double Lon { get; set; }
 
-    public Point Location => new Point(Lon, Lat);
+    public Point Location => new(Lon, Lat);
 }

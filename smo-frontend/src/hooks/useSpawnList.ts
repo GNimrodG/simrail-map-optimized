@@ -41,7 +41,7 @@ export default function useSpawnList(enabled = true): SpawnListEntry[] | null {
         })
         .catch((e) => console.error("Failed to load the spawn list", e));
 
-    load();
+    void load(); // it handles its errors
     const interval = setInterval(load, REFRESH_INTERVAL_MS);
 
     return () => {

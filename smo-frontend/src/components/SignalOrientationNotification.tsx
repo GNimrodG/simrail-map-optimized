@@ -14,7 +14,13 @@ import InfoIcon from "./icons/InfoIcon";
 import XMarkIcon from "./icons/xmark-solid.svg?react";
 
 const NOTIFICATION_SEEN_KEY = "signalOrientationNotificationSeen";
-const SIGNAL_LAYERS = ["active-signals", "passive-signals", "distant-signals", "repeater-signals", "shunting-signals"];
+const SIGNAL_LAYERS = new Set([
+  "active-signals",
+  "passive-signals",
+  "distant-signals",
+  "repeater-signals",
+  "shunting-signals",
+]);
 const SIGNAL_ZOOM = 11; // where the passive signals show up
 const AUTO_CLOSE_MS = 60_000;
 
@@ -38,7 +44,7 @@ const SignalOrientationNotification: FunctionComponent = () => {
   // touch screens have no hover: a tap keeps it open until it's closed
   const [tapped, setTapped] = useState(false);
 
-  const seesSignals = zoom >= SIGNAL_ZOOM && visibleLayers.some((layer) => SIGNAL_LAYERS.includes(layer));
+  const seesSignals = zoom >= SIGNAL_ZOOM && visibleLayers.some((layer) => SIGNAL_LAYERS.has(layer));
   if (hasSeenNotification || !rotateSignalIcons || !seesSignals) return null;
 
   const handleDismiss = () => setHasSeenNotification(true);

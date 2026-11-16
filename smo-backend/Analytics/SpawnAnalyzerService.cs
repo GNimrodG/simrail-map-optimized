@@ -175,7 +175,7 @@ public class SpawnAnalyzerService(
                 trainDataService.GetLastConsist(serverCode, timetable.TrainNoLocal), true));
         }
 
-        return list.OrderBy(e => e.ExpectedAt).ToArray();
+        return [.. list.OrderBy(e => e.ExpectedAt)];
     }
 
     /// <summary>
@@ -236,10 +236,9 @@ public class SpawnAnalyzerService(
     {
         try
         {
-            _timetables[data.ServerCode] = data.Data
+            _timetables[data.ServerCode] = [.. data.Data
                 .Where(t => t.TimetableEntries.Length > 0)
-                .Select(CompactTimetable.From)
-                .ToArray();
+                .Select(CompactTimetable.From)];
             _listCache.TryRemove(data.ServerCode, out _);
         }
         catch (Exception e)
@@ -254,13 +253,13 @@ public class SpawnAnalyzerService(
         {
             var now = DateTime.UtcNow;
             var trainIds = data.Data.Select(t => t.Id).ToHashSet();
-            var previous = _knownTrains.GetValueOrDefault(data.ServerCode);
+            var (knownTrainIds, updatedAt) = _knownTrains.GetValueOrDefault(data.ServerCode);
             _knownTrains[data.ServerCode] = (trainIds, now);
 
             // the first data, or after a gap every train looks new
-            if (previous.TrainIds == null || now - previous.UpdatedAt > MaxDataGap) return;
+            if (knownTrainIds == null || now - updatedAt > MaxDataGap) return;
 
-            var newTrains = data.Data.Where(t => !previous.TrainIds.Contains(t.Id)).ToArray();
+            var newTrains = data.Data.Where(t => !knownTrainIds.Contains(t.Id)).ToArray();
 
             // a burst of new trains is a server restart or a data glitch, not spawns
             if (newTrains.Length > Math.Max(10, data.Data.Length / 10))
@@ -400,9 +399,9 @@ public class SpawnAnalyzerService(
                 string.Intern(timetable.LocoType),
                 timetable.TrainLength,
                 timetable.TrainWeight,
-                entries.Select(e => string.Intern(e.NameOfPoint)).ToArray(),
-                entries.Select(e => string.Intern(e.TrainType)).ToArray(),
-                entries.Select(e => ParseTime(e.DepartureTime ?? e.ArrivalTime)).ToArray());
+                [.. entries.Select(e => string.Intern(e.NameOfPoint))],
+                [.. entries.Select(e => string.Intern(e.TrainType))],
+                [.. entries.Select(e => ParseTime(e.DepartureTime ?? e.ArrivalTime))]);
         }
 
         private static DateTime ParseTime(string? time) =>

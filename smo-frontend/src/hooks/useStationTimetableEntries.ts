@@ -148,7 +148,7 @@ const useStationTimetableEntries = (mainStation: string) => {
       }
     };
 
-    fetchTimetableData();
+    void fetchTimetableData(); // it handles its errors
 
     return () => {
       abortController.abort();

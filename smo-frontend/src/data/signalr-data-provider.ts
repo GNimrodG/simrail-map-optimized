@@ -7,6 +7,7 @@ import { LRUCache } from "lru-cache";
 import { BehaviorSubject, debounceTime, distinctUntilChanged, map, Observable, withLatestFrom } from "rxjs";
 
 import UnplayableStations from "../assets/unplayable-stations.json";
+import { isSameItems } from "../utils/arrays";
 import {
   PartialStation,
   PartialTrainData,
@@ -28,6 +29,19 @@ import { IDataProvider } from "./data-provider.interface";
 /** Must match RoutePointAnalyzerService.MaxConnectionsPerRequest on the backend. */
 const MAX_CONNECTIONS_PER_REQUEST = 1000;
 
+function isSameList(a: string[] | null | undefined, b: string[] | null | undefined) {
+  return isSameItems(a ?? [], b ?? []);
+}
+
+/** Whether a partial update changes nothing of a signal */
+function isSameSignalStatus(signal: SignalStatus, update: SignalStatusData) {
+  return (
+    isSameList(signal.Trains, update.Trains) &&
+    isSameList(signal.TrainsAhead, update.TrainsAhead) &&
+    (signal.NextSignalWithTrainAhead ?? null) === (update.NextSignalWithTrainAhead ?? null)
+  );
+}
+
 export class SignalRDataProvider implements IDataProvider {
   private readonly serverApiUrl: string;
   private readonly connection: HubConnection;
@@ -36,10 +50,15 @@ export class SignalRDataProvider implements IDataProvider {
     return readLocalStorageValue({ key: "selectedServer" }) || this.defaultServer;
   }
 
+  /** Sends a message whose answer comes as an event of its own; a failure (e.g. while reconnecting) is only logged */
+  private sendSafely(methodName: string, ...args: unknown[]) {
+    this.connection.send(methodName, ...args).catch((e) => console.warn(`Failed to send ${methodName}`, e));
+  }
+
   private onConnected() {
     this.isConnected$.next(true);
     console.log("Connected to server as", this.connection.connectionId);
-    this.connection.send("SwitchServer", this.getSelectedServer());
+    this.sendSafely("SwitchServer", this.getSelectedServer());
   }
 
   private connectToSignalR() {
@@ -155,36 +174,46 @@ export class SignalRDataProvider implements IDataProvider {
 
       if (!currentStations.length) {
         console.warn("No stations received yet, requesting full list");
-        this.connection.send("GetStations");
+        this.sendSafely("GetStations");
         return;
       }
 
       if (currentStations.length !== partialStations.length) {
         console.debug("Stations count mismatch", currentStations.length, partialStations.length);
-        this.connection.send("GetStations");
+        this.sendSafely("GetStations");
         return;
       }
 
       const partialStationMap = new Map(partialStations.map((station) => [station.Id, station] as const));
 
       const updatedStations = [] as Station[];
+      let changed = false;
 
       for (const station of currentStations) {
         const partialStation = partialStationMap.get(station.Id);
 
         if (!partialStation) {
           console.debug("Station not found in current stations", station.Id);
-          this.connection.send("GetStations");
+          this.sendSafely("GetStations");
           return;
         }
 
+        // unchanged stations keep their object, so their markers don't render again
+        if (isEqual(station.DispatchedBy, partialStation.DispatchedBy)) {
+          updatedStations.push(station);
+          continue;
+        }
+
+        changed = true;
         updatedStations.push({
           ...station,
           ...omit(partialStation, "Id"),
         });
       }
 
-      this.stationsData$.next(updatedStations);
+      if (changed) {
+        this.stationsData$.next(updatedStations);
+      }
     });
 
     this.connection.on("TrainsReceived", (trains: Train[]) => this.trainsData$.next(trains));
@@ -193,7 +222,7 @@ export class SignalRDataProvider implements IDataProvider {
 
       if (!currentTrains.length) {
         console.warn("No trains received yet, requesting full list");
-        this.connection.send("GetTrains");
+        this.sendSafely("GetTrains");
         return;
       }
 
@@ -219,7 +248,7 @@ export class SignalRDataProvider implements IDataProvider {
 
       if (currentTrains.length !== partialTrains.length) {
         console.debug("Train positions count mismatch", currentTrains.length, partialTrains.length);
-        this.connection.send("GetTrains");
+        this.sendSafely("GetTrains");
       }
     });
     this.connection.on(
@@ -276,25 +305,32 @@ export class SignalRDataProvider implements IDataProvider {
 
       if (!currentSignals.length) {
         console.warn("No signals received yet, requesting full list");
-        this.connection.send("GetSignals");
+        this.sendSafely("GetSignals");
         return;
       }
 
       if (currentSignals.length !== partialSignals.length) {
         console.debug("Signals count mismatch", currentSignals.length, partialSignals.length);
-        this.connection.send("GetSignals");
+        this.sendSafely("GetSignals");
         return;
       }
 
+      // a signal keeps its object while it doesn't change: the layers and the memoized markers compare by reference,
+      // and only a few dozen of the thousands of signals change between two updates
+      const partialSignalMap = new Map(partialSignals.map((signal) => [signal.Name, signal] as const));
+      let changed = false;
       const updatedSignals = currentSignals.map((signal) => {
-        const partialSignal = partialSignals.find((s) => s.Name === signal.Name);
-        if (partialSignal) {
-          return { ...signal, ...partialSignal };
+        const partialSignal = partialSignalMap.get(signal.Name);
+        if (!partialSignal || isSameSignalStatus(signal, partialSignal)) {
+          return signal;
         }
-        return signal;
+        changed = true;
+        return { ...signal, ...partialSignal };
       });
 
-      this.signalsData$.next(updatedSignals);
+      if (changed) {
+        this.signalsData$.next(updatedSignals);
+      }
     });
 
     this.connection.on("DelaysReceived", (data: Record<string, Record<number, number>>) => {
@@ -568,13 +604,15 @@ export class SignalRDataProvider implements IDataProvider {
   });
 
   async fetchTimetable(trainNoLocal: string): Promise<Timetable | null> {
-    const cached = this.timetableCache.get(trainNoLocal);
+    // per server: the same train number is another train (and timetable) on another server
+    const cacheKey = `${this.getSelectedServer()}:${trainNoLocal}`;
+    const cached = this.timetableCache.get(cacheKey);
 
     if (cached) {
       return cached;
     }
 
-    const cachedPromise = this.timetablePromiseCache.get(trainNoLocal);
+    const cachedPromise = this.timetablePromiseCache.get(cacheKey);
 
     if (cachedPromise) {
       return cachedPromise;
@@ -585,7 +623,7 @@ export class SignalRDataProvider implements IDataProvider {
         .invoke("GetTimetable", trainNoLocal)
         .then((timetable) => {
           if (timetable) {
-            this.timetableCache.set(trainNoLocal, timetable);
+            this.timetableCache.set(cacheKey, timetable);
             resolve(timetable);
           } else {
             console.warn("Failed to fetch timetable for train", trainNoLocal);
@@ -599,17 +637,18 @@ export class SignalRDataProvider implements IDataProvider {
 
       setTimeout(() => {
         console.warn("Timetable fetch timed out for train", trainNoLocal);
-        if (this.timetablePromiseCache.has(trainNoLocal)) {
+        if (this.timetablePromiseCache.has(cacheKey)) {
           resolve(null);
         }
       }, 30000); // 30 seconds timeout
     });
 
-    promise.finally(() => {
-      this.timetablePromiseCache.delete(trainNoLocal);
+    // (it never rejects)
+    void promise.finally(() => {
+      this.timetablePromiseCache.delete(cacheKey);
     });
 
-    this.timetablePromiseCache.set(trainNoLocal, promise);
+    this.timetablePromiseCache.set(cacheKey, promise);
 
     return promise;
   }
@@ -661,7 +700,7 @@ export class SignalRDataProvider implements IDataProvider {
           console.error(`Failed to delete signal connection ${prevSignal}->${signal}`, data.error);
         }
 
-        this.connection.send("GetSignals");
+        this.sendSafely("GetSignals");
       })
       .catch((e) => {
         console.error(`Failed to delete signal connection ${prevSignal}->${signal}`, e);
@@ -700,7 +739,7 @@ export class SignalRDataProvider implements IDataProvider {
           console.error(`Failed to delete signal connection ${signal}->${nextSignal}`, data.error);
         }
 
-        this.connection.send("GetSignals");
+        this.sendSafely("GetSignals");
       })
       .catch((e) => {
         console.error(`Failed to delete signal connection ${signal}->${nextSignal}`, e);
@@ -734,7 +773,7 @@ export class SignalRDataProvider implements IDataProvider {
           console.error(`Failed to mark signal ${signal} next finalized`, data.error);
         }
 
-        this.connection.send("GetSignals");
+        this.sendSafely("GetSignals");
       })
       .catch((e) => {
         console.error(`Failed to mark signal ${signal} next finalized`, e);
@@ -768,7 +807,7 @@ export class SignalRDataProvider implements IDataProvider {
           console.error(`Failed to mark signal ${signal} prev finalized`, data.error);
         }
 
-        this.connection.send("GetSignals");
+        this.sendSafely("GetSignals");
       })
       .catch((e) => {
         console.error(`Failed to mark signal ${signal} prev finalized`, e);
@@ -792,7 +831,7 @@ export class SignalRDataProvider implements IDataProvider {
           console.error(`Failed to delete signal ${signal}`, data.error);
         }
 
-        this.connection.send("GetSignals");
+        this.sendSafely("GetSignals");
       })
       .catch((e) => {
         console.error(`Failed to delete signal ${signal}`, e);
@@ -888,11 +927,6 @@ export class SignalRDataProvider implements IDataProvider {
         `${this.serverApiUrl}/status/${encodeURIComponent(selectedServer)}/stations/timetables?${query}`,
       );
 
-      // TODO: remove the fallback once every backend has the batch endpoint
-      if (res.status === 404 || res.status === 405) {
-        return Promise.all(stationNames.map((name) => this.getStationTimetable(selectedServer, name)));
-      }
-
       if (!res.ok) {
         console.error(`Failed to fetch timetables for stations ${stationNames.join(", ")}`, res.statusText);
         return stationNames.map(() => null);
@@ -904,32 +938,6 @@ export class SignalRDataProvider implements IDataProvider {
     } catch (e) {
       console.error(`Failed to get timetables for stations ${stationNames.join(", ")}`, e);
       return stationNames.map(() => null);
-    }
-  }
-
-  private async getStationTimetable(
-    selectedServer: string,
-    stationName: string,
-  ): Promise<SimplifiedTimtableEntry[] | null> {
-    try {
-      const res = await fetch(
-        `${this.serverApiUrl}/status/${encodeURIComponent(selectedServer)}/stations/${encodeURIComponent(stationName)}/timetable`,
-      );
-
-      if (res.status === 404) {
-        console.warn(`Station ${stationName} not found on server ${selectedServer}`);
-        return null;
-      }
-
-      if (!res.ok) {
-        console.error(`Failed to fetch timetable for station ${stationName}`, res.statusText);
-        return null;
-      }
-
-      return res.json() as Promise<SimplifiedTimtableEntry[] | null>;
-    } catch (e) {
-      console.error(`Failed to get timetable for station ${stationName}`, e);
-      return null;
     }
   }
 }

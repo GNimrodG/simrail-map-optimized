@@ -127,7 +127,12 @@ public partial class RoutePointAnalyzerService : IHostedService
     /// <summary>
     ///     Cancellation token source for coordinating service shutdown.
     /// </summary>
-    private CancellationTokenSource _cancellationTokenSource;
+    private readonly CancellationTokenSource _cancellationTokenSource;
+
+    /// <summary>
+    ///     Its token, kept apart: background work may still read it after StopAsync disposed the source.
+    /// </summary>
+    private readonly CancellationToken _stoppingToken;
 
     /// <summary>
     ///     Background task for cleaning old route lines.
@@ -152,6 +157,7 @@ public partial class RoutePointAnalyzerService : IHostedService
         _trainDataService = trainDataService;
         _signalAnalyzerService = signalAnalyzerService;
         _cancellationTokenSource = new();
+        _stoppingToken = _cancellationTokenSource.Token;
         _queueProcessor = new(logger,
             ProcessTrainData,
             RoutePointQueueGauge);
@@ -174,19 +180,17 @@ public partial class RoutePointAnalyzerService : IHostedService
         var allowedServersEnv = StdUtils.GetEnvVar("ROUTE_POINT_ANALYZER_ALLOWED_SERVERS", "");
         if (!string.IsNullOrEmpty(allowedServersEnv))
         {
-            _allowedServers = new(allowedServersEnv.Split(',').Select(s => s.Trim()));
+            _allowedServers = [..allowedServersEnv.Split(',').Select(s => s.Trim())];
             _logger.LogInformation("Allowed servers for route point analyzer: {AllowedServers}",
                 string.Join(", ", _allowedServers));
         }
-
-        _cancellationTokenSource = new();
 
         _trainDataService.DataReceived += OnTrainDataReceived;
         _signalAnalyzerService.SignalChanged += OnSignalChanged;
 
         // Start tasks for periodic cleanup
-        _cleanRouteLinesTask = Task.Run(() => CleanRouteLines(_cancellationTokenSource.Token), cancellationToken);
-        _cleanOldLines = Task.Run(() => CleanOldLines(_cancellationTokenSource.Token), cancellationToken);
+        _cleanRouteLinesTask = Task.Run(() => CleanRouteLines(_stoppingToken), cancellationToken);
+        _cleanOldLines = Task.Run(() => CleanOldLines(_stoppingToken), cancellationToken);
         _signalLineGeneratorTask = new(GenerateSignalLines, TimeSpan.FromHours(1));
 
         // Run on startup
@@ -212,6 +216,7 @@ public partial class RoutePointAnalyzerService : IHostedService
 
         // Wait for tasks to complete
         await Task.WhenAll(_cleanRouteLinesTask!, _cleanOldLines!);
+        _cancellationTokenSource.Dispose();
 
         _logger.LogInformation("Stopped route point analyzer service");
     }
@@ -220,7 +225,9 @@ public partial class RoutePointAnalyzerService : IHostedService
     ///     Runs every hour and generates signal lines by merging route lines between unique signal pairs and storing them in
     ///     the database.
     /// </summary>
-    private async void GenerateSignalLines()
+    private void GenerateSignalLines() => _ = GenerateSignalLinesAsync(); // it handles its errors
+
+    private async Task GenerateSignalLinesAsync()
     {
         try
         {
@@ -402,11 +409,10 @@ public partial class RoutePointAnalyzerService : IHostedService
             if (activeTrainKeys.Count == 0)
             {
                 await _trainDataService.FirstDataReceived.WaitAsync(cancellationToken);
-                var activeTrains = _trainDataService.Data ?? new Dictionary<string, Train[]>();
-                activeTrainKeys = activeTrains.Values
+                var activeTrains = _trainDataService.Data ?? [];
+                activeTrainKeys = [.. activeTrains.Values
                     .SelectMany(trains => trains)
-                    .Select(train => train.RunId)
-                    .ToHashSet();
+                    .Select(train => train.RunId)];
 
                 // Update cache
                 foreach (var runId in activeTrainKeys) _activeTrainCache.TryAdd(runId, now);
@@ -958,7 +964,7 @@ public partial class RoutePointAnalyzerService : IHostedService
                                """;
 
             var geoJson = (await context.Database.SqlQueryRaw<string?>(sql)
-                    .ToArrayAsync(_cancellationTokenSource.Token))
+                    .ToArrayAsync(_stoppingToken))
                 .FirstOrDefault();
 
             stopwatch.Stop();
@@ -968,7 +974,7 @@ public partial class RoutePointAnalyzerService : IHostedService
             // null (no route points yet) isn't cached, the next request tries again
             return geoJson;
         }
-        catch (OperationCanceledException) when (_cancellationTokenSource.IsCancellationRequested)
+        catch (OperationCanceledException) when (_stoppingToken.IsCancellationRequested)
         {
             return null; // the service is stopping
         }
@@ -1046,15 +1052,15 @@ public partial class RoutePointAnalyzerService : IHostedService
 
         // 1. Orient all lines in the same direction
         var refLine = lines.OrderByDescending(l => l.Length).First();
-        var refVec = (
-            dx: refLine.EndPoint.X - refLine.StartPoint.X,
-            dy: refLine.EndPoint.Y - refLine.StartPoint.Y
+        var (dx, dy) = (
+            refLine.EndPoint.X - refLine.StartPoint.X,
+            refLine.EndPoint.Y - refLine.StartPoint.Y
         );
 
         var oriented = lines.Select(line =>
         {
             var vec = (dx: line.EndPoint.X - line.StartPoint.X, dy: line.EndPoint.Y - line.StartPoint.Y);
-            return refVec.dx * vec.dx + refVec.dy * vec.dy < 0
+            return dx * vec.dx + dy * vec.dy < 0
                 ? (LineString)line.Reverse()
                 : line;
         }).ToList();
@@ -1256,7 +1262,7 @@ public partial class RoutePointAnalyzerService : IHostedService
 
         var results = await context.Database
             // ReSharper disable once CoVariantArrayConversion
-            .SqlQueryRaw<string>(sql, allParams.ToArray())
+            .SqlQueryRaw<string>(sql, [.. allParams])
             .ToArrayAsync();
 
         return results;

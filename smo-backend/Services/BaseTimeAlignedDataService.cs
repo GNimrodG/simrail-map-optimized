@@ -1,4 +1,5 @@
-﻿using SMOBackend.Services.ApiClients;
+﻿using System.Diagnostics;
+using SMOBackend.Services.ApiClients;
 
 namespace SMOBackend.Services;
 
@@ -46,11 +47,11 @@ public abstract class BaseTimeAlignedDataService<T>(
     {
         try
         {
-            var start = DateTime.Now;
+            var stopwatch = Stopwatch.StartNew();
 
             var data = await FetchData(stoppingToken);
 
-            var elapsed = (int)(DateTime.Now - start).TotalMilliseconds;
+            var elapsed = (int)stopwatch.ElapsedMilliseconds;
 
             logger.LogInformation("{ServiceId} fetched in {Elapsed}ms", ServiceId, elapsed);
 

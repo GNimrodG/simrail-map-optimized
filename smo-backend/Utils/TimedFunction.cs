@@ -3,7 +3,7 @@
 /// <summary>
 /// A utility class that runs a specified action at regular intervals on a separate thread.
 /// </summary>
-public class TimedFunction : IDisposable
+public sealed class TimedFunction : IDisposable
 {
     private Thread _thread;
 
@@ -70,8 +70,5 @@ public class TimedFunction : IDisposable
         _thread.Interrupt();
         _thread.Join();
         _thread = null!;
-        GC.SuppressFinalize(this);
     }
-
-    ~TimedFunction() => Dispose();
 }

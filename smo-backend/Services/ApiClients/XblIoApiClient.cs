@@ -117,8 +117,8 @@ public class XblIoApiClient
         if (data?.Users is not { Count: 1 })
             return null;
 
-        var gamertag = data.Users.First().GetSetting("Gamertag");
-        var profilePic = data.Users.First().GetSetting("GameDisplayPicRaw");
+        var gamertag = data.Users[0].GetSetting("Gamertag");
+        var profilePic = data.Users[0].GetSetting("GameDisplayPicRaw");
 
         if (string.IsNullOrEmpty(gamertag)) return null;
 
@@ -135,24 +135,24 @@ public class XblIoApiClient
     }
 
 
-    private class AccountResponse
+    private sealed class AccountResponse
     {
-        [JsonProperty("profileUsers")] public List<ProfileUser> Users { get; set; }
+        [JsonProperty("profileUsers")] public List<ProfileUser> Users { get; set; } = [];
     }
 
-    private class ProfileUser
+    private sealed class ProfileUser
     {
-        [JsonProperty("id")] public string Id { get; set; }
-        [JsonProperty("hostId")] public string HostId { get; set; }
+        [JsonProperty("id")] public string Id { get; set; } = "";
+        [JsonProperty("hostId")] public string HostId { get; set; } = "";
 
-        [JsonProperty("settings")] public List<ProfileSetting> Settings { get; set; }
+        [JsonProperty("settings")] public List<ProfileSetting> Settings { get; set; } = [];
 
         public string? GetSetting(string setting) => Settings.Find(x => x.Id == setting)?.Value;
     }
 
-    private class ProfileSetting
+    private sealed class ProfileSetting
     {
-        [JsonProperty("id")] public string Id { get; set; }
-        [JsonProperty("value")] public string Value { get; set; }
+        [JsonProperty("id")] public string Id { get; set; } = "";
+        [JsonProperty("value")] public string Value { get; set; } = "";
     }
 }

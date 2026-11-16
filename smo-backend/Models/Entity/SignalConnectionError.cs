@@ -25,13 +25,13 @@ public class SignalConnectionError : BaseEntity
         UpdatedAt = DateTime.UtcNow;
     }
 
-    [MaxLength(StdUtils.SignalNameLength)] public string Prev { get; set; }
+    [MaxLength(StdUtils.SignalNameLength)] public string Prev { get; set; } = null!;
 
-    [MaxLength(StdUtils.SignalNameLength)] public string Next { get; set; }
+    [MaxLength(StdUtils.SignalNameLength)] public string Next { get; set; } = null!;
 
     public short VMAX { get; set; }
 
-    [MaxLength(500)] public string Error { get; set; }
+    [MaxLength(500)] public string Error { get; set; } = null!;
 
     [DefaultValue(false)] public bool Checked { get; set; } = false;
 

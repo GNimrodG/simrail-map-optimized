@@ -220,10 +220,13 @@ public class ServerRestartAnalyzerService(
                                 ? known
                                 : [];
 
-                            _serverRestartTimes[serverStatus.ServerCode] = restarts
-                                .Where(r => restartTime - r.RestartTime <= MaxHistoryAge)
-                                .Append(restartData)
-                                .ToArray();
+                            _serverRestartTimes[serverStatus.ServerCode] =
+                            [
+                                .. restarts
+                                                                .Where(r => restartTime - r.RestartTime <= MaxHistoryAge)
+,
+                                restartData,
+                            ];
 
                             logger.LogInformation(
                                 "Server {ServerCode} restarted at {RestartTime} after shutdown at {ShutdownTime:o}",
@@ -366,8 +369,10 @@ public class ServerRestartAnalyzerService(
             var backgroundRate = unscheduledRestarts
                 .Count(r => unscheduledRate[(int)r.Weekday, r.Hour] < MinSlotConfidence) / (double)observedHours;
             for (var weekday = 0; weekday < 7; weekday++)
-            for (var hour = 0; hour < 24; hour++)
-                unscheduledRate[weekday, hour] = Math.Max(unscheduledRate[weekday, hour], backgroundRate);
+            {
+                for (var hour = 0; hour < 24; hour++)
+                    unscheduledRate[weekday, hour] = Math.Max(unscheduledRate[weekday, hour], backgroundRate);
+            }
         }
 
         AdaptToScheduleChanges(schedule, localRestarts, observedDays, today, nowUtc);
@@ -518,7 +523,7 @@ public class ServerRestartAnalyzerService(
     public ServerRestartPrediction[] GetNextRestartPredictions()
     {
         var serverCodes = serverDataService.Data?.Select(x => x.ServerCode).Distinct().ToArray() ?? [];
-        return serverCodes.Select(GetNextRestartPrediction).ToArray();
+        return [.. serverCodes.Select(GetNextRestartPrediction)];
     }
 
     /// <summary>
@@ -544,28 +549,22 @@ public class ServerRestartAnalyzerService(
     /// <summary>
     ///     Represents data about a server restart, including the shutdown time and restart time.
     /// </summary>
-    public readonly struct ServerRestartData
+    /// <remarks>
+    ///     Initializes a new instance of the <see cref="ServerRestartData" /> struct.
+    /// </remarks>
+    /// <param name="shutdownTime">The time when the server was shut down.</param>
+    /// <param name="restartTime">The time when the server was restarted.</param>
+    public readonly struct ServerRestartData(DateTime? shutdownTime, DateTime restartTime)
     {
         /// <summary>
         ///     Gets the time when the server was shut down, or null if it was never shut down.
         /// </summary>
-        public DateTime? ShutdownTime { get; }
+        public DateTime? ShutdownTime { get; } = shutdownTime;
 
         /// <summary>
         ///     Gets the time when the server was restarted.
         /// </summary>
-        public DateTime RestartTime { get; }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="ServerRestartData" /> struct.
-        /// </summary>
-        /// <param name="shutdownTime">The time when the server was shut down.</param>
-        /// <param name="restartTime">The time when the server was restarted.</param>
-        public ServerRestartData(DateTime? shutdownTime, DateTime restartTime)
-        {
-            ShutdownTime = shutdownTime;
-            RestartTime = restartTime;
-        }
+        public DateTime RestartTime { get; } = restartTime;
 
         /// <summary>
         ///     Calculates the duration between shutdown and restart.

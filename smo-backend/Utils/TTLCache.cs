@@ -10,7 +10,7 @@ namespace SMOBackend.Utils;
 /// <summary>
 /// A simple in-memory cache with a time-to-live (TTL) for each entry.
 /// </summary>
-public class TtlCache<TKey, TValue> : IDisposable
+public sealed class TtlCache<TKey, TValue> : IDisposable
     where TKey : notnull
 {
     private const int CleanupIntervalMs = 1000;
@@ -53,7 +53,7 @@ public class TtlCache<TKey, TValue> : IDisposable
         {
             lock (_orderLock)
             {
-                return _insertionOrder.Where(key => _cache.TryGetValue(key, out _)).ToList();
+                return [.. _insertionOrder.Where(key => _cache.TryGetValue(key, out _))];
             }
         }
     }
@@ -159,16 +159,6 @@ public class TtlCache<TKey, TValue> : IDisposable
         CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
     }
 
-    /// <summary>
-    ///     Cleans up expired entries from the cache's insertion order queue.
-    ///     This should be called periodically to prevent memory leaks from expired entries.
-    /// </summary>
-    private void CleanupExpiredEntries()
-    {
-        lock (_orderLock)
-            CleanupExpiredEntriesUnderLock();
-    }
-
     private void CleanupExpiredEntriesUnderLock()
     {
         // Clean up the insertion order queue by removing keys that are no longer in cache
@@ -210,7 +200,7 @@ public class TtlCache<TKey, TValue> : IDisposable
         }
     }
 
-    private void _add(TKey key, TValue value)
+    private void AddEntry(TKey key, TValue value)
     {
         // Track insertion order only if this is a new key
         if (!_cache.TryGetValue(key, out _))
@@ -233,7 +223,7 @@ public class TtlCache<TKey, TValue> : IDisposable
     /// <inheritdoc cref="Dictionary{TKey,TValue}.Add"/>
     public void Add(TKey key, TValue value)
     {
-        _add(key, value);
+        AddEntry(key, value);
         CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
         KeyAdded?.Invoke(this, key);
     }
@@ -251,7 +241,7 @@ public class TtlCache<TKey, TValue> : IDisposable
             // Check if the cached value is of the expected type
             if (cachedValue is not TValue result)
             {
-                value = default!;
+                value = default;
                 return false;
             }
 
@@ -260,7 +250,7 @@ public class TtlCache<TKey, TValue> : IDisposable
             return true;
         }
 
-        value = default!;
+        value = default;
         return false;
     }
 
@@ -290,7 +280,7 @@ public class TtlCache<TKey, TValue> : IDisposable
     {
         CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
 
-        if (TryGetValue(key, out var value) && value != null)
+        if (TryGetValue(key, out var value) && value is not null)
             return value;
 
         value = valueFactory();
@@ -303,12 +293,7 @@ public class TtlCache<TKey, TValue> : IDisposable
     /// <summary>
     /// Sets the value for the specified key, adding it if it doesn't exist.
     /// </summary>
-    public void Set(TKey key, TValue value)
-    {
-        _add(key, value);
-        CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
-        KeyAdded?.Invoke(this, key);
-    }
+    public void Set(TKey key, TValue value) => Add(key, value);
 
     /// <summary>
     /// Removes the specified key from the cache.
@@ -416,7 +401,7 @@ public class TtlCache<TKey, TValue> : IDisposable
 
         Clear();
 
-        foreach (var kvp in value) _add(kvp.Key, kvp.Value);
+        foreach (var kvp in value) AddEntry(kvp.Key, kvp.Value);
 
         CacheSizeGauge.WithLabels(_instanceName).Set(_cache.Count);
     }

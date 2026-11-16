@@ -51,8 +51,8 @@ public class Station
 
     public class PartialStation
     {
-        public string Id { get; set; }
-        public StationDispatcher[] DispatchedBy { get; set; }
+        public string Id { get; set; } = "";
+        public StationDispatcher[] DispatchedBy { get; set; } = [];
 
         public PartialStation()
         {

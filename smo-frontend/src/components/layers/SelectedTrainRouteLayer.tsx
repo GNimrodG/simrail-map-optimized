@@ -16,17 +16,20 @@ const SelectedTrainRouteLayer: FunctionComponent = () => {
   useEffect(() => {
     const fetchRoute = () => {
       if (selectedRoute) {
-        dataProvider.fetchRoutePoints(selectedRoute).then((points) => {
-          const lines = points?.map((x) => parse(x) as GeoJSON.LineString) || [];
+        dataProvider
+          .fetchRoutePoints(selectedRoute)
+          .then((points) => {
+            const lines = points?.map((x) => parse(x) as GeoJSON.LineString) || [];
 
-          lines.forEach((line) => {
-            line.coordinates = line.coordinates.map((coord) => coord.reverse()) as [number, number][];
-          });
+            lines.forEach((line) => {
+              line.coordinates = line.coordinates.map((coord) => coord.reverse()) as [number, number][];
+            });
 
-          setRouteLines(lines);
+            setRouteLines(lines);
 
-          if (!points?.length) setSelectedRoute(null);
-        });
+            if (!points?.length) setSelectedRoute(null);
+          })
+          .catch((e) => console.error(`Failed to load the route of ${selectedRoute}`, e));
       } else {
         setRouteLines([]);
       }
@@ -50,7 +53,7 @@ const SelectedTrainRouteLayer: FunctionComponent = () => {
     <LayerGroup pane="selectedRoutePane">
       {routeLines.map((x) => (
         <Polyline
-          key={`selected-train-route-${x.coordinates[0][0]}-${x.coordinates[0][1]}-${x.coordinates[x.coordinates.length - 1][0]}-${x.coordinates[x.coordinates.length - 1][1]}`}
+          key={`selected-train-route-${x.coordinates[0][0]}-${x.coordinates[0][1]}-${x.coordinates.at(-1)?.[0]}-${x.coordinates.at(-1)?.[1]}`}
           positions={x.coordinates as [number, number][]}
           color="#00FFFF"
           weight={3}

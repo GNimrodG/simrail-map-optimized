@@ -32,6 +32,7 @@ const StationTimetableModal: FunctionComponent<StationTimetableModalProps> = ({
   startCollapsed = false,
 }) => {
   const { t } = useTranslation("translation", { keyPrefix: "StationMarkerPopup" });
+  const { t: tCommon } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [collapsedHeight, setCollapsedHeight] = useState(350);
   const isDraggingRef = useRef(false);
@@ -153,6 +154,7 @@ const StationTimetableModal: FunctionComponent<StationTimetableModalProps> = ({
         <IconButton
           size="sm"
           onClick={() => setIsCollapsed((prev) => !prev)}
+          aria-label={tCommon(isCollapsed ? "A11y.Expand" : "A11y.Collapse")}
           sx={{
             position: "absolute",
             top: (theme) => theme.spacing(3),

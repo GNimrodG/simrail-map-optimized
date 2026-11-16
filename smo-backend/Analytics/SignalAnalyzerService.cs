@@ -333,7 +333,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             .SqlQueryRaw<OptimizedSignalStatusProjection>(sql)
             .ToListAsync();
 
-        return results.Select(r => new SignalStatus
+        return [.. results.Select(r => new SignalStatus
         {
             Name = r.Name,
             Extra = r.Extra,
@@ -356,7 +356,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                 .DistinctBy(x => x.Name)
                 .OrderBy(x => x.Name)
                 .ToArray() ?? []
-        }).ToArray();
+        })];
     }
 
     private static SignalStatus[] CloneSignals(SignalStatus[] source)
@@ -422,158 +422,147 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
     {
         ArgumentNullException.ThrowIfNull(trains);
 
-        try
+        // Skip if no trains are found
+        if (trains.Length == 0)
         {
-            // Skip if no trains are found
-            if (trains.Length == 0)
-            {
-                _logger.LogWarning("No trains found, skipping signal analysis...");
-                return await GetSignals();
-            }
-
-            var invalidTrainGroups = trains
-                .Where(train => !string.IsNullOrEmpty(train.TrainData.SignalInFront))
-                .GroupBy(t => t.TrainData.SignalInFront).Where(x => x.Count() > 1)
-                .Select(x => x.ToArray())
-                .ToArray();
-
-            // clear smo_signals_with_multiple_trains for this server
-            foreach (var labelValue in SignalsWithMultipleTrains.GetAllLabelValues())
-            {
-                if (labelValue[0] == trains[0].ServerCode)
-                    SignalsWithMultipleTrains.RemoveLabelled(labelValue[0], labelValue[1]);
-            }
-
-            SignalsWithMultipleTrainsPerServer.WithLabels(trains[0].ServerCode).Set(invalidTrainGroups.Length);
-
-            if (invalidTrainGroups.Length != 0)
-            {
-                // this can happen at the last block signal which can be passed on red with 20km/h or with subsidiary signals
-                foreach (var trainGroup in invalidTrainGroups)
-                {
-                    _logger.LogWarning("{Signal}@{Server} has multiple trains pointing to it: {Trains}",
-                        trainGroup[0].TrainData.GetSignal(),
-                        trainGroup[0].ServerCode,
-                        string.Join(", ", trainGroup.Select(t => t.GetTrainId())));
-
-                    SignalsWithMultipleTrains.WithLabels(trainGroup[0].ServerCode, trainGroup[0].TrainData.GetSignal()!)
-                        .Set(trainGroup.Length);
-                }
-            }
-
-            // Create a dictionary of trains by signal name for quick lookup
-            var signalsIndex = trains
-                .Where(train => !string.IsNullOrEmpty(train.TrainData.SignalInFront))
-                .GroupBy(train => train.TrainData.GetSignal()!)
-                .ToDictionary(g => g.Key, g => g.OrderBy(x => x.TrainData.DistanceToSignalInFront).ToArray());
-
-            var passedSignalIndex = trains
-                .Where(train => _trainPassedSignalCache.ContainsKey(train.GetTrainId()))
-                .Select(train => new
-                {
-                    data = _trainPassedSignalCache.TryGetValue(train.GetTrainId(), out var value) ? value : null,
-                    train
-                })
-                .Where(x => x.data != null)
-                .GroupBy(train => train.data!)
-                .ToDictionary(g => g.Key, g => g.Select(x => x.train).ToArray());
-
-            // SimRail sometimes lists the same train twice, ToDictionary would throw and fail the whole run
-            var trainsById = new Dictionary<string, Train>(trains.Length);
-            foreach (var train in trains)
-                trainsById.TryAdd(train.GetTrainId(), train);
-
-            var signals = await GetSignals();
-            var signalLookup = signals.ToDictionary(s => s.Name);
-
-            // Process each signal in this batch
-            foreach (var signal in signals)
-            {
-                var train = signalsIndex.GetValueOrDefault(signal.Name);
-                signal.Trains = train?.Select(t => t.TrainNoLocal).ToArray();
-
-                // A signal a train just passed shows stop for a short time (TTL of the red-after-pass cache)
-                var hasTrainAhead = false;
-
-                if (_signalRedAfterPassCache.TryGetValue(signal.Name, out var pass) &&
-                    DateTime.UtcNow - pass.LeftAt < _signalRedAfterPassDuration &&
-                    trainsById.TryGetValue(pass.TrainId, out var causingTrain))
-                {
-                    signal.TrainsAhead = [causingTrain.TrainNoLocal];
-                    hasTrainAhead = true;
-                }
-
-                // Get the train at the next signal ahead (if the signal only has one next signal)
-                if (!HasSingleNextSignal(signal))
-                {
-                    // if it has more than one next signal, but it's finalized and all the next signals have a train
-                    if (!hasTrainAhead && signal is { Type: "main", NextFinalized: true } &&
-                        signal.NextSignals.All(s => signalsIndex.ContainsKey(s.Name)))
-                    {
-                        signal.TrainsAhead = signal.NextSignals.Select(s => signalsIndex[s.Name])
-                            .SelectMany(x => x.Select(y => y.TrainNoLocal))
-                            .ToArray();
-                    }
-
-                    continue;
-                }
-
-                var nextSignalName = signal.NextSignals[0].Name;
-
-                if (!hasTrainAhead)
-                {
-                    signal.TrainsAhead = signalsIndex
-                        .GetValueOrDefault(nextSignalName)?.Select(t => t.TrainNoLocal)
-                        .ToArray();
-
-                    var blockingConnections = signal.GetBlockingConnections()
-                        .Where(c =>
-                        {
-                            var nextTrains = signalsIndex.GetValueOrDefault(c.Next) ?? [];
-                            var hasTrainAtNext = nextTrains.Length > 0;
-
-                            var isSameTrainComingFromPrev =
-                                passedSignalIndex.TryGetValue(c.Prev, out var prevTrains) &&
-                                prevTrains.Length > 0 &&
-                                prevTrains.All(t => nextTrains.Contains(t));
-
-                            return hasTrainAtNext && isSameTrainComingFromPrev;
-                        })
-                        .SelectMany(c => signalsIndex.GetValueOrDefault(c.Next)?.Select(t => t.TrainNoLocal) ?? [])
-                        .ToArray();
-
-                    if (blockingConnections.Length > 0)
-                    {
-                        signal.TrainsAhead ??= [];
-
-                        signal.TrainsAhead = signal.TrainsAhead
-                            .Concat(blockingConnections)
-                            .Distinct()
-                            .ToArray();
-                    }
-                }
-            }
-
-            // Second pass, once every signal's stop state is known:
-            // a signal shows caution when its (only) next signal shows stop, whatever the reason for it
-            foreach (var signal in signals)
-            {
-                if (!HasSingleNextSignal(signal)) continue;
-
-                var nextSignalName = signal.NextSignals[0].Name;
-
-                if (signalLookup.TryGetValue(nextSignalName, out var nextSignal) &&
-                    nextSignal.TrainsAhead is { Length: > 0 })
-                    signal.NextSignalWithTrainAhead = nextSignalName;
-            }
-
-            return signals;
+            _logger.LogWarning("No trains found, skipping signal analysis...");
+            return await GetSignals();
         }
-        catch (Exception ex)
+
+        var invalidTrainGroups = trains
+            .Where(train => !string.IsNullOrEmpty(train.TrainData.SignalInFront))
+            .GroupBy(t => t.TrainData.SignalInFront).Where(x => x.Count() > 1)
+            .Select(x => x.ToArray())
+            .ToArray();
+
+        // clear smo_signals_with_multiple_trains for this server
+        foreach (var labelValue in SignalsWithMultipleTrains.GetAllLabelValues())
         {
-            _logger.LogError(ex, "Error getting signals for trains");
-            throw;
+            if (labelValue[0] == trains[0].ServerCode)
+                SignalsWithMultipleTrains.RemoveLabelled(labelValue[0], labelValue[1]);
         }
+
+        SignalsWithMultipleTrainsPerServer.WithLabels(trains[0].ServerCode).Set(invalidTrainGroups.Length);
+
+        if (invalidTrainGroups.Length != 0)
+        {
+            // this can happen at the last block signal which can be passed on red with 20km/h or with subsidiary signals
+            foreach (var trainGroup in invalidTrainGroups)
+            {
+                _logger.LogWarning("{Signal}@{Server} has multiple trains pointing to it: {Trains}",
+                    trainGroup[0].TrainData.GetSignal(),
+                    trainGroup[0].ServerCode,
+                    string.Join(", ", trainGroup.Select(t => t.GetTrainId())));
+
+                SignalsWithMultipleTrains.WithLabels(trainGroup[0].ServerCode, trainGroup[0].TrainData.GetSignal()!)
+                    .Set(trainGroup.Length);
+            }
+        }
+
+        // Create a dictionary of trains by signal name for quick lookup
+        var signalsIndex = trains
+            .Where(train => !string.IsNullOrEmpty(train.TrainData.SignalInFront))
+            .GroupBy(train => train.TrainData.GetSignal()!)
+            .ToDictionary(g => g.Key, g => g.OrderBy(x => x.TrainData.DistanceToSignalInFront).ToArray());
+
+        var passedSignalIndex = trains
+            .Where(train => _trainPassedSignalCache.ContainsKey(train.GetTrainId()))
+            .Select(train => new
+            {
+                data = _trainPassedSignalCache.TryGetValue(train.GetTrainId(), out var value) ? value : null,
+                train
+            })
+            .Where(x => x.data != null)
+            .GroupBy(train => train.data!)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.train).ToArray());
+
+        // SimRail sometimes lists the same train twice, ToDictionary would throw and fail the whole run
+        var trainsById = new Dictionary<string, Train>(trains.Length);
+        foreach (var train in trains)
+            trainsById.TryAdd(train.GetTrainId(), train);
+
+        var signals = await GetSignals();
+        var signalLookup = signals.ToDictionary(s => s.Name);
+
+        // Process each signal in this batch
+        foreach (var signal in signals)
+        {
+            var train = signalsIndex.GetValueOrDefault(signal.Name);
+            signal.Trains = train?.Select(t => t.TrainNoLocal).ToArray();
+
+            // A signal a train just passed shows stop for a short time (TTL of the red-after-pass cache)
+            var hasTrainAhead = false;
+
+            if (_signalRedAfterPassCache.TryGetValue(signal.Name, out var pass) &&
+                DateTime.UtcNow - pass.LeftAt < _signalRedAfterPassDuration &&
+                trainsById.TryGetValue(pass.TrainId, out var causingTrain))
+            {
+                signal.TrainsAhead = [causingTrain.TrainNoLocal];
+                hasTrainAhead = true;
+            }
+
+            // Get the train at the next signal ahead (if the signal only has one next signal)
+            if (!HasSingleNextSignal(signal))
+            {
+                // if it has more than one next signal, but it's finalized and all the next signals have a train
+                if (!hasTrainAhead && signal is { Type: "main", NextFinalized: true } &&
+                    signal.NextSignals.All(s => signalsIndex.ContainsKey(s.Name)))
+                {
+                    signal.TrainsAhead = [.. signal.NextSignals.Select(s => signalsIndex[s.Name]).SelectMany(x => x.Select(y => y.TrainNoLocal))];
+                }
+
+                continue;
+            }
+
+            var nextSignalName = signal.NextSignals[0].Name;
+
+            if (!hasTrainAhead)
+            {
+                signal.TrainsAhead = signalsIndex
+                    .GetValueOrDefault(nextSignalName)?.Select(t => t.TrainNoLocal)
+                    .ToArray();
+
+                var blockingConnections = signal.GetBlockingConnections()
+                    .Where(c =>
+                    {
+                        var nextTrains = signalsIndex.GetValueOrDefault(c.Next) ?? [];
+                        var hasTrainAtNext = nextTrains.Length > 0;
+
+                        var isSameTrainComingFromPrev =
+                            passedSignalIndex.TryGetValue(c.Prev, out var prevTrains) &&
+                            prevTrains.Length > 0 &&
+                            prevTrains.All(t => nextTrains.Contains(t));
+
+                        return hasTrainAtNext && isSameTrainComingFromPrev;
+                    })
+                    .SelectMany(c => signalsIndex.GetValueOrDefault(c.Next)?.Select(t => t.TrainNoLocal) ?? [])
+                    .ToArray();
+
+                if (blockingConnections.Length > 0)
+                {
+                    signal.TrainsAhead ??= [];
+
+                    signal.TrainsAhead = [.. signal.TrainsAhead
+                        .Concat(blockingConnections)
+                        .Distinct()];
+                }
+            }
+        }
+
+        // Second pass, once every signal's stop state is known:
+        // a signal shows caution when its (only) next signal shows stop, whatever the reason for it
+        foreach (var signal in signals)
+        {
+            if (!HasSingleNextSignal(signal)) continue;
+
+            var nextSignalName = signal.NextSignals[0].Name;
+
+            if (signalLookup.TryGetValue(nextSignalName, out var nextSignal) &&
+                nextSignal.TrainsAhead is { Length: > 0 })
+                signal.NextSignalWithTrainAhead = nextSignalName;
+        }
+
+        return signals;
     }
 
     private async Task UpdateSignals(CancellationToken cancellationToken)
@@ -631,7 +620,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         string[] relevantSignalNames, SmoContext context)
     {
         if (relevantSignalNames.Length == 0)
-            return new();
+            return [];
 
         const string sql = """
                            SELECT s.name,
@@ -1027,10 +1016,8 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
                     dbData.NextFinalized,
                     dbData.PrevRegex,
                     dbData.NextRegex,
-                    dbData.PrevSignalConnections.Select(c => new MinimalSignalData.SignalConnection(c.Prev, c.VMAX))
-                        .ToList(),
-                    dbData.NextSignalConnections.Select(c => new MinimalSignalData.SignalConnection(c.Next, c.VMAX))
-                        .ToList());
+                    [.. dbData.PrevSignalConnections.Select(c => new MinimalSignalData.SignalConnection(c.Prev, c.VMAX))],
+                    [.. dbData.NextSignalConnections.Select(c => new MinimalSignalData.SignalConnection(c.Next, c.VMAX))]);
 
             if (foundSignal == null) return foundSignal;
 
@@ -1071,7 +1058,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
         // check if prevSignal's next regex is valid for the current signal
         if (!string.IsNullOrEmpty(prevSignal.NextRegex) &&
-            !Regex.IsMatch(signal.Name, prevSignal.NextRegex))
+            !MatchesConnectionRegex(signal.Name, prevSignal.NextRegex))
         {
             TryLogError(
                 prevSignal.Name, signal.Name,
@@ -1082,7 +1069,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
 
         // check if signal's prev regex is valid for the prevSignal
         if (!string.IsNullOrEmpty(signal.PrevRegex) &&
-            !Regex.IsMatch(prevSignal.Name, signal.PrevRegex))
+            !MatchesConnectionRegex(prevSignal.Name, signal.PrevRegex))
         {
             TryLogError(
                 prevSignal.Name, signal.Name,
@@ -1221,7 +1208,27 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             dbConnection, vmax);
     }
 
-    private async void TryLogError(string prev, string next, string error, string trainId, short vmax)
+    /// <summary>
+    ///     Whether a signal's name fits a connection pattern (the signals' PrevRegex/NextRegex, set by admins). A pattern
+    ///     that takes too long counts as a match: no connection error is reported because of a bad pattern.
+    /// </summary>
+    private static bool MatchesConnectionRegex(string signalName, string pattern)
+    {
+        try
+        {
+            return Regex.IsMatch(signalName, pattern, RegexOptions.None, TimeSpan.FromMilliseconds(100));
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return true;
+        }
+    }
+
+    // fire and forget: the signal analysis doesn't wait for the database (TryLogErrorAsync handles its errors)
+    private void TryLogError(string prev, string next, string error, string trainId, short vmax) =>
+        _ = SaveConnectionErrorAsync(prev, next, error, trainId, vmax);
+
+    private async Task SaveConnectionErrorAsync(string prev, string next, string error, string trainId, short vmax)
     {
         try
         {
@@ -1291,7 +1298,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
         DateTime TimeStamp,
         double Speed);
 
-    private class MinimalSignalData(
+    private sealed class MinimalSignalData(
         string name,
         Point? location,
         double accuracy,
@@ -1312,8 +1319,8 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             signal.NextFinalized,
             signal.PrevRegex,
             signal.NextRegex,
-            signal.PrevSignalConnections.Select(c => new SignalConnection(c.Prev, c.VMAX)).ToList(),
-            signal.NextSignalConnections.Select(c => new SignalConnection(c.Next, c.VMAX)).ToList())
+            [.. signal.PrevSignalConnections.Select(c => new SignalConnection(c.Prev, c.VMAX))],
+            [.. signal.NextSignalConnections.Select(c => new SignalConnection(c.Next, c.VMAX))])
         {
             DbSignal = signal;
         }

@@ -8,7 +8,7 @@ public class XboxProfileData
     /// <summary>
     ///   The gamertag of the Xbox user. (gamertag)
     /// </summary>
-    public string PersonaName { get; set; }
+    public string PersonaName { get; set; } = "";
 
     /// <summary>
     ///     The raw URL of the game display picture. (GameDisplayPicRaw)

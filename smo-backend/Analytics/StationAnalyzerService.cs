@@ -288,7 +288,7 @@ public class StationAnalyzerService : IHostedService
                                         $"https://commons.wikimedia.org/wiki/Special:Redirect/file/{osmData.Tags["wikimedia_commons"]}";
 
                                 var (latitude, longitude) = osmData is OSMWay way
-                                    ? (way.Center.Lat, way.Center.Lon)
+                                    ? (way.Center?.Lat ?? 0.0, way.Center?.Lon ?? 0.0)
                                     : ((osmData as OSMNode)?.Lat ?? 0.0, (osmData as OSMNode)?.Lon ?? 0.0);
 
                                 // Create a new station if it doesn't exist
@@ -366,7 +366,7 @@ public class StationAnalyzerService : IHostedService
                 _stations = [];
             }
 
-            _stations = _stations.DistinctBy(s => s.Name).ToList();
+            _stations = [.. _stations.DistinctBy(s => s.Name)];
 
             StationCountGauge.Set(_stations.Count);
 
@@ -440,7 +440,7 @@ public class StationAnalyzerService : IHostedService
     {
         lock (_lock)
         {
-            return _stations.ToArray();
+            return [.. _stations];
         }
     }
 
@@ -451,7 +451,7 @@ public class StationAnalyzerService : IHostedService
     {
         lock (_lock)
         {
-            _stations = stations.DistinctBy(s => s.Name).ToList();
+            _stations = [.. stations.DistinctBy(s => s.Name)];
             SaveStations();
             StationCountGauge.Set(_stations.Count);
         }

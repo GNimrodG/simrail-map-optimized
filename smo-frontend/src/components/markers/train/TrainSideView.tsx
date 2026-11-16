@@ -4,6 +4,7 @@ import Typography from "@mui/joy/Typography";
 import { type FunctionComponent, type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { findSideView, loadSideViews, type SideView } from "../../../utils/side-views";
+import { afterFirst } from "../../../utils/text";
 import ChevronIcon from "../../icons/ChevronIcon";
 import { formatVehicleName } from "../../utils/general-utils";
 
@@ -18,7 +19,7 @@ const HEIGHT = 32; // px, the strip's height: every train at the same scale, a l
 const SCALE = HEIGHT / PICTURE_HEIGHT; // px per metre
 
 function cargoName(vehicle: string) {
-  const cargo = /@(.+)$/.exec(vehicle)?.[1];
+  const cargo = afterFirst(vehicle, "@");
   return cargo ? ` - ${cargo.replaceAll("_", " ").replace(/([a-z])([A-Z])/g, "$1 $2")}` : "";
 }
 
@@ -29,7 +30,9 @@ const TrainSideView: FunctionComponent<TrainSideViewProps> = ({ consist }) => {
 
   useEffect(() => {
     let active = true;
-    loadSideViews().then((m) => active && setManifest(m));
+    loadSideViews()
+      .then((m) => active && setManifest(m))
+      .catch((e) => console.error("Failed to load the side views", e));
     return () => {
       active = false;
     };
@@ -100,14 +103,19 @@ const TrainSideView: FunctionComponent<TrainSideViewProps> = ({ consist }) => {
     drag.current = null;
   };
 
-  const vehicles = useMemo(
-    () =>
-      consist.map((vehicle) => ({
+  const vehicles = useMemo(() => {
+    // the same vehicle can be in a consist more than once: its n-th occurrence keeps the key stable
+    const seen = new Map<string, number>();
+    return consist.map((vehicle) => {
+      const occurrence = seen.get(vehicle) ?? 0;
+      seen.set(vehicle, occurrence + 1);
+      return {
+        key: `${vehicle}#${occurrence}`,
         vehicle,
         view: manifest ? findSideView(manifest, vehicle) : null,
-      })) as { vehicle: string; view: SideView | null }[],
-    [consist, manifest],
-  );
+      };
+    }) as { key: string; vehicle: string; view: SideView | null }[];
+  }, [consist, manifest]);
 
   const length = vehicles.reduce((sum, { view }) => sum + (view?.length ?? PLACEHOLDER_LENGTH), 0);
   const scale = SCALE;
@@ -172,11 +180,11 @@ const TrainSideView: FunctionComponent<TrainSideViewProps> = ({ consist }) => {
               backgroundPosition: `0 ${height - RAIL_HEIGHT * scale}px`,
               backgroundRepeat: "no-repeat",
             }}>
-            {vehicles.map(({ vehicle, view }, index) => {
+            {vehicles.map(({ key, vehicle, view }) => {
               const title = formatVehicleName(vehicle) + cargoName(vehicle);
               return view ? (
                 <Box
-                  key={index}
+                  key={key}
                   component="img"
                   src={view.url}
                   alt={title}
@@ -187,7 +195,7 @@ const TrainSideView: FunctionComponent<TrainSideViewProps> = ({ consist }) => {
                 />
               ) : (
                 <Box
-                  key={index}
+                  key={key}
                   title={title}
                   sx={{
                     flex: "none",

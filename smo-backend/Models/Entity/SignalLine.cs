@@ -15,7 +15,7 @@ public class SignalLine
     [MaxLength(StdUtils.SignalNameLength)] public string? NextSignal { get; set; }
 
     [Column(TypeName = "Geometry(LineString, 4326)")]
-    public LineString Line { get; set; }
+    public LineString Line { get; set; } = null!;
 
     /// <summary>
     ///     The line is the track itself (pushed by hand from the railway map, POST signals/{signal}/next/{next}): it's

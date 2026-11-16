@@ -19,7 +19,7 @@ public class BaseTrain
         TrainData = train.TrainData;
     }
 
-    [JsonProperty(nameof(TrainNoLocal))] public string TrainNoLocal { get; set; }
-    [JsonProperty(nameof(TrainName))] public string TrainName { get; set; }
-    [JsonProperty(nameof(TrainData))] public BaseTrainData TrainData { get; set; }
+    [JsonProperty(nameof(TrainNoLocal))] public string TrainNoLocal { get; set; } = "";
+    [JsonProperty(nameof(TrainName))] public string TrainName { get; set; } = "";
+    [JsonProperty(nameof(TrainData))] public BaseTrainData TrainData { get; set; } = null!; // always in the stored data
 }

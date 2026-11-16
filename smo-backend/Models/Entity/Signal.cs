@@ -24,7 +24,7 @@ public partial class Signal : BaseEntity
     [JsonProperty(nameof(Name))]
     [Key]
     [MaxLength(StdUtils.SignalNameLength)]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     /// <summary>
     ///     Gets or sets additional information about the signal.
@@ -34,7 +34,7 @@ public partial class Signal : BaseEntity
     ///     Maximum length is 255 characters.
     /// </remarks>
     [JsonProperty(nameof(Extra)), MaxLength(255)]
-    public string Extra { get; set; }
+    public string Extra { get; set; } = null!;
 
     /// <summary>
     ///     Gets or sets the geographic location of the signal.
@@ -43,7 +43,7 @@ public partial class Signal : BaseEntity
     ///     Stored as a PostGIS Point geometry with SRID 4326 (WGS84).
     /// </remarks>
     [JsonProperty(nameof(Location)), Column(TypeName = "Geometry(Point, 4326)")]
-    public Point Location { get; set; }
+    public Point Location { get; set; } = null!;
 
     /// <summary>
     ///     Gets or sets the accuracy of the signal's location in meters.
@@ -136,14 +136,14 @@ public partial class Signal : BaseEntity
     /// </summary>
     /// <remarks>NextSignalConnections *-1 SignalConnection.PrevSignal</remarks>
     [JsonIgnore]
-    public ICollection<SignalConnection> NextSignalConnections { get; set; }
+    public ICollection<SignalConnection> NextSignalConnections { get; set; } = null!;
 
     /// <summary>
     /// Connections where this signal is the next one.
     /// </summary>
     /// <remarks>PrevSignalConnections *-1 SignalConnection.NextSignal</remarks>
     [JsonIgnore]
-    public ICollection<SignalConnection> PrevSignalConnections { get; set; }
+    public ICollection<SignalConnection> PrevSignalConnections { get; set; } = null!;
 
     [GeneratedRegex(@"^L\d+_\d+[A-Z]*$", RegexOptions.Compiled)]
     public static partial Regex BLOCK_SIGNAL_REGEX();
@@ -387,7 +387,7 @@ public partial class Signal : BaseEntity
         if (string.IsNullOrEmpty(BlockingConnections))
             return [];
 
-        return BlockingConnections.Split(',')
+        return [.. BlockingConnections.Split(',')
             .Select(c =>
             {
                 var parts = c.Split('-');
@@ -396,6 +396,6 @@ public partial class Signal : BaseEntity
                     Prev = parts[0],
                     Next = parts[1]
                 };
-            }).ToArray();
+            })];
     }
 }

@@ -3,6 +3,7 @@ import { LayerGroup, useMap } from "react-leaflet";
 
 import CrossingSignsData from "../../assets/crossing-signs.json";
 import CrossingsData from "../../assets/crossings.json";
+import { isSameItems } from "../../utils/arrays";
 import { Crossing, CrossingSign } from "../../utils/types";
 import CrossingMarker from "../markers/crossings/CrossingMarker";
 import CrossingSignMarker from "../markers/crossings/CrossingSignMarker";
@@ -39,9 +40,12 @@ const CrossingsLayer: FunctionComponent = () => {
 
   useEffect(() => {
     // the data is local, so the crossings in view are updated right when the map stops moving
+    // (the same list stays when the same ones are visible: a followed train moves the map every second)
     const update = () => {
-      setVisibleCrossings(getVisible(map, CROSSINGS, MIN_ZOOM));
-      setVisibleSigns(getVisible(map, SIGNS, SIGN_ZOOM));
+      const crossings = getVisible(map, CROSSINGS, MIN_ZOOM);
+      const signs = getVisible(map, SIGNS, SIGN_ZOOM);
+      setVisibleCrossings((previous) => (isSameItems(previous, crossings) ? previous : crossings));
+      setVisibleSigns((previous) => (isSameItems(previous, signs) ? previous : signs));
       setShowLabels(map.getZoom() >= LABEL_ZOOM);
     };
 

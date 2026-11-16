@@ -1,4 +1,5 @@
-﻿using SMOBackend.Services.ApiClients;
+﻿using System.Diagnostics;
+using SMOBackend.Services.ApiClients;
 using SMOBackend.Utils;
 
 namespace SMOBackend.Services;
@@ -81,13 +82,24 @@ public abstract class BaseDataService<T>(
     }
 
     /// <inheritdoc />
-    public virtual Task StopAsync(CancellationToken cancellationToken)
+    public virtual async Task StopAsync(CancellationToken cancellationToken)
     {
         logger.LogWarning("Stopping {ServiceId} service", serviceId);
 
-        _cancellationTokenSource?.Cancel();
+        if (_cancellationTokenSource == null)
+            return;
 
-        return _dataServiceTask ?? Task.CompletedTask;
+        try
+        {
+            await _cancellationTokenSource.CancelAsync();
+            if (_dataServiceTask != null)
+                await _dataServiceTask;
+        }
+        finally
+        {
+            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource = null;
+        }
     }
 
     /// <summary>
@@ -105,11 +117,11 @@ public abstract class BaseDataService<T>(
             {
                 try
                 {
-                    var start = DateTime.Now;
+                    var stopwatch = Stopwatch.StartNew();
 
                     var data = await FetchData(stoppingToken);
 
-                    var elapsed = (int)(DateTime.Now - start).TotalMilliseconds;
+                    var elapsed = (int)stopwatch.ElapsedMilliseconds;
 
                     if (data == null)
                     {

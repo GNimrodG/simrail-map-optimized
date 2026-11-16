@@ -1,3 +1,5 @@
+import { afterFirst, afterLast } from "./text";
+
 // The side views of the vehicles for the consist strip (vagonWEB style): true orthographic side renders of the game's
 // models (.claude/skills/render-vehicle-thumbnails, render_prefabs.py --side), all at the same scale with the rails at
 // the same height, so a consist is drawn to length. A multiple unit's view has all its cars.
@@ -32,12 +34,11 @@ export function loadSideViews(): Promise<Manifest> {
  * names as the thumbnails (getThumbnailUrl), but every Pendolino livery has its own.
  */
 export function sideViewNames(vehicle: string): string[] {
-  const name = vehicle
-    .replace(/.+\/(.+)$/, "$1")
+  const name = afterLast(vehicle, "/")
     .replace(/:[A-Z]+(:[\d.]+)?(@.+)?$/, "") // brake mode, load and cargo (":R", ":P:0", ":G:35.8@WoodLogs")
     .replace(" Variant", "");
   const full = vehicle.includes("/80s/") && !name.endsWith(" 80s") ? `${name} 80s` : name;
-  const cargo = /@(.+)$/.exec(vehicle)?.[1];
+  const cargo = afterFirst(vehicle, "@");
   const type = name.split(/[_ :]/)[0];
   return [...new Set([...(cargo ? [`${full}@${cargo}`] : []), full, type, type.split("-")[0]])];
 }

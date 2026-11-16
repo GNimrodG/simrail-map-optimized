@@ -11,7 +11,7 @@ public class ClientManagerService(ILogger<ClientManagerService> logger)
 
     public int ConnectionCount { get; private set; }
 
-    public Dictionary<string, string> SelectedServers { get; } = new();
+    public Dictionary<string, string> SelectedServers { get; } = [];
 
     public void OnClientConnected(string connectionId)
     {

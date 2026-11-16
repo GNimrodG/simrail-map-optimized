@@ -30,8 +30,8 @@ public class SignalStatus : Signal
         Trains = null;
         TrainsAhead = null;
         NextSignalWithTrainAhead = null;
-        NextSignals = signal.NextSignalConnections.Select(c => new SignalConnection(c.Next, c.VMAX)).ToArray();
-        PrevSignals = signal.PrevSignalConnections.Select(c => new SignalConnection(c.Prev, c.VMAX)).ToArray();
+        NextSignals = [.. signal.NextSignalConnections.Select(c => new SignalConnection(c.Next, c.VMAX))];
+        PrevSignals = [.. signal.PrevSignalConnections.Select(c => new SignalConnection(c.Prev, c.VMAX))];
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ public class SignalStatus : Signal
             NextSignalWithTrainAhead = signal.NextSignalWithTrainAhead;
         }
 
-        [JsonProperty(nameof(Name))] public string Name { get; set; }
+        [JsonProperty(nameof(Name))] public string Name { get; set; } = "";
         [JsonProperty(nameof(Trains))] public string[]? Trains { get; set; }
         [JsonProperty(nameof(TrainsAhead))] public string[]? TrainsAhead { get; set; }
 

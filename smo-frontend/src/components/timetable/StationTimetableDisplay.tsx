@@ -112,11 +112,14 @@ const StationTimetableDisplay: FunctionComponent<StationTimetableDisplayProps> =
 
     for (const trainNo of trainNumbers) {
       if (!trainTimetables[trainNo]) {
-        dataProvider.fetchTimetable(trainNo).then((tt) => {
-          if (tt) {
-            setTrainTimetables((prev) => ({ ...prev, [trainNo]: tt }));
-          }
-        });
+        dataProvider
+          .fetchTimetable(trainNo)
+          .then((tt) => {
+            if (tt) {
+              setTrainTimetables((prev) => ({ ...prev, [trainNo]: tt }));
+            }
+          })
+          .catch((e) => console.error(`Failed to load the timetable of ${trainNo}`, e));
       }
     }
   }, [timetable, trainTimetables]);

@@ -46,7 +46,7 @@ public class SignalConnectionRequest : PasswordRequest
     /// The line as a geometry (WGS 84), null when the request has none. Call <see cref="Validate" /> first.
     /// </summary>
     public LineString? ToLineString() =>
-        Line == null ? null : new LineString(Line.Select(p => new Coordinate(p[0], p[1])).ToArray()) { SRID = 4326 };
+        Line == null ? null : new LineString([.. Line.Select(p => new Coordinate(p[0], p[1]))]) { SRID = 4326 };
 
     /// <summary>
     /// The length of a line in metres (along the ground).

@@ -5,7 +5,7 @@ import { useMap } from "react-leaflet";
 import useBehaviorSubj from "../../hooks/useBehaviorSubj";
 import useStationTimetableEntries from "../../hooks/useStationTimetableEntries";
 import { dataProvider } from "../../utils/data-manager";
-import { getStationGeometry } from "../../utils/geom-utils";
+import { loadStationGeometry } from "../../utils/geom-utils";
 import SelectedStationTimetableContext from "../../utils/selected-station-timetable-context";
 import StationTimetableModal from "./StationTimetableModal";
 
@@ -41,18 +41,22 @@ const SelectedStationTimetableModal: FunctionComponent = () => {
       return;
     }
 
-    const stationArea = getStationGeometry(station);
-    if (stationArea.length >= 3) {
-      map.fitBounds(L.latLngBounds(stationArea), {
-        animate: true,
-        duration: 1,
-        padding: [40, 40],
-      });
-    } else {
-      map.flyTo([station.Latitude, station.Longitude], 14, { animate: true, duration: 1 });
-    }
-
     shouldFocusRef.current = false;
+
+    loadStationGeometry()
+      .then(({ getStationGeometry }) => {
+        const stationArea = getStationGeometry(station);
+        if (stationArea.length >= 3) {
+          map.fitBounds(L.latLngBounds(stationArea), {
+            animate: true,
+            duration: 1,
+            padding: [40, 40],
+          });
+        } else {
+          map.flyTo([station.Latitude, station.Longitude], 14, { animate: true, duration: 1 });
+        }
+      })
+      .catch((e) => console.error("Failed to show the station", e));
   }, [map, selectedStationTimetable, stations]);
 
   return (

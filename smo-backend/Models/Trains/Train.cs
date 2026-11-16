@@ -117,21 +117,21 @@ public class Train : IEntityWithTimestamp
         }
 
         /// <inheritdoc cref="Train.Id"/>
-        public string Id { get; set; }
+        public string Id { get; set; } = "";
 
         /// <inheritdoc cref="Train.Type"/>
-        public string Type { get; set; }
+        public string Type { get; set; } = "";
 
-        /// <inheritdoc cref="TrainData.Velocity"/>
+        /// <inheritdoc cref="BaseTrainData.Velocity"/>
         public double Velocity { get; set; }
 
-        /// <inheritdoc cref="TrainData.SignalInFront"/>
+        /// <inheritdoc cref="BaseTrainData.SignalInFront"/>
         public string? SignalInFront { get; set; }
 
-        /// <inheritdoc cref="TrainData.DistanceToSignalInFront"/>
+        /// <inheritdoc cref="BaseTrainData.DistanceToSignalInFront"/>
         public double DistanceToSignalInFront { get; set; }
 
-        /// <inheritdoc cref="TrainData.SignalInFrontSpeed"/>
+        /// <inheritdoc cref="BaseTrainData.SignalInFrontSpeed"/>
         public short SignalInFrontSpeed { get; set; }
 
         /// <inheritdoc cref="TrainData.ControlledBySteamID"/>

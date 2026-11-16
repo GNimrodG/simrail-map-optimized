@@ -8,7 +8,7 @@ type ZoomAnimationState = { _animatingZoom?: boolean; _animateToZoom?: number };
  * with `animate: false`) stops the animation at the old zoom level, so code that keeps re-centering the map has to
  * leave it alone (or use {@link getTargetZoom}) until it ends.
  */
-export function isZooming(map: LeafletMap): boolean {
+export function isZooming(map: LeafletMap): map is LeafletMap & ZoomAnimationState {
   return !!(map as LeafletMap & ZoomAnimationState)._animatingZoom;
 }
 

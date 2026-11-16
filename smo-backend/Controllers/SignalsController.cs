@@ -15,8 +15,10 @@ namespace SMOBackend.Controllers;
 [ApiController]
 [Route("signals")]
 [Produces("application/json")]
-public class SignalsController(SmoContext context, SignalAnalyzerService signalAnalyzerService) : Controller
+public class SignalsController(SmoContext context, SignalAnalyzerService signalAnalyzerService) : ControllerBase
 {
+    private const string InvalidPassword = "Invalid password.";
+
     private static bool ValidatePassword(string? password) =>
         !string.IsNullOrWhiteSpace(StdUtils.GetEnvVar("ADMIN_PASSWORD", "")) &&
         StdUtils.GetEnvVar("ADMIN_PASSWORD", "") == password;
@@ -30,7 +32,7 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
     public async Task<ActionResult> GetSignals([FromHeader] string password)
     {
         if (!ValidatePassword(password))
-            return Unauthorized("Invalid password.");
+            return Unauthorized(InvalidPassword);
 
         var signals = await context.Signals
             .Include(s => s.PrevSignalConnections)
@@ -50,7 +52,7 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
     public async Task<ActionResult> FinalizeNextSignals(string signalName, [FromBody] PasswordRequest body)
     {
         if (!ValidatePassword(body.Password))
-            return Unauthorized("Invalid password.");
+            return Unauthorized(InvalidPassword);
 
         var signal = await context.Signals
             .Include(s => s.PrevSignalConnections)
@@ -83,7 +85,7 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
     public async Task<ActionResult> ResetNextFinalized(string signalName, [FromBody] PasswordRequest body)
     {
         if (!ValidatePassword(body.Password))
-            return Unauthorized("Invalid password.");
+            return Unauthorized(InvalidPassword);
 
         var signal = await context.Signals
             .Include(s => s.PrevSignalConnections)
@@ -115,7 +117,7 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
         [FromBody] PasswordRequest body)
     {
         if (!ValidatePassword(body.Password))
-            return Unauthorized("Invalid password.");
+            return Unauthorized(InvalidPassword);
 
         var signal = await context.Signals
             .Include(s => s.PrevSignalConnections)
@@ -156,7 +158,7 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
         [FromBody] SignalConnectionRequest body)
     {
         if (!ValidatePassword(body.Password))
-            return Unauthorized("Invalid password.");
+            return Unauthorized(InvalidPassword);
 
         if (signalName == nextSignalName)
             return BadRequest("A signal can't lead to itself.");
@@ -217,7 +219,7 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
     public async Task<ActionResult> FinalizePrevSignals(string signalName, [FromBody] PasswordRequest body)
     {
         if (!ValidatePassword(body.Password))
-            return Unauthorized("Invalid password.");
+            return Unauthorized(InvalidPassword);
 
         var signal = await context.Signals
             .Include(s => s.PrevSignalConnections)
@@ -250,7 +252,7 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
     public async Task<ActionResult> ResetPrevFinalized(string signalName, [FromBody] PasswordRequest body)
     {
         if (!ValidatePassword(body.Password))
-            return Unauthorized("Invalid password.");
+            return Unauthorized(InvalidPassword);
 
         var signal = await context.Signals
             .Include(s => s.PrevSignalConnections)
@@ -282,7 +284,7 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
         [FromBody] PasswordRequest body)
     {
         if (!ValidatePassword(body.Password))
-            return Unauthorized("Invalid password.");
+            return Unauthorized(InvalidPassword);
 
         var signal = await context.Signals
             .Include(s => s.PrevSignalConnections)
@@ -326,7 +328,7 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
     public async Task<ActionResult> ImportSignals([FromBody] SignalImportRequest body)
     {
         if (!ValidatePassword(body.Password))
-            return Unauthorized("Invalid password.");
+            return Unauthorized(InvalidPassword);
 
         var invalid = body.Signals
             .Where(s => string.IsNullOrWhiteSpace(s.Name) || s.Name.Length > StdUtils.SignalNameLength ||
@@ -411,7 +413,7 @@ public class SignalsController(SmoContext context, SignalAnalyzerService signalA
     public async Task<ActionResult> DeleteSignal(string signalName, [FromBody] PasswordRequest body)
     {
         if (!ValidatePassword(body.Password))
-            return Unauthorized("Invalid password.");
+            return Unauthorized(InvalidPassword);
 
         var signal = await context.Signals
             .Include(s => s.PrevSignalConnections)

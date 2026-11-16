@@ -239,7 +239,7 @@ export interface SimplifiedTimtableEntry {
 }
 
 export const UnusualCargoBits = {
-  IsQualityTracked: 1 << 0,
+  IsQualityTracked: 1,
   IsOverGauge: 1 << 1,
   IsOverWeight: 1 << 2,
   IsOtherExceptional: 1 << 3,

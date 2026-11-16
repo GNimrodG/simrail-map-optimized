@@ -1,5 +1,5 @@
 import L from "leaflet";
-import { type FunctionComponent, useMemo } from "react";
+import { type FunctionComponent, memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Marker, Tooltip } from "react-leaflet";
 
@@ -53,4 +53,5 @@ const CrossingMarker: FunctionComponent<CrossingMarkerProps> = ({ crossing, show
   );
 };
 
-export default CrossingMarker;
+// the layer renders them again when the map stops moving
+export default memo(CrossingMarker);

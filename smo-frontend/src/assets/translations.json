@@ -544,6 +544,11 @@
         "W6": "Sound the horn (W6)",
         "W6b": "Level crossing ahead: sound the horn (W6b)",
         "Distance": "in {{distance}} m"
+      },
+      "A11y": {
+        "Layers": "Map layers",
+        "Collapse": "Collapse",
+        "Expand": "Expand"
       }
     }
   },
@@ -1093,6 +1098,11 @@
         "W6": "Achtungssignal geben (W6)",
         "W6b": "Bahnübergang: Achtungssignal geben (W6b)",
         "Distance": "in {{distance}} m"
+      },
+      "A11y": {
+        "Layers": "Kartenebenen",
+        "Collapse": "Einklappen",
+        "Expand": "Ausklappen"
       }
     }
   },
@@ -1646,6 +1656,11 @@
         "W6": "„Vigyázz” hangjelzés (W6)",
         "W6b": "Vasúti átjáró: „Vigyázz” hangjelzés (W6b)",
         "Distance": "{{distance}} m múlva"
+      },
+      "A11y": {
+        "Layers": "Térképrétegek",
+        "Collapse": "Összecsukás",
+        "Expand": "Kibontás"
       }
     }
   },
@@ -2197,6 +2212,11 @@
         "W6": "\"Dikkat\" sesli işaretini verin (W6)",
         "W6b": "Hemzemin geçit: \"Dikkat\" sesli işaretini verin (W6b)",
         "Distance": "{{distance}} m sonra"
+      },
+      "A11y": {
+        "Layers": "Harita katmanları",
+        "Collapse": "Daralt",
+        "Expand": "Genişlet"
       }
     }
   },
@@ -2745,6 +2765,11 @@
         "W6": "Podać sygnał „Baczność” (W6)",
         "W6b": "Przejazd: podać sygnał „Baczność” (W6b)",
         "Distance": "za {{distance}} m"
+      },
+      "A11y": {
+        "Layers": "Warstwy mapy",
+        "Collapse": "Zwiń",
+        "Expand": "Rozwiń"
       }
     }
   },
@@ -3293,6 +3318,11 @@
         "W6": "Подать сигнал «Внимание» (W6)",
         "W6b": "Переезд: подать сигнал «Внимание» (W6b)",
         "Distance": "через {{distance}} м"
+      },
+      "A11y": {
+        "Layers": "Слои карты",
+        "Collapse": "Свернуть",
+        "Expand": "Развернуть"
       }
     }
   },
@@ -3841,6 +3871,11 @@
         "W6": "Подати сигнал «Увага» (W6)",
         "W6b": "Переїзд: подати сигнал «Увага» (W6b)",
         "Distance": "через {{distance}} м"
+      },
+      "A11y": {
+        "Layers": "Шари мапи",
+        "Collapse": "Згорнути",
+        "Expand": "Розгорнути"
       }
     }
   }

@@ -10,7 +10,7 @@ export interface SignalSpeedDisplayProps {
 
 // translate="no": browser page translation replaces text nodes, which crashes React when the value changes
 const SignalSpeedDisplay: FunctionComponent<SignalSpeedDisplayProps> = ({ train }) => {
-  if (typeof train?.TrainData?.SignalInFrontSpeed === "undefined" || train?.TrainData?.SignalInFrontSpeed === null) {
+  if (train?.TrainData?.SignalInFrontSpeed === undefined || train.TrainData.SignalInFrontSpeed === null) {
     return (
       <Typography translate="no" component="span" color="warning" variant="outlined" textAlign="center">
         N/A

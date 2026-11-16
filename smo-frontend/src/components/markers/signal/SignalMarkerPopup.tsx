@@ -93,7 +93,7 @@ const SignalMarkerPopup: FunctionComponent<SignalMarkerPopupProps> = ({
 
   const trainsAhead = useMemo(
     () =>
-      typeof _trainsAhead === "undefined"
+      _trainsAhead === undefined
         ? (signal.TrainsAhead &&
             dataProvider.trainsData$.value.filter((t) => signal.TrainsAhead?.includes(t.TrainNoLocal))) ||
           null
@@ -404,7 +404,7 @@ const SignalMarkerPopup: FunctionComponent<SignalMarkerPopupProps> = ({
                 <Chip
                   onClick={(e) =>
                     startTransition(() => {
-                      showSignalLines(e);
+                      void showSignalLines(e); // it handles its errors
                     })
                   }
                   disabled={isPending || isLoading || (isShiftPressed && isAltPressed)}>
@@ -415,7 +415,7 @@ const SignalMarkerPopup: FunctionComponent<SignalMarkerPopupProps> = ({
                 <Chip
                   onClick={(e) =>
                     startTransition(() => {
-                      showSignalLinesFurther(e);
+                      void showSignalLinesFurther(e); // it handles its errors
                     })
                   }
                   disabled={isPending || isLoading || (isShiftPressed && isAltPressed)}>

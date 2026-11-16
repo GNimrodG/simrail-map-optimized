@@ -40,9 +40,9 @@ public static class GeoUtils
 
     public static LineString CatmullRomSplineToLineString(List<Coordinate> points, int segmentsPerCurve)
     {
-        var splinePoints = CatmullRomSpline(points.Select(p => new Vector2((float)p.X, (float)p.Y)).ToList(),
+        var splinePoints = CatmullRomSpline([.. points.Select(p => new Vector2((float)p.X, (float)p.Y))],
             segmentsPerCurve);
-        return new(splinePoints.Select(p => new Coordinate(p.X, p.Y)).ToArray());
+        return new([.. splinePoints.Select(p => new Coordinate(p.X, p.Y))]);
     }
 
     /// <summary>

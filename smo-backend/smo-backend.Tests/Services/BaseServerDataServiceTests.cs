@@ -84,11 +84,11 @@ public class BaseServerDataServiceTests
     public async Task FailedFetch_IsNotReportedAsUnobservedTaskException()
     {
         var unobserved = new List<Exception>();
-        EventHandler<UnobservedTaskExceptionEventArgs> handler = (_, e) =>
+        void handler(object? _, UnobservedTaskExceptionEventArgs e)
         {
             if (e.Exception.InnerExceptions.Any(x => x.Message == FailureMessage))
                 lock (unobserved) unobserved.Add(e.Exception);
-        };
+        }
 
         TaskScheduler.UnobservedTaskException += handler;
         try

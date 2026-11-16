@@ -4,6 +4,7 @@ const ChevronIcon: FunctionComponent<{ direction?: "left" | "right" }> = ({ dire
   // Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.
   return (
     <svg
+      aria-hidden="true"
       width="0.75rem"
       height="0.75rem"
       fill="currentColor"

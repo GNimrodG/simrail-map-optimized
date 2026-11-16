@@ -15,8 +15,7 @@ dataProvider.serverData$.subscribe((servers) => {
   if (servers.length > 0) {
     const selectedServer = readLocalStorageValue<string>({ key: "selectedServer" }) || DEFAULT_SERVER;
 
-    const server = servers.find((s) => s.ServerCode === selectedServer);
-    if (!server) {
+    if (!servers.some((s) => s.ServerCode === selectedServer)) {
       if (selectedServer === DEFAULT_SERVER) {
         console.warn(`Default server "${DEFAULT_SERVER}" not found, using first available server.`);
         localStorage.setItem("selectedServer", servers[0].ServerCode);

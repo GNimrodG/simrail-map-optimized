@@ -135,9 +135,9 @@ public class MainHub(
         lock (clientManagerService.SelectedServers)
         {
             // Remove the old values
-            foreach (var labelValue in ServerClientsGauge.GetAllLabelValues())
-                if (clientManagerService.SelectedServers.Values.All(x => x != labelValue[0]))
-                    ServerClientsGauge.RemoveLabelled(labelValue);
+            foreach (var labelValue in ServerClientsGauge.GetAllLabelValues()
+                         .Where(labels => clientManagerService.SelectedServers.Values.All(x => x != labels[0])))
+                ServerClientsGauge.RemoveLabelled(labelValue);
 
             foreach (var server in clientManagerService.SelectedServers.Values.Distinct())
                 ServerClientsGauge

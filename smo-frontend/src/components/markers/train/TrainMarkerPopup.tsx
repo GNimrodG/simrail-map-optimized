@@ -90,6 +90,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
   hideButtons = false,
 }) => {
   const { t } = useTranslation("translation", { keyPrefix: "TrainMakerPopup" });
+  const { t: tCommon } = useTranslation();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(`(max-height: ${theme.breakpoints.values.md}px)`);
   const { selectedTrain, setSelectedTrain } = useContext(SelectedTrainContext);
@@ -285,7 +286,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
                 justifyContent: "flex-end",
                 gridArea: "1 / 3 / 2 / 4",
               }}>
-              <IconButton size="sm" onClick={onToggleCollapse}>
+              <IconButton size="sm" onClick={onToggleCollapse} aria-label={tCommon("A11y.Expand")}>
                 <ExpandIcon />
               </IconButton>
             </Box>
@@ -365,7 +366,7 @@ const TrainMarkerPopup: FunctionComponent<TrainMarkerPopupProps> = ({
               justifyContent: "flex-end",
               gridArea: "1 / 3 / 2 / 4",
             }}>
-            <IconButton size="sm" onClick={onToggleCollapse}>
+            <IconButton size="sm" onClick={onToggleCollapse} aria-label={tCommon("A11y.Collapse")}>
               <CollapseIcon />
             </IconButton>
           </Box>

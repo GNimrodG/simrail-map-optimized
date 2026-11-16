@@ -301,7 +301,7 @@ internal class ClientDataSenderService(
     {
         lock (clientManagerService.SelectedServers)
         {
-            return clientManagerService.SelectedServers.Values.Contains(serverCode);
+            return clientManagerService.SelectedServers.ContainsValue(serverCode);
         }
     }
 }

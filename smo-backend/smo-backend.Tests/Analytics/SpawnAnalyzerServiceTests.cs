@@ -82,8 +82,8 @@ public class SpawnAnalyzerServiceTests
     }
 
     private static SpawnAnalyzerService.CompactTimetable Timetable(params string[] points) =>
-        new("12345", "ROJ", points[0], points[^1], "EN57", 65, 130, points, points.Select(_ => "RPJ").ToArray(),
-            points.Select((_, i) => Noon.AddMinutes(i * 5)).ToArray());
+        new("12345", "ROJ", points[0], points[^1], "EN57", 65, 130, points, [.. points.Select(_ => "RPJ")],
+            [.. points.Select((_, i) => Noon.AddMinutes(i * 5))]);
 
     private static Edge Edge(string? from, string to) => new() { From = from, To = to, Count = 5 };
 

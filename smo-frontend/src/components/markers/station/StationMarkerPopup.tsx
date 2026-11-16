@@ -32,9 +32,10 @@ import _wikiLinks from "../../../assets/wiki-links.json";
 import useSpawnList from "../../../hooks/useSpawnList";
 import useStationTimetableEntries from "../../../hooks/useStationTimetableEntries";
 import { dataProvider } from "../../../utils/data-manager";
-import { getSignalsForStation, getStationGeometry, goToSignal } from "../../../utils/geom-utils";
+import { getSignalsForStation, goToSignal, loadStationGeometry } from "../../../utils/geom-utils";
 import SelectedStationTimetableContext from "../../../utils/selected-station-timetable-context";
 import { getStationPointNames, openSpawnList } from "../../../utils/spawn-list";
+import { splitTrailingNumber } from "../../../utils/text";
 import { OsmTagged, Station, UserProfileResponse } from "../../../utils/types";
 import InfoIcon from "../../icons/InfoIcon";
 import Loading from "../../Loading";
@@ -99,16 +100,23 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
   }, [spawnList, station.Name]);
 
   const showStationArea = useCallback(() => {
-    const polygon = L.polygon(getStationGeometry(station), {
-      color: "blue",
-      fillColor: "#03f",
-      fillOpacity: 0.5,
-    });
+    loadStationGeometry()
+      .then(({ getStationGeometry }) => {
+        // a second click while the geometry code was loading: the area is already shown
+        if (STATION_AREA_MAP.has(station.Id)) return;
 
-    polygon.addTo(map);
+        const polygon = L.polygon(getStationGeometry(station), {
+          color: "blue",
+          fillColor: "#03f",
+          fillOpacity: 0.5,
+        });
 
-    STATION_AREA_MAP.set(station.Id, polygon);
-    setStationArea(polygon);
+        polygon.addTo(map);
+
+        STATION_AREA_MAP.set(station.Id, polygon);
+        setStationArea(polygon);
+      })
+      .catch((e) => console.error("Failed to show the station area", e));
   }, [station, map]);
 
   const hideStationArea = useCallback(() => {
@@ -205,13 +213,13 @@ const StationMarkerPopup: FunctionComponent<StationMarkerPopupProps> = ({
                     <tbody>
                       {signals
                         .toSorted((a, b) => {
-                          const nameA = new RegExp(/(.+?\D+)(\d+)$/).exec(a.Name);
-                          const nameB = new RegExp(/(.+?\D+)(\d+)$/).exec(b.Name);
+                          const nameA = splitTrailingNumber(a.Name);
+                          const nameB = splitTrailingNumber(b.Name);
                           if (nameA && nameB) {
-                            if (nameA[1] === nameB[1]) {
-                              return Number.parseInt(nameA[2], 10) - Number.parseInt(nameB[2], 10);
+                            if (nameA[0] === nameB[0]) {
+                              return nameA[1] - nameB[1];
                             }
-                            return nameA[1].localeCompare(nameB[1]);
+                            return nameA[0].localeCompare(nameB[0]);
                           }
                           return a.Name.localeCompare(b.Name);
                         })

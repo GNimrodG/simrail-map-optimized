@@ -7,26 +7,20 @@ namespace SMOBackend.Analytics;
 /// <summary>
 /// Service that maintains a dictionary of train numbers to their train types.
 /// </summary>
-public class TrainTypeService : IHostedService
+public class TrainTypeService(
+    ILogger<TrainTypeService> logger,
+    TimetableDataService timetableDataService) : IHostedService
 {
     private static readonly string DataDirectory = Path.Combine(AppContext.BaseDirectory, "data", "train-types");
     private static readonly string TrainTypesFile = Path.Combine(DataDirectory, "train-types.bin");
 
-    private readonly ILogger<TrainTypeService> _logger;
-    private readonly TimetableDataService _timetableDataService;
+    private readonly ILogger<TrainTypeService> _logger = logger;
+    private readonly TimetableDataService _timetableDataService = timetableDataService;
 
     private readonly TtlCache<string, string> _trainTypeCache =
         new(TimeSpan.FromHours(24), "TrainTypeCache", maxEntries: 10000);
 
     private TimedFunction? _autoSaveFunction;
-
-    public TrainTypeService(
-        ILogger<TrainTypeService> logger,
-        TimetableDataService timetableDataService)
-    {
-        _logger = logger;
-        _timetableDataService = timetableDataService;
-    }
 
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)

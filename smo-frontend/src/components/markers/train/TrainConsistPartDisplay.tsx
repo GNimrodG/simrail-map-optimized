@@ -3,6 +3,7 @@ import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import { type FunctionComponent, useMemo, useState } from "react";
 
+import { afterLast } from "../../../utils/text";
 import { formatVehicleName, getThumbnailUrls } from "../../utils/general-utils";
 
 export interface TrainConsistPartDisplayProps {
@@ -59,7 +60,7 @@ const TrainConsistPartDisplay: FunctionComponent<TrainConsistPartDisplayProps> =
             {x.includes("@") && (
               <>
                 {" - "}
-                {formatCargoName(x.replace(/.+@(.+)$/, "$1").replace(/_/g, " "))}
+                {formatCargoName(afterLast(x, "@").replace(/_/g, " "))}
               </>
             )}
           </Typography>

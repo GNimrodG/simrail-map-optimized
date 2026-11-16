@@ -104,8 +104,10 @@ builder.Services.AddOpenApi(options =>
                                 Schema = new OpenApiSchema
                                 {
                                     Type = JsonSchemaType.String,
-                                    Example =
+                                    Examples =
+                                    [
                                         "# HELP smo_train_count Number of trains\n# TYPE smo_train_count gauge\nsmo_train_count{server=\"int1\"} 0\n"
+                                    ]
                                 }
                             }
                         }
@@ -133,7 +135,7 @@ builder.Services.AddOpenApi(options =>
                                 Schema = new OpenApiSchema
                                 {
                                     Type = JsonSchemaType.String,
-                                    Example = "Healthy"
+                                    Examples = ["Healthy"]
                                 }
                             }
                         }
@@ -305,4 +307,5 @@ app.MapHub<MainHub>("/signalr");
 app.MapHealthChecks("/health");
 app.MapMetrics();
 
-app.Run("http://0.0.0.0:3000");
+// plain HTTP inside the container: TLS ends at the reverse proxy
+await app.RunAsync("http://0.0.0.0:3000");

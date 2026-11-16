@@ -14,13 +14,14 @@ import Stack from "@mui/joy/Stack";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import {
+  type Dispatch,
   type FunctionComponent,
   type ReactNode,
+  type SetStateAction,
   useCallback,
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
@@ -78,80 +79,77 @@ function isEntryPast(entry: TimetableEntry | null, currentTime: Date): boolean {
   return new Date(referenceTime) < currentTime;
 }
 
-const ServerTrainListModal: FunctionComponent = () => {
+type TrainTimetables = Record<string, Timetable | null>;
+
+const NO_TIMETABLES: TrainTimetables = {};
+
+/** What the list keeps while it's closed: the search and the timetables already fetched */
+interface ServerTrainListProps {
+  search: string;
+  setSearch: (search: string) => void;
+  /** The fetched timetables by server code, then train number (the same number is another train on another server) */
+  timetablesByServer: Record<string, TrainTimetables>;
+  setTimetablesByServer: Dispatch<SetStateAction<Record<string, TrainTimetables>>>;
+  /** The timetables being fetched, as "server:train number" */
+  fetchingTimetables: Set<string>;
+}
+
+/**
+ * The list itself, only mounted while the modal is open: it follows every train update (every second), which the
+ * closed modal shouldn't.
+ */
+const ServerTrainList: FunctionComponent<ServerTrainListProps> = ({
+  search,
+  setSearch,
+  timetablesByServer,
+  setTimetablesByServer,
+  fetchingTimetables,
+}) => {
   const { t } = useTranslation("translation", { keyPrefix: "ServerTrainList" });
   const selectedServer = useBehaviorSubj(dataProvider.selectedServerData$);
+  const serverCode = selectedServer?.ServerCode;
+  const trainTimetables = (serverCode && timetablesByServer[serverCode]) || NO_TIMETABLES;
   const trains = useBehaviorSubj(dataProvider.trainsData$);
   const map = useMap();
   const { setSelectedTrain } = useContext(SelectedTrainContext);
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebouncedValue(search, 300);
-
-  const [trainTimetables, setTrainTimetables] = useState<Record<string, Timetable | null>>({});
-  const fetchingTrainNosRef = useRef<Set<string>>(new Set());
 
   const currentTimeEpoch = useSubject(timeSubjEvery10s$, timeSubj$.value);
   const currentTime = useMemo(() => new Date(currentTimeEpoch), [currentTimeEpoch]);
 
   // every fetch ends with an entry (null when it failed)
-  const isLoadingTimetables = isOpen && trains.some((train) => !(train.TrainNoLocal in trainTimetables));
+  const isLoadingTimetables = trains.some((train) => !(train.TrainNoLocal in trainTimetables));
 
   useEffect(() => {
-    if (!isOpen || !trains.length) {
+    if (!serverCode || !trains.length) {
       return;
     }
 
     const missingTrainNos = trains
       .map((train) => train.TrainNoLocal)
-      .filter((trainNo) => {
-        return !(trainNo in trainTimetables) && !fetchingTrainNosRef.current.has(trainNo);
-      });
+      .filter((trainNo) => !(trainNo in trainTimetables) && !fetchingTimetables.has(`${serverCode}:${trainNo}`));
 
-    if (!missingTrainNos.length) {
-      return;
-    }
+    // Fetch each timetable independently and update state progressively. Not cancelled when the list closes or the
+    // trains change: the timetables are kept outside the list, for its server, and the next run skips the ones
+    // being fetched.
+    const setTimetable = (trainNo: string, timetable: Timetable | null) =>
+      setTimetablesByServer((prev) => ({ ...prev, [serverCode]: { ...prev[serverCode], [trainNo]: timetable } }));
 
-    let cancelled = false;
-    const fetchingSet = fetchingTrainNosRef.current;
-
-    // Mark these trains as being fetched
     for (const trainNo of missingTrainNos) {
-      fetchingSet.add(trainNo);
-    }
-
-    // Fetch each timetable independently and update state progressively
-    for (const trainNo of missingTrainNos) {
+      const key = `${serverCode}:${trainNo}`;
+      fetchingTimetables.add(key);
       dataProvider
         .fetchTimetable(trainNo)
-        .then((timetable) => {
-          if (!cancelled) {
-            // Update state immediately as each timetable loads
-            setTrainTimetables((prev) => ({ ...prev, [trainNo]: timetable }));
-          }
-        })
+        .then((timetable) => setTimetable(trainNo, timetable))
         .catch((error) => {
-          if (!cancelled) {
-            console.error(`Failed to fetch timetable for train ${trainNo}:`, error);
-            // Still update state with null to indicate fetch completed
-            setTrainTimetables((prev) => ({ ...prev, [trainNo]: null }));
-          }
+          console.error(`Failed to fetch timetable for train ${trainNo}:`, error);
+          // Still update state with null to indicate fetch completed
+          setTimetable(trainNo, null);
         })
-        .finally(() => {
-          if (!cancelled) {
-            fetchingSet.delete(trainNo);
-          }
-        });
+        .finally(() => fetchingTimetables.delete(key));
     }
-
-    return () => {
-      cancelled = true;
-      for (const trainNo of missingTrainNos) {
-        fetchingSet.delete(trainNo);
-      }
-    };
-  }, [isOpen, trains, trainTimetables]);
+  }, [serverCode, trains, trainTimetables, fetchingTimetables, setTimetablesByServer]);
 
   const panToTrain = useCallback(
     (train: Train) => {
@@ -321,6 +319,275 @@ const ServerTrainListModal: FunctionComponent = () => {
 
   return (
     <>
+      <ModalClose variant="plain" />
+      <Stack spacing={1.5} sx={{ height: "100%", flex: 1, overflow: "hidden" }}>
+        <DialogTitle component="div">{t("Title", { server: selectedServer?.ServerName })}</DialogTitle>
+
+        <Input
+          variant="soft"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder={t("SearchPlaceholder")}
+          slotProps={{ input: { "aria-label": t("SearchPlaceholder") } }}
+        />
+
+        {isLoadingTimetables && <LinearProgress variant="soft" thickness={2} />}
+
+        <Box sx={{ flex: 1, overflowY: "auto", pr: 1 }}>
+          {trainStates.length ? (
+            <Stack spacing={1.5}>
+              {trainStates.map((state) => {
+                const { train, timetable, currentStop, nextStop, departureDelay, isPredictedDelay } = state;
+
+                const remainingStations = nextStop ? [getStationDisplayName(nextStop)].filter(Boolean) : [];
+
+                // Get delays for the timetable modal
+                const trainDelays = dataProvider.getDelaysForTrainSync(train.Id) ?? {};
+
+                const consistSummary = summarizeConsist(train.Vehicles);
+
+                const infoChips: ReactNode[] = [
+                  ...(consistSummary
+                    ? [
+                        <Tooltip
+                          key="consist"
+                          arrow
+                          variant="outlined"
+                          placement="right"
+                          describeChild
+                          title={<TrainConsistDisplay consist={train.Vehicles} />}>
+                          <Chip size="sm" variant="soft" startDecorator={<InfoIcon />}>
+                            {t("ConsistLabel", { summary: consistSummary })}
+                          </Chip>
+                        </Tooltip>,
+                      ]
+                    : []),
+                  ...(timetable
+                    ? [
+                        <Chip key="route" size="sm" variant="outlined">
+                          {`${train.StartStation} -> ${train.EndStation}`}
+                        </Chip>,
+                        <Chip key="length" size="sm" variant="soft" startDecorator={<LengthIcon />}>
+                          {`${timetable.TrainLength} m`}
+                        </Chip>,
+                        <Chip key="weight" size="sm" variant="soft" startDecorator={<WeightIcon />}>
+                          {`${timetable.TrainWeight} t`}
+                        </Chip>,
+                      ]
+                    : []),
+                ];
+
+                const speedChip = (
+                  <Chip
+                    key="speed"
+                    translate="no"
+                    size="sm"
+                    variant="soft"
+                    startDecorator={<SpeedIcon />}
+                    color={getColorTrainMarker(train.TrainData.Velocity)}>
+                    {`${Math.round(train.TrainData.Velocity)} km/h`}
+                  </Chip>
+                );
+
+                const prevTimetableEntry =
+                  timetable?.TimetableEntries?.[Math.max(train.TrainData.VDDelayedTimetableIndex - 1, 0)] ?? null;
+                const maxSpeedChip = (prevTimetableEntry?.MaxSpeed || 0) > 0 && (
+                  <Chip
+                    key="max-speed"
+                    translate="no"
+                    size="sm"
+                    variant="soft"
+                    startDecorator={<SpeedIcon />}
+                    color={getColorTrainMarker(prevTimetableEntry!.MaxSpeed)}>
+                    {"VMAX: "}
+                    {prevTimetableEntry!.MaxSpeed} km/h
+                  </Chip>
+                );
+
+                const controlChip = (
+                  <Chip
+                    key="control"
+                    size="sm"
+                    variant="soft"
+                    color={train.TrainData.ControlledBySteamID ? "success" : "neutral"}>
+                    {train.TrainData.ControlledBySteamID ? t("PlayerControlled") : t("AIControlled")}
+                  </Chip>
+                );
+
+                const signalChip = (() => {
+                  if (!train.TrainData.SignalInFront) return null;
+                  const baseSignalName = train.TrainData.SignalInFront.split("@")[0];
+                  const signalSpeed = train.TrainData.SignalInFrontSpeed;
+                  const signalSpeedColor = getSpeedColorForSignal(signalSpeed ?? 0);
+                  const signalDistanceColor = getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront);
+
+                  return (
+                    <Chip
+                      key="signal"
+                      translate="no"
+                      size="sm"
+                      variant="outlined"
+                      sx={{
+                        "& .speed": { color: `${signalSpeedColor}.plainColor`, fontWeight: 600 },
+                        "& .distance": { color: `${signalDistanceColor}.plainColor`, fontWeight: 300 },
+                      }}>
+                      {baseSignalName}
+                      {signalSpeed === null ? null : (
+                        <span className="speed"> ({signalSpeed === 32767 ? "VMAX" : `${signalSpeed} km/h`})</span>
+                      )}
+                      <span className="distance">{` ${Math.round(train.TrainData.DistanceToSignalInFront)} m`}</span>
+                    </Chip>
+                  );
+                })();
+
+                return (
+                  <Sheet
+                    key={train.TrainNoLocal}
+                    variant="outlined"
+                    sx={{
+                      borderRadius: "sm",
+                      p: 1.5,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 1,
+                      borderColor: getCardBorderColor(state),
+                    }}>
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={1}
+                      useFlexGap
+                      justifyContent="space-between"
+                      alignItems={{ xs: "flex-start", sm: "center" }}>
+                      <Stack spacing={0.75} sx={{ minWidth: 0 }}>
+                        <Stack direction="row" spacing={1} useFlexGap alignItems="center" flexWrap="wrap">
+                          <Typography
+                            fontFamily="monospace"
+                            level="title-md"
+                            variant="outlined"
+                            color={getColorTrainMarker(train.TrainData.Velocity)}>
+                            {train.TrainNoLocal}
+                          </Typography>
+                          <Typography fontFamily="monospace" level="body-sm" component="div">
+                            <TrainTypeDisplay type={train.TrainType} displayName={train.TrainName} hideTooltip />
+                          </Typography>
+                          <Tooltip
+                            variant="outlined"
+                            describeChild
+                            enterDelay={300}
+                            title={<TrainMarkerPopup train={train} hideButtons />}
+                            arrow>
+                            <Stack
+                              alignItems="center"
+                              justifyContent="center"
+                              sx={{
+                                color: train.TrainData.ControlledBySteamID ? "success.plainColor" : "neutral.500",
+                                cursor: "pointer",
+                              }}>
+                              <InfoIcon />
+                            </Stack>
+                          </Tooltip>
+                          <Tooltip variant="outlined" describeChild title={t("PanToTrain")} arrow>
+                            <Stack
+                              alignItems="center"
+                              justifyContent="center"
+                              sx={{ cursor: "pointer" }}
+                              onClick={() => panToTrain(train)}>
+                              <MapMarkerIcon />
+                            </Stack>
+                          </Tooltip>
+                          <TrainTimetableModal
+                            trainNoLocal={train.TrainNoLocal}
+                            hideTimeUntil={state.passedBasedOnDepartureTime}
+                            delays={trainDelays as unknown as number[]}
+                            timetableIndex={train.TrainData.VDDelayedTimetableIndex}
+                          />
+                        </Stack>
+
+                        {renderStatusBadges(state)}
+                      </Stack>
+
+                      <Stack spacing={0.25} alignItems={{ xs: "flex-start", sm: "flex-end" }}>
+                        <Typography level="body-sm" sx={{ color: "neutral.500" }}>
+                          {statusTranslations.t("NextStationLabel")}
+                        </Typography>
+                        {currentStop ? (
+                          <StationDisplay
+                            station={currentStop}
+                            mainStation
+                            pastStation={state.passedBasedOnDepartureTime}
+                            delay={departureDelay ?? undefined}
+                            predictedDelay={isPredictedDelay}
+                            hideTimeUntil={state.passedBasedOnDepartureTime}
+                          />
+                        ) : (
+                          <Typography fontFamily="monospace" level="title-md">
+                            {statusTranslations.t("N/A")}
+                          </Typography>
+                        )}
+                        {remainingStations.length > 0 && (
+                          <Typography fontFamily="monospace" level="body-sm" sx={{ color: "neutral.500" }}>
+                            {remainingStations.join(", ")}
+                          </Typography>
+                        )}
+                      </Stack>
+                    </Stack>
+
+                    {(infoChips.length > 0 || maxSpeedChip || speedChip || controlChip || signalChip) && <Divider />}
+
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={1}
+                      useFlexGap
+                      justifyContent="space-between"
+                      alignItems={{ xs: "flex-start", sm: "center" }}>
+                      <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap">
+                        {infoChips}
+                      </Stack>
+                      <Stack
+                        direction="row"
+                        spacing={0.75}
+                        useFlexGap
+                        flexWrap="wrap"
+                        alignItems="center"
+                        justifyContent="flex-end">
+                        {signalChip}
+                        {controlChip}
+                        {speedChip}
+                        {maxSpeedChip}
+                      </Stack>
+                    </Stack>
+
+                    <TrainSideView consist={train.Vehicles} />
+
+                    {!timetable && !isLoadingTimetables && (
+                      <Typography level="body-sm" sx={{ color: "neutral.500" }}>
+                        {t("TimetableUnavailable")}
+                      </Typography>
+                    )}
+                  </Sheet>
+                );
+              })}
+            </Stack>
+          ) : (
+            <Typography level="body-sm" sx={{ color: "neutral.500" }}>
+              {t("EmptyState")}
+            </Typography>
+          )}
+        </Box>
+      </Stack>
+    </>
+  );
+};
+
+const ServerTrainListModal: FunctionComponent = () => {
+  const { t } = useTranslation("translation", { keyPrefix: "ServerTrainList" });
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [timetablesByServer, setTimetablesByServer] = useState<Record<string, TrainTimetables>>({});
+  const [fetchingTimetables] = useState(() => new Set<string>());
+
+  return (
+    <>
       <Tooltip title={t("ButtonTooltip")} placement="left" variant="outlined" arrow>
         <IconButton
           variant="outlined"
@@ -340,264 +607,13 @@ const ServerTrainListModal: FunctionComponent = () => {
             flexDirection: "column",
             overflow: "hidden",
           }}>
-          <ModalClose variant="plain" />
-          <Stack spacing={1.5} sx={{ height: "100%", flex: 1, overflow: "hidden" }}>
-            <DialogTitle component="div">{t("Title", { server: selectedServer?.ServerName })}</DialogTitle>
-
-            <Input
-              variant="soft"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder={t("SearchPlaceholder")}
-              slotProps={{ input: { "aria-label": t("SearchPlaceholder") } }}
-            />
-
-            {isLoadingTimetables && <LinearProgress variant="soft" thickness={2} />}
-
-            <Box sx={{ flex: 1, overflowY: "auto", pr: 1 }}>
-              {trainStates.length ? (
-                <Stack spacing={1.5}>
-                  {trainStates.map((state) => {
-                    const { train, timetable, currentStop, nextStop, departureDelay, isPredictedDelay } = state;
-
-                    const remainingStations = nextStop ? [getStationDisplayName(nextStop)].filter(Boolean) : [];
-
-                    // Get delays for the timetable modal
-                    const trainDelays = dataProvider.getDelaysForTrainSync(train.Id) ?? {};
-
-                    const consistSummary = summarizeConsist(train.Vehicles);
-
-                    const infoChips: ReactNode[] = [
-                      ...(consistSummary
-                        ? [
-                            <Tooltip
-                              key="consist"
-                              arrow
-                              variant="outlined"
-                              placement="right"
-                              describeChild
-                              title={<TrainConsistDisplay consist={train.Vehicles} />}>
-                              <Chip size="sm" variant="soft" startDecorator={<InfoIcon />}>
-                                {t("ConsistLabel", { summary: consistSummary })}
-                              </Chip>
-                            </Tooltip>,
-                          ]
-                        : []),
-                      ...(timetable
-                        ? [
-                            <Chip key="route" size="sm" variant="outlined">
-                              {`${train.StartStation} -> ${train.EndStation}`}
-                            </Chip>,
-                            <Chip key="length" size="sm" variant="soft" startDecorator={<LengthIcon />}>
-                              {`${timetable.TrainLength} m`}
-                            </Chip>,
-                            <Chip key="weight" size="sm" variant="soft" startDecorator={<WeightIcon />}>
-                              {`${timetable.TrainWeight} t`}
-                            </Chip>,
-                          ]
-                        : []),
-                    ];
-
-                    const speedChip = (
-                      <Chip
-                        key="speed"
-                        translate="no"
-                        size="sm"
-                        variant="soft"
-                        startDecorator={<SpeedIcon />}
-                        color={getColorTrainMarker(train.TrainData.Velocity)}>
-                        {`${Math.round(train.TrainData.Velocity)} km/h`}
-                      </Chip>
-                    );
-
-                    const prevTimetableEntry =
-                      timetable?.TimetableEntries?.[Math.max(train.TrainData.VDDelayedTimetableIndex - 1, 0)] ?? null;
-                    const maxSpeedChip = (prevTimetableEntry?.MaxSpeed || 0) > 0 && (
-                      <Chip
-                        key="max-speed"
-                        translate="no"
-                        size="sm"
-                        variant="soft"
-                        startDecorator={<SpeedIcon />}
-                        color={getColorTrainMarker(prevTimetableEntry!.MaxSpeed)}>
-                        {"VMAX: "}
-                        {prevTimetableEntry!.MaxSpeed} km/h
-                      </Chip>
-                    );
-
-                    const controlChip = (
-                      <Chip
-                        key="control"
-                        size="sm"
-                        variant="soft"
-                        color={train.TrainData.ControlledBySteamID ? "success" : "neutral"}>
-                        {train.TrainData.ControlledBySteamID ? t("PlayerControlled") : t("AIControlled")}
-                      </Chip>
-                    );
-
-                    const signalChip = (() => {
-                      if (!train.TrainData.SignalInFront) return null;
-                      const baseSignalName = train.TrainData.SignalInFront.split("@")[0];
-                      const signalSpeed = train.TrainData.SignalInFrontSpeed;
-                      const signalSpeedColor = getSpeedColorForSignal(signalSpeed ?? 0);
-                      const signalDistanceColor = getDistanceColorForSignal(train.TrainData.DistanceToSignalInFront);
-
-                      return (
-                        <Chip
-                          key="signal"
-                          translate="no"
-                          size="sm"
-                          variant="outlined"
-                          sx={{
-                            "& .speed": { color: `${signalSpeedColor}.plainColor`, fontWeight: 600 },
-                            "& .distance": { color: `${signalDistanceColor}.plainColor`, fontWeight: 300 },
-                          }}>
-                          {baseSignalName}
-                          {signalSpeed === null ? null : (
-                            <span className="speed"> ({signalSpeed === 32767 ? "VMAX" : `${signalSpeed} km/h`})</span>
-                          )}
-                          <span className="distance">{` ${Math.round(train.TrainData.DistanceToSignalInFront)} m`}</span>
-                        </Chip>
-                      );
-                    })();
-
-                    return (
-                      <Sheet
-                        key={train.TrainNoLocal}
-                        variant="outlined"
-                        sx={{
-                          borderRadius: "sm",
-                          p: 1.5,
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 1,
-                          borderColor: getCardBorderColor(state),
-                        }}>
-                        <Stack
-                          direction={{ xs: "column", sm: "row" }}
-                          spacing={1}
-                          useFlexGap
-                          justifyContent="space-between"
-                          alignItems={{ xs: "flex-start", sm: "center" }}>
-                          <Stack spacing={0.75} sx={{ minWidth: 0 }}>
-                            <Stack direction="row" spacing={1} useFlexGap alignItems="center" flexWrap="wrap">
-                              <Typography
-                                fontFamily="monospace"
-                                level="title-md"
-                                variant="outlined"
-                                color={getColorTrainMarker(train.TrainData.Velocity)}>
-                                {train.TrainNoLocal}
-                              </Typography>
-                              <Typography fontFamily="monospace" level="body-sm" component="div">
-                                <TrainTypeDisplay type={train.TrainType} displayName={train.TrainName} hideTooltip />
-                              </Typography>
-                              <Tooltip
-                                variant="outlined"
-                                describeChild
-                                enterDelay={300}
-                                title={<TrainMarkerPopup train={train} hideButtons />}
-                                arrow>
-                                <Stack
-                                  alignItems="center"
-                                  justifyContent="center"
-                                  sx={{
-                                    color: train.TrainData.ControlledBySteamID ? "success.plainColor" : "neutral.500",
-                                    cursor: "pointer",
-                                  }}>
-                                  <InfoIcon />
-                                </Stack>
-                              </Tooltip>
-                              <Tooltip variant="outlined" describeChild title={t("PanToTrain")} arrow>
-                                <Stack
-                                  alignItems="center"
-                                  justifyContent="center"
-                                  sx={{ cursor: "pointer" }}
-                                  onClick={() => panToTrain(train)}>
-                                  <MapMarkerIcon />
-                                </Stack>
-                              </Tooltip>
-                              <TrainTimetableModal
-                                trainNoLocal={train.TrainNoLocal}
-                                hideTimeUntil={state.passedBasedOnDepartureTime}
-                                delays={trainDelays as unknown as number[]}
-                                timetableIndex={train.TrainData.VDDelayedTimetableIndex}
-                              />
-                            </Stack>
-
-                            {renderStatusBadges(state)}
-                          </Stack>
-
-                          <Stack spacing={0.25} alignItems={{ xs: "flex-start", sm: "flex-end" }}>
-                            <Typography level="body-sm" sx={{ color: "neutral.500" }}>
-                              {statusTranslations.t("NextStationLabel")}
-                            </Typography>
-                            {currentStop ? (
-                              <StationDisplay
-                                station={currentStop}
-                                mainStation
-                                pastStation={state.passedBasedOnDepartureTime}
-                                delay={departureDelay ?? undefined}
-                                predictedDelay={isPredictedDelay}
-                                hideTimeUntil={state.passedBasedOnDepartureTime}
-                              />
-                            ) : (
-                              <Typography fontFamily="monospace" level="title-md">
-                                {statusTranslations.t("N/A")}
-                              </Typography>
-                            )}
-                            {remainingStations.length > 0 && (
-                              <Typography fontFamily="monospace" level="body-sm" sx={{ color: "neutral.500" }}>
-                                {remainingStations.join(", ")}
-                              </Typography>
-                            )}
-                          </Stack>
-                        </Stack>
-
-                        {(infoChips.length > 0 || maxSpeedChip || speedChip || controlChip || signalChip) && (
-                          <Divider />
-                        )}
-
-                        <Stack
-                          direction={{ xs: "column", sm: "row" }}
-                          spacing={1}
-                          useFlexGap
-                          justifyContent="space-between"
-                          alignItems={{ xs: "flex-start", sm: "center" }}>
-                          <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap">
-                            {infoChips}
-                          </Stack>
-                          <Stack
-                            direction="row"
-                            spacing={0.75}
-                            useFlexGap
-                            flexWrap="wrap"
-                            alignItems="center"
-                            justifyContent="flex-end">
-                            {signalChip}
-                            {controlChip}
-                            {speedChip}
-                            {maxSpeedChip}
-                          </Stack>
-                        </Stack>
-
-                        <TrainSideView consist={train.Vehicles} />
-
-                        {!timetable && !isLoadingTimetables && (
-                          <Typography level="body-sm" sx={{ color: "neutral.500" }}>
-                            {t("TimetableUnavailable")}
-                          </Typography>
-                        )}
-                      </Sheet>
-                    );
-                  })}
-                </Stack>
-              ) : (
-                <Typography level="body-sm" sx={{ color: "neutral.500" }}>
-                  {t("EmptyState")}
-                </Typography>
-              )}
-            </Box>
-          </Stack>
+          <ServerTrainList
+            search={search}
+            setSearch={setSearch}
+            timetablesByServer={timetablesByServer}
+            setTimetablesByServer={setTimetablesByServer}
+            fetchingTimetables={fetchingTimetables}
+          />
         </ModalDialog>
       </Modal>
     </>

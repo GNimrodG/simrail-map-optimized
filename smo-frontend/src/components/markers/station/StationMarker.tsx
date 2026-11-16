@@ -1,5 +1,5 @@
 import L from "leaflet";
-import { type FunctionComponent, useMemo, useRef, useState } from "react";
+import { type FunctionComponent, memo, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Marker, Popup } from "react-leaflet";
 
@@ -80,4 +80,5 @@ const StationMarker: FunctionComponent<StationMarkerProps> = ({ station, layerId
   );
 };
 
-export default StationMarker;
+// a station keeps its object while its dispatcher stays (see the data provider's partial updates)
+export default memo(StationMarker);

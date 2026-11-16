@@ -21,7 +21,7 @@ public class DatabaseHealthCheck(IServiceScopeFactory scopeFactory, ILogger<Data
             await using var dbContext = scope.ServiceProvider.GetRequiredService<SmoContext>();
 
             // Set a shorter timeout for health checks to avoid blocking
-            var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeoutCts.CancelAfter(TimeSpan.FromSeconds(10));
 
             // Test actual database functionality with a simple query instead of just connection

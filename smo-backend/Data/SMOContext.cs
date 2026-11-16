@@ -18,9 +18,9 @@ public class SmoContext(DbContextOptions<SmoContext> options) : DbContext(option
 
     public DbSet<SignalLine> SignalLines { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder builder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        foreach (var entityType in builder.Model.GetEntityTypes())
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var property in entityType.GetProperties())
             {
@@ -38,21 +38,21 @@ public class SmoContext(DbContextOptions<SmoContext> options) : DbContext(option
             }
         }
 
-        builder.HasPostgresExtension("postgis");
+        modelBuilder.HasPostgresExtension("postgis");
 
         // Create a cyclical sequence for RoutePoint Id
-        builder.HasSequence<long>("route_point_id_seq")
+        modelBuilder.HasSequence<long>("route_point_id_seq")
             .StartsAt(1)
             .IncrementsBy(1)
             .HasMax(long.MaxValue)
             .IsCyclic();
 
-        builder.Entity<Signal>()
+        modelBuilder.Entity<Signal>()
             .HasIndex(s => s.Location)
             .HasMethod("gist");
 
         // Signal.NextSignalConnections (Signal.Name) *-1 SignalConnection.PrevSignal (SignalConnection.Prev)
-        builder.Entity<SignalConnection>()
+        modelBuilder.Entity<SignalConnection>()
             .HasOne(c => c.PrevSignal)
             .WithMany(s => s.NextSignalConnections)
             .HasForeignKey(c => c.Prev)
@@ -60,7 +60,7 @@ public class SmoContext(DbContextOptions<SmoContext> options) : DbContext(option
             .OnDelete(DeleteBehavior.Cascade);
 
         // Signal.PrevSignalConnections (Signal.Name) *-1 SignalConnection.NextSignal (SignalConnection.Next)
-        builder.Entity<SignalConnection>()
+        modelBuilder.Entity<SignalConnection>()
             .HasOne(c => c.NextSignal)
             .WithMany(s => s.PrevSignalConnections)
             .HasForeignKey(c => c.Next)
@@ -68,15 +68,15 @@ public class SmoContext(DbContextOptions<SmoContext> options) : DbContext(option
             .OnDelete(DeleteBehavior.Cascade);
 
         // SignalConnection.Prev != SignalConnection.Next
-        builder.Entity<SignalConnection>()
+        modelBuilder.Entity<SignalConnection>()
             .ToTable(t => t.HasCheckConstraint("ck_signal_connections_prev_next_not_same", "prev <> next"));
 
-        builder.Entity<RoutePoint>()
+        modelBuilder.Entity<RoutePoint>()
             .HasIndex(rp => rp.Point)
             .HasMethod("gist");
 
         // Configure RoutePoint to use the cyclical sequence
-        builder.Entity<RoutePoint>()
+        modelBuilder.Entity<RoutePoint>()
             .Property(rp => rp.Id)
             .HasDefaultValueSql("nextval('route_point_id_seq')");
     }

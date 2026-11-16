@@ -19,16 +19,16 @@ public class TimetableDataService(
     private readonly TtlCache<string, Timetable> _timetableCache =
         TtlCache<string, Timetable>.CreateWithEnvSettings("TimetableFileCache", TimeSpan.FromMinutes(20), 5000);
 
-    /// <inheritdoc cref="BaseServerDataService{Nullable{object}}.FetchInterval" />
+    /// <inheritdoc />
     protected override TimeSpan FetchInterval => TimeSpan.FromHours(1);
 
     private protected override TimeSpan DelayBetweenServers => TimeSpan.FromSeconds(1);
 
-    /// <inheritdoc cref="BaseServerDataService{Nullable{object}}.PerServerDataReceived"/>
+    /// <inheritdoc cref="BaseServerDataService{T}.PerServerDataReceived"/>
     public new event DataReceivedEventHandler<PerServerData<Timetable[]>>? PerServerDataReceived;
 
     /// <inheritdoc />
-    public override Task StartAsync(CancellationToken stoppingToken)
+    public override Task StartAsync(CancellationToken cancellationToken)
     {
         logger.LogInformation("Starting TimetableDataService...");
         Directory.CreateDirectory(_dataDirectory);
@@ -46,7 +46,7 @@ public class TimetableDataService(
             }
         }
 
-        return base.StartAsync(stoppingToken);
+        return base.StartAsync(cancellationToken);
     }
 
     private async Task WriteData(string serverCode, Timetable[] timetables)
@@ -98,24 +98,22 @@ public class TimetableDataService(
             });
     }
 
-    /// <inheritdoc cref="BaseServerDataService{Nullable{object}}.FetchServerData"/>
+    /// <inheritdoc />
     protected override async Task<object?> FetchServerData(string serverCode,
         CancellationToken stoppingToken)
     {
         try
         {
-            var timetables = await apiClient.GetAllTimetablesAsync(serverCode, stoppingToken);
-
-            if (timetables == null)
-            {
-                throw new("Failed to fetch timetable data");
-            }
+            var timetables = await apiClient.GetAllTimetablesAsync(serverCode, stoppingToken) ??
+                             throw new InvalidOperationException($"No timetable data for {serverCode}");
 
             await WriteData(serverCode, timetables);
             PerServerDataReceived?.Invoke(new(serverCode, timetables));
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            // logged here as an error with its stack trace (to Sentry): the base service only keeps a warning with the
+            // message when it keeps the server's last data
             logger.LogError(ex, "Failed to fetch timetable data for {ServerCode}", serverCode);
             throw;
         }
@@ -227,9 +225,6 @@ public class TimetableDataService(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to move file from {TempPath} to {FinalPath} on attempt {Attempt}",
-                    tempFilePath, finalFilePath, attempt + 1);
-
                 // Clean up temp file if it still exists
                 try
                 {
@@ -240,7 +235,9 @@ public class TimetableDataService(
                     logger.LogWarning(cleanupEx, "Failed to clean up temp file {TempPath}", tempFilePath);
                 }
 
-                throw;
+                // (the caller logs it)
+                throw new IOException($"Failed to move {tempFilePath} to {finalFilePath} on attempt {attempt + 1}",
+                    ex);
             }
 
         // If we get here, all retries failed

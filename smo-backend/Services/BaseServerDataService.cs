@@ -45,12 +45,11 @@ public abstract class BaseServerDataService<T>(
 
             var tasks = new List<Task>();
 
-            foreach (var server in data)
+            foreach (var serverCode in data.Select(server => server.ServerCode))
             {
-                if (Data.ContainsKey(server.ServerCode)) continue;
+                if (Data.ContainsKey(serverCode)) continue;
 
-                logger.LogInformation("Fetching data for new server: {ServerCode}", server.ServerCode);
-                var serverCode = server.ServerCode;
+                logger.LogInformation("Fetching data for new server: {ServerCode}", serverCode);
 
                 var task = Task.Run(async () =>
                 {
@@ -122,11 +121,8 @@ public abstract class BaseServerDataService<T>(
             // Process in parallel
             var fetchTasks = new Dictionary<string, Task<T>>();
 
-            foreach (var server in serverDataService.Data!)
-            {
-                var serverCode = server.ServerCode;
+            foreach (var serverCode in serverDataService.Data!.Select(server => server.ServerCode))
                 fetchTasks[serverCode] = FetchAndEmit(serverCode);
-            }
 
             try
             {
@@ -174,18 +170,18 @@ public abstract class BaseServerDataService<T>(
             var servers = serverDataService.Data!;
             var failedCount = 0;
 
-            foreach (var server in servers)
+            foreach (var serverCode in servers.Select(server => server.ServerCode))
             {
                 try
                 {
-                    var data = await FetchServerData(server.ServerCode, stoppingToken);
-                    result.Add(server.ServerCode, data);
-                    OnPerServerDataReceived(new(server.ServerCode, data));
+                    var data = await FetchServerData(serverCode, stoppingToken);
+                    result.Add(serverCode, data);
+                    OnPerServerDataReceived(new(serverCode, data));
                 }
                 catch (Exception e) when (!stoppingToken.IsCancellationRequested)
                 {
                     failedCount++;
-                    KeepLastData(result, previousData, server.ServerCode, e.Message);
+                    KeepLastData(result, previousData, serverCode, e.Message);
                 }
 
                 await Task.Delay(DelayBetweenServers, stoppingToken);

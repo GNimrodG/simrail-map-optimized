@@ -11,7 +11,7 @@ namespace SMOBackend.Utils;
 /// <param name="maxDegreeOfParallelism"> The maximum number of items to process in parallel.</param>
 /// <param name="maxQueueSize"> The maximum size of the queue. If set to -1, the queue size is unlimited.</param>
 /// <typeparam name="T">The type of items to be processed.</typeparam>
-public class QueueProcessor<T>(
+public sealed class QueueProcessor<T>(
     ILogger logger,
     Func<T, Task> processItem,
     Gauge gauge,
@@ -34,7 +34,9 @@ public class QueueProcessor<T>(
     /// Enqueues data for processing. If the queue is full, the oldest item will be removed to make space for the new data.
     /// </summary>
     /// <param name="data">The data to be processed.</param>
-    public async void Enqueue(T data)
+    public void Enqueue(T data) => _ = EnqueueAsync(data); // EnqueueAsync handles its errors
+
+    private async Task EnqueueAsync(T data)
     {
         try
         {

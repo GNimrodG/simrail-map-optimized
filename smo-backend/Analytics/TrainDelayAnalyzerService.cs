@@ -369,7 +369,7 @@ public class TrainDelayAnalyzerService(
         logger.LogDebug("Train {TrainId} is delayed by {DelayMins} mins at {NameOfPoint}",
             train.GetTrainId(), delay / 60, lastStation.NameOfPoint);
 
-        var delays = _trainDelays.GetOrAdd(train.GetTrainId(), () => new());
+        var delays = _trainDelays.GetOrAdd(train.GetTrainId(), () => []);
         if (!delays.TryAdd(lastTimetableIndex, delay)) delays[lastTimetableIndex] = delay;
         _trainDelays.Set(train.GetTrainId(), delays);
     }

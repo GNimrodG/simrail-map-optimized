@@ -1,13 +1,13 @@
 import type { LeafletEventHandlerFn } from "leaflet";
 import type { DebouncedFunc } from "lodash";
 import debounce from "lodash/debounce";
-import isEqual from "lodash/isEqual";
 import { type FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LayerGroup, useMap } from "react-leaflet";
 import { BehaviorSubject, distinctUntilChanged, map } from "rxjs";
 
 import useBehaviorSubj from "../../hooks/useBehaviorSubj";
 import { useSetting } from "../../hooks/useSetting";
+import { isSameItems } from "../../utils/arrays";
 import { dataProvider } from "../../utils/data-manager";
 import { getVisibleSignals, goToSignal } from "../../utils/geom-utils";
 import { SignalStatus, Train } from "../../utils/types";
@@ -21,7 +21,7 @@ const shuntingSignals$ = new BehaviorSubject<SignalStatus[]>([]);
 dataProvider.signalsData$
   .pipe(
     map((signals) => signals.filter((signal) => signal.Type === "shunting")),
-    distinctUntilChanged(isEqual),
+    distinctUntilChanged(isSameItems),
   )
   .subscribe((signals) => shuntingSignals$.next(signals));
 

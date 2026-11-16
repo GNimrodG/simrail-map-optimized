@@ -61,7 +61,7 @@ const ValueLabelComponent: FunctionComponent<{ children: React.ReactNode; ownerS
         "paddingInline": "0.375rem",
         "minWidth": "24px",
       })}>
-      {(+(props.children?.toString() || 0)).toFixed(0)}%
+      {Number(typeof props.children === "number" ? props.children : 0).toFixed(0)}%
     </Box>
   );
 };

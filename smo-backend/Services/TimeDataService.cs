@@ -20,7 +20,7 @@ public class TimeDataService(
         "The timezone of the server",
         "server");
 
-    /// <inheritdoc cref="BaseServerDataService{TimeData}.FetchInterval"/>
+    /// <inheritdoc />
     protected override TimeSpan FetchInterval => TimeSpan.FromMinutes(5);
 
     // The TIME API is rate limited to 10 requests/second/IP address.

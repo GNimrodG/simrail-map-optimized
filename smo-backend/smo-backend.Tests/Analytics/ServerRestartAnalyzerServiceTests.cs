@@ -322,7 +322,7 @@ public class ServerRestartAnalyzerServiceTests(ITestOutputHelper output)
         var restarts = new List<RestartData>();
         for (var day = from; day <= to; day = day.AddDays(1))
             restarts.Add(Restart(Local(day.Year, day.Month, day.Day, hour, minute)));
-        return restarts.ToArray();
+        return [.. restarts];
     }
 
     /// <summary>

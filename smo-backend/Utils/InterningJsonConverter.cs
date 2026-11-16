@@ -114,6 +114,6 @@ public class InterningStringArrayConverter : JsonConverter<string[]?>
             if (value != null) list.Add(string.Intern(value));
         }
 
-        return list.ToArray();
+        return [.. list];
     }
 }

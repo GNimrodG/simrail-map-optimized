@@ -87,7 +87,7 @@ const LayerMenu: FunctionComponent<LayerMenuProps> = ({ visibleLayers, setVisibl
               checked={visibleLayers.includes(layer)}
               onChange={(e) => {
                 setVisibleLayers((visibleLayers: string[]) => [
-                  ...visibleLayers.filter((l) => !BACKGROUND_LAYERS.find((bl) => bl === l)),
+                  ...visibleLayers.filter((l) => !BACKGROUND_LAYERS.includes(l)),
                   ...(!visibleLayers.includes(e.target.value) ? [layer] : []),
                 ]);
               }}
@@ -130,6 +130,7 @@ const LayerMenu: FunctionComponent<LayerMenuProps> = ({ visibleLayers, setVisibl
           position: "relative",
         }}
         onClick={() => setIsOpen((isOpen) => !isOpen)}
+        aria-label={t("A11y.Layers")}
         color="neutral">
         <LayersIcon />
         {hasPartiallyVisibleMarkerGroup && (

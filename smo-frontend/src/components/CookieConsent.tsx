@@ -17,6 +17,19 @@ if (!SENTRY_DSN) {
   console.warn("Sentry DSN is not set (VITE_SENTRY_DSN at build time), error reporting is disabled.");
 }
 
+/** The feedback form (window.feedback() opens it), added while Sentry starts */
+function attachFeedbackForm(integration: { createForm: () => Promise<{ appendToDom: () => void; open: () => void }> }) {
+  integration
+    .createForm()
+    .then((form) => {
+      form.appendToDom();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).feedback = form.open;
+    })
+    .catch((e) => console.error("Failed to create the feedback form", e));
+}
+
 function initializeSentry() {
   if (!SENTRY_DSN || isSentryLoaded$.getValue()) return;
 
@@ -33,12 +46,7 @@ function initializeSentry() {
       },
     );
 
-    void feedbackIntegration.createForm().then((form) => {
-      form.appendToDom();
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).feedback = form.open;
-    });
+    attachFeedbackForm(feedbackIntegration);
 
     Sentry.init({
       dsn: SENTRY_DSN,

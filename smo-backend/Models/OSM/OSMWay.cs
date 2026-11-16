@@ -2,6 +2,7 @@
 
 public class OSMWay : OSMType
 {
-    public OSMCenter Center { get; set; }
+    /// <summary>The way's centre ("out center" in the query)</summary>
+    public OSMCenter? Center { get; set; }
     public long[] Nodes { get; set; } = [];
 }

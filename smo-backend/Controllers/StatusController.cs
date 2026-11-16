@@ -44,6 +44,8 @@ public class StatusController(
     SpawnAnalyzerService spawnAnalyzerService
 ) : ControllerBase
 {
+    private static NotFoundError ServerNotFound() => new("Server not found", "server_not_found");
+
     private static bool ValidatePassword(string? password) =>
         !string.IsNullOrWhiteSpace(StdUtils.GetEnvVar("ADMIN_PASSWORD", "")) &&
         StdUtils.GetEnvVar("ADMIN_PASSWORD", "") == password;
@@ -81,13 +83,11 @@ public class StatusController(
             .GroupBy(station => station.Name)
             .Select(group =>
             {
-                var clone = JsonSerializer.Deserialize<Station>(JsonSerializer.Serialize(group.First()));
-
-                if (clone == null)
-                    throw new("Failed to clone station");
+                var clone = JsonSerializer.Deserialize<Station>(JsonSerializer.Serialize(group.First())) ??
+                            throw new InvalidOperationException($"Failed to clone station {group.Key}");
 
                 clone.DispatchedBy =
-                    includeDispatchedBy ? group.SelectMany(station => station.DispatchedBy).ToArray() : [];
+                    includeDispatchedBy ? [.. group.SelectMany(station => station.DispatchedBy)] : [];
 
                 return clone;
             })
@@ -113,7 +113,7 @@ public class StatusController(
     public ActionResult<Train[]> GetServerTrains(string serverCode)
     {
         if (!CheckServer(serverCode))
-            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+            return NotFound(ServerNotFound());
 
         var trains = trainDataService[serverCode];
 
@@ -134,7 +134,7 @@ public class StatusController(
     public ActionResult<Train> GetTrain(string serverCode, string trainNoLocal)
     {
         if (!CheckServer(serverCode))
-            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+            return NotFound(ServerNotFound());
 
         if (!CheckTrain(serverCode, trainNoLocal))
             return NotFound(new NotFoundError("Train not found", "train_not_found"));
@@ -155,7 +155,7 @@ public class StatusController(
     public ActionResult<Dictionary<int, int>> GetTrainDelays(string serverCode, string trainNoLocal)
     {
         if (!CheckServer(serverCode))
-            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+            return NotFound(ServerNotFound());
 
         if (!CheckTrain(serverCode, trainNoLocal))
             return NotFound(new NotFoundError("Train not found", "train_not_found"));
@@ -180,7 +180,7 @@ public class StatusController(
     public async Task<ActionResult<Timetable>> GetTrainTimetable(string serverCode, string trainNoLocal)
     {
         if (!CheckServer(serverCode))
-            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+            return NotFound(ServerNotFound());
 
         var timetable = await timetableDataService.GetTimetableForTrainAsync(serverCode, trainNoLocal);
 
@@ -199,7 +199,7 @@ public class StatusController(
     public ActionResult<Station[]> GetServerStations(string serverCode)
     {
         if (!CheckServer(serverCode))
-            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+            return NotFound(ServerNotFound());
 
         var stations = stationDataService[serverCode];
 
@@ -220,7 +220,7 @@ public class StatusController(
     public ActionResult<Station> GetStation(string serverCode, string stationName)
     {
         if (!CheckServer(serverCode))
-            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+            return NotFound(ServerNotFound());
 
         if (!CheckStation(serverCode, stationName))
             return NotFound(new NotFoundError("Station not found", "station_not_found"));
@@ -241,7 +241,7 @@ public class StatusController(
     public ActionResult<SimplifiedTimetableEntry[]> GetStationTimetable(string serverCode, string stationName)
     {
         if (!CheckServer(serverCode))
-            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+            return NotFound(ServerNotFound());
 
         var timetable = timetableAnalyzerService.GetTimetableEntries(serverCode, stationName);
 
@@ -271,7 +271,7 @@ public class StatusController(
                 "invalid_station_count"));
 
         if (!CheckServer(serverCode))
-            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+            return NotFound(ServerNotFound());
 
         var timetables = names.Distinct()
             .ToDictionary(name => name, name => timetableAnalyzerService.GetTimetableEntries(serverCode, name));
@@ -289,7 +289,7 @@ public class StatusController(
     public ActionResult<TimeData> GetServerTime(string serverCode)
     {
         if (!CheckServer(serverCode))
-            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+            return NotFound(ServerNotFound());
 
         var time = timeDataService[serverCode];
 
@@ -307,7 +307,7 @@ public class StatusController(
     public ActionResult<Dictionary<string, int>> GetServerDelays(string serverCode)
     {
         if (!CheckServer(serverCode))
-            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+            return NotFound(ServerNotFound());
 
         var delays = delayAnalyzerService.GetDelaysForTrains(trainDataService[serverCode]!)
             .ToDictionary(x => x.Key, x => x.Value.Values.LastOrDefault());
@@ -326,7 +326,7 @@ public class StatusController(
     public ActionResult<ServerRestartStatusData> GetServerRestarts(string serverCode)
     {
         if (!CheckServer(serverCode))
-            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+            return NotFound(ServerNotFound());
 
         var restartData = serverRestartAnalyzerService.GetRestartData(serverCode);
 
@@ -342,7 +342,7 @@ public class StatusController(
     public ActionResult<ServerRestartPrediction> GetNextServerRestart(string serverCode)
     {
         if (!CheckServer(serverCode))
-            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+            return NotFound(ServerNotFound());
 
         return Ok(serverRestartAnalyzerService.GetNextRestartPrediction(serverCode));
     }
@@ -360,7 +360,7 @@ public class StatusController(
     public ActionResult<SpawnListEntry[]> GetSpawnList(string serverCode, [FromQuery] int hours = 2)
     {
         if (!CheckServer(serverCode))
-            return NotFound(new NotFoundError("Server not found", "server_not_found"));
+            return NotFound(ServerNotFound());
 
         if (hours is < 1 or > 6)
             return BadRequest("hours must be between 1 and 6");

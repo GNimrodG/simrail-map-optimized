@@ -786,18 +786,12 @@ public class GetSignalsForTrainsTests
     //  Testable subclass
     // ──────────────────────────────────────────────
 
-    private class TestableSignalAnalyzerService : SignalAnalyzerService
+    private class TestableSignalAnalyzerService(
+        ILogger<SignalAnalyzerService> logger,
+        IServiceScopeFactory scopeFactory,
+        SignalStatus[] signals) : SignalAnalyzerService(logger, scopeFactory)
     {
-        private readonly SignalStatus[] _signals;
-
-        public TestableSignalAnalyzerService(
-            ILogger<SignalAnalyzerService> logger,
-            IServiceScopeFactory scopeFactory,
-            SignalStatus[] signals)
-            : base(logger, scopeFactory)
-        {
-            _signals = signals;
-        }
+        private readonly SignalStatus[] _signals = signals;
 
         protected override Task<SignalStatus[]> GetSignals()
         {

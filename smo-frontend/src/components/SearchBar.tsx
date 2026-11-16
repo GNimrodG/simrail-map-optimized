@@ -11,6 +11,9 @@ import { SignalStatus, Station, Train } from "../utils/types";
 import { getSpeedColorForSignal, normalizeString } from "../utils/ui";
 import ListboxComponent from "./utils/ListBoxComponent";
 
+// much faster than localeCompare in a sort
+const nameCollator = new Intl.Collator();
+
 const filterOptions = createFilterOptions<ListItem>({
   ignoreAccents: true,
   ignoreCase: true,
@@ -27,26 +30,37 @@ const SearchBar: FunctionComponent = () => {
   const signals = useBehaviorSubj(dataProvider.signalsData$);
   const unplayableStations = useBehaviorSubj(dataProvider.unplayableStations$);
 
-  const options = useMemo(
+  // each group sorted on its own: the trains change every second, sorting the thousands of signals with them took
+  // ~15 ms each time
+  const trainOptions = useMemo(
+    () =>
+      (trains
+        ?.map((train) => ({ type: "Trains", data: train }))
+        .toSorted((a, b) => +a.data.TrainNoLocal - +b.data.TrainNoLocal) || []) as ListItem[],
+    [trains],
+  );
+  const stationOptions = useMemo(
     () =>
       [
-        ...(trains
-          ?.map((train) => ({ type: "Trains", data: train }))
-          .toSorted((a, b) => +a.data.TrainNoLocal - +b.data.TrainNoLocal) || []),
         ...(stations
           ?.map((station) => ({ type: "Stations", data: station }))
-          .toSorted((a, b) => a.data.Name.localeCompare(b.data.Name)) || []),
+          .toSorted((a, b) => nameCollator.compare(a.data.Name, b.data.Name)) || []),
         ...(unplayableStations
-          ?.map((station) => ({
-            type: "Stations",
-            data: station,
-          }))
-          .toSorted((a, b) => a.data.Name.localeCompare(b.data.Name)) || []),
-        ...(signals
-          ?.map((signal) => ({ type: "Signals", data: signal }))
-          .toSorted((a, b) => a.data.Name.localeCompare(b.data.Name)) || []),
+          ?.map((station) => ({ type: "Stations", data: station }))
+          .toSorted((a, b) => nameCollator.compare(a.data.Name, b.data.Name)) || []),
       ] as ListItem[],
-    [trains, stations, signals, unplayableStations],
+    [stations, unplayableStations],
+  );
+  const signalOptions = useMemo(
+    () =>
+      (signals
+        ?.map((signal) => ({ type: "Signals", data: signal }))
+        .toSorted((a, b) => nameCollator.compare(a.data.Name, b.data.Name)) || []) as ListItem[],
+    [signals],
+  );
+  const options = useMemo(
+    () => [...trainOptions, ...stationOptions, ...signalOptions],
+    [trainOptions, stationOptions, signalOptions],
   );
 
   const panToStation = (station: Station) => {

@@ -10,92 +10,61 @@ namespace SMOBackend.Services.ApiClients;
 /// <summary>
 ///     Response wrapper that includes Age header information for cache alignment
 /// </summary>
-public class ApiResponseWithAge<T>
+public class ApiResponseWithAge<T>(T data, TimeSpan? age, DateTime? responseDate)
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ApiResponseWithAge{T}" /> class.
-    /// </summary>
-    public ApiResponseWithAge(T data, TimeSpan? age, DateTime? responseDate)
-    {
-        Data = data;
-        Age = age;
-        ResponseDate = responseDate;
-    }
 
     /// <summary>
     ///     The data returned by the API.
     /// </summary>
-    public T Data { get; }
+    public T Data { get; } = data;
 
     /// <summary>
     ///     The age of the response, as provided by the Age header.
     /// </summary>
-    public TimeSpan? Age { get; }
+    public TimeSpan? Age { get; } = age;
 
     /// <summary>
     ///     The date and time when the response was generated, as provided by the Date header.
     /// </summary>
-    public DateTime? ResponseDate { get; }
+    public DateTime? ResponseDate { get; } = responseDate;
 }
 
 /// <summary>
 /// Exception thrown when the SimRail API is temporarily unavailable
 /// </summary>
-public class SimrailApiTemporarilyUnavailableException : Exception
+/// <param name="message">The error message that explains the reason for the exception.</param>
+/// <param name="innerException">The exception that is the cause of the current exception.</param>
+public class SimrailApiTemporarilyUnavailableException(string message, Exception innerException) : Exception(message, innerException)
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="SimrailApiTemporarilyUnavailableException" /> class.
-    /// </summary>
-    /// <param name="message">The error message that explains the reason for the exception.</param>
-    /// <param name="innerException">The exception that is the cause of the current exception.</param>
-    public SimrailApiTemporarilyUnavailableException(string message, Exception innerException)
-        : base(message, innerException)
-    {
-    }
 }
 
 /// <summary>
 ///     Exception thrown when the SimRail API returns an error response
 /// </summary>
-public class SimrailApiErrorException : Exception
+/// <param name="message">The error message from the API.</param>
+/// <param name="statusCode">The HTTP status code returned by the API.</param>
+public class SimrailApiErrorException(string message, int statusCode) : Exception(message)
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="SimrailApiErrorException" /> class.
-    /// </summary>
-    /// <param name="message">The error message from the API.</param>
-    /// <param name="statusCode">The HTTP status code returned by the API.</param>
-    public SimrailApiErrorException(string message, int statusCode)
-        : base(message)
-    {
-        StatusCode = statusCode;
-    }
 
     /// <summary>
     ///     The HTTP status code returned by the API (200 when the response said Result=false).
     /// </summary>
-    public int StatusCode { get; }
+    public int StatusCode { get; } = statusCode;
 }
 
 /// <summary>
 ///     Exception thrown when the SimRail API response cannot be parsed
 /// </summary>
-public class SimrailApiParseException : Exception
+/// <param name="message">The error message explaining the parsing issue.</param>
+/// <param name="innerException">The exception that occurred during parsing.</param>
+public class SimrailApiParseException(string message, Exception? innerException = null) : Exception(message, innerException)
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="SimrailApiParseException" /> class.
-    /// </summary>
-    /// <param name="message">The error message explaining the parsing issue.</param>
-    /// <param name="innerException">The exception that occurred during parsing.</param>
-    public SimrailApiParseException(string message, Exception? innerException = null)
-        : base(message, innerException)
-    {
-    }
 }
 
 /// <summary>
 ///     A client for the Simrail API with robust error handling and retry logic.
 /// </summary>
-public class SimrailApiClient : IDisposable
+public sealed class SimrailApiClient : IDisposable
 {
     private const string ServersOpenUrl = "https://panel.simrail.eu:8084/servers-open";
     private const string TrainsUrlPrefix = "https://panel.simrail.eu:8084/trains-open?serverCode=";
@@ -123,8 +92,10 @@ public class SimrailApiClient : IDisposable
         _maxRetries = maxRetries;
         _baseRetryDelay = baseRetryDelay ?? TimeSpan.FromSeconds(2);
 
-        _httpClient = new();
-        _httpClient.Timeout = TimeSpan.FromSeconds(30); // Set reasonable timeout
+        _httpClient = new()
+        {
+            Timeout = TimeSpan.FromSeconds(30) // Set reasonable timeout
+        };
     }
 
     /// <summary>
@@ -526,10 +497,7 @@ public class SimrailApiClient : IDisposable
             await using var jsonReader = new JsonTextReader(reader);
 
             var serializer = new JsonSerializer();
-            var result = serializer.Deserialize<T[]>(jsonReader);
-
-            if (result == null) throw new SimrailApiParseException("GetEdrTimetables response deserialized to null");
-
+            var result = serializer.Deserialize<T[]>(jsonReader) ?? throw new SimrailApiParseException("GetEdrTimetables response deserialized to null");
             return result;
         }
         catch (JsonException ex)

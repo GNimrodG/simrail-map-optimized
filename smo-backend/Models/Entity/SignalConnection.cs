@@ -41,18 +41,18 @@ public class SignalConnection : BaseEntity
         CreatedBy = trainId;
     }
 
-    [MaxLength(StdUtils.SignalNameLength)] public string Prev { get; set; }
+    [MaxLength(StdUtils.SignalNameLength)] public string Prev { get; set; } = null!;
 
-    [MaxLength(StdUtils.SignalNameLength)] public string Next { get; set; }
+    [MaxLength(StdUtils.SignalNameLength)] public string Next { get; set; } = null!;
 
     [Column(TypeName = "DOUBLE PRECISION")]
     public float Distance { get; set; }
 
     public short? VMAX { get; set; }
 
-    public Signal PrevSignal { get; set; }
+    public Signal PrevSignal { get; set; } = null!;
 
-    public Signal NextSignal { get; set; }
+    public Signal NextSignal { get; set; } = null!;
 
     /// <inheritdoc />
     public override string ToString() =>

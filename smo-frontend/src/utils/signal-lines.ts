@@ -207,7 +207,7 @@ const withConnectionLines = async (
 
 /** Darkens a hex color by the given percentage. */
 const darkenColor = (color: string, percent: number): string => {
-  const num = parseInt(color.replace("#", ""), 16);
+  const num = Number.parseInt(color.replace("#", ""), 16);
   const amount = Math.round(2.55 * percent);
   const r = Math.max(0, Math.min(255, (num >> 16) - amount));
   const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00ff) - amount));

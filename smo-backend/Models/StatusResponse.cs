@@ -13,7 +13,7 @@ public class StatusResponse(int connectedClients, Dictionary<string, int>? serve
     /// <summary>
     /// The number of connected clients per server.
     /// </summary>
-    public Dictionary<string, int> ServerClientUsageByServer { get; set; } = serverClientUsage ?? new();
+    public Dictionary<string, int> ServerClientUsageByServer { get; set; } = serverClientUsage ?? [];
 
     /// <summary>
     /// The server statuses.

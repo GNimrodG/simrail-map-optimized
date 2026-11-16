@@ -37,6 +37,18 @@ export function getBlockSignalBoards(signals: SignalStatus[]): Map<string, Block
 
 export const blockSignalBoards$ = new BehaviorSubject<Map<string, BlockSignalBoard>>(new Map());
 
+/** The boards only depend on the signals' types and connections, which the partial updates (every 5 s) don't change */
+function hasSameConnections(a: SignalStatus[], b: SignalStatus[]) {
+  return (
+    a.length === b.length &&
+    a.every(
+      (signal, i) =>
+        signal === b[i] ||
+        (signal.Name === b[i].Name && signal.Type === b[i].Type && signal.NextSignals === b[i].NextSignals),
+    )
+  );
+}
+
 dataProvider.signalsData$
-  .pipe(map(getBlockSignalBoards), distinctUntilChanged(isEqual))
+  .pipe(distinctUntilChanged(hasSameConnections), map(getBlockSignalBoards), distinctUntilChanged(isEqual))
   .subscribe((boards) => blockSignalBoards$.next(boards));
