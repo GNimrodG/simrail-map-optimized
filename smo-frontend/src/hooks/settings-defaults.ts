@@ -50,6 +50,9 @@ export const SETTINGS = {
   disableServerRestartWarning: false,
   autoZoom: false,
   autoZoomLimits: [200, 250] as [number, number],
+  /** The user's own 64-bit Steam ID ("" = not set), to follow their train or station */
+  mySteamId: "",
+  autoFollowMe: true,
   translateStationNames: false,
   reduceBackgroundUpdates: true,
   stationTimetableDefaultViewMode: "table" as "table" | "cards" | "grouped" | "lastUsed",

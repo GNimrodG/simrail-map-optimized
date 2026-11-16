@@ -17,6 +17,9 @@ import { isSentryLoaded$ } from "./data-manager";
 
 type SettingKey = keyof typeof DEFAULT_SETTINGS;
 
+/** Settings that identify the user: only whether they're set is counted, never their value. */
+const PRIVATE_SETTINGS = new Set<SettingKey>(["mySteamId"]);
+
 function sendCount(name: string, attributes: Record<string, string | number | boolean>) {
   if (!isSentryLoaded$.getValue()) return;
 
@@ -42,7 +45,7 @@ export function reportUsageSnapshot() {
     const value = readLocalStorageValue({ key, defaultValue: DEFAULT_SETTINGS[key] });
     sendCount("usage.setting", {
       setting: key,
-      value: describe(value),
+      value: PRIVATE_SETTINGS.has(key) ? String(!!value) : describe(value),
       changed: JSON.stringify(value) !== JSON.stringify(DEFAULT_SETTINGS[key]),
     });
   }
@@ -80,5 +83,8 @@ export function reportSettingChange(key: SettingKey, previous: unknown, next: un
 
   if (key === "layerOpacities") return; // a slider: every step would count
 
-  sendCount("usage.setting_change", { setting: key, value: describe(next) });
+  sendCount("usage.setting_change", {
+    setting: key,
+    value: PRIVATE_SETTINGS.has(key) ? String(!!next) : describe(next),
+  });
 }

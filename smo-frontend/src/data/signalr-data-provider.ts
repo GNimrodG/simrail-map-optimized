@@ -454,6 +454,13 @@ export class SignalRDataProvider implements IDataProvider {
     return promise;
   }
 
+  resolveSteamVanityUrl(vanityName: string): Promise<string | null> {
+    return this.connection.invoke<string | null>("ResolveSteamVanityUrl", vanityName).catch((error) => {
+      console.error("Error resolving the Steam vanity URL", vanityName, error);
+      return null;
+    });
+  }
+
   getXboxProfileData(xboxId: string): Promise<UserProfileResponse | null> {
     if (!xboxId) {
       return Promise.resolve(null);

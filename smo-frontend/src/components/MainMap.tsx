@@ -18,6 +18,7 @@ import { RAILWAY_LAYERS, railwayLayerSource } from "../utils/railway-layers";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { VERSION } from "../version";
+import AutoFollowMe from "./AutoFollowMe";
 import AutoZoomHandler from "./AutoZoom";
 import BackgroundUpdatesNotification from "./BackgroundUpdatesNotification";
 import ErrorBoundary from "./ErrorBoundary";
@@ -35,6 +36,7 @@ import SignalOrientationNotification from "./SignalOrientationNotification";
 import SimRailApiWarning from "./SimRailApiWarning";
 import SpawnListModal from "./spawns/SpawnListModal";
 import StatsDisplay from "./StatsDisplay";
+import SteamIdSuggestion from "./SteamIdSuggestion";
 import SelectedStationTimetableModal from "./timetable/SelectedStationTimetableModal";
 import ServerTrainListModal from "./trains/ServerTrainListModal";
 import RefreshableTileLayer from "./utils/RefreshableTileLayer";
@@ -386,6 +388,7 @@ const MainMap: FunctionComponent = () => {
           <ServerRestartWarning />
           <BackgroundUpdatesNotification />
           <SignalOrientationNotification />
+          <SteamIdSuggestion />
         </Stack>
         {whistleSignWarnings && selectedTrain?.follow && (
           <Box sx={{ position: "fixed", bottom: "2.5rem", left: "50%", transform: "translateX(-50%)", zIndex: 1000 }}>
@@ -397,6 +400,7 @@ const MainMap: FunctionComponent = () => {
           </Box>
         )}
         <AutoZoomHandler />
+        <AutoFollowMe />
       </MapContainer>
     </>
   );

@@ -14,6 +14,7 @@ public class SteamApiClient
     private const string BaseUrl = "https://api.steampowered.com/";
     private const string GetPlayerSummariesPath = "ISteamUser/GetPlayerSummaries/v2/";
     private const string GetUserStatsForGamePath = "ISteamUserStats/GetUserStatsForGame/v2/";
+    private const string ResolveVanityUrlPath = "ISteamUser/ResolveVanityURL/v1/";
     private const string AppId = "1422130"; // SimRail App ID
     private static readonly string DataDirectory = Path.Combine(AppContext.BaseDirectory, "data", "steam");
     private static readonly string PlayerSummaryCacheFile = Path.Combine(DataDirectory, "player-summaries-cache.bin");
@@ -48,6 +49,9 @@ public class SteamApiClient
         new(TimeSpan.FromHours(3), "PlayerSummariesCache");
 
     private readonly Lock _statsSaveLock = new();
+
+    // vanity name -> Steam ID; "" when Steam found no such profile
+    private readonly TtlCache<string, string> _vanityUrlCache = new(TimeSpan.FromHours(6), "VanityUrlCache");
 
     private readonly Lock _summariesSaveLock = new();
 
@@ -184,5 +188,38 @@ public class SteamApiClient
             _playerStatsCache.Set(steamId, data);
 
         return data;
+    }
+
+    /// <summary>
+    ///     Resolves a custom profile URL name (steamcommunity.com/id/&lt;name&gt;) to a Steam ID.
+    /// </summary>
+    /// <returns>The 64-bit Steam ID, or null when no profile has that name.</returns>
+    public async Task<string?> ResolveVanityUrl(string vanityName)
+    {
+        var key = vanityName.ToLowerInvariant();
+        lock (_vanityUrlCache)
+        {
+            if (_vanityUrlCache.TryGetValue(key, out var cached))
+            {
+                CacheHits.WithLabels("VanityUrl").Observe(1);
+                return cached.Length == 0 ? null : cached;
+            }
+        }
+
+        CacheMisses.WithLabels("VanityUrl").Observe(1);
+
+        var url = BaseUrl + ResolveVanityUrlPath + "?key=" + _apiKey + "&url_type=1&vanityurl=" +
+                  Uri.EscapeDataString(vanityName);
+        var response = await _httpClient.GetAsync(url).NoContext();
+        response.EnsureSuccessStatusCode();
+
+        var data = JsonConvert.DeserializeObject<ResolveVanityUrlResponse>(await response.Content.ReadAsStringAsync());
+        // success 1 = found, 42 = no match
+        var steamId = data?.Response.Success == 1 ? data.Response.SteamId : null;
+
+        lock (_vanityUrlCache)
+            _vanityUrlCache.Set(key, steamId ?? "");
+
+        return steamId;
     }
 }

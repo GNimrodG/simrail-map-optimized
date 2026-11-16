@@ -365,6 +365,36 @@ public class MainHub(
     }
 
     /// <summary>
+    ///     Resolves a custom Steam profile URL name (steamcommunity.com/id/&lt;name&gt;) to a Steam ID, for the
+    ///     "my Steam ID" setting.
+    /// </summary>
+    /// <param name="vanityName">The name from the profile URL.</param>
+    /// <returns>The 64-bit Steam ID, or null when no profile has that name or Steam is unavailable.</returns>
+    public async Task<string?> ResolveSteamVanityUrl(string vanityName)
+    {
+        // Steam's custom URLs are 3-32 letters, digits, '_' and '-'
+        if (string.IsNullOrEmpty(vanityName) || vanityName.Length > 32 ||
+            !vanityName.All(c => char.IsAsciiLetterOrDigit(c) || c is '_' or '-'))
+            return null;
+
+        if (!steamApiClient.IsAvailable)
+        {
+            logger.LogWarning("Steam API client is not configured, cannot resolve vanity URLs");
+            return null;
+        }
+
+        try
+        {
+            return await steamApiClient.ResolveVanityUrl(vanityName);
+        }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or Newtonsoft.Json.JsonException)
+        {
+            logger.LogError(e, "Error resolving the Steam vanity URL {VanityName}", vanityName);
+            return null;
+        }
+    }
+
+    /// <summary>
     ///     Gets the Xbox profile data for a given XUID.
     /// </summary>
     /// <param name="xuid">The XUID to fetch profile data for.</param>

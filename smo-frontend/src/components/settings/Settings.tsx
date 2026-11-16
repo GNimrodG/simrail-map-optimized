@@ -13,6 +13,7 @@ import { useSetting } from "../../hooks/useSetting";
 import { setLanguage, SUPPORTED_LANGUAGES } from "../../i18n";
 import { isRailwayLayerProvider, RAILWAY_LAYER_PROVIDERS } from "../../utils/railway-layers";
 import LayerOpacitySlider from "./LayerOpacitySlider";
+import MySteamIdSetting from "./MySteamIdSetting";
 import SettingCheckbox from "./SettingCheckbox";
 import SettingSlider from "./SettingSlider";
 
@@ -87,6 +88,7 @@ const Settings: FunctionComponent = () => {
           {t("General")}
         </Typography>
         <Stack direction="column" spacing={1}>
+          <MySteamIdSetting />
           <SettingCheckbox settingKey="useAltTracking" />
           <SettingCheckbox settingKey="disableSlidingMarkers" />
           <SettingCheckbox settingKey="showTrainHeadings" />

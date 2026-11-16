@@ -8,7 +8,7 @@ namespace SMOBackend.Services.ApiClients;
 /// <summary>
 /// Client for interacting with the OpenStreetMap Overpass API with request batching and caching
 /// </summary>
-public class OsmApiClient : IDisposable
+public sealed class OsmApiClient : IDisposable
 {
     private const string BaseUrl = "https://overpass-api.de/api/interpreter";
     private readonly Timer _batchTimer;
@@ -105,7 +105,10 @@ public class OsmApiClient : IDisposable
         return await tcs.Task;
     }
 
-    private async void ProcessBatchedRequests(object? state)
+    // Timer callback: the async work runs on its own; ProcessBatchedRequestsAsync catches its exceptions
+    private void ProcessBatchedRequests(object? state) => _ = ProcessBatchedRequestsAsync();
+
+    private async Task ProcessBatchedRequestsAsync()
     {
         lock (_timerLock)
         {
@@ -119,11 +122,11 @@ public class OsmApiClient : IDisposable
         var requestsToProcess = new Dictionary<string, TaskCompletionSource<OSMType?>>();
         while (!_pendingRequests.IsEmpty)
         {
-            foreach (var kvp in _pendingRequests)
+            foreach (var name in _pendingRequests.Select(kvp => kvp.Key))
             {
-                if (_pendingRequests.TryRemove(kvp.Key, out var tcs))
+                if (_pendingRequests.TryRemove(name, out var tcs))
                 {
-                    requestsToProcess[kvp.Key] = tcs;
+                    requestsToProcess[name] = tcs;
                 }
             }
         }
@@ -134,8 +137,10 @@ public class OsmApiClient : IDisposable
         var stopwatch = Stopwatch.StartNew();
         try
         {
-            _logger.LogInformation("Processing {Count} batched requests for signal boxes", requestsToProcess.Count);
-            _logger.LogTrace("Requests: {Requests}", string.Join(", ", requestsToProcess.Keys));
+            if (_logger.IsEnabled(LogLevel.Information))
+                _logger.LogInformation("Processing {Count} batched requests for signal boxes", requestsToProcess.Count);
+            if (_logger.IsEnabled(LogLevel.Trace))
+                _logger.LogTrace("Requests: {Requests}", string.Join(", ", requestsToProcess.Keys));
 
 
             // Build union query for all requested signal boxes using contains filter
@@ -225,8 +230,9 @@ public class OsmApiClient : IDisposable
         finally
         {
             stopwatch.Stop();
-            _logger.LogInformation("Processed {Count} batched requests in {ElapsedMilliseconds} ms",
-                requestsToProcess.Count, stopwatch.ElapsedMilliseconds);
+            if (_logger.IsEnabled(LogLevel.Information))
+                _logger.LogInformation("Processed {Count} batched requests in {ElapsedMilliseconds} ms",
+                    requestsToProcess.Count, stopwatch.ElapsedMilliseconds);
         }
     }
 

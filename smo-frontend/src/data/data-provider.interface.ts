@@ -90,4 +90,9 @@ export interface IDataProvider {
   getSteamProfileData(steamId: string): Promise<UserProfileResponse | null>;
   getSteamProfileStats(steamId: string): Promise<SteamProfileStats | null>;
   getXboxProfileData(xboxId: string): Promise<UserProfileResponse | null>;
+  /**
+   * Resolve a custom Steam profile URL name (steamcommunity.com/id/&lt;name&gt;) to a Steam ID.
+   * @return A promise that resolves to the 64-bit Steam ID, or null if no profile has that name.
+   */
+  resolveSteamVanityUrl(vanityName: string): Promise<string | null>;
 }

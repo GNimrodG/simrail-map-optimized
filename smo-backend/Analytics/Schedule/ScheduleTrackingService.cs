@@ -165,9 +165,10 @@ public class ScheduleTrackingService(
 
             // the trains gone from this server
             var current = trains.Select(t => t.GetTrainId()).ToHashSet();
-            foreach (var trainId in _tracker.TrainIds.Where(id => id.Contains($"@{data.ServerCode}-")).ToList())
-                if (!current.Contains(trainId))
-                    Forget(trainId);
+            var serverMarker = $"@{data.ServerCode}-";
+            foreach (var trainId in _tracker.TrainIds
+                         .Where(id => id.Contains(serverMarker) && !current.Contains(id)).ToList())
+                Forget(trainId);
 
             TrackedTrainsGauge.Set(_tracker.TrainIds.Count);
         }

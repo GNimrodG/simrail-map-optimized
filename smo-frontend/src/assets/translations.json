@@ -129,6 +129,21 @@
           "Label": "Auto-Zoom Limits",
           "Description": "Controls how many objects are needed to trigger auto-zoom. If the two values are too close, the map will start zooming in and out frequently."
         },
+        "mySteamId": {
+          "Label": "My Steam ID",
+          "Placeholder": "Steam profile link or Steam ID",
+          "Save": "Save",
+          "Clear": "Remove",
+          "Description": "Your Steam profile link (steamcommunity.com/profiles/… or /id/…) or your Steam ID. Stays in this browser.",
+          "Errors": {
+            "Invalid": "That's not a Steam profile link or Steam ID.",
+            "NotFound": "No Steam profile found with that link."
+          }
+        },
+        "autoFollowMe": {
+          "Label": "Follow my train or station",
+          "Description": "When you take over a train or a station on the selected server, the map follows it."
+        },
         "translateStationNames": {
           "Label": "Translate station names",
           "Description": "Translate station names to the selected language. This may not work for all stations."
@@ -392,6 +407,11 @@
         "Description": "Signal icons are now turned to the direction of travel they apply to, so you can see which way a signal faces. If you prefer north-aligned signal icons, you can turn this off here or later in the settings.",
         "GotIt": "Got it!",
         "NorthAligned": "Use north-aligned icons"
+      },
+      "SteamIdSuggestion": {
+        "Title": "Follow your own train",
+        "Description": "Enter your Steam profile link or Steam ID, and the map follows your train or shows your station as soon as you take one over. You can change it later in the settings.",
+        "NoThanks": "No thanks"
       },
       "VersionCheck": {
         "UpdateAvailable": "Update Available",
@@ -657,6 +677,21 @@
           "Label": "Auto-Zoom-Grenzen",
           "Description": "Steuerung, wie viele Objekte benötigt werden, um den Auto-Zoom auszulösen. Wenn die beiden Werte zu nah beieinander liegen, wird die Karte häufig ein- und auszoomen."
         },
+        "mySteamId": {
+          "Label": "Meine Steam-ID",
+          "Placeholder": "Steam-Profillink oder Steam-ID",
+          "Save": "Speichern",
+          "Clear": "Entfernen",
+          "Description": "Dein Steam-Profillink (steamcommunity.com/profiles/… oder /id/…) oder deine Steam-ID. Bleibt in diesem Browser.",
+          "Errors": {
+            "Invalid": "Das ist kein Steam-Profillink und keine Steam-ID.",
+            "NotFound": "Kein Steam-Profil mit diesem Link gefunden."
+          }
+        },
+        "autoFollowMe": {
+          "Label": "Meinem Zug oder Stellwerk folgen",
+          "Description": "Wenn du auf dem ausgewählten Server einen Zug oder ein Stellwerk übernimmst, folgt ihm die Karte."
+        },
         "translateStationNames": {
           "Label": "Bahnhofsnamen übersetzen",
           "Description": "Bahnhofsnamen in die ausgewählte Sprache übersetzen. Dies funktioniert möglicherweise nicht für alle Bahnhöfe."
@@ -920,6 +955,11 @@
         "Description": "Signalsymbole sind jetzt in die Fahrtrichtung gedreht, für die sie gelten, so sieht man, in welche Richtung ein Signal zeigt. Wenn du nach Norden ausgerichtete Symbole bevorzugst, kannst du das hier oder später in den Einstellungen ausschalten.",
         "GotIt": "Verstanden!",
         "NorthAligned": "Nach Norden ausrichten"
+      },
+      "SteamIdSuggestion": {
+        "Title": "Folge deinem eigenen Zug",
+        "Description": "Gib deinen Steam-Profillink oder deine Steam-ID ein, und die Karte folgt deinem Zug oder zeigt dein Stellwerk, sobald du eines übernimmst. Du kannst das später in den Einstellungen ändern.",
+        "NoThanks": "Nein, danke"
       },
       "VersionCheck": {
         "UpdateAvailable": "Update verfügbar",
@@ -1186,6 +1226,21 @@
           "Label": "Automatikus nagyítás korlátai",
           "Description": "Szabályozza, hogy hány objektum szükséges az automatikus nagyításhoz. Ha a két érték túl közel van egymáshoz, a térkép gyakran nagyít és kicsinyít."
         },
+        "mySteamId": {
+          "Label": "Saját Steam ID",
+          "Placeholder": "Steam-profil link vagy Steam ID",
+          "Save": "Mentés",
+          "Clear": "Eltávolítás",
+          "Description": "A Steam-profilod linkje (steamcommunity.com/profiles/… vagy /id/…) vagy a Steam ID-d. Csak ebben a böngészőben marad.",
+          "Errors": {
+            "Invalid": "Ez nem Steam-profil link és nem Steam ID.",
+            "NotFound": "Nincs Steam-profil ezzel a linkkel."
+          }
+        },
+        "autoFollowMe": {
+          "Label": "A saját vonatom vagy állomásom követése",
+          "Description": "Ha a kiválasztott szerveren átveszel egy vonatot vagy állomást, a térkép követi."
+        },
         "translateStationNames": {
           "Label": "Állomás nevek fordítása",
           "Description": "Állomás nevek fordítása a kiválasztott nyelvre. Ez nem minden állomásnál működik."
@@ -1449,6 +1504,11 @@
         "Description": "A jelzőikonok mostantól abba a menetirányba fordulnak, amelyre vonatkoznak, így látszik, merre néz egy jelző. Ha az északra igazított ikonokat szereted, itt vagy később a beállításokban kikapcsolhatod.",
         "GotIt": "Értem!",
         "NorthAligned": "Északra igazított ikonok használata"
+      },
+      "SteamIdSuggestion": {
+        "Title": "Kövesd a saját vonatodat",
+        "Description": "Add meg a Steam-profilod linkjét vagy a Steam ID-det, és a térkép követi a vonatodat, vagy megmutatja az állomásodat, amint átveszel egyet. Később a beállításokban módosíthatod.",
+        "NoThanks": "Nem, köszönöm"
       },
       "VersionCheck": {
         "UpdateAvailable": "Frissítés elérhető",
@@ -1719,6 +1779,21 @@
           "Label": "Otomatik Yakınlaştırma Sınırları",
           "Description": "Otomatik yakınlaştırmanın tetiklenmesi için kaç nesne gerektiğini kontrol eder. İki değer birbirine çok yakınsa, harita sık sık yakınlaşıp uzaklaşmaya başlar."
         },
+        "mySteamId": {
+          "Label": "Steam kimliğim",
+          "Placeholder": "Steam profil bağlantısı veya Steam kimliği",
+          "Save": "Kaydet",
+          "Clear": "Kaldır",
+          "Description": "Steam profil bağlantın (steamcommunity.com/profiles/… veya /id/…) ya da Steam kimliğin. Yalnızca bu tarayıcıda saklanır.",
+          "Errors": {
+            "Invalid": "Bu bir Steam profil bağlantısı veya Steam kimliği değil.",
+            "NotFound": "Bu bağlantıyla bir Steam profili bulunamadı."
+          }
+        },
+        "autoFollowMe": {
+          "Label": "Trenimi veya istasyonumu takip et",
+          "Description": "Seçili sunucuda bir treni veya istasyonu devraldığında harita onu takip eder."
+        },
         "translateStationNames": {
           "Label": "İstasyon adlarını çevir",
           "Description": "İstasyon adlarını seçilen dile çevirir. Bu her istasyon için çalışmayabilir."
@@ -1982,6 +2057,11 @@
         "Description": "Sinyal simgeleri artık geçerli oldukları seyir yönüne döndürülüyor, böylece bir sinyalin hangi yöne baktığı görülebilir. Kuzeye hizalı simgeleri tercih ederseniz bunu burada veya daha sonra ayarlardan kapatabilirsiniz.",
         "GotIt": "Anladım!",
         "NorthAligned": "Kuzeye hizalı simgeler"
+      },
+      "SteamIdSuggestion": {
+        "Title": "Kendi trenini takip et",
+        "Description": "Steam profil bağlantını veya Steam kimliğini gir; bir treni veya istasyonu devraldığın anda harita onu takip eder. Bunu daha sonra ayarlardan değiştirebilirsin.",
+        "NoThanks": "Hayır, teşekkürler"
       },
       "VersionCheck": {
         "UpdateAvailable": "Güncelleme Mevcut",
@@ -2250,6 +2330,21 @@
           "Label": "Limity automatycznego przybliżania",
           "Description": "Kontroluje, ile obiektów jest wymaganych do automatycznego przybliżenia. Jeśli oba wartości są zbyt blisko siebie, mapa często przybliża i oddala."
         },
+        "mySteamId": {
+          "Label": "Mój Steam ID",
+          "Placeholder": "Link do profilu Steam lub Steam ID",
+          "Save": "Zapisz",
+          "Clear": "Usuń",
+          "Description": "Link do Twojego profilu Steam (steamcommunity.com/profiles/… lub /id/…) albo Twój Steam ID. Zostaje tylko w tej przeglądarce.",
+          "Errors": {
+            "Invalid": "To nie jest link do profilu Steam ani Steam ID.",
+            "NotFound": "Nie znaleziono profilu Steam pod tym linkiem."
+          }
+        },
+        "autoFollowMe": {
+          "Label": "Śledź mój pociąg lub posterunek",
+          "Description": "Gdy przejmiesz pociąg lub posterunek na wybranym serwerze, mapa będzie go śledzić."
+        },
         "translateStationNames": {
           "Label": "Tłumacz nazwy stacji",
           "Description": "Tłumaczy nazwy stacji na wybrany język. Może to nie działać dla każdej stacji."
@@ -2513,6 +2608,11 @@
         "Description": "Ikony sygnalizatorów są teraz obrócone w kierunku jazdy, którego dotyczą, więc widać, w którą stronę zwrócony jest sygnalizator. Jeśli wolisz ikony skierowane na północ, możesz to wyłączyć tutaj lub później w ustawieniach.",
         "GotIt": "Rozumiem!",
         "NorthAligned": "Ikony skierowane na północ"
+      },
+      "SteamIdSuggestion": {
+        "Title": "Śledź swój pociąg",
+        "Description": "Podaj link do swojego profilu Steam lub Steam ID, a mapa będzie śledzić Twój pociąg albo pokaże Twój posterunek, gdy tylko go przejmiesz. Możesz to później zmienić w ustawieniach.",
+        "NoThanks": "Nie, dziękuję"
       },
       "VersionCheck": {
         "UpdateAvailable": "Dostępna aktualizacja",
@@ -2778,6 +2878,21 @@
           "Label": "Пределы авто-масштаба",
           "Description": "Управляет количеством объектов, необходимых для запуска авто-масштаба. Если два значения слишком близки, карта начнёт часто масштабироваться."
         },
+        "mySteamId": {
+          "Label": "Мой Steam ID",
+          "Placeholder": "Ссылка на профиль Steam или Steam ID",
+          "Save": "Сохранить",
+          "Clear": "Удалить",
+          "Description": "Ссылка на ваш профиль Steam (steamcommunity.com/profiles/… или /id/…) или ваш Steam ID. Хранится только в этом браузере.",
+          "Errors": {
+            "Invalid": "Это не ссылка на профиль Steam и не Steam ID.",
+            "NotFound": "Профиль Steam по этой ссылке не найден."
+          }
+        },
+        "autoFollowMe": {
+          "Label": "Следить за моим поездом или станцией",
+          "Description": "Когда вы берёте поезд или станцию на выбранном сервере, карта следит за ними."
+        },
         "translateStationNames": {
           "Label": "Переводить названия станций",
           "Description": "Переводить названия станций на выбранный язык. Это может не работать для всех станций."
@@ -3041,6 +3156,11 @@
         "Description": "Значки светофоров теперь повёрнуты в направлении движения, к которому они относятся, так видно, куда смотрит светофор. Если вы предпочитаете значки, ориентированные на север, можно отключить это здесь или позже в настройках.",
         "GotIt": "Понятно!",
         "NorthAligned": "Значки на север"
+      },
+      "SteamIdSuggestion": {
+        "Title": "Следите за своим поездом",
+        "Description": "Укажите ссылку на свой профиль Steam или Steam ID, и карта будет следить за вашим поездом или покажет вашу станцию, как только вы их возьмёте. Это можно изменить позже в настройках.",
+        "NoThanks": "Нет, спасибо"
       },
       "VersionCheck": {
         "UpdateAvailable": "Доступно обновление",
@@ -3306,6 +3426,21 @@
           "Label": "Межі авто-масштабу",
           "Description": "Керує кількістю об'єктів, необхідних для запуску авто-масштабу. Якщо два значення занадто близькі, карта почне часто масштабуватися."
         },
+        "mySteamId": {
+          "Label": "Мій Steam ID",
+          "Placeholder": "Посилання на профіль Steam або Steam ID",
+          "Save": "Зберегти",
+          "Clear": "Видалити",
+          "Description": "Посилання на ваш профіль Steam (steamcommunity.com/profiles/… або /id/…) або ваш Steam ID. Зберігається лише в цьому браузері.",
+          "Errors": {
+            "Invalid": "Це не посилання на профіль Steam і не Steam ID.",
+            "NotFound": "Профіль Steam за цим посиланням не знайдено."
+          }
+        },
+        "autoFollowMe": {
+          "Label": "Стежити за моїм потягом або станцією",
+          "Description": "Коли ви берете потяг або станцію на вибраному сервері, мапа стежить за ними."
+        },
         "translateStationNames": {
           "Label": "Перекладати назви станцій",
           "Description": "Перекладати назви станцій на обрану мову. Це може не працювати для всіх станцій."
@@ -3569,6 +3704,11 @@
         "Description": "Значки світлофорів тепер повернуті в напрямку руху, до якого вони належать, тож видно, куди дивиться світлофор. Якщо ви віддаєте перевагу значкам, орієнтованим на північ, це можна вимкнути тут або пізніше в налаштуваннях.",
         "GotIt": "Зрозуміло!",
         "NorthAligned": "Значки на північ"
+      },
+      "SteamIdSuggestion": {
+        "Title": "Стежте за своїм потягом",
+        "Description": "Вкажіть посилання на свій профіль Steam або Steam ID, і мапа стежитиме за вашим потягом або покаже вашу станцію, щойно ви їх візьмете. Це можна змінити пізніше в налаштуваннях.",
+        "NoThanks": "Ні, дякую"
       },
       "VersionCheck": {
         "UpdateAvailable": "Доступне оновлення",
