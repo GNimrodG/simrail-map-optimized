@@ -142,7 +142,8 @@ public class ScheduleTrackingService(
                 return;
 
             var now = TrainDelayAnalyzerService.CalculateServerTime(timeData);
-            var trainsById = trains.ToDictionary(t => t.Id);
+            // SimRail's train list sometimes has a train twice for a moment: keep the first (as TrainPositionDataService)
+            var trainsById = trains.DistinctBy(t => t.Id).ToDictionary(t => t.Id);
 
             foreach (var position in data.Data)
             {
