@@ -5,6 +5,7 @@ import { type FunctionComponent, useCallback, useEffect, useMemo, useRef, useSta
 import { LayerGroup, useMap } from "react-leaflet";
 
 import useBehaviorSubj from "../../hooks/useBehaviorSubj";
+import useProgressiveList from "../../hooks/useProgressiveList";
 import { useSetting } from "../../hooks/useSetting";
 import { dataProvider } from "../../utils/data-manager";
 import {
@@ -79,9 +80,11 @@ const DependentSignalsLayer: FunctionComponent<DependentSignalsLayerProps> = ({ 
     [map],
   );
 
+  const shownSignals = useProgressiveList(visibleSignals);
+
   return (
     <LayerGroup pane={`${type}SignalsPane`}>
-      {visibleSignals.map((signal) => {
+      {shownSignals.map((signal) => {
         const mainSignal = findMainSignal(signal.Name, type, signalLookup);
         return (
           <DependentSignalMarker

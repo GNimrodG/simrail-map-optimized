@@ -5,6 +5,7 @@ import { type FunctionComponent, useEffect, useRef, useState } from "react";
 import { LayerGroup, useMap } from "react-leaflet";
 
 import useBehaviorSubj from "../../hooks/useBehaviorSubj";
+import useProgressiveList from "../../hooks/useProgressiveList";
 import { dataProvider } from "../../utils/data-manager";
 import { getVisibleStations } from "../../utils/geom-utils";
 import { Station } from "../../utils/types";
@@ -53,9 +54,11 @@ const UnplayableStationsLayer: FunctionComponent = () => {
     }
   }, [unplayableStations, map]);
 
+  const shownStations = useProgressiveList(visibleStations);
+
   return (
     <LayerGroup pane="unplayableStationsPane">
-      {visibleStations.map((station) => (
+      {shownStations.map((station) => (
         <UnplayableStation key={station.Name} station={station} />
       ))}
     </LayerGroup>

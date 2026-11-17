@@ -3,6 +3,7 @@ import { LayerGroup, useMap } from "react-leaflet";
 
 import CrossingSignsData from "../../assets/crossing-signs.json";
 import CrossingsData from "../../assets/crossings.json";
+import useProgressiveList from "../../hooks/useProgressiveList";
 import { isSameItems } from "../../utils/arrays";
 import { Crossing, CrossingSign } from "../../utils/types";
 import CrossingMarker from "../markers/crossings/CrossingMarker";
@@ -57,16 +58,19 @@ const CrossingsLayer: FunctionComponent = () => {
     };
   }, [map]);
 
+  const shownCrossings = useProgressiveList(visibleCrossings);
+  const shownSigns = useProgressiveList(visibleSigns);
+
   if (!visibleCrossings.length && !visibleSigns.length) {
     return null;
   }
 
   return (
     <LayerGroup pane="crossingsPane">
-      {visibleCrossings.map((crossing) => (
+      {shownCrossings.map((crossing) => (
         <CrossingMarker key={crossing.id} crossing={crossing} showLabel={showLabels} />
       ))}
-      {visibleSigns.map((sign) => (
+      {shownSigns.map((sign) => (
         <CrossingSignMarker key={sign.id} sign={sign} />
       ))}
     </LayerGroup>

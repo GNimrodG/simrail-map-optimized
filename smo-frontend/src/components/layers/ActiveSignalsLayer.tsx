@@ -6,6 +6,7 @@ import { LayerGroup, useMap } from "react-leaflet";
 import { BehaviorSubject, distinctUntilChanged, map } from "rxjs";
 
 import useBehaviorSubj from "../../hooks/useBehaviorSubj";
+import useProgressiveList from "../../hooks/useProgressiveList";
 import { useSetting } from "../../hooks/useSetting";
 import { isSameItems } from "../../utils/arrays";
 import { dataProvider } from "../../utils/data-manager";
@@ -108,9 +109,11 @@ const ActiveSignalsLayer: FunctionComponent = () => {
     [map],
   );
 
+  const shownSignals = useProgressiveList(visibleSignals);
+
   return (
     <LayerGroup pane="activeSignalsPane">
-      {visibleSignals.map((signal) => (
+      {shownSignals.map((signal) => (
         <SignalMarker
           key={"signal_" + signal.Name}
           signal={signal}

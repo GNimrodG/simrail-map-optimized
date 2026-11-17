@@ -4,6 +4,7 @@ import { type FunctionComponent, useContext, useEffect, useState } from "react";
 import { LayerGroup, useMap } from "react-leaflet";
 
 import useBehaviorSubj from "../../hooks/useBehaviorSubj";
+import useProgressiveList from "../../hooks/useProgressiveList";
 import { dataProvider } from "../../utils/data-manager";
 import SelectedTrainContext from "../../utils/selected-train-context";
 import { Train } from "../../utils/types";
@@ -90,9 +91,11 @@ const TrainsLayer: FunctionComponent<TrainsLayerProps> = ({ markerType }) => {
     }
   }, [trains, map, markerType, selectedTrain?.trainNo]);
 
+  const shownTrains = useProgressiveList(visibleTrains);
+
   return (
     <LayerGroup pane="trainsPane">
-      {visibleTrains.map((train) => (
+      {shownTrains.map((train) => (
         <TrainMarker key={"train_" + train.Id} train={train} layerId={`${markerType}-trains`} />
       ))}
     </LayerGroup>

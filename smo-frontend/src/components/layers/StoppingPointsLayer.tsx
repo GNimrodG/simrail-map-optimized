@@ -2,6 +2,7 @@
 import { LayerGroup, useMap } from "react-leaflet";
 
 import StoppingPointsData from "../../assets/stopping-points.json";
+import useProgressiveList from "../../hooks/useProgressiveList";
 import { OsmNode } from "../../utils/types";
 import StoppingPointMarker from "../markers/stopping-points/StoppingPointMarker";
 
@@ -56,13 +57,15 @@ const StoppingPointsLayer: FunctionComponent = () => {
     };
   }, [map]);
 
+  const shownStoppingPoints = useProgressiveList(visibleStoppingPoints);
+
   if (!visibleStoppingPoints.length) {
     return null;
   }
 
   return (
     <LayerGroup pane="stoppingPointsPane">
-      {visibleStoppingPoints.map((stop) => (
+      {shownStoppingPoints.map((stop) => (
         <StoppingPointMarker key={stop.id} stop={stop} />
       ))}
     </LayerGroup>
