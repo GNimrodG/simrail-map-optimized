@@ -311,13 +311,15 @@ public class TtlCacheTests
     [Fact]
     public async Task TtlExpiration_OnlyRemovesExpiredEntries_KeepsValid()
     {
-        using var cache = new TtlCache<string, int>(TimeSpan.FromMilliseconds(200));
+        // Wide margins: Task.Delay never ends early but can end late on a busy CI runner (with a 200 ms TTL and 80 ms of
+        // slack, key2 expired there). key1 is past its TTL no matter how late the delays end; key2 has 400 ms to spare.
+        using var cache = new TtlCache<string, int>(TimeSpan.FromMilliseconds(1000));
         cache.Add("key1", 1);
 
-        await Task.Delay(100);
+        await Task.Delay(600);
         cache.Add("key2", 2);
 
-        await Task.Delay(120); // key1 should be expired, key2 should still be valid
+        await Task.Delay(600); // key1 should be expired, key2 should still be valid
 
         cache.ContainsKey("key1").Should().BeFalse();
         cache.ContainsKey("key2").Should().BeTrue();
