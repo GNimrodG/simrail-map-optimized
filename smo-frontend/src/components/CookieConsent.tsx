@@ -50,6 +50,9 @@ function initializeSentry() {
 
     Sentry.init({
       dsn: SENTRY_DSN,
+      // through this domain (nginx.conf forwards it to Sentry): tracking protection and blockers drop requests to
+      // sentry.io, even for visitors who accepted the cookies
+      tunnel: import.meta.env.PROD ? "/smo-events" : undefined,
       integrations: [
         Sentry.browserTracingIntegration(),
         Sentry.replayIntegration({
