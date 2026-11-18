@@ -41,6 +41,7 @@
           "stats": "Stats",
           "stoppingpoints": "Stopping Points",
           "crossings": "Level Crossings",
+          "platforms": "Platforms",
           "playable-area": "Playable Area"
         }
       },
@@ -594,6 +595,7 @@
           "stats": "Statistiken",
           "stoppingpoints": "Haltepunkte",
           "crossings": "Bahnübergänge",
+          "platforms": "Bahnsteige",
           "playable-area": "Spielbarer Bereich"
         }
       },
@@ -1148,6 +1150,7 @@
           "stats": "Statisztikák",
           "stoppingpoints": "Megállóhelyek",
           "crossings": "Vasúti átjárók",
+          "platforms": "Peronok",
           "playable-area": "Játszható terület"
         }
       },
@@ -1706,6 +1709,7 @@
           "stats": "İstatistikler",
           "stoppingpoints": "Duraklar",
           "crossings": "Hemzemin Geçitler",
+          "platforms": "Peronlar",
           "playable-area": "Oynanabilir Alan"
         }
       },
@@ -2262,6 +2266,7 @@
           "stats": "Statystyki",
           "stoppingpoints": "Punkty Postojowe",
           "crossings": "Przejazdy kolejowe",
+          "platforms": "Perony",
           "playable-area": "Obszar Grywalny"
         }
       },
@@ -2815,6 +2820,7 @@
           "stats": "Статистика",
           "stoppingpoints": "Остановочные пункты",
           "crossings": "Железнодорожные переезды",
+          "platforms": "Платформы",
           "playable-area": "Игровая зона"
         }
       },
@@ -3368,6 +3374,7 @@
           "stats": "Статистика",
           "stoppingpoints": "Зупинні пункти",
           "crossings": "Залізничні переїзди",
+          "platforms": "Платформи",
           "playable-area": "Ігрова зона"
         }
       },

@@ -42,6 +42,7 @@ export const SETTINGS = {
     "unplayable-stations": 1,
     "stoppingpoints": 1,
     "crossings": 1,
+    "platforms": 1,
     "playable-area": 1,
   } as Record<string, number>,
   rotateSignalIcons: true,

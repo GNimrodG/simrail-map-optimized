@@ -45,6 +45,12 @@ export function railwayLayerSource(layer: RailwayLayer, chosen: string) {
       };
 }
 
+/** The platforms of the game's stations, an overlay of the Railmap (from the game's route data) */
+export const RAILMAP_PLATFORMS = {
+  url: `${RAILMAP_TILES}/platforms/{z}/{x}/{y}{r}.png`,
+  attribution: RAILMAP_ATTRIBUTION,
+};
+
 /** The translation key of a railway layer's name, which names its provider. */
 export function railwayLayerLabelKey(layer: string, chosen: string) {
   return railwayLayerProvider(layer, chosen) === "railmap"

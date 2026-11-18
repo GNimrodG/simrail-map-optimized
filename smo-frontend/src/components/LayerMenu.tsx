@@ -25,7 +25,15 @@ const SIGNAL_LAYER_GROUP = {
 
 const LAYER_GROUPS = [...MARKER_LAYER_GROUPS, SIGNAL_LAYER_GROUP];
 
-const LAYERS = ["selected-route", "unplayable-stations", "stoppingpoints", "crossings", "playable-area", "stats"];
+const LAYERS = [
+  "selected-route",
+  "unplayable-stations",
+  "stoppingpoints",
+  "crossings",
+  "platforms",
+  "playable-area",
+  "stats",
+];
 
 export interface LayerMenuProps {
   visibleLayers: string[];

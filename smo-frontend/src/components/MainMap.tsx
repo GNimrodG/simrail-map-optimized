@@ -14,7 +14,7 @@ import { useSetting } from "../hooks/useSetting";
 import { dataProvider } from "../utils/data-manager";
 import { goToSignal } from "../utils/geom-utils";
 import MapLinesContext from "../utils/map-lines-context";
-import { RAILWAY_LAYERS, railwayLayerSource } from "../utils/railway-layers";
+import { RAILMAP_PLATFORMS, RAILWAY_LAYERS, railwayLayerSource } from "../utils/railway-layers";
 import SelectedRouteContext from "../utils/selected-route-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import { VERSION } from "../version";
@@ -301,6 +301,14 @@ const MainMap: FunctionComponent = () => {
             />
           );
         })}
+        {visibleLayers.includes("platforms") && (
+          <RefreshableTileLayer
+            className={alternativeTheme ? "alternativelayers" : "defaultmap"}
+            attribution={RAILMAP_PLATFORMS.attribution}
+            url={RAILMAP_PLATFORMS.url}
+            opacity={layerOpacities["platforms"]}
+          />
+        )}
 
         {panesCreated && (
           <Suspense fallback={<Loading color="success" />}>
