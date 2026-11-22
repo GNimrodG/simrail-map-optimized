@@ -16,8 +16,8 @@
   recompile every
        minute; can be overridden with -p:SmoVersion=... -->
   <PropertyGroup>
-    <SmoVersion Condition="'$(SmoVersion)' == '' And '$(Configuration)' == 'Release'">
-      $([System.DateTime]::UtcNow.ToString("yyyy.MM.dd.HHmm"))</SmoVersion>
+    <!-- on one line: the .NET 11 SDK keeps the whitespace around a value in the version attribute -->
+    <SmoVersion Condition="'$(SmoVersion)' == '' And '$(Configuration)' == 'Release'">$([System.DateTime]::UtcNow.ToString("yyyy.MM.dd.HHmm"))</SmoVersion>
     <SmoVersion Condition="'$(SmoVersion)' == ''">dev</SmoVersion>
     <InformationalVersion>$(SmoVersion)</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
