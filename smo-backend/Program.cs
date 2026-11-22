@@ -97,9 +97,9 @@ builder.Services.AddOpenApi(options =>
                     ["200"] = new OpenApiResponse
                     {
                         Description = "Prometheus metrics in text format",
-                        Content = new Dictionary<string, OpenApiMediaType>
+                        Content = new Dictionary<string, IOpenApiMediaType>
                         {
-                            ["text/plain"] = new()
+                            ["text/plain"] = new OpenApiMediaType
                             {
                                 Schema = new OpenApiSchema
                                 {
@@ -128,9 +128,9 @@ builder.Services.AddOpenApi(options =>
                     ["200"] = new OpenApiResponse
                     {
                         Description = "Health check response",
-                        Content = new Dictionary<string, OpenApiMediaType>
+                        Content = new Dictionary<string, IOpenApiMediaType>
                         {
-                            ["text/plain"] = new()
+                            ["text/plain"] = new OpenApiMediaType
                             {
                                 Schema = new OpenApiSchema
                                 {

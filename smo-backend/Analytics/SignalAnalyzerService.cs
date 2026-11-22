@@ -1242,7 +1242,7 @@ public partial class SignalAnalyzerService : IHostedService, IServerMetricsClean
             // The same error is reported over and over (PK on prev/next/error). ON CONFLICT skips duplicates without
             // a failing command, which EF would log as an error (and Sentry would report) even when caught.
             var now = DateTime.UtcNow;
-            await context.Database.ExecuteSqlInterpolatedAsync(
+            await context.Database.ExecuteSqlAsync(
                 $"""
                  INSERT INTO signal_connection_errors (prev, next, error, vmax, checked, distance, created_by, created_at, updated_at)
                  VALUES ({prev}, {next}, {errorText}, {vmax}, FALSE, 0, {trainId}, {now}, {now})
