@@ -5,6 +5,7 @@ import ReactCookieConsent, { getCookieConsentValue } from "react-cookie-consent"
 import { Trans, useTranslation } from "react-i18next";
 
 import i18n from "../i18n";
+import { isReloadingForNewBuild } from "../utils/chunk-reload";
 import { isSentryLoaded$ } from "../utils/data-manager";
 import { reportUsageSnapshot } from "../utils/usage-stats";
 import { VERSION } from "../version";
@@ -70,6 +71,13 @@ function initializeSentry() {
       // Session Replay
       replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
       replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
+      ignoreErrors: [
+        // Leaflet's Draggable sometimes gets the Document as event target (Firefox) and reads className.baseVal on it;
+        // only Leaflet frames, harmless, nothing in SMO reads baseVal
+        /\bbaseVal\b/,
+      ],
+      // a stale tab is reloading for the new build: errors until it unloads are just the old chunks going missing
+      beforeSend: (event) => (isReloadingForNewBuild() ? null : event),
     });
 
     // the UI language, to tell apart users of the built-in translations from browser translation

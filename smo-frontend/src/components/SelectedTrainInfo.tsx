@@ -1,5 +1,5 @@
 import Sheet from "@mui/joy/Sheet";
-import { type FunctionComponent, lazy, Suspense, useContext, useEffect, useMemo, useState } from "react";
+import { type FunctionComponent, Suspense, useContext, useEffect, useMemo, useState } from "react";
 import { useMap } from "react-leaflet";
 import { debounceTime, fromEvent, throttleTime } from "rxjs";
 
@@ -7,12 +7,13 @@ import useBehaviorSubj from "../hooks/useBehaviorSubj";
 import { useIsDocumentFocused } from "../hooks/useIsDocumentFocused";
 import { useProfileData } from "../hooks/useProfileData";
 import { useSetting } from "../hooks/useSetting";
+import { lazyChunk } from "../utils/chunk-reload";
 import { dataProvider } from "../utils/data-manager";
 import MapLinesContext from "../utils/map-lines-context";
 import SelectedTrainContext from "../utils/selected-train-context";
 import Loading from "./Loading";
 
-const TrainMarkerPopup = lazy(() => import("./markers/train/TrainMarkerPopup"));
+const TrainMarkerPopup = lazyChunk(() => import("./markers/train/TrainMarkerPopup"));
 
 const SelectedTrainInfo: FunctionComponent = () => {
   const map = useMap();

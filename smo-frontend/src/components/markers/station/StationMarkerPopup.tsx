@@ -14,16 +14,7 @@ import Tabs from "@mui/joy/Tabs";
 import Tooltip from "@mui/joy/Tooltip";
 import Typography from "@mui/joy/Typography";
 import L from "leaflet";
-import {
-  type FunctionComponent,
-  lazy,
-  Suspense,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-  useTransition,
-} from "react";
+import { type FunctionComponent, Suspense, useCallback, useContext, useMemo, useState, useTransition } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { useMap } from "react-leaflet";
 
@@ -31,6 +22,7 @@ import _stationLayouts from "../../../assets/station-layouts.json";
 import _wikiLinks from "../../../assets/wiki-links.json";
 import useSpawnList from "../../../hooks/useSpawnList";
 import useStationTimetableEntries from "../../../hooks/useStationTimetableEntries";
+import { lazyChunk } from "../../../utils/chunk-reload";
 import { dataProvider } from "../../../utils/data-manager";
 import { getSignalsForStation, goToSignal, loadStationGeometry } from "../../../utils/geom-utils";
 import SelectedStationTimetableContext from "../../../utils/selected-station-timetable-context";
@@ -44,7 +36,7 @@ import XboxProfileDisplay from "../../profile/XboxProfileDisplay";
 import SignalSpeedDisplay from "../../utils/SignalSpeedDisplay";
 import RemoteControlStationDisplay from "./RemoteControlStationDisplay";
 
-const StationLayout = lazy(() => import("../../StationLayout"));
+const StationLayout = lazyChunk(() => import("../../StationLayout"));
 
 type StationLayouts = Record<
   string,

@@ -3,17 +3,18 @@ import "@fontsource/inter";
 
 import CssBaseline from "@mui/joy/CssBaseline";
 import { CssVarsProvider } from "@mui/joy/styles";
-import { lazy, Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 
 import CookieConsent from "./components/CookieConsent";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Loading from "./components/Loading";
 import SelectedStationTimetableProvider from "./components/SelectedStationTimetableProvider";
 import SelectedTrainProvider from "./components/SelectedTrainProvider";
+import { lazyChunk } from "./utils/chunk-reload";
 import MapLinesContext, { MapLineData } from "./utils/map-lines-context";
 import SelectedRouteContext from "./utils/selected-route-context";
 
-const MainMap = lazy(() => import("./components/MainMap"));
+const MainMap = lazyChunk(() => import("./components/MainMap"));
 
 function App() {
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);

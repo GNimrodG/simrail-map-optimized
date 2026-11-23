@@ -4,13 +4,14 @@ import { useHotkeys } from "@mantine/hooks";
 import Box from "@mui/joy/Box";
 import Stack from "@mui/joy/Stack";
 import L from "leaflet";
-import { type FunctionComponent, lazy, Suspense, useContext, useEffect, useMemo, useState } from "react";
+import { type FunctionComponent, Suspense, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MapContainer } from "react-leaflet";
 import Control from "react-leaflet-custom-control";
 
 import useBehaviorSubj from "../hooks/useBehaviorSubj";
 import { useSetting } from "../hooks/useSetting";
+import { lazyChunk } from "../utils/chunk-reload";
 import { dataProvider } from "../utils/data-manager";
 import { goToSignal } from "../utils/geom-utils";
 import MapLinesContext from "../utils/map-lines-context";
@@ -43,19 +44,19 @@ import RefreshableTileLayer from "./utils/RefreshableTileLayer";
 import ThemeToggle from "./utils/ThemeToggle";
 import VersionCheck from "./VersionCheck";
 
-const ActiveSignalsLayer = lazy(() => import("./layers/ActiveSignalsLayer"));
-const MapLinesLayer = lazy(() => import("./layers/MapLinesLayer"));
-const PassiveSignalsLayer = lazy(() => import("./layers/PassiveSignalsLayer"));
-const SelectedTrainRouteLayer = lazy(() => import("./layers/SelectedTrainRouteLayer"));
-const StationsLayer = lazy(() => import("./layers/StationsLayer"));
-const TrainsLayer = lazy(() => import("./layers/TrainsLayer"));
-const UnplayableStationsLayer = lazy(() => import("./layers/UnplayableStationsLayer"));
-const StoppingPointsLayer = lazy(() => import("./layers/StoppingPointsLayer"));
-const PlayableAreaLayer = lazy(() => import("./layers/PlayableAreaLayer"));
-const CrossingsLayer = lazy(() => import("./layers/CrossingsLayer"));
-const DependentSignalsLayer = lazy(() => import("./layers/DependentSignalsLayer"));
-const ShuntingSignalsLayer = lazy(() => import("./layers/ShuntingSignalsLayer"));
-const WhistleSignWarning = lazy(() => import("./WhistleSignWarning"));
+const ActiveSignalsLayer = lazyChunk(() => import("./layers/ActiveSignalsLayer"));
+const MapLinesLayer = lazyChunk(() => import("./layers/MapLinesLayer"));
+const PassiveSignalsLayer = lazyChunk(() => import("./layers/PassiveSignalsLayer"));
+const SelectedTrainRouteLayer = lazyChunk(() => import("./layers/SelectedTrainRouteLayer"));
+const StationsLayer = lazyChunk(() => import("./layers/StationsLayer"));
+const TrainsLayer = lazyChunk(() => import("./layers/TrainsLayer"));
+const UnplayableStationsLayer = lazyChunk(() => import("./layers/UnplayableStationsLayer"));
+const StoppingPointsLayer = lazyChunk(() => import("./layers/StoppingPointsLayer"));
+const PlayableAreaLayer = lazyChunk(() => import("./layers/PlayableAreaLayer"));
+const CrossingsLayer = lazyChunk(() => import("./layers/CrossingsLayer"));
+const DependentSignalsLayer = lazyChunk(() => import("./layers/DependentSignalsLayer"));
+const ShuntingSignalsLayer = lazyChunk(() => import("./layers/ShuntingSignalsLayer"));
+const WhistleSignWarning = lazyChunk(() => import("./WhistleSignWarning"));
 
 function migrateMarkerLayers(layers: string[]) {
   const migratedLayers = layers.flatMap((layer) => {
